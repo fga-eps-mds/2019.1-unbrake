@@ -7,27 +7,25 @@ assignees: ''
 
 ---
 
-**Describe the bug**
+## Describe the bug
 A clear and concise description of what the bug is.
 
-**To Reproduce**
+## Steps to Reproduce
 Steps to reproduce the behavior:
 1. Go to '...'
 2. Click on '....'
 3. Scroll down to '....'
 4. See error
 
-**Expected behavior**
+## Behavior
+### Actual Behavior
+What is happening when you execute the steps?
+
+### Expected Behavior
 A clear and concise description of what you expected to happen.
 
-**Screenshots**
-If applicable, add screenshots to help explain your problem.
+## Additional context and screenshots
+If applicable, add screenshots and other details to help explain your problem.
 
-**Dependencies**
-
-1. OS system
-2. Docker version and docker-compose
-3.  Describe the version of your packages here...
-
-**Additional context**
-Add any other context about the problem here.
+## Possible Fix
+If you have any idea of what can be done to solve the problem, write it here.
