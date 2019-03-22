@@ -7,14 +7,17 @@ assignees: ''
 
 ---
 
-**Description**
+## Description
 
 Describe the task here.
 
-**Conditions of Acceptance**
+## Tasks
 
-Write a list of conditions to the issue will be accepted.
+- [ ] First task to complete the issue
+- [ ] Second task to complete the issue
+- [ ] Third task to complete the issue
+- [ ] ...
 
-**Additional Information**
+## Additional Information
 
 Add more information here (links, images, ideas, anything that might be useful).
