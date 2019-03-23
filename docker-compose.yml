@@ -2,7 +2,9 @@ version: '3'
 
 services:
   frontend:
-    container_name: 'unbreak-frontend-development'
+    container_name: 'unbrake-frontend-development'
     build: .
-	  volumes: src:/app/src
-    port: "3000:3000"
+    volumes:
+      - "./unbrake/src:/app/src"
+    ports:
+      - "3000:3000"
