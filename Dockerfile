@@ -2,8 +2,8 @@ FROM node:alpine
 
 LABEL description="To be used in react development, just to keep environments unified between users and reduce complexity."
 
-COPY . /app
-WORKDIR /app/unbrake
+COPY unbrake /app
+WORKDIR /app
 
 RUN npm install --no-optional
 
