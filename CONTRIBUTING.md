@@ -14,6 +14,18 @@ If you want to contribute with that project the first stage is create a issue in
 
 #### How use issues
 
+To tracking all project UnBrake use issues to tasking control. To create issues more easily we have some templates in github, answer all questions and most part it will be alright.
+
+Besides that a issue all issues must have:
+* All decisions about a issue have to be in the issue body
+* Always have to be a person assinged in issues
+* Tracking labels labels
+
+Just task issues have to be:
+* A epic
+* Estimate number
+* Milestone
+
 #### Creating your branches
 
 The first pass to create your branch is define a name, the pattern followed in our project is:
