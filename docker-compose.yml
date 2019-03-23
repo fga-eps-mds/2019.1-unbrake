@@ -1,0 +1,8 @@
+version: '3'
+
+services:
+  frontend:
+    container_name: 'unbreak-frontend-development'
+    build: .
+	  volumes: src:/app/src
+    port: "3000:3000"
