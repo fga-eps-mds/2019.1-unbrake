@@ -1,9 +1,10 @@
-FROM node:alpine
+FROM node:11-alpine
 
 LABEL description="To be used in react development, just to keep environments unified between users and reduce complexity."
 
-COPY unbrake /app
-WORKDIR /app
+WORKDIR /app/frontend
+
+COPY unbrake-frontend .
 
 RUN npm install --no-optional
 

@@ -3,8 +3,10 @@ version: '3'
 services:
   frontend:
     container_name: 'unbrake-frontend-development'
-    build: .
+    build:
+      context: .
+      dockerfile: unbrake-frontend/Dockerfile
     volumes:
-      - "./unbrake/src:/app/src"
+      - "./unbrake-frontend/src:/app/frontend/src"
     ports:
       - "3000:3000"
