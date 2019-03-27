@@ -1,0 +1,14 @@
+#!/bin/sh
+
+write_host_hooks() {
+   for file in $(ls /app/.git/hooks | grep -v \.sample); do
+       cp /app/frontend/scripts/host_hook_template /app/.git/hooks/$file \
+       && chmod +x /app/.git/hooks/$file
+   done
+}
+
+if [ -d /app/.git ]; then
+    write_host_hooks
+fi
+
+exec /usr/local/bin/npm $@

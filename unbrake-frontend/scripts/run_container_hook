@@ -1,0 +1,11 @@
+#!/bin/sh
+
+convert_git_workspace() {
+    git diff --name-only --cached | sed s@unbrake-frontend/@@ > /tmp/staged \
+    && git reset &>/dev/null \
+    && git init &>/dev/null \
+    && [ -s /tmp/staged ] && (cat /tmp/staged | xargs git add && rm /tmp/staged)
+}
+
+convert_git_workspace 
+/app/frontend/.git/hooks/$1 "${@:2}"
