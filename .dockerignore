@@ -1,6 +1,10 @@
+# Everything but specific project folders
+**
+!.git/hooks
+!unbrake-frontend
+
 # Git
-.git
-.gitignore
+.github
 
 # Text files
 **/*.txt
@@ -8,8 +12,8 @@
 LICENSE
 
 # Docker
-Dockerfile
-.dockerignore
+**/Dockerfile
+**/.dockerignore
 
 # Created by https://www.gitignore.io/api/node,reactnative
 # Edit at https://www.gitignore.io/?templates=node,reactnative
