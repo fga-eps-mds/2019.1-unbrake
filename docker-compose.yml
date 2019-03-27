@@ -6,6 +6,7 @@ services:
     build:
       context: .
       dockerfile: unbrake-frontend/Dockerfile
+    image: unbrake_frontend
     volumes:
       - "./unbrake-frontend/src:/app/frontend/src"
       - "./unbrake-frontend/scripts:/app/frontend/scripts"
