@@ -4,4 +4,4 @@ imageName="unbrake_frontend" # compose project name + service name
 gitFolder="$(git rev-parse --show-toplevel)/$(git rev-parse --git-dir)"
 
 # git folder volume must be /app/.git
-sudo docker run -i -v"$gitFolder:/app/.git" --rm --entrypoint '/app/frontend/scripts/run_container_hook' $imageName "$(basename $0)" $@
+sudo docker run -t -v"$gitFolder:/app/.git" --rm --entrypoint '/app/frontend/scripts/run_container_hook' $imageName "$(basename $0)" $@

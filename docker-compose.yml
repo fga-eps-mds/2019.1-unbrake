@@ -8,5 +8,6 @@ services:
       dockerfile: unbrake-frontend/Dockerfile
     volumes:
       - "./unbrake-frontend/src:/app/frontend/src"
+      - "./unbrake-frontend/scripts:/app/frontend/scripts"
     ports:
       - "3000:3000"

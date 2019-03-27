@@ -6,7 +6,15 @@ WORKDIR /app/frontend
 
 COPY unbrake-frontend .
 
-RUN npm install --no-optional
+# git and bash needed for running linters
+RUN set -x \
+  && apk update \
+  && apk add --no-cache bash git \
+  && mkdir -p .git/hooks \
+  && npm install --no-optional \
+  && rm -rf /var/cache/apk/*
 
-ENTRYPOINT ["/usr/local/bin/npm"]
+EXPOSE 3000
+
+ENTRYPOINT ["/app/frontend/scripts/entrypoint_dev"]
 CMD ["start"]
