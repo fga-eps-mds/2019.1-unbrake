@@ -3,10 +3,11 @@
 gitFolder="$(git rev-parse --show-toplevel)"
 imageName="unbrake_frontend"  # compose project name + service name
 frontendFolder="$gitFolder/../unbrake_frontend"
-hookName="$(basename $0)" 
+hookName="$(basename $0)"
 
 rm -rf $gitFolder/unbrake_git_backup \
-    && cp -r $gitFolder/.git /tmp/unbrake_git_backup
+&& cp -r $gitFolder/.git /tmp/unbrake_git_backup \
+&& echo ""
 
 # git folder volume must be /app/.git
 sudo docker run \

@@ -1,0 +1,4 @@
+# Hooks currently being used on project
+
+pre-commit
+pre-push

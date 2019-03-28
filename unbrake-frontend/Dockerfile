@@ -16,10 +16,10 @@ RUN set -x \
 
 EXPOSE 3000
 
-COPY unbrake-frontend/.eslintrc.json unbrake-frontend/.prettierrc ./
+COPY unbrake-frontend/.eslintrc.json unbrake-frontend/.prettierrc unbrake-frontend/scripts/entrypoint.dev ./
 COPY unbrake-frontend/public public
 COPY unbrake-frontend/scripts scripts
 COPY unbrake-frontend/src src
 
-ENTRYPOINT ["/usr/local/bin/npm"]
+ENTRYPOINT ["/app/frontend/entrypoint.dev"]
 CMD ["start"]

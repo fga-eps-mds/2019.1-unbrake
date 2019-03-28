@@ -10,5 +10,6 @@ services:
     volumes:
       - "./unbrake-frontend/src:/app/frontend/src"
       - "./unbrake-frontend/scripts:/app/frontend/scripts"
+      - "./.git:/app/.git" # Needed for git hooks
     ports:
       - "3000:3000"
