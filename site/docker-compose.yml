@@ -1,0 +1,21 @@
+version: "3"
+
+services:
+
+  build_pages:
+    command: make -f site/Makefile html
+    build:
+      context: . 
+      dockerfile: docker/Dockerfile
+    volumes:
+    - ./../:/home/
+
+  serve:
+    command: make -f site/Makefile serve
+    build:
+      context: .    
+      dockerfile: docker/Dockerfile
+    ports:
+    - 8000:8000
+    volumes:
+    - ./../:/home/
