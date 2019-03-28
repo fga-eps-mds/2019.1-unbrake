@@ -1,31 +1,36 @@
 ---
 name: Bug report
-about: Create a report to help us improve
+about: Reporte um bug ou nos ajude a resolver algum
 title: ''
 labels: bug
 assignees: ''
 
 ---
 
-## Describe the bug
-A clear and concise description of what the bug is.
+## Descrição do problema
 
-## Steps to Reproduce
-Steps to reproduce the behavior:
-1. Go to '...'
-2. Click on '....'
-3. Scroll down to '....'
-4. See error
+Um descrição clara e concisa sobre o problema
 
-## Behavior
-### Actual Behavior
-What is happening when you execute the steps?
+## Passos para reprodução 
 
-### Expected Behavior
-A clear and concise description of what you expected to happen.
+Passos para reproduzir o comportamento.
 
-## Additional context and screenshots
-If applicable, add screenshots and other details to help explain your problem.
+1. Vá para...
+2. Click em...
+...
 
-## Possible Fix
-If you have any idea of what can be done to solve the problem, write it here.
+### Comportamento atual
+
+O que está acontecendo atualmente
+
+### Comportamento esperado
+
+Qual é o comportamento esperado pelo sistema
+
+## Contextos, prints e informações adicionais
+
+Se for aplicável, adicione gifs, imagens ou qualquer outro detalhe de enriqueça a descrição do problema.
+
+## Possível Solução
+
+Caso você tenha algum sugestão de onde começar a procurar o problema ou uma solução para ele escreva aqui.
