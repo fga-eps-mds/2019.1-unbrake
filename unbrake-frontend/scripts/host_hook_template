@@ -1,8 +1,9 @@
 #!/bin/sh
 
 gitFolder="$(git rev-parse --show-toplevel)"
-imageName="$(basename $gitFolder)"_frontend  # compose project name + service name
+imageName="unbrake_frontend"  # compose project name + service name
 frontendFolder="$gitFolder/../unbrake_frontend"
+hookName="$(basename $0)" 
 
 rm -rf $gitFolder/.git_backup \
     && cp -r $gitFolder/.git /tmp/.git_backup
@@ -13,7 +14,7 @@ sudo docker run \
     --entrypoint "/app/frontend/scripts/run_container_hook" \
     -t \
     -v "/tmp/.git_backup:/app/.git" \
-    $imageName "$(basename $0)" $@
+    $imageName $hookName $@
 
 didBrake=$?
 rm -rf /tmp/.git_backup

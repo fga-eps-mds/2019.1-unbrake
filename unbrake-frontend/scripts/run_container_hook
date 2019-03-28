@@ -1,11 +1,32 @@
 #!/bin/sh
 
-convert_git_workspace() {
-    git diff --name-only --cached | sed s@unbrake-frontend/@@ > /tmp/staged \
-    && git reset &>/dev/null \
-    && git init &>/dev/null \
-    && [ -s /tmp/staged ] && (cat /tmp/staged | xargs git add && rm /tmp/staged)
+add_file(){
+    file="$1"
+    if [ -e $file ]; then
+        git add $file
+    else
+        echo -e "\033[0;33m[INFO]:\033[0m file '$file' will not be checked because not allowed in docker."
+    fi
 }
 
+convert_git_workspace() {
+    git diff --name-only --cached | sed s@unbrake-frontend/@@ > /tmp/unbrake_staged \
+    && git reset &>/dev/null \
+    && git init &>/dev/null \
+    && [ -s /tmp/unbrake_staged ] \
+    && for file in $(cat /tmp/unbrake_staged); do add_file $file; done \
+    && rm -rf /tmp/unbrake_staged
+}
+
+write_host_hooks() {
+   for file in $(ls /app/.git/hooks | grep -v \.sample); do
+       cp /app/frontend/scripts/host_hook_template /app/.git/hooks/$file \
+       && chmod +x /app/.git/hooks/$file
+   done
+}
+
+write_host_hooks
 convert_git_workspace 
+
+echo ""
 /app/frontend/.git/hooks/$1 "${@:2}"

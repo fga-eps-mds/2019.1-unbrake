@@ -4,7 +4,7 @@ LABEL description="To be used in react development, just to keep environments un
 
 WORKDIR /app/frontend
 
-COPY unbrake-frontend .
+COPY unbrake-frontend/package.json .
 
 # git and bash needed for running linters
 RUN set -x \
@@ -16,5 +16,10 @@ RUN set -x \
 
 EXPOSE 3000
 
-ENTRYPOINT ["/app/frontend/scripts/entrypoint_dev"]
+COPY unbrake-frontend/.eslintrc.json unbrake-frontend/.prettierrc ./
+COPY unbrake-frontend/public public
+COPY unbrake-frontend/scripts scripts
+COPY unbrake-frontend/src src
+
+ENTRYPOINT ["/usr/local/bin/npm"]
 CMD ["start"]
