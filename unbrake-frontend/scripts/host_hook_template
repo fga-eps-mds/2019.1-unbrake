@@ -5,17 +5,19 @@ imageName="unbrake_frontend"  # compose project name + service name
 frontendFolder="$gitFolder/../unbrake_frontend"
 hookName="$(basename $0)" 
 
-rm -rf $gitFolder/.git_backup \
-    && cp -r $gitFolder/.git /tmp/.git_backup
+rm -rf $gitFolder/unbrake_git_backup \
+    && cp -r $gitFolder/.git /tmp/unbrake_git_backup
 
 # git folder volume must be /app/.git
 sudo docker run \
     --rm \
-    --entrypoint "/app/frontend/scripts/run_container_hook" \
+    --entrypoint '/app/frontend/scripts/run_container_hook' \
     -t \
-    -v "/tmp/.git_backup:/app/.git" \
-    $imageName $hookName $@
+    -v "/tmp/unbrake_git_backup:/app/.git" \
+    $imageName \
+	$hookName $@
 
 didBrake=$?
-rm -rf /tmp/.git_backup
+cp --remove-destination /tmp/unbrake_git_backup/hooks/* $gitFolder/.git/hooks/
+rm -rf /tmp/unbrake_git_backup
 exit $didBrake

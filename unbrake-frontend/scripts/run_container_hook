@@ -4,8 +4,8 @@ add_file(){
     file="$1"
     if [ -e $file ]; then
         git add $file
-    else
-        echo -e "\033[0;33m[INFO]:\033[0m file '$file' will not be checked because not allowed in docker."
+    elif [ "$file" = "pre-commit" ] || [ "$file" = "pre-push" ]; then
+        echo -e "\033[0;33mINFO:\033[0m file '$file' will not be checked because it's not allowed to be in docker."
     fi
 }
 
@@ -18,15 +18,33 @@ convert_git_workspace() {
     && rm -rf /tmp/unbrake_staged
 }
 
-write_host_hooks() {
-   for file in $(ls /app/.git/hooks | grep -v \.sample); do
+update_host_hooks() {
+   for file in $(cat /app/frontend/scripts/hooks_list | grep -v '^#'); do
        cp /app/frontend/scripts/host_hook_template /app/.git/hooks/$file \
        && chmod +x /app/.git/hooks/$file
    done
 }
 
-write_host_hooks
-convert_git_workspace 
+hookName="$1"
+[ -n "$(echo $hookName | grep "^pre-")" ] && isPreHook=1
+[ -d /app/.git ] && isGitMounted=1
+[ -z "$(ls /app/.git/hooks | grep -v \.sample)" ] && hooksNotGenerated=1
 
-echo ""
-/app/frontend/.git/hooks/$1 "${@:2}"
+if [ $isGitMounted ]; then
+    if [ $hooksNotGenerated ]; then
+        echo -e "\n\033[0;32mINFO:\033[0m Git folder found on volume, git hooks will be created"
+        update_host_hooks
+    else
+        diff /app/frontend/scripts/host_hook_template /app/frontend/.git/hooks/$hookName &>/dev/null
+        [ $? = 0 ] \
+        && echo -e "\n\033[0;32mINFO:\033[0m Hooks from host are outdated, they will be updated" \
+        && update_host_hooks
+    fi
+elif [ $isPreHook ]; then # Only pre-* hooks are running checks
+    echo -e "\n\033[0;33mINFO:\033[0m No git folder on volume, git hooks will not be updated"
+fi
+
+if [ $# != 0 ]; then
+    convert_git_workspace
+    /app/frontend/.git/hooks/$hookName ${@:2}
+fi
