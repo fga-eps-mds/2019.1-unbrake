@@ -3,16 +3,53 @@ import { Field, reduxForm } from 'redux-form'
 import { TextField} from 'redux-form-material-ui'
 import Button from '@material-ui/core/Button';
 
-const Login = props => {
-  const { pristine, submitting } = props;
+const validate = values => {
+  const errors = {};
+  const requiredFields = [
+    'username',
+    'password'
+  ]
+  requiredFields.forEach(field => {
+    if(!values[field]) {
+      errors[field] = 'Required'
+    }
+    else{
+      
+    }
+  })
+  return errors;
+}
 
+const renderField = ({
+  input,
+  label,
+  type,
+  meta: {touched, error, invalid}
+}) => (
+  <div>
+    <TextField
+      label={label}
+      placehoder={label}
+      error={ error && touched }
+      type={type}
+      variant='outlined'
+      helperText={touched && error}
+      {... input}
+    />
+  </div>
+)
+
+const Login = props => {
+  const { handleSubmit, submitting } = props;
+
+  console.log(props);
   return (
-    <form >
+    <form onSubmit={handleSubmit}>
       <div>
         <Field
           name='username'
           type='text'
-          component={TextField}
+          component={renderField}
           label='Usuário'
           variant='outlined'
         />
@@ -22,7 +59,7 @@ const Login = props => {
         <Field
           name='password'
           type='password'
-          component={TextField}
+          component={renderField}
           label='Senha'
           variant='outlined'
         />
@@ -30,6 +67,9 @@ const Login = props => {
       <br/>
       <div>
         <Button color='secondary' variant='contained' type='submit' disabled={submitting}>Entrar</Button>
+        <Button color='secondary' variant='contained' disabled={submitting}>Cadastrar</Button>
+      </div>
+      <div>
         <a href='./'> Esqueci minha senha</a>
       </div>
     </form>
@@ -37,6 +77,7 @@ const Login = props => {
 }
 
 export default reduxForm({
-  form: 'login'
+  form: 'login',
+  validate
 }) (Login)
 
