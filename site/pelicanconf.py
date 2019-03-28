@@ -4,7 +4,7 @@ from __future__ import unicode_literals
 
 AUTHOR = 'Grupo 5'
 SITENAME = 'UnBrake'
-SITEURL = ''
+SITEURL = 'https://fga-eps-mds.github.io/2019.1-unbrake/'
 
 LOAD_CONTENT_CACHE = False 
 PATH = 'content'
