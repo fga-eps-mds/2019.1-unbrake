@@ -2,23 +2,8 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import classNames from 'classnames';
 import { withStyles } from '@material-ui/core/styles';
-import Drawer from '@material-ui/core/Drawer';
-import AppBar from '@material-ui/core/AppBar';
-import Toolbar from '@material-ui/core/Toolbar';
-import List from '@material-ui/core/List';
-import MenuItem from '@material-ui/core/MenuItem';
-import CssBaseline from '@material-ui/core/CssBaseline';
-import Typography from '@material-ui/core/Typography';
-import Divider from '@material-ui/core/Divider';
-import IconButton from '@material-ui/core/IconButton';
-import MenuIcon from '@material-ui/icons/Menu';
-import ChevronLeftIcon from '@material-ui/icons/ChevronLeft';
-import ChevronRightIcon from '@material-ui/icons/ChevronRight';
-import ListItem from '@material-ui/core/ListItem';
-import ListItemIcon from '@material-ui/core/ListItemIcon';
-import ListItemText from '@material-ui/core/ListItemText';
-import InboxIcon from '@material-ui/icons/MoveToInbox';
-import MailIcon from '@material-ui/icons/Mail';
+import { Drawer, AppBar, Toolbar, List, CssBaseline, Typography, Divider, IconButton, ListItem, ListItemIcon, ListItemText } from '@material-ui/core';
+import { ChevronLeft, ChevronRight, Inbox, Mail, Menu } from '@material-ui/icons';
 import { BrowserRouter, Route } from 'react-router-dom'
 
 
@@ -27,6 +12,134 @@ import Calibration from './Calibration'
 import Test from './Test'
 import Analysis from './Analysis'
 const drawerWidth = 240;
+
+
+class Index extends React.Component {
+  state = {
+    open: false,
+    currentPage: ''
+  };
+
+  handleDrawerOpen = () => {
+    this.setState({ open: true });
+  };
+
+  handleDrawerClose = () => {
+    this.setState({ open: false });
+  };
+
+
+  listMenu = (location, history) => ['analysis', 'configuration', 'calibration', 'test'].map((text, index) => {
+      var nome;
+      switch (index){
+        case 0:
+          nome = 'Análise'
+          break;
+        case 1:
+          nome = 'Configuração'
+          break;
+        case 2:
+          nome = 'Calibração'
+          break;
+        case 3:
+          nome = 'Teste'
+          break;
+      }
+      return(
+        <ListItem button key={text} onClick={() => {
+            const to = '/' + text;
+            if (location.pathname !== to) {
+              history.push(to);
+            }
+          }}
+          selected={ '/'+text === location.pathname }>
+          <ListItemIcon>{index % 2 === 0 ? <Inbox /> : <Mail />}</ListItemIcon>
+          <ListItemText primary={nome} />
+        </ListItem>
+      )}
+    )
+  
+
+  render() {
+    const { classes, theme } = this.props;
+    const routes = []; // empty array
+// add elements with string keys
+    routes['Análise'] = 'analysis';
+    routes['Configuração'] = 'configuration';
+    routes['Calibração'] = 'calibration';
+    routes['Teste'] = 'test';
+
+    return (
+      <BrowserRouter>
+        <Route render={({ location, history }) => (
+          <React.Fragment>
+            <div className={classes.root}>
+              <CssBaseline />
+              <AppBar
+                position="fixed"
+                className={classNames(classes.appBar, {
+                  [classes.appBarShift]: this.state.open,
+                })}
+              >
+                <Toolbar disableGutters={!this.state.open}>
+                  <IconButton
+                    color="inherit"
+                    aria-label="Open drawer"
+                    onClick={this.handleDrawerOpen}
+                    className={classNames(classes.menuButton, {
+                      [classes.hide]: this.state.open,
+                    })}
+                  >
+                    <Menu />
+                  </IconButton>
+                  <Typography variant="h6" color="inherit" noWrap>
+                    Mini variant drawer
+                  </Typography>
+                </Toolbar>
+              </AppBar>
+              <Drawer
+                variant="permanent"
+                className={classNames(classes.drawer, {
+                  [classes.drawerOpen]: this.state.open,
+                  [classes.drawerClose]: !this.state.open,
+                })}
+                classes={{
+                  paper: classNames({
+                    [classes.drawerOpen]: this.state.open,
+                    [classes.drawerClose]: !this.state.open,
+                  }),
+                }}
+                open={this.state.open}
+              >
+                <div className={classes.toolbar}>
+                  <IconButton onClick={this.handleDrawerClose}>
+                    {theme.direction === 'rtl' ? <ChevronRight /> : <ChevronLeft />}
+                  </IconButton>
+                </div>
+                <Divider />
+                <List >
+                  {this.listMenu(location, history)}
+                </List>
+              </Drawer>
+              <main style={{flex: 1}}>
+                <Route path="/configuration" exact component={props => <Configuration />} />
+                <Route path="/analysis" component={props => <Analysis />} />
+                <Route path="/calibration" component={props => <Calibration />} />
+                <Route path="/test" component={props => <Test />} />
+              </main>
+            </div>
+          </React.Fragment>
+        )}
+        />
+      </BrowserRouter>
+    );
+  }
+}
+
+Index.propTypes = {
+  classes: PropTypes.object.isRequired,
+  theme: PropTypes.object.isRequired,
+};
 
 const styles = theme => ({
   root: {
@@ -90,127 +203,5 @@ const styles = theme => ({
   },
 });
 
-class MiniDrawer extends React.Component {
-  state = {
-    open: false,
-    currentPage: ''
-  };
 
-  handleDrawerOpen = () => {
-    this.setState({ open: true });
-  };
-
-  handleDrawerClose = () => {
-    this.setState({ open: false });
-  };
-
-  render() {
-    const { classes, theme } = this.props;
-    const routes = []; // empty array
-// add elements with string keys
-    routes['Análise'] = 'analysis';
-    routes['Configuração'] = 'configuration';
-    routes['Calibração'] = 'calibration';
-    routes['Teste'] = 'test';
-
-    return (
-      <BrowserRouter>
-        <Route render={({ location, history }) => (
-          <React.Fragment>
-            <div className={classes.root}>
-              <CssBaseline />
-              <AppBar
-                position="fixed"
-                className={classNames(classes.appBar, {
-                  [classes.appBarShift]: this.state.open,
-                })}
-              >
-                <Toolbar disableGutters={!this.state.open}>
-                  <IconButton
-                    color="inherit"
-                    aria-label="Open drawer"
-                    onClick={this.handleDrawerOpen}
-                    className={classNames(classes.menuButton, {
-                      [classes.hide]: this.state.open,
-                    })}
-                  >
-                    <MenuIcon />
-                  </IconButton>
-                  <Typography variant="h6" color="inherit" noWrap>
-                    Mini variant drawer
-                  </Typography>
-                </Toolbar>
-              </AppBar>
-              <Drawer
-                variant="permanent"
-                className={classNames(classes.drawer, {
-                  [classes.drawerOpen]: this.state.open,
-                  [classes.drawerClose]: !this.state.open,
-                })}
-                classes={{
-                  paper: classNames({
-                    [classes.drawerOpen]: this.state.open,
-                    [classes.drawerClose]: !this.state.open,
-                  }),
-                }}
-                open={this.state.open}
-              >
-                <div className={classes.toolbar}>
-                  <IconButton onClick={this.handleDrawerClose}>
-                    {theme.direction === 'rtl' ? <ChevronRightIcon /> : <ChevronLeftIcon />}
-                  </IconButton>
-                </div>
-                <Divider />
-                <List>
-                  {['analysis', 'configuration', 'calibration', 'test'].map((text, index) => {
-                    var nome;
-                    switch (index){
-                      case 0:
-                        nome = 'Análise'
-                        break;
-                      case 1:
-                        nome = 'Configuração'
-                        break;
-                      case 2:
-                        nome = 'Calibração'
-                        break;
-                      case 3:
-                        nome = 'Test'
-                        break;
-                    }
-                    return(
-                      <ListItem button key={text} onClick={() => {
-                          const to = '/' + text;
-                          if (location.pathname !== to) {
-                            history.push(to);
-                          }
-
-                        }}>
-                        <ListItemIcon>{index % 2 === 0 ? <InboxIcon /> : <MailIcon />}</ListItemIcon>
-                        <ListItemText primary={nome} />
-                      </ListItem>
-                    )}
-                  )}
-                </List>
-              </Drawer>
-              <main style={{flex: 1}}>
-                <Route path="/configuration" exact component={props => <Configuration />} />
-                <Route path="/analysis" component={props => <Analysis />} />
-                <Route path="/calibration" component={props => <Calibration />} />
-                <Route path="/test" component={props => <Test />} />
-              </main>
-            </div>
-          </React.Fragment>
-        )}
-        />
-      </BrowserRouter>
-    );
-  }
-}
-
-MiniDrawer.propTypes = {
-  classes: PropTypes.object.isRequired,
-  theme: PropTypes.object.isRequired,
-};
-
-export default withStyles(styles, { withTheme: true })(MiniDrawer);
+export default withStyles(styles, { withTheme: true })(Index);
