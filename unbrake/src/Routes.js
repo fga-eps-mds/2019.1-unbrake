@@ -11,7 +11,7 @@ import Analysis from './components/Analysis'
 
 export default props => (
   <BrowserRouter>
-    <Route exact path='/' component={ Index }/>
+    <Route path='/' component={ Index }/>
     <Route path='/configuration' component={ Configuration }/>
     <Route path='/calibration' component={ Calibration }/>
     <Route path='/test' component={ Test }/>
