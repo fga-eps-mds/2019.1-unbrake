@@ -1,22 +1,37 @@
 import React, {Component} from 'react'
 import { Field, reduxForm } from 'redux-form'
+import { SubmissionError } from 'redux-form'
 import { TextField} from 'redux-form-material-ui'
 import Button from '@material-ui/core/Button';
 
-const validate = values => {
+const submit = values => {
+  
   const errors = {};
-  const requiredFields = [
-    'username',
-    'password'
-  ]
-  requiredFields.forEach(field => {
-    if(!values[field]) {
-      errors[field] = 'Required'
-    }
-    else{
-      
-    }
-  })
+
+  if(!values.username && !values.password){
+    throw new SubmissionError({
+      username: 'Required',
+      password: 'Required'
+    })
+  }
+
+  if(!values.username) {
+    throw new SubmissionError({
+      username : 'Required'
+    })
+  }
+
+  if(!values.password) {
+    throw new SubmissionError({
+      password : 'Required',
+      errors: 'Login failed'
+    })
+  }
+  
+  else {
+    window.alert(`You submitted:\n\n${JSON.stringify(values, null, 2)}`)
+  }
+
   return errors;
 }
 
@@ -44,7 +59,7 @@ const Login = props => {
 
   console.log(props);
   return (
-    <form onSubmit={handleSubmit}>
+    <form onSubmit={handleSubmit(submit)}>
       <div>
         <Field
           name='username'
@@ -78,6 +93,5 @@ const Login = props => {
 
 export default reduxForm({
   form: 'login',
-  validate
 }) (Login)
 
