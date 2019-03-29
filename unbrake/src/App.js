@@ -1,15 +1,23 @@
 import React, { Component } from 'react';
-import logo from './logo.svg';
 import './App.css';
+import { BrowserRouter, Route } from 'react-router-dom'
 
-import Routes from './Routes'
+
+import Index from './components/Index'
+import SideBarMenu from './components/SideBarMenu'
+
 
 class App extends Component {
-  render() {
-    return (
-      <Routes />
-    );
-  }
+  render(){
+    return(
+      <React.Fragment>
+        <SideBarMenu />
+        <BrowserRouter>
+          <Route path='/' component={ Index }/>
+        </BrowserRouter>
+
+  </React.Fragment>
+);}
 }
 
 export default App;
