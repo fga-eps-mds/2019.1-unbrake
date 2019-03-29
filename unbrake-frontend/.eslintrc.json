@@ -8,8 +8,11 @@
   "extends": [
     "eslint:recommended",
     "plugin:jest/recommended",
+    "plugin:react/recommended",
     "plugin:prettier/recommended",
-    "plugin:react/recommended"
+    "airbnb",
+    "prettier",
+    "prettier/react"
   ],
   "globals": {
     "Atomics": "readonly",
@@ -28,6 +31,7 @@
     "react"
   ],
   "rules": {
+    "prettier/prettier": "error",
     "no-param-reassign": [2, { 
       "props": true,
       "ignorePropertyModificationsFor": []
