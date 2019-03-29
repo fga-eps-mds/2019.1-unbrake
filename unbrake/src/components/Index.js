@@ -3,7 +3,7 @@ import PropTypes from 'prop-types';
 import classNames from 'classnames';
 import { withStyles } from '@material-ui/core/styles';
 import { Drawer, AppBar, Toolbar, List, CssBaseline, Typography, Divider, IconButton, ListItem, ListItemIcon, ListItemText } from '@material-ui/core';
-import { ChevronLeft, ChevronRight, Inbox, Mail, Menu } from '@material-ui/icons';
+import { ChevronLeft, ChevronRight, Equalizer, Assignment, Menu, Settings, ShowChart } from '@material-ui/icons';
 import { BrowserRouter, Route } from 'react-router-dom'
 
 
@@ -27,22 +27,27 @@ class Index extends React.Component {
   handleDrawerClose = () => {
     this.setState({ open: false });
   };
-
-
-  listMenu = (location, history) => ['analysis', 'configuration', 'calibration', 'test'].map((text, index) => {
+  listMenu = (location, history) => {
+  
+  let list =  ['analysis', 'configuration', 'calibration', 'test'].map((text, index) => {
       var nome;
+      let icon;
       switch (index){
         case 0:
           nome = 'Análise'
+          icon = < Assignment />
           break;
         case 1:
           nome = 'Configuração'
+          icon = <Settings />
           break;
         case 2:
           nome = 'Calibração'
+          icon = <Equalizer />
           break;
         case 3:
           nome = 'Teste'
+          icon = <ShowChart />
           break;
       }
       return(
@@ -53,12 +58,13 @@ class Index extends React.Component {
             }
           }}
           selected={ '/'+text === location.pathname }>
-          <ListItemIcon>{index % 2 === 0 ? <Inbox /> : <Mail />}</ListItemIcon>
+          <ListItemIcon>{ icon }</ListItemIcon>
           <ListItemText primary={nome} />
         </ListItem>
       )}
     )
-  
+  return list;
+  }
 
   render() {
     const { classes, theme } = this.props;
