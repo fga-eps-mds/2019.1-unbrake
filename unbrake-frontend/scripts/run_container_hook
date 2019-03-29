@@ -18,11 +18,19 @@ convert_git_workspace() {
     && rm -rf /tmp/unbrake_staged
 }
 
+setHooks="$(node -e "var package = require('./package.json'); Object.keys(package.husky.hooks).forEach(key => console.log(key))")"
+
 update_host_hooks() {
-   for file in $(cat /app/frontend/scripts/hooks_list | grep -v '^#'); do
-       cp /app/frontend/scripts/host_hook_template /app/.git/hooks/$file \
-       && chmod +x /app/.git/hooks/$file
+   for hook in $setHooks; do
+       cp /app/frontend/scripts/host_hook_template /app/.git/hooks/$hook \
+       && chmod +x /app/.git/hooks/$hook
    done
+}
+
+is_hooks_outdated() {
+    for hook in $setHooks; do
+        diff /app/frontend/scripts/host_hook_template /app/.git/hooks/$hook &> /dev/null || return 1
+    done
 }
 
 hookName="$1"
@@ -35,10 +43,9 @@ if [ $isGitMounted ]; then
         echo -e "\n\033[0;32mINFO:\033[0m Git folder found on volume, git hooks will be created"
         update_host_hooks
     else
-        diff /app/frontend/scripts/host_hook_template /app/frontend/.git/hooks/$hookName &>/dev/null
-        [ $? = 0 ] \
-        && echo -e "\n\033[0;32mINFO:\033[0m Hooks from host are outdated, they will be updated" \
-        && update_host_hooks
+		is_hooks_outdated \
+        || (echo -e "\n\033[0;32mINFO:\033[0m Hooks from host are outdated, they will be updated" \
+        && update_host_hooks)
     fi
 elif [ $isPreHook ]; then # Only pre-* hooks are running checks
     echo -e "\n\033[0;33mINFO:\033[0m No git folder on volume, git hooks will not be updated"
