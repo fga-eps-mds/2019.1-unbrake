@@ -2,23 +2,22 @@
 
 gitFolder="$(git rev-parse --show-toplevel)"
 imageName="unbrake_frontend"  # compose project name + service name
-frontendFolder="$gitFolder/../unbrake_frontend"
+frontendFolder="$gitFolder/unbrake-frontend"
 hookName="$(basename $0)"
 
-rm -rf $gitFolder/unbrake_git_backup \
-&& cp -r $gitFolder/.git /tmp/unbrake_git_backup \
-&& echo ""
+git diff --name-only --cached > /tmp/unbrake_staged
 
 # git folder volume must be /app/.git
 sudo docker run \
+    -t \
+    -v "$gitFolder/.git:/app/.git" \
+    -v "$frontendFolder/src:/app/frontend/src" \
     --rm \
     --entrypoint '/app/frontend/scripts/run_container_hook' \
-    -t \
-    -v "/tmp/unbrake_git_backup:/app/.git" \
     $imageName \
 	$hookName $@
 
 didBrake=$?
-cp --remove-destination /tmp/unbrake_git_backup/hooks/* $gitFolder/.git/hooks/
-rm -rf /tmp/unbrake_git_backup
+for file in $(cat /tmp/unbrake_staged); do git add $file; done
+rm -rf /tmp/unbrake_staged
 exit $didBrake
