@@ -3,6 +3,7 @@ import { Field, reduxForm } from 'redux-form'
 import { SubmissionError } from 'redux-form'
 import { TextField} from 'redux-form-material-ui'
 import Button from '@material-ui/core/Button';
+import { Redirect } from 'react-router-dom';
 
 const submit = values => {
   
@@ -29,7 +30,8 @@ const submit = values => {
   }
   
   else {
-    window.alert(`You submitted:\n\n${JSON.stringify(values, null, 2)}`)
+    // window.alert(`You submitted:\n\n${JSON.stringify(values, null, 2)}`)
+    return <Redirect to='./test' />
   }
 
   return errors;
