@@ -11,7 +11,6 @@
                 <h1><a href="https://fga-eps-mds.github.io/2019.1-unbrake/">UnBrake </a></h1>
                 <nav><ul>
                     <li class="active"><a href="https://fga-eps-mds.github.io/2019.1-unbrake/category/requisitos.html">Requisitos</a></li>
-                    <li><a href="https://fga-eps-mds.github.io/2019.1-unbrake/category/review.html">Review</a></li>
                 </ul></nav>
         </header><!-- /#banner -->
 
@@ -54,11 +53,11 @@
 </tr>
 <tr>
 <td><strong>Episódios</strong></td>
-<td>O usuário clica para enviar o arquivo de configuração, a caixa de seleção abre, o usuário realiza o upload do arquivo.</td>
+<td>O usuário clica para enviar o arquivo de configuração, a caixa de seleção abre, o usuário realiza o upload do arquivo. [1]</td>
 </tr>
 <tr>
 <td><strong>Exceção</strong></td>
-<td></td>
+<td>O usuário pode usar o botão de emergencia para cancelar o experimento.</td>
 </tr>
 </tbody>
 </table>
@@ -88,11 +87,113 @@
 </tr>
 <tr>
 <td><strong>Episódios</strong></td>
-<td>O usuário <a href="#enviando_calibracao">envia um arquivo de calibração e configuração</a>[1], o arquivo passa por uma validação e após isso o experimento vai para a fila.</td>
+<td>O usuário <a href="#enviando_calibracao">envia um arquivo de calibração e configuração</a>[1], o arquivo passa por uma validação e após isso o experimento vai para a fila de execução.</td>
 </tr>
 <tr>
 <td><strong>Exceção</strong></td>
 <td>[1] caso o arquivo esteja inválido um erro será apresentado</td>
+</tr>
+</tbody>
+</table>
+<table>
+<thead>
+<tr>
+<th><strong>Título</strong></th>
+<th><a name= "iniciando_experiemnto"> Experimento na fila de execução</a></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Objetivo</strong></td>
+<td>Experimento esperando para ser executado na fila</td>
+</tr>
+<tr>
+<td><strong>Contexto</strong></td>
+<td>Experimento enviado</td>
+</tr>
+<tr>
+<td><strong>Autores</strong></td>
+<td>Sistema</td>
+</tr>
+<tr>
+<td><strong>Recurso</strong></td>
+<td>Acesso ao sistema</td>
+</tr>
+<tr>
+<td><strong>Episódios</strong></td>
+<td>O experimento espera na fila de execução até ser executado pelo simulador</td>
+</tr>
+<tr>
+<td><strong>Exceção</strong></td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<table>
+<thead>
+<tr>
+<th><strong>Título</strong></th>
+<th><a name= "iniciando_experiemnto">Modo interativo</a></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Objetivo</strong></td>
+<td>O usuário pode realizar operações com o simulador sem o uso de arquivos</td>
+</tr>
+<tr>
+<td><strong>Contexto</strong></td>
+<td>Programa aberto e calibração feita</td>
+</tr>
+<tr>
+<td><strong>Autores</strong></td>
+<td>Usuário</td>
+</tr>
+<tr>
+<td><strong>Recurso</strong></td>
+<td>Acesso ao sistema</td>
+</tr>
+<tr>
+<td><strong>Episódios</strong></td>
+<td>O usuário seleciona cada operação que deseja trabalhar no simulador naquele momento [1]</td>
+</tr>
+<tr>
+<td><strong>Exceção</strong></td>
+<td>O usuário pode usar o botão de emergencia para cancelar a operação</td>
+</tr>
+</tbody>
+</table>
+<table>
+<thead>
+<tr>
+<th><strong>Título</strong></th>
+<th><a name= "iniciando_experiemnto">Cancelamento do experimento</a></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Objetivo</strong></td>
+<td>Cancelar o experimento enquanto ele está sendo executado</td>
+</tr>
+<tr>
+<td><strong>Contexto</strong></td>
+<td>Experimento rodando</td>
+</tr>
+<tr>
+<td><strong>Autores</strong></td>
+<td>Sistema e Usuário</td>
+</tr>
+<tr>
+<td><strong>Recurso</strong></td>
+<td>Acesso ao sistema</td>
+</tr>
+<tr>
+<td><strong>Episódios</strong></td>
+<td>O usuário pede para cancelar o ensaio em tempo de execução e o experimento e cancelado.</td>
+</tr>
+<tr>
+<td><strong>Exceção</strong></td>
+<td></td>
 </tr>
 </tbody>
 </table>                </article>
