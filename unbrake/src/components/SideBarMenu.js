@@ -2,9 +2,9 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import classNames from 'classnames';
 import { withStyles } from '@material-ui/core/styles';
-import { Drawer, AppBar, Toolbar, List, CssBaseline, Typography, Divider, IconButton, ListItem, ListItemIcon, ListItemText } from '@material-ui/core';
+import { Drawer, AppBar, Toolbar, List, CssBaseline, Typography, Divider, IconButton, ListItem, ListItemIcon, ListItemText, Button } from '@material-ui/core';
 import { ChevronLeft, ChevronRight, Equalizer, Assignment, Menu, Settings, ShowChart } from '@material-ui/icons';
-import { BrowserRouter, Route } from 'react-router-dom'
+import { BrowserRouter, Route, Redirect } from 'react-router-dom'
 
 import Index from './Index'
 import Configuration from './Configuration'
@@ -103,9 +103,9 @@ class SideBarMenu extends React.Component {
                     >
                       <Menu />
                     </IconButton>
-                    <Typography variant="h6" color="inherit" noWrap>
+                    <Button style={{ "text-transform": 'none' }} color="inherit" href="/">
                       UnBrake
-                    </Typography>
+                    </Button>
                   </Toolbar>
                 </AppBar>
                 <Drawer
