@@ -3,8 +3,13 @@ version: '3'
 services:
   frontend:
     container_name: 'unbrake-frontend-development'
-    build: .
+    build:
+      context: .
+      dockerfile: unbrake-frontend/Dockerfile
+    image: unbrake_frontend
     volumes:
-      - "./unbrake/src:/app/src"
+      - "./unbrake-frontend/src:/app/frontend/src"
+      - "./unbrake-frontend/scripts:/app/frontend/scripts"
+      - "./.git:/app/.git" # Needed for git hooks
     ports:
       - "3000:3000"

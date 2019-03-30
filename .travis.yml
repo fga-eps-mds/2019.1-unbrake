@@ -1,0 +1,29 @@
+sudo: required
+
+language: minimal
+
+services:
+  - docker
+
+notifications:
+  slack:
+    secure: pP5E+YX1+qR3chyZmyBwt/00wZ2HL4ENjFBSxqLbf/0rOjr+SBwf/IwQbFCEqdWkAGxccD71uegZ0q7Kgs4nCNqItCyau/2S61QWBOvGUJtdhsnSZQ7sQjLOKBUUgeQlZGC7xDandxRV6XgVegUu6/l28xttxTkNcE1Q3i/0WoAXUcmOyH32Flw454WxIlSMgOX0xb1Npj+15F+sKoo3od26/Nd7UyHnGQD3fO0Kk5DHLMs2Kr8x1UFI7+nIrQmI4FVGcVEnOMa+mKI0LlhvAi7Ma6C8l+BQJTAwPG3HqamCrq7l7cyWmDpQY3ySjPSfp2f1LzPBLx3Bx54wb0YQiLt0nQlW/oymlXDH+8q53KEIyXm72yOTvWZR5bldmjf5Ap7OEAWLbSZRMEleZCcKrZ6q8zJn+IRuSqT0VJQUS89IjTlG9MKznipD0qBmI9N5QbPl8wk502po+5U3oYuptGV+JOSC2aC6RcJqWtgKaElHFJMfAqm80VDzuW9+9f7llIsLEpwbKCj3xpysHZQOYVT0zwo2gP/15kGr445xbGOaYhJ7rEnTXhixgyRD+SeXmJkzTLX6HY1HlPaNLNy3ggcbg+4yEr/t4lN61RVGK+hfsO0DwSta++rLC8xj/prfI91BPS4ttCB8/5R5f5plN15sRgkyZ9zboUAxv0ERWyE=
+
+cache:
+  directories:
+    - "unbrake-frontend/node_modules"
+
+before_install:
+  - docker-compose up -d
+
+script:
+  # Checking for trailing spaces and conflict marks
+  - git diff --check || (echo 'Trailing whitespaces or conflict marks found!' && exit 1) 
+
+  # Frontend checks. Not only call 'check' script to facilitate locate the command on CI log
+  - docker-compose exec frontend npm run check_lint
+  - docker-compose exec frontend npm run check_format
+  - docker-compose exec frontend npm run check_tests
+
+after_install:
+  - docker-compose down -v

@@ -1,0 +1,86 @@
+{
+	"env": {
+		"browser": true,
+		"es6": true,
+		"node": true,
+		"jest": true
+	},
+	"extends": [
+		"eslint:recommended",
+		"plugin:jest/recommended",
+		"plugin:react/recommended",
+		"plugin:prettier/recommended",
+		"airbnb",
+		"prettier",
+		"prettier/react"
+	],
+	"globals": {
+		"Atomics": "readonly",
+		"SharedArrayBuffer": "readonly"
+	},
+	"parserOptions": {
+		"ecmaVersion": 2018,
+		"sourceType": "module",
+		"ecmaFeatures": {
+			"jsx": true
+		}
+	},
+	"plugins": [
+		"jest",
+		"prettier",
+		"react",
+		"import"
+	],
+	"rules": {
+		"prettier/prettier": "error",
+		"no-console": "error",
+		"no-alert": "error",
+		"complexity": "error",
+		"no-magic-numbers": "error",
+		"no-eq-null": "error",
+		"no-useless-catch": "error",
+		"no-multi-spaces": "error",
+		"require-atomic-updates": "error",
+		"no-extra-semi": "error",
+		"max-classes-per-file": [ "error", 1 ],
+		"max-depth": [ "error", 4 ],
+		"max-len": [ 0, 100, 2,
+			{
+				"ignoreUrls": true,
+				"ignoreComments": false,
+				"ignoreRegExpLiterals": true,
+				"ignoreStrings": true,
+				"ignoreTemplateLiterals": true
+			}
+		],
+		"max-lines": [ "error",
+			{
+				"max": 300,
+				"skipBlankLines": true,
+				"skipComments": true
+			}
+		],
+		"max-lines-per-function": [ "error",
+			{
+				"max": 50,
+				"skipBlankLines": true,
+				"skipComments": true,
+				"IIFEs": true
+			}
+		],
+		"max-nested-callbacks": "off",
+		"max-params": [ "error", 3 ],
+		"max-statements": [ "error", 10 ],
+		"max-statements-per-line": [ "error", { "max": 1 } ],
+		"multiline-comment-style": [ "error", "starred-block" ],
+		"no-param-reassign": [2, { 
+			"props": true,
+			"ignorePropertyModificationsFor": []
+		}]
+	},
+	"settings": {
+		"react": {
+			"version": "detect"
+		}
+	}
+}
