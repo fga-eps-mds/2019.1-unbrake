@@ -1,46 +1,49 @@
-### Summary
+### Sumário
 
-1. Purpose of the project
-2. How to contribute
- * How use issues
- * Creating your branches
- * Proposing changes
+1. Proposito do projeto
+2. Como contribuir
+ * Como utilizar as issues
+ * Criando *branches*
+ * Propondo mudanças ao projeto
 
-## Purpose of the project
+## Propósito do projeto
 
-## How to contribute
+O **UnBrake** é um software que auxilia em simulações de frenagem.
 
-If you want to contribute with that project the first stage is create a issue in github, that issue will be linked with your branch as defined in [How propose your changes](). All issues is handled using [Zenhub](https://www.zenhub.com/).
+## Como contribuir
 
-#### How use issues
+Caso você queira contribuir com o projeto a primeira coisa que precisa fazer é [criar uma issue]() após isso [crie uma *branch*]() onde será realizado suas contribuições e quando o trabalho estiver concluido realize um pull request para branch **devel** do projeto. Todas as issues são acompanhadas e gerenciadas via [Zenhub](https://www.zenhub.com/).
 
-To tracking all project UnBrake use issues to tasking control. To create issues more easily we have some templates in github, answer all questions and most part it will be alright.
+#### Como utilizar as issues
 
-Besides that a issue all issues must have:
-* All decisions about a issue have to be in the issue body
-* Always have to be a person assinged in issues
-* Tracking labels labels
+Para acompanhar todo o projeto a UnBrake usa issues de tarefas. Para criar essas issues de forma fácil nós disponibilizamos um template no próprio github, responda todas as questões do template e continue o trabalho.
 
-Just task issues have to be:
-* A epic
-* Estimate number
-* Milestone
+Além disso todas as *issues* devem ter:
+* Todas as decisões, links, imagens e conversas relacionadas a *issue* em seu conteúdo.
+* Sempre deve haver uma pessoa assinada a uma *issue*
+* Utiliza *labels* para acompanhamento
 
-#### Creating your branches
+Apenas as *issues* de tarefas devem ter:
+* Um épico
+* Uma estimativa
+* *Milestone* associada
 
-The first pass to create your branch is define a name, the pattern followed in our project is:
+#### Criando suas branches
+
+O primeiro passo para criar sua branch é definir um nome para ela, o padrão adotado pelo projeto é:
 
 ```
-"<issue number>-<first-name>-<second name separated with - >"
+"<número da issue>-<primeiro nome>-<segundo nome separado por '-' >-<...>"
 ```
 
-All branches will be created from devel branch.
+Todas as *brachs* devem seguir as seguintes regras:
 
-When you are creating branches stay tuned in:
+* Ser escrita em português
+* Estar linkada a uma issues
+* Deve ser comitado apenas aquivos e conteúdo relacionado a tarefa
 
-* The language used in the project is English
-* A branch is always linked with a issue
-* Commit just files related with your commit and issue
+#### Propondo mudanças
 
+Nesse ponto estamos considerando que você já tem uma issue e um branch para sua tarefa, uma fez que sua tarefa está pronta, testada e validada agora é hora de realizarmos um *pull request*.
 
-#### Proposing changes
+Via github inicie o *pull request* utilizando o template fornecido, após isso as ferramentas de análise automática entram em ação e avaliam se sua contribuição está correta em termos de [estilo de código]() e também em testes. Caso nenhuma ferramenta reclame de nada é só esperar o *review* de algum membro do nosso tiem.
