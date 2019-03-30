@@ -1,0 +1,25 @@
+sudo: required
+
+language: minimal
+
+services:
+  - docker
+
+cache:
+  directories:
+    - "unbrake-frontend/node_modules"
+
+before_install:
+  - docker-compose up -d
+
+script:
+  # Checking for trailing spaces and conflict marks
+  - git diff --check || (echo 'Trailing whitespaces or conflict marks found!' && exit 1) 
+
+  # Frontend checks. Not only call 'check' script to facilitate locate the command on CI log
+  - docker-compose exec frontend npm run check_lint
+  - docker-compose exec frontend npm run check_format
+  - docker-compose exec frontend npm run check_tests
+
+after_install:
+  - docker-compose down -v

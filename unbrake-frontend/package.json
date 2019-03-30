@@ -17,7 +17,12 @@
     "test": "react-scripts test",
     "eject": "react-scripts eject",
     "lint": "eslint 'src/**/*.{js,jsx}' --fix",
-    "format": "prettier --write 'src/**/*.{js,jsx,css,scss}'"
+    "format": "prettier --write 'src/**/*.{js,jsx,css,scss}'",
+    "fix": "npm run format && npm run lint",
+    "check_lint": "eslint 'src/**/*.{js,jsx}'",
+    "check_format": "prettier --check 'src/**/*.{js,jsx,css,scss}'",
+    "check_tests": "npm test -- --no-cache --coverage",
+    "check": "npm run check_lint && npm run check_format && npm run check_tests"
   },
   "browserslist": [
     ">0.2%",
@@ -41,7 +46,7 @@
   "husky": {
     "hooks": {
       "pre-commit": "lint-staged",
-      "pre-push": "npm test -- --no-cache --coverage"
+      "pre-push": "npm run check_tests"
     }
   },
   "lint-staged": {
