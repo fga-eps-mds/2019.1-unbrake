@@ -35,7 +35,7 @@ class SideBarMenu extends React.Component {
       switch (index){
         case 0:
           nome = 'Análise'
-          icon = <Assignment />
+          icon = <ShowChart />
           break;
         case 1:
           nome = 'Configuração'
@@ -47,7 +47,7 @@ class SideBarMenu extends React.Component {
           break;
         case 3:
           nome = 'Teste'
-          icon = <ShowChart />
+          icon = <Assignment />
           break;
           default:
             nome = 'Index'
@@ -103,7 +103,7 @@ class SideBarMenu extends React.Component {
                     >
                       <Menu />
                     </IconButton>
-                    <Button style={{ "text-transform": 'none' }} color="inherit" href="/">
+                    <Button style={{ "text-transform": 'none' }} color="inherit" href="/index">
                       UnBrake
                     </Button>
                   </Toolbar>

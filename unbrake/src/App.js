@@ -5,6 +5,7 @@ import { BrowserRouter, Route } from 'react-router-dom'
 
 import Index from './components/Index'
 import SideBarMenu from './components/SideBarMenu'
+import Routes from './Routes'
 
 
 class App extends Component {
@@ -12,11 +13,8 @@ class App extends Component {
     return(
       <React.Fragment>
         <SideBarMenu />
-        <BrowserRouter>
-          <Route path='/' component={ Index }/>
-        </BrowserRouter>
-
-  </React.Fragment>
+        <Routes />
+      </React.Fragment>
 );}
 }
 
