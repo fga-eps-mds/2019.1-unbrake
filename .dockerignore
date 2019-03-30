@@ -1,9 +1,10 @@
-# Everything but specific project folders
-**
-!.git/hooks
+# General folder
+*
 !unbrake-frontend
 
 # Git
+.git/*
+!.git/hooks
 .github
 
 # Text files
