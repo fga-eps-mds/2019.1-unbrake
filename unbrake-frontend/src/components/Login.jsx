@@ -53,16 +53,16 @@ const renderField = ({ input, label, type, meta: { touched, error } }) => (
   </div>
 );
 
-const loginButtons = classes => {
+const loginButtons = (classes, submitting) => {
   return (
-    <Grid container item xs={24} alignItems="center" justify="center">
+    <Grid container item xs={12} alignItems="center" justify="center">
       <Grid item xs={3} className={classes.grid}>
         <Button
           color="secondary"
           fullWidth
           variant="contained"
           type="submit"
-          // disabled={submitting}
+          disabled={submitting}
         >
           Entrar
         </Button>
@@ -71,7 +71,7 @@ const loginButtons = classes => {
         <Button
           color="secondary"
           variant="contained"
-          // disabled={submitting}
+          disabled={submitting}
           fullWidth
         >
           Cadastrar
@@ -81,12 +81,14 @@ const loginButtons = classes => {
   );
 };
 
-const loginPaper = (props, handleSubmit, submitting) => {
-  const { classes } = props;
+const submit = () => {
+  return "Usuário logado";
+};
+const loginPaper = (classes, handleSubmit, submitting) => {
   return (
     <Paper className={classes.paper}>
       <h2 styles={{ color: "black" }}>Bem vindo!</h2>
-      <form onSubmit={handleSubmit}>
+      <form onSubmit={handleSubmit(submit.bind(this))}>
         <Grid className={classes.grid}>
           <Field
             name="username"
@@ -118,19 +120,8 @@ const loginPaper = (props, handleSubmit, submitting) => {
 };
 
 class Login extends React.PureComponent {
-  constructor(props) {
-    super(props);
-    Login.defaultProps = {
-      classes: this.props,
-      handleSubmit: this.props,
-      submitting: true
-    };
-  }
-
   render() {
-    const classes = this.props;
-    const handleSubmit = this.props;
-    const submitting = this.props;
+    const { classes, handleSubmit, submitting } = this.props;
     return (
       <Grid
         alignItems="center"
@@ -146,16 +137,21 @@ class Login extends React.PureComponent {
 }
 
 renderField.propTypes = {
-  input: PropTypes.node.isRequired,
+  input: PropTypes.objectOf(
+    PropTypes.oneOfType([PropTypes.func, PropTypes.string])
+  ).isRequired,
   label: PropTypes.string.isRequired,
   type: PropTypes.string.isRequired,
-  meta: PropTypes.objectOf.isRequired
+  meta: PropTypes.objectOf(
+    PropTypes.oneOfType([PropTypes.func, PropTypes.bool, PropTypes.string])
+  ).isRequired
 };
 
-loginPaper.propTypes = {
-  classes: PropTypes.objectOf.isRequired
+Login.propTypes = {
+  classes: PropTypes.objectOf(PropTypes.string).isRequired,
+  handleSubmit: PropTypes.func.isRequired,
+  submitting: PropTypes.bool.isRequired
 };
-
 const LoginForm = reduxForm({
   form: "login",
   validate
