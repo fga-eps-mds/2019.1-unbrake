@@ -12,13 +12,15 @@ const App = () => (
   </React.Fragment>
 );
 
-//    <RealTimeChart
-//      data={data}
-//      Y="Eixo Y"
-//      X="Eixo X"
-//      Label1="Frenagem"
-//      Label2="Velocidade"
-//    />
-//  
+/*
+ *    <RealTimeChart
+ *      data={data}
+ *      Y="Eixo Y"
+ *      X="Eixo X"
+ *      Label1="Frenagem"
+ *      Label2="Velocidade"
+ *    />
+ *
+ */
 
 export default App;
