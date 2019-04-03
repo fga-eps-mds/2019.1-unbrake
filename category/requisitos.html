@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+        <meta charset="utf-8" />
+        <title>UnBrake - Requisitos</title>
+        <link rel="stylesheet" href="../theme/css/main.css" />
+</head>
+
+<body id="index" class="home">
+        <header id="banner" class="body">
+                <h1><a href="../">UnBrake </a></h1>
+                <nav><ul>
+                    <li><a href="../category/arquitetura.html">Arquitetura</a></li>
+                    <li class="active"><a href="../category/requisitos.html">Requisitos</a></li>
+                </ul></nav>
+        </header><!-- /#banner -->
+
+            <aside id="featured" class="body">
+                <article>
+                    <h1 class="entry-title"><a href="../cenarios-do-unbrake.html">Cenários do UnBrake</a></h1>
+<footer class="post-info">
+        <abbr class="published" title="2018-03-29T23:03:00-04:00">
+                Published: Thu 29 March 2018
+        </abbr>
+
+        <address class="vcard author">
+                By                         <a class="url fn" href="../author/grupo-5.html">Grupo 5</a>
+        </address>
+<p>In <a href="../category/requisitos.html">Requisitos</a>.</p>
+
+</footer><!-- /.post-info --><table>
+<thead>
+<tr>
+<th><strong>Título</strong></th>
+<th><a name= "enviando_calibracao"> Enviando um arquivo de calibração/configuração </a></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Objetivo</strong></td>
+<td>Fluxo para enviar uma pre-configuração via arquivo</td>
+</tr>
+<tr>
+<td><strong>Contexto</strong></td>
+<td>Inicio da configuração de um experimento</td>
+</tr>
+<tr>
+<td><strong>Autores</strong></td>
+<td>Usuário</td>
+</tr>
+<tr>
+<td><strong>Recurso</strong></td>
+<td>Acesso ao sistema</td>
+</tr>
+<tr>
+<td><strong>Episódios</strong></td>
+<td>O usuário clica para enviar o arquivo de configuração, a caixa de seleção abre, o usuário realiza o upload do arquivo. [1]</td>
+</tr>
+<tr>
+<td><strong>Exceção</strong></td>
+<td>O usuário pode usar o botão de emergencia para cancelar o experimento.</td>
+</tr>
+</tbody>
+</table>
+<table>
+<thead>
+<tr>
+<th><strong>Título</strong></th>
+<th><a name= "iniciando_experiemnto"> Iniciando um experimento </a></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Objetivo</strong></td>
+<td>Iniciando uma análise de um freio</td>
+</tr>
+<tr>
+<td><strong>Contexto</strong></td>
+<td>Iniciando um experimento</td>
+</tr>
+<tr>
+<td><strong>Autores</strong></td>
+<td>Usuário</td>
+</tr>
+<tr>
+<td><strong>Recurso</strong></td>
+<td>Acesso ao sistema</td>
+</tr>
+<tr>
+<td><strong>Episódios</strong></td>
+<td>O usuário <a href="#enviando_calibracao">envia um arquivo de calibração e configuração</a>[1], o arquivo passa por uma validação e após isso o experimento vai para a fila de execução.</td>
+</tr>
+<tr>
+<td><strong>Exceção</strong></td>
+<td>[1] caso o arquivo esteja inválido um erro será apresentado</td>
+</tr>
+</tbody>
+</table>
+<table>
+<thead>
+<tr>
+<th><strong>Título</strong></th>
+<th><a name= "iniciando_experiemnto"> Experimento na fila de execução</a></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Objetivo</strong></td>
+<td>Experimento esperando para ser executado na fila</td>
+</tr>
+<tr>
+<td><strong>Contexto</strong></td>
+<td>Experimento enviado</td>
+</tr>
+<tr>
+<td><strong>Autores</strong></td>
+<td>Sistema</td>
+</tr>
+<tr>
+<td><strong>Recurso</strong></td>
+<td>Acesso ao sistema</td>
+</tr>
+<tr>
+<td><strong>Episódios</strong></td>
+<td>O experimento espera na fila de execução até ser executado pelo simulador</td>
+</tr>
+<tr>
+<td><strong>Exceção</strong></td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<table>
+<thead>
+<tr>
+<th><strong>Título</strong></th>
+<th><a name= "iniciando_experiemnto">Modo interativo</a></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Objetivo</strong></td>
+<td>O usuário pode realizar operações com o simulador sem o uso de arquivos</td>
+</tr>
+<tr>
+<td><strong>Contexto</strong></td>
+<td>Programa aberto e calibração feita</td>
+</tr>
+<tr>
+<td><strong>Autores</strong></td>
+<td>Usuário</td>
+</tr>
+<tr>
+<td><strong>Recurso</strong></td>
+<td>Acesso ao sistema</td>
+</tr>
+<tr>
+<td><strong>Episódios</strong></td>
+<td>O usuário seleciona cada operação que deseja trabalhar no simulador naquele momento [1]</td>
+</tr>
+<tr>
+<td><strong>Exceção</strong></td>
+<td>O usuário pode usar o botão de emergencia para cancelar a operação</td>
+</tr>
+</tbody>
+</table>
+<table>
+<thead>
+<tr>
+<th><strong>Título</strong></th>
+<th><a name= "iniciando_experiemnto">Cancelamento do experimento</a></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Objetivo</strong></td>
+<td>Cancelar o experimento enquanto ele está sendo executado</td>
+</tr>
+<tr>
+<td><strong>Contexto</strong></td>
+<td>Experimento rodando</td>
+</tr>
+<tr>
+<td><strong>Autores</strong></td>
+<td>Sistema e Usuário</td>
+</tr>
+<tr>
+<td><strong>Recurso</strong></td>
+<td>Acesso ao sistema</td>
+</tr>
+<tr>
+<td><strong>Episódios</strong></td>
+<td>O usuário pede para cancelar o ensaio em tempo de execução e o experimento e cancelado.</td>
+</tr>
+<tr>
+<td><strong>Exceção</strong></td>
+<td></td>
+</tr>
+</tbody>
+</table>                </article>
+            </aside><!-- /#featured -->
+        <section id="extras" class="body">
+                <div class="blogroll">
+                        <h2>links</h2>
+                        <ul>
+                            <li><a href="http://getpelican.com/">Pelican</a></li>
+                            <li><a href="http://python.org/">Python.org</a></li>
+                            <li><a href="http://jinja.pocoo.org/">Jinja2</a></li>
+                            <li><a href="#">You can modify those links in your config file</a></li>
+                        </ul>
+                </div><!-- /.blogroll -->
+                <div class="social">
+                        <h2>social</h2>
+                        <ul>
+
+                            <li><a href="#">You can add links in your config file</a></li>
+                            <li><a href="#">Another social link</a></li>
+                        </ul>
+                </div><!-- /.social -->
+        </section><!-- /#extras -->
+
+        <footer id="contentinfo" class="body">
+                <address id="about" class="vcard body">
+                Proudly powered by <a href="http://getpelican.com/">Pelican</a>, which takes great advantage of <a href="http://python.org">Python</a>.
+                </address><!-- /#about -->
+
+                <p>The theme is by <a href="http://coding.smashingmagazine.com/2009/08/04/designing-a-html-5-layout-from-scratch/">Smashing Magazine</a>, thanks!</p>
+        </footer><!-- /#contentinfo -->
+
+</body>
+</html>
