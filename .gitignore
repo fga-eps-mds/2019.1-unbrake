@@ -52,4 +52,7 @@ node_modules/
 # Local configuration file (sdk path, etc)
 local.properties
 
+# Jest
+__snapshots__/
+
 # End of https://www.gitignore.io/api/node,reactnative
