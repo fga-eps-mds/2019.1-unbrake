@@ -6,7 +6,7 @@ import Login from "../components/Login";
 
 Enzyme.configure({ adapter: new Adapter() });
 
-describe("<RealTimeChart />", () => {
+describe("<Login />", () => {
   describe("render()", () => {
     test("renders the component", () => {
       const wrapper = shallow(<Login />);
