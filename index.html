@@ -3,31 +3,70 @@
 <head>
         <meta charset="utf-8" />
         <title>UnBrake</title>
-        <link rel="stylesheet" href="https://fga-eps-mds.github.io/2019.1-unbrake/theme/css/main.css" />
+        <link rel="stylesheet" href="./theme/css/main.css" />
 </head>
 
 <body id="index" class="home">
         <header id="banner" class="body">
-                <h1><a href="https://fga-eps-mds.github.io/2019.1-unbrake/">UnBrake </a></h1>
+                <h1><a href="./">UnBrake </a></h1>
                 <nav><ul>
-                    <li><a href="https://fga-eps-mds.github.io/2019.1-unbrake/category/requisitos.html">Requisitos</a></li>
+                    <li><a href="./category/arquitetura.html">Arquitetura</a></li>
+                    <li><a href="./category/requisitos.html">Requisitos</a></li>
                 </ul></nav>
         </header><!-- /#banner -->
 
             <aside id="featured" class="body">
                 <article>
-                    <h1 class="entry-title"><a href="https://fga-eps-mds.github.io/2019.1-unbrake/cenarios-do-unbrake.html">Cenários do UnBrake</a></h1>
+                    <h1 class="entry-title"><a href="./arquitetura-do-projeto.html">Arquitetura do projeto</a></h1>
+<footer class="post-info">
+        <abbr class="published" title="2018-04-02T21:11:00-04:00">
+                Published: Mon 02 April 2018
+        </abbr>
+
+        <address class="vcard author">
+                By                         <a class="url fn" href="./author/grupo-5.html">Grupo 5</a>
+        </address>
+<p>In <a href="./category/arquitetura.html">Arquitetura</a>.</p>
+
+</footer><!-- /.post-info --><h2>Documento de Arquitetura</h2>
+<p>Este documento tem como objetivo relatar de forma técnica o software utilizando várias visões da arquitetura do mesmo. Este documento é conhecido na literatura como <em>4+1 architecture blueprints</em>.</p>
+<h3>Scenarios</h3>
+<p>Os cenários estão escritos nesse <a href="./cenarios-do-unbrake.html">documento</a></p>
+<h3>Visão Lógica</h3>
+<h4>Resumo da arquitetura do projeto</h4>
+<h4>Front End</h4>
+<p>Descrevam aqui o Front</p>
+<h4>API</h4>
+<p>Descreva aqui a api com diagrama de classes etc</p>
+<h4>Simulador</h4>
+<p>Descreva aqui o serviço de simulação</p>
+<h3>Visão de Processo</h3>
+<h3>Visão de desenvolvimento</h3>
+<h3>Visão física</h3>                </article>
+            </aside><!-- /#featured -->
+                <section id="content" class="body">
+                    <h1>Other articles</h1>
+                    <hr />
+                    <ol id="posts-list" class="hfeed">
+
+            <li><article class="hentry">
+                <header>
+                    <h1><a href="./cenarios-do-unbrake.html" rel="bookmark"
+                           title="Permalink to Cenários do UnBrake">Cenários do UnBrake</a></h1>
+                </header>
+
+                <div class="entry-content">
 <footer class="post-info">
         <abbr class="published" title="2018-03-29T23:03:00-04:00">
                 Published: Thu 29 March 2018
         </abbr>
 
         <address class="vcard author">
-                By                         <a class="url fn" href="https://fga-eps-mds.github.io/2019.1-unbrake/author/grupo-5.html">Grupo 5</a>
+                By                         <a class="url fn" href="./author/grupo-5.html">Grupo 5</a>
         </address>
-<p>In <a href="https://fga-eps-mds.github.io/2019.1-unbrake/category/requisitos.html">Requisitos</a>.</p>
+<p>In <a href="./category/requisitos.html">Requisitos</a>.</p>
 
-</footer><!-- /.post-info --><table>
+</footer><!-- /.post-info -->                <table>
 <thead>
 <tr>
 <th><strong>Título</strong></th>
@@ -53,151 +92,12 @@
 </tr>
 <tr>
 <td><strong>Episódios</strong></td>
-<td>O usuário clica para enviar o arquivo de configuração, a caixa de seleção abre, o usuário realiza o upload do arquivo. [1]</td>
-</tr>
-<tr>
-<td><strong>Exceção</strong></td>
-<td>O usuário pode usar o botão de emergencia para cancelar o experimento.</td>
-</tr>
-</tbody>
-</table>
-<table>
-<thead>
-<tr>
-<th><strong>Título</strong></th>
-<th><a name= "iniciando_experiemnto"> Iniciando um experimento </a></th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td><strong>Objetivo</strong></td>
-<td>Iniciando uma análise de um freio</td>
-</tr>
-<tr>
-<td><strong>Contexto</strong></td>
-<td>Iniciando um experimento</td>
-</tr>
-<tr>
-<td><strong>Autores</strong></td>
-<td>Usuário</td>
-</tr>
-<tr>
-<td><strong>Recurso</strong></td>
-<td>Acesso ao sistema</td>
-</tr>
-<tr>
-<td><strong>Episódios</strong></td>
-<td>O usuário <a href="#enviando_calibracao">envia um arquivo de calibração e configuração</a>[1], o arquivo passa por uma validação e após isso o experimento vai para a fila de execução.</td>
-</tr>
-<tr>
-<td><strong>Exceção</strong></td>
-<td>[1] caso o arquivo esteja inválido um erro será apresentado</td>
-</tr>
-</tbody>
-</table>
-<table>
-<thead>
-<tr>
-<th><strong>Título</strong></th>
-<th><a name= "iniciando_experiemnto"> Experimento na fila de execução</a></th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td><strong>Objetivo</strong></td>
-<td>Experimento esperando para ser executado na fila</td>
-</tr>
-<tr>
-<td><strong>Contexto</strong></td>
-<td>Experimento enviado</td>
-</tr>
-<tr>
-<td><strong>Autores</strong></td>
-<td>Sistema</td>
-</tr>
-<tr>
-<td><strong>Recurso</strong></td>
-<td>Acesso ao sistema</td>
-</tr>
-<tr>
-<td><strong>Episódios</strong></td>
-<td>O experimento espera na fila de execução até ser executado pelo simulador</td>
-</tr>
-<tr>
-<td><strong>Exceção</strong></td>
-<td></td>
-</tr>
-</tbody>
-</table>
-<table>
-<thead>
-<tr>
-<th><strong>Título</strong></th>
-<th><a name= "iniciando_experiemnto">Modo interativo</a></th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td><strong>Objetivo</strong></td>
-<td>O usuário pode realizar operações com o simulador sem o uso de arquivos</td>
-</tr>
-<tr>
-<td><strong>Contexto</strong></td>
-<td>Programa aberto e calibração feita</td>
-</tr>
-<tr>
-<td><strong>Autores</strong></td>
-<td>Usuário</td>
-</tr>
-<tr>
-<td><strong>Recurso</strong></td>
-<td>Acesso ao sistema</td>
-</tr>
-<tr>
-<td><strong>Episódios</strong></td>
-<td>O usuário seleciona cada operação que deseja trabalhar no simulador naquele momento [1]</td>
-</tr>
-<tr>
-<td><strong>Exceção</strong></td>
-<td>O usuário pode usar o botão de emergencia para cancelar a operação</td>
-</tr>
-</tbody>
-</table>
-<table>
-<thead>
-<tr>
-<th><strong>Título</strong></th>
-<th><a name= "iniciando_experiemnto">Cancelamento do experimento</a></th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td><strong>Objetivo</strong></td>
-<td>Cancelar o experimento enquanto ele está sendo executado</td>
-</tr>
-<tr>
-<td><strong>Contexto</strong></td>
-<td>Experimento rodando</td>
-</tr>
-<tr>
-<td><strong>Autores</strong></td>
-<td>Sistema e Usuário</td>
-</tr>
-<tr>
-<td><strong>Recurso</strong></td>
-<td>Acesso ao sistema</td>
-</tr>
-<tr>
-<td><strong>Episódios</strong></td>
-<td>O usuário pede para cancelar o ensaio em tempo de execução e o experimento e cancelado.</td>
-</tr>
-<tr>
-<td><strong>Exceção</strong></td>
-<td></td>
-</tr>
-</tbody>
-</table>                </article>
-            </aside><!-- /#featured -->
+<td>O usuário clica para enviar o arquivo de configuração, a caixa de seleção abre, o usuário realiza o upload do arquivo …</td></tr></tbody></table>
+                <a class="readmore" href="./cenarios-do-unbrake.html">read more</a>
+                </div><!-- /.entry-content -->
+            </article></li>
+                </ol><!-- /#posts-list -->
+                </section><!-- /#content -->
         <section id="extras" class="body">
                 <div class="blogroll">
                         <h2>links</h2>
