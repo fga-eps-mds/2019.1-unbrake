@@ -11,7 +11,7 @@ assignees: ''
 
 Um descrição clara e concisa sobre o problema
 
-## Passos para reprodução 
+## Passos para reprodução
 
 Passos para reproduzir o comportamento.
 

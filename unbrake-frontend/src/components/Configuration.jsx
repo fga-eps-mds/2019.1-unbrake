@@ -1,5 +1,6 @@
 import React from "react";
 import PropTypes from "prop-types";
+<<<<<<< HEAD
 import {
   withStyles,
   TextField,
@@ -9,6 +10,16 @@ import {
   Grid
 } from "@material-ui/core";
 import { reduxForm } from "redux-form";
+=======
+import classNames from "classnames";
+import { withStyles } from "@material-ui/core/styles";
+import MenuItem from "@material-ui/core/MenuItem";
+import TextField from "@material-ui/core/TextField";
+import Checkbox from "@material-ui/core/Checkbox";
+import FormControlLabel from "@material-ui/core/FormControlLabel";
+import { Field, reduxForm } from "redux-form";
+import Button from "@material-ui/core/Button";
+>>>>>>> Add redux-form
 
 const styles = theme => ({
   container: {
@@ -24,6 +35,7 @@ const styles = theme => ({
   },
   menu: {
     width: 200
+<<<<<<< HEAD
   },
   grid: {
     padding: "5px"
@@ -205,14 +217,203 @@ class Configuration extends React.Component {
           </Grid>
         </form>
       </Grid>
+=======
+  }
+});
+
+const currencies = [
+  {
+    value: "USD",
+    label: "$"
+  },
+  {
+    value: "EUR",
+    label: "€"
+  },
+  {
+    value: "BTC",
+    label: "฿"
+  },
+  {
+    value: "JPY",
+    label: "¥"
+  }
+];
+
+class Configuration extends React.Component {
+  state = {
+    snubs: "",
+    limiteSup: "",
+    limiteInf: "",
+    tempEsp1: "",
+    tempEsp2: "",
+    tempCic: "",
+    temp: "",
+    tempo: ""
+  };
+
+  handleChange = name => event => {
+    this.setState({
+      [name]: event.target.value
+    });
+  };
+
+  checkHandleChange = name => event => {
+    this.setState({ [name]: event.target.checked });
+  };
+
+  render() {
+    const { classes, handleSubmit, submitting } = this.props;
+
+    return (
+      <form
+        className={classes.container}
+        noValidate
+        autoComplete="off"
+        onSubmit={handleSubmit}
+      >
+        <TextField
+          id="snubs"
+          label="Número de Snubs"
+          value={this.state.snubs}
+          onChange={this.handleChange("snubs")}
+          type="number"
+          className={classes.textField}
+          InputLabelProps={{
+            shrink: true
+          }}
+          margin="normal"
+          variant="outlined"
+        />
+        <TextField
+          id="limiteSup"
+          label="Limite Superior(km/h)"
+          value={this.state.limiteSup}
+          onChange={this.handleChange("limiteSup")}
+          type="number"
+          className={classes.textField}
+          InputLabelProps={{
+            shrink: true
+          }}
+          margin="normal"
+          variant="outlined"
+        />
+        <TextField
+          id="tempEsp1"
+          label="Tempo de Espera(s)"
+          value={this.state.tempEsp1}
+          onChange={this.handleChange("tempEsp1")}
+          type="number"
+          className={classes.textField}
+          InputLabelProps={{
+            shrink: true
+          }}
+          margin="normal"
+          variant="outlined"
+        />
+        <TextField
+          id="tempCic"
+          label="Tempo Entre Ciclos(s)"
+          value={this.state.tempCic}
+          onChange={this.handleChange("tempCic")}
+          type="number"
+          className={classes.textField}
+          InputLabelProps={{
+            shrink: true
+          }}
+          margin="normal"
+          variant="outlined"
+        />
+        <TextField
+          id="limiteInf"
+          label="Limite Inferior(km/h)"
+          value={this.state.age}
+          onChange={this.handleChange("age")}
+          type="number"
+          className={classes.textField}
+          InputLabelProps={{
+            shrink: true
+          }}
+          margin="normal"
+          variant="outlined"
+        />
+        <TextField
+          id="tempEsp2"
+          label="Tempo de Espera(s)"
+          value={this.state.tempEsp2}
+          onChange={this.handleChange("tempEsp2")}
+          type="number"
+          className={classes.textField}
+          InputLabelProps={{
+            shrink: true
+          }}
+          margin="normal"
+          variant="outlined"
+        />
+
+        <FormControlLabel
+          control={
+            <Checkbox
+              checked={this.state.checkedA}
+              onChange={this.checkHandleChange("checkedA")}
+              value="inibMotor"
+            />
+          }
+          label="Inibe Desligamento do Motor"
+        />
+        <FormControlLabel
+          control={
+            <Checkbox
+              checked={this.state.checkedB}
+              onChange={this.checkHandleChange("checkedB")}
+              value="saidaAux"
+            />
+          }
+          label="Ativa Saída Auxiliar"
+        />
+        <TextField
+          id="temp"
+          label="Temperatura(˚C)(AUX1)"
+          value={this.state.temp}
+          onChange={this.handleChange("temp")}
+          type="number"
+          className={classes.textField}
+          InputLabelProps={{
+            shrink: true
+          }}
+          margin="normal"
+          variant="outlined"
+        />
+        <TextField
+          id="tempo"
+          label="Tempo(s)(AUX1)"
+          value={this.state.tempo}
+          onChange={this.handleChange("tempo")}
+          type="number"
+          className={classes.textField}
+          InputLabelProps={{
+            shrink: true
+          }}
+          margin="normal"
+          variant="outlined"
+        />
+        <Button color="secondary" variant="contained" disabled={submitting}>
+          Cadastrar
+        </Button>
+      </form>
+>>>>>>> Add redux-form
     );
   }
 }
 
 Configuration.propTypes = {
+<<<<<<< HEAD
   classes: PropTypes.objectOf(PropTypes.string).isRequired,
   handleSubmit: PropTypes.func.isRequired,
   submitting: PropTypes.bool.isRequired
+=======
+  classes: PropTypes.object.isRequired
+>>>>>>> Add redux-form
 };
 
 const ConfigurationForm = reduxForm({
