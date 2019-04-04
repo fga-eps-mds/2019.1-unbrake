@@ -1,1 +1,4 @@
-djangorestframework
+graphene
+graphene-django
+graphql-core>=2.1rc1
+django==2.1.2

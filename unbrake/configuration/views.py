@@ -1,7 +1,7 @@
 from django.shortcuts import render
-from rest_framework import viewsets
-from .models import Ciclos, Velocidade, Espera, Desligamento, SaidaAuxiliar
-from .serializers import CiclosSerializer, VelocidadeSerializer, EsperaSerializer, DesligamentoSerializer, SaidaAuxiliarSerializer
+#from rest_framework import viewsets
+"""from .models import Ciclos, Velocidade, Espera, Desligamento, SaidaAuxiliar
+#from .serializers import CiclosSerializer, VelocidadeSerializer, EsperaSerializer, DesligamentoSerializer, SaidaAuxiliarSerializer
 
 # Create your views here.
 class CiclosViewSet(viewsets.ModelViewSet):
@@ -28,3 +28,4 @@ class SaidaAuxiliarViewSet(viewsets.ModelViewSet):
 	
 	queryset = SaidaAuxiliar.objects.all()
 	serializer_class = SaidaAuxiliarSerializer
+"""
