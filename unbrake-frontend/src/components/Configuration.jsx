@@ -1,22 +1,34 @@
 import React from "react";
-import logo from "../logo.svg";
-import "../App.css";
+import { FileUpload } from "redux-file-upload";
+import { reduxForm } from "redux-form";
 
-const Configuration = () => (
-  <div className="App">
-    <header className="App-header">
-      <img src={logo} className="App-logo" alt="logo" />
-      <p>Configuration</p>
-      <a
-        className="App-link"
-        href="https://reactjs.org"
-        target="_blank"
-        rel="noopener noreferrer"
-      >
-        Learn React
-      </a>
-    </header>
-  </div>
-);
+const styles = theme => ({
+  root: {
+    flexGrow: 1
+  }
+});
 
-export default Configuration;
+const UploadFile = props => {
+  const { handleSubmit } = props;
+
+  return (
+    <div className="App">
+      <header className="App-header">
+        <form onSubmit={handleSubmit}>
+          <FileUpload
+            allowedFileTypes={["doc", "pdf"]}
+            data={{ type: "picturefile" }}
+            dropzoneId="fileUpload"
+          >
+            <button>Upload</button>
+          </FileUpload>
+        </form>
+      </header>
+    </div>
+  );
+  // }
+};
+
+export default reduxForm({
+  form: "login"
+})(UploadFile);
