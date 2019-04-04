@@ -19,4 +19,4 @@ class Desligamento(models.Model):
 class SaidaAuxiliar(models.Model):
 	AtivarSaida = models.BooleanField()
 	Temperatura = models.DecimalField(blank=True, null=True, max_digits=10, decimal_places=6)
-	Tempo = models.DecimalField()
+	Tempo = models.DecimalField(blank=True, null=True, max_digits=10, decimal_places=6)

@@ -1,4 +1,4 @@
-graphene
-graphene-django
+graphene==2.0
+graphene-django>=2.1.0
 graphql-core>=2.1rc1
 django==2.1.2
