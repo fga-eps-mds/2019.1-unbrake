@@ -13,9 +13,5 @@ export default () => (
   <BrowserRouter>
     {/* <Route exact path="/" component={Login} /> */}
     <Route path="/Index" component={Index} />
-    <Route path="/configuration" component={Configuration} />
-    <Route path="/calibration" component={Calibration} />
-    <Route path="/test" component={Test} />
-    <Route path="/analysis" component={Analysis} />
   </BrowserRouter>
 );

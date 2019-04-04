@@ -3,6 +3,8 @@ import "./App.css";
 import { Provider } from "react-redux";
 import { createStore } from "redux";
 import reducers from "./reducer/index";
+import Configuration from "./components/Configuration";
+
 // import RealTimeChart from "./components/RealTimeChart";
 
 import SideBarMenu from "./components/SideBarMenu";
