@@ -2,8 +2,8 @@
 # Edit at https://www.gitignore.io/?templates=node,reactnative
 
 # Docker Secrets
-secrets/*
-!secrets/*.enc
+*/secrets/*
+!*/secrets/*.enc
 
 ### Node ###
 # Logs

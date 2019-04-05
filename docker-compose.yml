@@ -22,8 +22,6 @@ services:
       context: ./unbrake-api
       dockerfile: Dockerfile
     image: unbrake_api_development
-    volumes:
-      - "./unbrake-api:/app/api"
     ports:
       - "8000:8000"
     secrets:
@@ -31,4 +29,4 @@ services:
 
 secrets:
   api-django-secret-key:
-    file: ./secrets/API_DJANGO_SECRET_KEY
+    file: ./unbrake-api/secrets/API_DJANGO_SECRET_KEY

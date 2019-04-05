@@ -28,7 +28,7 @@ before_install:
   - sudo apt-get update
   - sudo apt-get -y -o Dpkg::Options::="--force-confnew" install docker-ce
 
-  - openssl aes-256-cbc -K $encrypted_60c0c29d8825_key -iv $encrypted_60c0c29d8825_iv -in secrets/API_DJANGO_SECRET_KEY.enc -out secrets/API_DJANGO_SECRET_KEY -d
+  - openssl aes-256-cbc -K $encrypted_60c0c29d8825_key -iv $encrypted_60c0c29d8825_iv -in unbrake-api/secrets/API_DJANGO_SECRET_KEY.enc -out unbrake-api/secrets/API_DJANGO_SECRET_KEY -d
 
   # Run containers
   - docker-compose up -d

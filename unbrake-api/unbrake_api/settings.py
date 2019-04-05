@@ -1,4 +1,5 @@
 """
+=============================
 SETTINGS USED FOR DEVELOPMENT
 =============================
 
@@ -19,19 +20,29 @@ from sys import stderr
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
+secret_key_file = None
+try: # On run
+    secret_key_file = open('/run/secrets/api-django-secret-key')
+except FileNotFoundError:
+    try: # On build
+        secret_key_file = open('./secrets/API_DJANGO_SECRET_KEY')
+    except FileNotFoundError:
+        raise FileNotFoundError(
+            """
+            ===================================================================
+            'API_DJANGO_SECRET_KEY' secret not found.
+             Ask the development team the secrets or use your owns.
+            ===================================================================
+            """
+        )
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/2.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-try:
-    # Not relevant for development, but still a good practice don't put it on git
-    SECRET_KEY = open('/run/secrets/api-django-secret-key').readline().strip('\n')
-except FileNotFoundError:
-    print('=========================================================')
-    print("'API_DJANGO_SECRET_KEY' secret not found."
-          " Ask the development team the secrets or use your owns.", file=stderr)
-    print('=========================================================')
+# Not relevant for development, but still a good practice don't put it on git
+SECRET_KEY = secret_key_file.readline().strip('\n')
+
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
