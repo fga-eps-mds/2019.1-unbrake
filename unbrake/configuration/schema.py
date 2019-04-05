@@ -1,46 +1,47 @@
- # cookbook/ingredients/schema.py
-#import graphene
-#from graphene_django.types import DjangoObjectType
-#from unbrake.configuration.models import Ciclos, Velocidade, Espera, Desligamento, SaidaAuxiliar
-#
-#class CiclosType(DjangoObjectType):
-#    class Meta:
-#        model = Ciclos
-#
-#class VelocidadeType(DjangoObjectType):
-#    class Meta:
-#        model = Velocidade
-#
-#class EsperaType(DjangoObjectType):
-#    class Meta:
-#        model = Espera
-#
-#class DesligamentoType(DjangoObjectType):
-#    class Meta:
-#        model = Desligamento
-#
-#class SaidaAuxiliarType(DjangoObjectType):
-#    class Meta:
-#        model = SaidaAuxiliar
-#
-#class Query(object):
-#    all_ciclos = graphene.List(CiclosType)
-#    all_velocidade = graphene.List(VelocidadeType)
-#    all_espera = graphene.List(EsperaType)
-#    all_desligamento = graphene.List(DesligamentoType)
-#    all_saidaauxiliar = graphene.List(SaidaAuxiliarType)
-#
-#    def resolve_all_ciclos(self, info, ** kwargs):
-#        return Ciclos.objects.all ()
-#
-#    def resolve_all_velocidade(self, info, ** kwargs):
-#        return Velocidade.objects.all()
-#
-#    def resolve_all_espera(self, info, ** kwargs):
-#        return  Espera.objects.all()
-#
-#    def resolve_all_desligamento(self, info, ** kwargs):
-#        return  Desligamento.objects.all()
-#        
-#    def resolve_all_saidaauxiliar(self, info, ** kwargs):
-#        return  SaidaAuxiliar.objects.all()
+import graphene
+
+from graphene_django.types import DjangoObjectType
+
+from unbrake.configuration.models import Cycles, Velocity, Wait, Shutdown, AuxiliaryOutput
+
+class CyclesType(DjangoObjectType):
+    class Meta:
+        model = Cycles
+
+class VelocityType(DjangoObjectType):
+    class Meta:
+        model = Velocity
+
+class WaitType(DjangoObjectType):
+    class Meta:
+        model = Wait
+
+class ShutdownType(DjangoObjectType):
+    class Meta:
+        model = Shutdown
+
+class AuxiliaryOutputType(DjangoObjectType):
+    class Meta:
+        model = AuxiliaryOutput
+
+class Query(object):
+    all_cycles = graphene.List(CyclesType)
+    all_velocity = graphene.List(VelocityType)
+    all_wait = graphene.List(WaitType)
+    all_shutdown = graphene.List(ShutdownType)
+    all_auxiliaryoutuput = graphene.List(AuxiliaryOutput)
+
+    def resolve_all_ciclos(self, info, ** kwargs):
+        return Cycles.objects.all ()
+
+    def resolve_all_velocidade(self, info, ** kwargs):
+        return Velocity.objects.all()
+
+    def resolve_all_espera(self, info, ** kwargs):
+        return  Wait.objects.all()
+
+    def resolve_all_desligamento(self, info, ** kwargs):
+        return  Shutdown.objects.all()
+        
+    def resolve_all_saidaauxiliar(self, info, ** kwargs):
+        return  AuxiliaryOutput.objects.all()
