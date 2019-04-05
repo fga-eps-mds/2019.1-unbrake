@@ -40,16 +40,33 @@ O serviço que tem contato com o simulador tem as seguintes funcionalidades:
 * Realiza o controle de acesso ao simulador
 * Realiza todas as validações necessárias no arquivo de configuração.
 * Roda o ensaio recebendo as configurações ou os comandos interativos.
-* Fornece os resultados realizando uma *stream* de dados para um determinado endereço
-
-
+* Fornece os resultados realizando uma *stream* de dados para um determinado endereço.
 
 ##### Autenticação de usuário
 
+O serviço de autenticação do usuário é responsável por receber informações de autenticação e retornar um *token* de acesso para consumo dos outros serviços.
+
 ### Visão de Processo
+
+#### Acordo de transmissão entre o Simulador e o FrontEnd
+
+O acordo de transmissão acontece com o software do FrontEnd disponibilizando uma porta e um endereço de ip para a stream de dados em tempo real ser enviada. Após essa definição as informações são mandadas via API e por fim configuradas no simulador. O simulador inicia a transmissão dos dados utilizando o protocolo [MQTT](https://mqtt.org/).
+
 ### Visão de desenvolvimento
 
 As interações entre os serviços estão representadas no diagram de componente abaixo.
 
+![diagrama de componentes](none)
+
 
 ### Visão física
+
+Para desenvolvimento estamos utilizando a ferramenta de containers [docker](https://www.docker.com/). Para o funcionamento completo do nosso sistema os seguintes containers precisam ser iniciados:
+
+* **Consul:** Ferramenta de catálogo de serviços
+* **Postgres:** Banco de dados
+* **Simulador:** Servidor que contém o software que comunica com o *hardware* de simulação.
+* **FrontEnd:** Inicia a interface de usuário
+* **Broker:** Para realizar a comunicação do simulador com o Front via MQTT
+
+O deploy será realizado utilizando o orquestrador de cointaoiners [kubernetes](https://kubernetes.io/) neste [link]().
