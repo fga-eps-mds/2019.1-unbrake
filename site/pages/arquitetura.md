@@ -8,11 +8,22 @@ Este documento tem como objetivo relatar de forma técnica o software utilizando
 
 ### Cenários
 
-Os cenários estão escritos nesse [documento]({filename}cenarios.md)
+Os cenários estão escritos neste [documento]({filename}cenarios.md)
 
 ### Visão Lógica
 
-#### Resumo da arquitetura do projeto
+#### Uma breve visão de nossa arquitetura
+
+Nosso projeto está sendo modelado com uma arquitetura de microserviços que tem 4 serviços base:
+
+* **Simulador:** Um servidor escrito em [golang](https://golang.org/) que é responsável tanto por receber os arquivos de configuração quanto de fornecer dados em *stream* para o requisitante.
+
+* **API:** A API contém as regras de negócio do nosso sistema, ela recebe os arquivos de configuração e relaciona ele com os ensaios.
+
+* **Usuários:** Serviço que guarda realiza a autenticação dos usuários.
+
+* **Front-End:** A interface com o usuário do nosso sistema que usa todos os serviços anteriores.
+
 #### Front End
 
 Descrevam aqui o Front
@@ -23,11 +34,22 @@ Descreva aqui a api com diagrama de classes etc
 
 #### Simulador
 
-Descreva aqui o serviço de simulação
+O serviço que tem contato com o simulador tem as seguintes funcionalidades:
+
+* Recebe informações sobre o ensaio
+* Realiza o controle de acesso ao simulador
+* Realiza todas as validações necessárias no arquivo de configuração.
+* Roda o ensaio recebendo as configurações ou os comandos interativos.
+* Fornece os resultados realizando uma *stream* de dados para um determinado endereço
+
+
+
+##### Autenticação de usuário
 
 ### Visão de Processo
 ### Visão de desenvolvimento
 
-O UnBrake é uma sistema que utiliza o estilo arquitetural de microserviço. Para conseguirmos estru
+As interações entre os serviços estão representadas no diagram de componente abaixo.
+
 
 ### Visão física
