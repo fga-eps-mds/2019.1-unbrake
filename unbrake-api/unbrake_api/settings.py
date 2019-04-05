@@ -1,5 +1,6 @@
 """
 SETTINGS USED FOR DEVELOPMENT
+=============================
 
 Django settings for unbrake_api project.
 
@@ -25,10 +26,12 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 # SECURITY WARNING: keep the secret key used in production secret!
 try:
     # Not relevant for development, but still a good practice don't put it on git
-    SECRET_KEY = os.environ['API_DJANGO_KEY']
-except KeyError:
-    print("'API_DJANGO_KEY' not defined."
-          " Set a Django secret key as environment variable", file=stderr)
+    SECRET_KEY = open('/run/secrets/api-django-secret-key').readline().strip('\n')
+except FileNotFoundError:
+    print('=========================================================')
+    print("'API_DJANGO_SECRET_KEY' secret not found."
+          " Ask the development team the secrets or use your owns.", file=stderr)
+    print('=========================================================')
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True

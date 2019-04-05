@@ -1,3 +1,5 @@
+# docker-compose for development
+
 version: '3.7'
 
 services:
@@ -13,3 +15,20 @@ services:
       - "./.git:/app/.git" # Needed for git hooks
     ports:
       - "3000:3000"
+
+  api:
+    container_name: 'unbrake-api-development'
+    build:
+      context: ./unbrake-api
+      dockerfile: Dockerfile
+    image: unbrake_api_development
+    volumes:
+      - "./unbrake-api:/app/api"
+    ports:
+      - "8000:8000"
+    secrets:
+      - api-django-secret-key
+
+secrets:
+  api-django-secret-key:
+    file: ./secrets/API_DJANGO_SECRET_KEY
