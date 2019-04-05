@@ -46,6 +46,10 @@ O serviço que tem contato com o simulador tem as seguintes funcionalidades:
 
 O serviço de autenticação do usuário é responsável por receber informações de autenticação e retornar um *token* de acesso para consumo dos outros serviços.
 
+### Estados para conclusão de um ensaio
+
+<img src="http://drive.google.com/uc?export=view&id=1sCPWQEpLcBNL3KDG5gW8ZfsQmzK--cL6" alt="Maquina de estados do ensaio" width="600">
+
 ### Visão de Processo
 
 #### Acordo de transmissão entre o Simulador e o FrontEnd
@@ -55,8 +59,6 @@ O acordo de transmissão acontece com o software do FrontEnd disponibilizando um
 ### Visão de desenvolvimento
 
 As interações entre os serviços estão representadas no diagram de componente abaixo.
-
-![diagrama de componentes](none)
 
 
 ### Visão física
