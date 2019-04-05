@@ -1,12 +1,12 @@
-version: '3'
+version: '3.7'
 
 services:
   frontend:
     container_name: 'unbrake-frontend-development'
     build:
-      context: .
-      dockerfile: unbrake-frontend/Dockerfile
-    image: unbrake_frontend
+      context: ./unbrake-frontend
+      dockerfile: Dockerfile
+    image: unbrake_frontend_development
     volumes:
       - "./unbrake-frontend/src:/app/frontend/src"
       - "./unbrake-frontend/scripts:/app/frontend/scripts"

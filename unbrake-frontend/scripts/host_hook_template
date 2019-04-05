@@ -1,7 +1,7 @@
 #!/bin/sh
 
 gitFolder="$(git rev-parse --show-toplevel)"
-imageName="unbrake_frontend"  # compose project name + service name
+imageName="unbrake_frontend_development"  # compose project name + service name
 frontendFolder="$gitFolder/unbrake-frontend"
 hookName="$(basename $0)"
 
