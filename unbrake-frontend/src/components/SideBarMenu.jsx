@@ -126,7 +126,7 @@ const IconButtons = (classes, handleDrawerClose, theme) => {
 
 const RouteLogic = () => {
   return (
-    <main style={{ flex: 1 }}>
+    <main style={{ flex: 1, marginTop: "10%" }}>
       <Route path="/configuration" component={() => <Configuration />} />
       <Route path="/analysis" component={() => <Analysis />} />
       <Route path="/calibration" component={() => <Calibration />} />

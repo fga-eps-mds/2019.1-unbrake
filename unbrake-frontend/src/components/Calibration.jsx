@@ -1,21 +1,12 @@
 import React from "react";
-import logo from "../logo.svg";
 import "../App.css";
+import RealTimeChart from "./RealTimeChart";
+import MyForm from "./CalibrationTempForm";
 
 const Calibration = () => (
   <div className="App">
-    <header className="App-header">
-      <img src={logo} className="App-logo" alt="logo" />
-      <p>Calibration</p>
-      <a
-        className="App-link"
-        href="https://reactjs.org"
-        target="_blank"
-        rel="noopener noreferrer"
-      >
-        Learn React
-      </a>
-    </header>
+    <RealTimeChart />
+    <MyForm />
   </div>
 );
 
