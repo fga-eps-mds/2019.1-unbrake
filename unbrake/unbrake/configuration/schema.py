@@ -1,48 +1,47 @@
- # cookbook/ingredients/schema.py
 import graphene
 
 from graphene_django.types import DjangoObjectType
 
-from unbrake.configuration.models import Ciclos, Velocidade, Espera, Desligamento, SaidaAuxiliar
+from unbrake.configuration.models import Cycles, Velocity, Wait, Shutdown, AuxiliaryOutput
 
-class CiclosType(DjangoObjectType):
+class CyclesType(DjangoObjectType):
     class Meta:
-        model = Ciclos
+        model = Cycles
 
-class VelocidadeType(DjangoObjectType):
+class VelocityType(DjangoObjectType):
     class Meta:
-        model = Velocidade
+        model = Velocity
 
-class EsperaType(DjangoObjectType):
+class WaitType(DjangoObjectType):
     class Meta:
-        model = Espera
+        model = Wait
 
-class DesligamentoType(DjangoObjectType):
+class ShutdownType(DjangoObjectType):
     class Meta:
-        model = Desligamento
+        model = Shutdown
 
-class SaidaAuxiliarType(DjangoObjectType):
+class AuxiliaryOutputType(DjangoObjectType):
     class Meta:
-        model = SaidaAuxiliar
+        model = AuxiliaryOutput
 
 class Query(object):
-    all_ciclos = graphene.List(CiclosType)
-    all_velocidade = graphene.List(VelocidadeType)
-    all_espera = graphene.List(EsperaType)
-    all_desligamento = graphene.List(DesligamentoType)
-    all_saidaauxiliar = graphene.List(SaidaAuxiliarType)
+    all_cycles = graphene.List(CyclesType)
+    all_velocity = graphene.List(VelocityType)
+    all_wait = graphene.List(WaitType)
+    all_shutdown = graphene.List(ShutdownType)
+    all_auxiliaryoutuput = graphene.List(AuxiliaryOutput)
 
     def resolve_all_ciclos(self, info, ** kwargs):
-        return Ciclos.objects.all ()
+        return Cycles.objects.all ()
 
     def resolve_all_velocidade(self, info, ** kwargs):
-        return Velocidade.objects.all()
+        return Velocity.objects.all()
 
     def resolve_all_espera(self, info, ** kwargs):
-        return  Espera.objects.all()
+        return  Wait.objects.all()
 
     def resolve_all_desligamento(self, info, ** kwargs):
-        return  Desligamento.objects.all()
+        return  Shutdown.objects.all()
         
     def resolve_all_saidaauxiliar(self, info, ** kwargs):
-        return  SaidaAuxiliar.objects.all()
+        return  AuxiliaryOutput.objects.all()
