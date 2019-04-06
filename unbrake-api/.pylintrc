@@ -8,7 +8,7 @@
 # Add files or directories to the blacklist. They should be base names, not
 # paths.
 ignore=CVS, env, venv, .env, .venv, settings.py, pytest.ini, Dockerfile,
-       scripts, requirements.txt, wsgi.py, secrets, db.sqlite3
+       scripts, requirements.txt, wsgi.py, secrets, db.sqlite3, hooks
 
 # Add files or directories matching the regex patterns to the blacklist. The
 # regex matches against base names, not paths.
