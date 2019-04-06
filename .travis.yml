@@ -37,17 +37,11 @@ script:
   # Checking for trailing spaces and conflict marks
   - git diff --check || (echo 'Trailing whitespaces or conflict marks found!' && exit 1) 
 
-  # Frontend checks. Not only call 'check' script to facilitate locate the command on CI log
-  - docker-compose exec frontend npm run check_lint
-  - docker-compose exec frontend npm run check_format
-  - docker-compose exec frontend npm run check_tests
+  # Frontend checks
+  - docker-compose exec frontend npm run check
 
   # API checks
-  - pushd unbrake-api
-  - docker-compose exec api flake8 .
-  - docker-compose exec api pylint *
-  - docker-compose exec api pytest
-  - popd
+  - docker-compose exec api check
 
 after_install:
   - docker-compose down -v

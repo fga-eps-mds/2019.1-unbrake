@@ -1,10 +1,5 @@
 #!/bin/sh
 
-gitFolder="$(git rev-parse --show-toplevel)"
-imageName="unbrake_backend_development"  # compose project name + service name
-backendFolder="$gitFolder/unbrake-api"
-tmpFile="/tmp/unbrake_hook_log"
-
 get_staged_files() {
 	git diff --name-only --cached \
 		| grep unbrake-api \
@@ -12,28 +7,38 @@ get_staged_files() {
 		| sed -e 's@unbrake-api/@@g'
 }
 
-run(){
+run_command(){
 	echo -n "Running $(basename $1)..."
-	get_staged_files | xargs $* > $tmpFile
+	get_staged_files > $tmpStagedFiles
 
-	if [ $? = 0 ]; then
-		echo -e " \033[0;32mOK!\033[0m"
+	if [ -s $tmpStagedFiles ]; then
+		xargs $* &> $tmpOutputFile
+
+		if [ $? = 0 ]; then
+			echo -e " \033[0;32mOK!\033[0m"
+		else
+			echo -e " \033[0;31mFAILED!\033[0m\n"
+			cat $tmpOutputFile
+			echo "\033[0;31mSome check failed :(\033[0m"
+			echo -e "\033[0;33mHave you tried to rebuilding the image? Try look the tool documentation as well!\033[0m"
+			exit 1
+		fi
 	else
-		echo -e " \033[0;31mFAILED!\033[0m\n"
-		cat $tmpFile
-		echo "Some check failed :("
-		echo -e "\033[0;33mHave you tried to rebuilding the image? Try look the tool documentation as well!\033[0m"
-		exit 1
+		echo -e "\nThere's no staged python file to be checked on API..."
+		exit 0
 	fi
 }
 
+source scripts/scripts_environments
 cd $backendFolder
+
 echo -e "\n=====================================================================-----"
-echo "You're almost committing!!! Just a second, while I run some checks and fixes..."
+echo "You're almost committing!!! Just a second, while I run_command some checks and fixes..."
 echo -e "==========================================================================\n"
 
-run autopep8 -i -a -a
-run flake8
-run pylint
+run_command autopep8 -i -a -a
+run_command flake8
+run_command pylint
 
+rm -rf $tmpOutputFile
 echo -e "\n\033[0;32mCool! All checks succeeded! Commiting...\033[0m"
