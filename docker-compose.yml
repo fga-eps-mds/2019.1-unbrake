@@ -1,15 +1,34 @@
-version: '3'
+# docker-compose for development
+
+version: '3.7'
 
 services:
   frontend:
     container_name: 'unbrake-frontend-development'
     build:
-      context: .
-      dockerfile: unbrake-frontend/Dockerfile
-    image: unbrake_frontend
+      context: ./unbrake-frontend
+      dockerfile: Dockerfile
+    image: unbrake_frontend_development
     volumes:
       - "./unbrake-frontend/src:/app/frontend/src"
       - "./unbrake-frontend/scripts:/app/frontend/scripts"
       - "./.git:/app/.git" # Needed for git hooks
     ports:
       - "3000:3000"
+
+  api:
+    container_name: 'unbrake-api-development'
+    build:
+      context: ./unbrake-api
+      dockerfile: Dockerfile
+    image: unbrake_api_development
+    volumes:
+      - "./unbrake-api:/app/api"
+    ports:
+      - "8000:8000"
+    secrets:
+      - api-django-secret-key
+
+secrets:
+  api-django-secret-key:
+    file: ./unbrake-api/secrets/API_DJANGO_SECRET_KEY
