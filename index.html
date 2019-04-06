@@ -11,13 +11,55 @@
                 <h1><a href="./">UnBrake </a></h1>
                 <nav><ul>
                     <li><a href="./category/arquitetura.html">Arquitetura</a></li>
+                    <li><a href="./category/design-docs.html">Design Docs</a></li>
                     <li><a href="./category/requisitos.html">Requisitos</a></li>
                 </ul></nav>
         </header><!-- /#banner -->
 
             <aside id="featured" class="body">
                 <article>
-                    <h1 class="entry-title"><a href="./arquitetura-do-projeto.html">Arquitetura do projeto</a></h1>
+                    <h1 class="entry-title"><a href="./comunicacao-do-grafico-em-tempo-real.html">Comunicação do gráfico em tempo real</a></h1>
+<footer class="post-info">
+        <abbr class="published" title="2018-04-06T15:59:00-04:00">
+                Published: Fri 06 April 2018
+        </abbr>
+
+        <address class="vcard author">
+                By                         <a class="url fn" href="./author/grupo-5.html">Grupo 5</a>
+        </address>
+<p>In <a href="./category/design-docs.html">Design Docs</a>.</p>
+
+</footer><!-- /.post-info --><h3>Descrição do problema</h3>
+<p>Como definido nos cenários do projeto o software necessita de atualização em tempo real das informações dos sensores em um gráfico com latência de até 2 segundos. O problema é que a arquitetura de micro serviços faz com que a comunicação entre os serviços seja feita pela rede e portanto está sensivel a dinâmica da internet: alta latência, perda de pacotes, mudanças de rotas, entrega de pacotes de forma não ordenada.</p>
+<hr>
+<h3>Impacto</h3>
+<p>Dependendo da arquitetura assumida o software fica dependendo totalmente da entrega da rede podendo assim fazer com que o gráfico não fique flúido para o usuário e impedindo o mesmo de tomar algumas decisões baseadas no feedback (como por exemplo desligar a máquina caso o experimento não esteja indo bem).</p>
+<hr>
+<h3>Possíveis soluções</h3>
+<h4>Utilizar comunicação via socket (João Robson)</h4>
+<p>Apenas utilizar um socket para comunicar diretamente ao backend</p>
+<h4>Comunicar direto com o backend</h4>
+<p>Fazer com que o Front-end comunique com o back-end diretamente sem passar pela API</p>
+<h4>Assinatura via API e comunicação direta (Felipe Borges)</h4>
+<p>Fazer com que a API envie para o simulador informações sobre a porta e ip e com isso comunicar uma stream de dados diretamente via front-back utilizando a API como um intemediário</p>
+<h4>Utilizar MQTT (Icaro Pires)</h4>
+<p>Usar o protocolo MQTT</p>
+<hr>
+<h3>Conclusão</h3>
+<p>Decidimos mesclar duas soluções, utilizar a API como um intermediário para fazer as assinaturas e estabelecer uma stream de dados diretamente com o backend porém utilizando o protocolo MQTT para transferir essas informações. Perceba que o protocolo MQTT necessita de um broker para realizar a documentação assincrona.</p>                </article>
+            </aside><!-- /#featured -->
+                <section id="content" class="body">
+                    <h1>Other articles</h1>
+                    <hr />
+                    <ol id="posts-list" class="hfeed">
+
+            <li><article class="hentry">
+                <header>
+                    <h1><a href="./arquitetura-do-projeto.html" rel="bookmark"
+                           title="Permalink to Arquitetura do projeto">Arquitetura do projeto</a></h1>
+                </header>
+
+                <div class="entry-content">
 <footer class="post-info">
         <abbr class="published" title="2018-04-02T21:11:00-04:00">
                 Published: Mon 02 April 2018
@@ -28,7 +70,7 @@
         </address>
 <p>In <a href="./category/arquitetura.html">Arquitetura</a>.</p>
 
-</footer><!-- /.post-info --><h2>Documento de Arquitetura</h2>
+</footer><!-- /.post-info -->                <h2>Documento de Arquitetura</h2>
 <p>Este documento tem como objetivo relatar de forma técnica o software utilizando várias visões da arquitetura do mesmo. Este documento é conhecido na literatura como <em>4+1 architecture blueprints</em>.</p>
 <hr>
 <h3>Cenários</h3>
@@ -36,62 +78,10 @@
 <hr>
 <h3>Visão Lógica</h3>
 <h4>Uma breve visão de nossa arquitetura</h4>
-<p>Nosso projeto está sendo modelado com uma arquitetura de microserviços que tem 4 serviços base:</p>
-<ul>
-<li>
-<p><strong>Simulador:</strong> Um servidor escrito em <a href="https://golang.org/">golang</a> que é responsável tanto por receber os arquivos de configuração quanto de fornecer dados em <em>stream</em> para o requisitante.</p>
-</li>
-<li>
-<p><strong>API:</strong> A API contém as regras de negócio do nosso sistema, ela recebe os arquivos de configuração e relaciona ele com os ensaios.</p>
-</li>
-<li>
-<p><strong>Usuários:</strong> Serviço que guarda realiza a autenticação dos usuários.</p>
-</li>
-<li>
-<p><strong>Front-End:</strong> A interface com o usuário do nosso sistema que usa todos os serviços anteriores.</p>
-</li>
-</ul>
-<h4>Front End</h4>
-<p>Descrevam aqui o Front</p>
-<h4>API</h4>
-<p>Descreva aqui a api com diagrama de classes etc</p>
-<h4>Simulador</h4>
-<p>O serviço que tem contato com o simulador tem as seguintes funcionalidades:</p>
-<ul>
-<li>Recebe informações sobre o ensaio</li>
-<li>Realiza o controle de acesso ao simulador</li>
-<li>Realiza todas as validações necessárias no arquivo de configuração.</li>
-<li>Roda o ensaio recebendo as configurações ou os comandos interativos.</li>
-<li>Fornece os resultados realizando uma <em>stream</em> de dados para um determinado endereço.</li>
-</ul>
-<h5>Autenticação de usuário</h5>
-<p>O serviço de autenticação do usuário é responsável por receber informações de autenticação e retornar um <em>token</em> de acesso para consumo dos outros serviços.</p>
-<h3>Estados para conclusão de um ensaio</h3>
-<p><img src="http://drive.google.com/uc?export=view&id=1sCPWQEpLcBNL3KDG5gW8ZfsQmzK--cL6" alt="Maquina de estados do ensaio" width="600"></p>
-<hr>
-<h3>Visão de Processo</h3>
-<h4>Acordo de transmissão entre o Simulador e o FrontEnd</h4>
-<p>O acordo de transmissão acontece com o software do FrontEnd disponibilizando uma porta e um endereço de ip para a stream de dados em tempo real ser enviada. Após essa definição as informações são mandadas via API e por fim configuradas no simulador. O simulador inicia a transmissão dos dados utilizando o protocolo <a href="https://mqtt.org/">MQTT</a>.</p>
-<hr>
-<h3>Visão de desenvolvimento</h3>
-<p>As interações entre os serviços estão representadas no diagram de componente abaixo.</p>
-<hr>
-<h3>Visão física</h3>
-<p>Para desenvolvimento utilizaremos os containers do <a href="https://www.docker.com/">docker</a>. Para o funcionamento completo do nosso sistema os seguintes containers precisam ser iniciados:</p>
-<ul>
-<li><strong>Consul:</strong> Ferramenta de catálogo de serviços</li>
-<li><strong>Postgres:</strong> Banco de dados</li>
-<li><strong>Simulador:</strong> Servidor que contém o software que comunica com o <em>hardware</em> de simulação.</li>
-<li><strong>FrontEnd:</strong> Inicia a interface de usuário</li>
-<li><strong>Broker:</strong> Para realizar a comunicação do simulador com o Front via MQTT</li>
-<li><strong>Autenticador:</strong> Serviço que realiza a autenticação dos usuários para o uso dos outros serviços.</li>
-</ul>
-<p>O deploy será realizado utilizando o orquestrador de containers <a href="https://kubernetes.io/">kubernetes</a> neste <a href="">link</a>.</p>                </article>
-            </aside><!-- /#featured -->
-                <section id="content" class="body">
-                    <h1>Other articles</h1>
-                    <hr />
-                    <ol id="posts-list" class="hfeed">
+<p>Nosso projeto está …</p>
+                <a class="readmore" href="./arquitetura-do-projeto.html">read more</a>
+                </div><!-- /.entry-content -->
+            </article></li>
 
             <li><article class="hentry">
                 <header>
