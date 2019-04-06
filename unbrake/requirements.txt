@@ -1,4 +1,0 @@
-graphene==2.1
-graphene_django>=2.1.0
-graphql_core>=2.1rc1
-django==2.1.2
