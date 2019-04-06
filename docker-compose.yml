@@ -22,6 +22,8 @@ services:
       context: ./unbrake-api
       dockerfile: Dockerfile
     image: unbrake_api_development
+    volumes:
+      - "./unbrake-api:/app/api"
     ports:
       - "8000:8000"
     secrets:

@@ -1,5 +1,7 @@
 FROM python:3.7-alpine
 
+LABEL description="To be used in django development, just to keep environments unified between users and reduce complexity."
+
 ENV PYTHONUNBUFFERED TRUE
 
 WORKDIR /app/api
@@ -11,11 +13,9 @@ RUN pip install -r requirements.txt
 COPY . .
 
 RUN set +x \
-  && ./manage.py makemigrations && ./manage.py migrate \
-  && ls \
   && rm -rf secrets
 
 EXPOSE 8000
 
-ENTRYPOINT ["/app/api/manage.py"]
+ENTRYPOINT ["/app/api/scripts/entrypoint.dev"]
 CMD ["runserver", "0.0.0.0:8000"]
