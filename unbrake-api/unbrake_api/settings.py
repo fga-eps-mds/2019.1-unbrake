@@ -13,18 +13,18 @@ https://docs.djangoproject.com/en/2.2/topics/settings/
 For the full list of settings and their values, see
 https://docs.djangoproject.com/en/2.2/ref/settings/
 """
+# noqa: F401;
 
 import os
-from sys import stderr
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 secret_key_file = None
-try: # On run
+try:  # On run
     secret_key_file = open('/run/secrets/api-django-secret-key')
 except FileNotFoundError:
-    try: # On build
+    try:  # On build
         secret_key_file = open('./secrets/API_DJANGO_SECRET_KEY')
     except FileNotFoundError:
         raise FileNotFoundError(
