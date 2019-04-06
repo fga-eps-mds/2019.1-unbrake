@@ -24,25 +24,69 @@
         </abbr>
 
         <address class="vcard author">
-                By                         <a class="url fn" href="../author/grupo-5.html">Grupo 5</a>
+                By                         <a class="url fn" href="../author/felipe-borges.html">Felipe Borges</a>
         </address>
 <p>In <a href="../category/arquitetura.html">Arquitetura</a>.</p>
 
 </footer><!-- /.post-info --><h2>Documento de Arquitetura</h2>
 <p>Este documento tem como objetivo relatar de forma técnica o software utilizando várias visões da arquitetura do mesmo. Este documento é conhecido na literatura como <em>4+1 architecture blueprints</em>.</p>
-<h3>Scenarios</h3>
-<p>Os cenários estão escritos nesse <a href="../cenarios-do-unbrake.html">documento</a></p>
+<hr>
+<h3>Cenários</h3>
+<p>Os cenários estão escritos neste <a href="../cenarios-do-unbrake.html">link</a>.</p>
+<hr>
 <h3>Visão Lógica</h3>
-<h4>Resumo da arquitetura do projeto</h4>
+<h4>Uma breve visão de nossa arquitetura</h4>
+<p>Nosso projeto está sendo modelado com uma arquitetura de microserviços que tem 4 serviços base:</p>
+<ul>
+<li>
+<p><strong>Simulador:</strong> Um servidor escrito em <a href="https://golang.org/">golang</a> que é responsável tanto por receber os arquivos de configuração quanto de fornecer dados em <em>stream</em> para o requisitante.</p>
+</li>
+<li>
+<p><strong>API:</strong> A API contém as regras de negócio do nosso sistema, ela recebe os arquivos de configuração e relaciona ele com os ensaios.</p>
+</li>
+<li>
+<p><strong>Usuários:</strong> Serviço que guarda realiza a autenticação dos usuários.</p>
+</li>
+<li>
+<p><strong>Front-End:</strong> A interface com o usuário do nosso sistema que usa todos os serviços anteriores.</p>
+</li>
+</ul>
 <h4>Front End</h4>
 <p>Descrevam aqui o Front</p>
 <h4>API</h4>
 <p>Descreva aqui a api com diagrama de classes etc</p>
 <h4>Simulador</h4>
-<p>Descreva aqui o serviço de simulação</p>
+<p>O serviço que tem contato com o simulador tem as seguintes funcionalidades:</p>
+<ul>
+<li>Recebe informações sobre o ensaio</li>
+<li>Realiza o controle de acesso ao simulador</li>
+<li>Realiza todas as validações necessárias no arquivo de configuração.</li>
+<li>Roda o ensaio recebendo as configurações ou os comandos interativos.</li>
+<li>Fornece os resultados realizando uma <em>stream</em> de dados para um determinado endereço.</li>
+</ul>
+<h5>Autenticação de usuário</h5>
+<p>O serviço de autenticação do usuário é responsável por receber informações de autenticação e retornar um <em>token</em> de acesso para consumo dos outros serviços.</p>
+<h3>Estados para conclusão de um ensaio</h3>
+<p><img src="http://drive.google.com/uc?export=view&id=1sCPWQEpLcBNL3KDG5gW8ZfsQmzK--cL6" alt="Maquina de estados do ensaio" width="600"></p>
+<hr>
 <h3>Visão de Processo</h3>
+<h4>Acordo de transmissão entre o Simulador e o FrontEnd</h4>
+<p>O acordo de transmissão acontece com o software do FrontEnd disponibilizando uma porta e um endereço de ip para a stream de dados em tempo real ser enviada. Após essa definição as informações são mandadas via API e por fim configuradas no simulador. O simulador inicia a transmissão dos dados utilizando o protocolo <a href="https://mqtt.org/">MQTT</a>.</p>
+<hr>
 <h3>Visão de desenvolvimento</h3>
-<h3>Visão física</h3>                </article>
+<p>As interações entre os serviços estão representadas no diagram de componente abaixo.</p>
+<hr>
+<h3>Visão física</h3>
+<p>Para desenvolvimento utilizaremos os containers do <a href="https://www.docker.com/">docker</a>. Para o funcionamento completo do nosso sistema os seguintes containers precisam ser iniciados:</p>
+<ul>
+<li><strong>Consul:</strong> Ferramenta de catálogo de serviços</li>
+<li><strong>Postgres:</strong> Banco de dados</li>
+<li><strong>Simulador:</strong> Servidor que contém o software que comunica com o <em>hardware</em> de simulação.</li>
+<li><strong>FrontEnd:</strong> Inicia a interface de usuário</li>
+<li><strong>Broker:</strong> Para realizar a comunicação do simulador com o Front via MQTT</li>
+<li><strong>Autenticador:</strong> Serviço que realiza a autenticação dos usuários para o uso dos outros serviços.</li>
+</ul>
+<p>O deploy será realizado utilizando o orquestrador de containers <a href="https://kubernetes.io/">kubernetes</a> neste <a href="">link</a>.</p>                </article>
             </aside><!-- /#featured -->
         <section id="extras" class="body">
                 <div class="blogroll">
