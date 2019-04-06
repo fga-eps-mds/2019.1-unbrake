@@ -1,5 +1,5 @@
 ---
-name: Bug report
+name: Reportar Bug
 about: Reporte um bug ou nos ajude a resolver algum
 title: ''
 labels: bug
@@ -17,7 +17,7 @@ Passos para reproduzir o comportamento.
 
 1. Vá para...
 2. Click em...
-...
+3. ...
 
 ### Comportamento atual
 
