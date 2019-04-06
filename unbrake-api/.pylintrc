@@ -1,3 +1,6 @@
+# PLEASE, DON'T OVERLAP STYLESHEET CHECKS FROM HERE WITH FLAKE8
+# =============================================================
+
 [MASTER]
 
 # A comma-separated list of package or module names from where C extensions may

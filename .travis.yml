@@ -42,5 +42,12 @@ script:
   - docker-compose exec frontend npm run check_format
   - docker-compose exec frontend npm run check_tests
 
+  # API checks
+  - pushd unbrake-api
+  - docker-compose exec api flake8 .
+  - docker-compose exec api pylint *
+  - docker-compose exec api pytest
+  - popd
+
 after_install:
   - docker-compose down -v
