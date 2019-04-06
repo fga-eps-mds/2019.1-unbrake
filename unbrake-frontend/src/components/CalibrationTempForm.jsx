@@ -1,38 +1,43 @@
 import React from "react";
 import "../App.css";
-import { reduxForm, Field } from "redux-form";
-import MenuItem from "@material-ui/core/MenuItem";
-/*
- * import {
- *   Checkbox,
- *   Select,
- *   TextField,
- *   Switch,
- *   FormControlLabel,
- * } from 'redux-form-material-ui'
- */
-
-import { Checkbox, TextField, Select } from "redux-form-material-ui";
+import { reduxForm } from "redux-form";
+import CalibrationFields from "./CalibrationTempFields";
+import CalibrationCheck from "./CalibrationTempCheck";
 
 const MyForm = () => (
   <form>
-    <Field name="username" component={TextField} placeholder="Street" />
-    <Field name="username" component={Checkbox} placeholder="Street" />
+    <div
+      style={{
+        flexDirection: "row",
+        display: "flex",
+        justifyContent: "space-evenly"
+      }}
+    >
+      <div
+        style={{
+          flexDirection: "row",
+          display: "flex",
+          justifyContent: "space-evenly",
+          flex: 2
+        }}
+      >
+        <CalibrationFields field="firstField" />
 
-    <Field name="plan" component={Select} placeholder="Select a plan">
-      <MenuItem value="monthly">Monthly</MenuItem>
-      <MenuItem value="yearly">Yearly</MenuItem>
-      <MenuItem value="lifetime">Lifetime</MenuItem>
-    </Field>
-
-    {/* <FormControl label="Agree to terms?" />
-
-            <FormControl control={<Field name="receiveEmails" component={Switch} /> } label="Please spam me!" /> */}
-    {/* <Field name="bestFramework" component={RadioGroup} >
-            <Radio value="react" label="React"/>
-            <Radio value="angular" label="Angular"/>
-            <Radio value="ember" label="Ember"/>
-        </Field> */}
+        <CalibrationFields field="secondField" />
+      </div>
+      <div
+        style={{
+          flexDirection: "column",
+          display: "flex",
+          justifyContent: "space-evenly",
+          marginLeft: "3%",
+          flex: 1
+        }}
+      >
+        <CalibrationCheck />
+        <CalibrationCheck />
+      </div>
+    </div>
   </form>
 );
 

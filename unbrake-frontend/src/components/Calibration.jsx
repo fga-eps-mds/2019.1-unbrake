@@ -5,8 +5,13 @@ import MyForm from "./CalibrationTempForm";
 
 const Calibration = () => (
   <div className="App">
-    <RealTimeChart />
-    <MyForm />
+    <div style={{ marginTop: "6%", marginBottom: "6%" }}>
+      <MyForm />
+    </div>
+
+    <div style={{ justifyContent: "center", display: "flex" }}>
+      <RealTimeChart />
+    </div>
   </div>
 );
 
