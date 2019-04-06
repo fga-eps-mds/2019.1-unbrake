@@ -5,9 +5,17 @@ imageName="unbrake_backend_development"  # compose project name + service name
 backendFolder="$gitFolder/unbrake-api"
 tmpFile="/tmp/unbrake_hook_log"
 
+get_staged_files() {
+	git diff --name-only --cached \
+		| grep unbrake-api \
+		| grep .py \
+		| sed -e 's@unbrake-api/@@g'
+}
+
 run(){
 	echo -n "Running $(basename $1)..."
-	$* > $tmpFile
+	get_staged_files | xargs $* > $tmpFile
+
 	if [ $? = 0 ]; then
 		echo -e " \033[0;32mOK!\033[0m"
 	else
@@ -24,7 +32,8 @@ echo -e "\n=====================================================================
 echo "You're almost committing!!! Just a second, while I run some checks and fixes..."
 echo -e "==========================================================================\n"
 
-run flake8 .
-run pylint *
+run autopep8 -i -a -a
+run flake8
+run pylint
 
 echo -e "\n\033[0;32mCool! All checks succeeded! Commiting...\033[0m"

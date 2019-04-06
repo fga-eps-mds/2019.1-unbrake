@@ -31,7 +31,7 @@ except FileNotFoundError:
             """
             ===================================================================
             'API_DJANGO_SECRET_KEY' secret not found.
-             Ask the development team the secrets or use your owns.
+            Ask the development team the secrets or use your owns.
             ===================================================================
             """
         )
