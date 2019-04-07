@@ -1,0 +1,36 @@
+#!/bin/sh
+
+imageName="unbrake_backend_development"  # compose project name + service name
+tmpFile="/tmp/unbrake_hook_log"
+
+get_staged_files() {
+	git diff --name-only --cached \
+		| grep .py \
+		| sed -e 's@unbrake-api/@@g'
+}
+
+run(){
+	echo -n "Running $1..."
+	get_staged_files | xargs $* > $tmpFile
+
+	if [ $? = 0 ]; then
+		echo -e " \033[0;32mOK!\033[0m"
+	else
+		echo -e " \033[0;31mFAILED!\033[0m\n"
+		cat $tmpFile
+		echo -e "\033[0;31mSome check failed :(\033[0m"
+		echo -e "\033[0;33mHave you tried rebuilding the image? Try to look in the tool documentation as well!\033[0m"
+		exit 1
+	fi
+}
+
+cd /app/api
+
+if [ -n "$(get_staged_files)" ]; then
+	run autopep8 -i -a -a
+	run flake8
+	run pylint
+	echo -e "\n\033[0;32mCool! All checks on API succeeded!\033[0m\n"
+else
+	echo -e "There's no staged python files to be checked.\n"
+fi
