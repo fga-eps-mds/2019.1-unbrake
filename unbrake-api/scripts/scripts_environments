@@ -1,4 +1,2 @@
-gitFolder="$(git rev-parse --show-toplevel)"
-backendFolder="$gitFolder/unbrake-api"
 tmpOutputFile="/tmp/unbrake_hook_log"
 tmpStagedFiles="/tmp/unbrake_api_staged_files"

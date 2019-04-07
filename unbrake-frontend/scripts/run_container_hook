@@ -4,13 +4,13 @@ add_file(){
     file="$1"
     if [ -e $file ]; then
         git add $file
-    elif [ "$file" = "pre-commit" ] || [ "$file" = "pre-push" ]; then
+    elif [ "$hookName" = "pre-commit" ] || [ "$hookName" = "pre-push" ]; then
         echo -e "\033[0;33mINFO:\033[0m file '$file' will not be checked because it's not allowed to be in docker."
     fi
 }
 
 convert_git_workspace() {
-    git diff --name-only --cached | sed s@unbrake-frontend/@@ > /tmp/unbrake_staged \
+    git diff --name-only --cached | grep unbrake-frontend | sed s@unbrake-frontend/@@ > /tmp/unbrake_staged \
     && git reset &>/dev/null \
     && git init &>/dev/null \
     && [ -s /tmp/unbrake_staged ] \
@@ -22,14 +22,14 @@ setHooks="$(node -e "var package = require('./package.json'); Object.keys(packag
 
 update_host_hooks() {
    for hook in $setHooks; do
-       cp /app/frontend/scripts/host_hook_template /app/.git/hooks/$hook \
+       cp /app/frontend/hooks/host_hook_template /app/.git/hooks/$hook \
        && chmod +x /app/.git/hooks/$hook
    done
 }
 
 is_hooks_outdated() {
     for hook in $setHooks; do
-        diff /app/frontend/scripts/host_hook_template /app/.git/hooks/$hook &> /dev/null || return 1
+        diff /app/frontend/hooks/host_hook_template /app/.git/hooks/$hook &> /dev/null || return 1
     done
 }
 
@@ -53,10 +53,5 @@ fi
 
 if [ $# != 0 ]; then
     convert_git_workspace
-
-	echo -e "\n=====================================================================-----"
-	echo "Checking everything on Frontend..."
-	echo -e "==========================================================================\n"
-
     /app/frontend/.git/hooks/$hookName ${@:2}
 fi

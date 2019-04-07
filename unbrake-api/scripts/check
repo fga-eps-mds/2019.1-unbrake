@@ -18,7 +18,7 @@ run_command(){
 }
 
 source scripts/scripts_environments
-cd $backendFolder
+cd $apiFolder
 
 echo -e "\n=====================================================================-----"
 echo "Checking everything on API..."
