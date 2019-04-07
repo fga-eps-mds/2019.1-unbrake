@@ -1,0 +1,54 @@
+#!/bin/sh
+
+# ======================================================
+# All hooks on host environement will be this file.
+# Frontend run_container_hook will do put this on host
+# git folder. The frontend one was chosen because was
+# created first.
+# ======================================================
+
+gitFolder="$(git rev-parse --show-toplevel)"
+gitFolderContainer="/app/"
+
+imageNameFrontend="unbrake_frontend_development"
+imageNameApi="unbrake_api_development"
+
+frontendFolder="$gitFolder/unbrake-frontend"
+apiFolder="$gitFolder/unbrake-api"
+
+hookName="$(basename $0)"
+
+git diff --name-only --cached > /tmp/unbrake_staged
+
+## Checking frontend
+sudo docker run \
+    -t \
+    -v "$gitFolder/.git:$gitFolderContainer/.git" \
+    -v "$frontendFolder/src:$gitFolderContainer/frontend/src" \
+    --rm \
+    --entrypoint '/app/frontend/scripts/run_container_hook' \
+    $imageNameFrontend \
+	$hookName $@
+
+didBrakeFront="$?"
+for file in $(cat /tmp/unbrake_staged); do git add $file; done
+
+# Checking API
+sudo docker run \
+    -t \
+    -v "$gitFolder/.git:$gitFolderContainer/.git" \
+    -v "$gitFolder/unbrake-api:$gitFolderContainer/api" \
+    --rm \
+    --entrypoint '/app/api/scripts/run_container_hook' \
+    $imageNameApi \
+	$hookName $@
+
+didBrakeApi="$?"
+for file in $(cat /tmp/unbrake_staged); do git add $file; done
+
+sudo rm -rf $frontendFolder/.git
+sudo rm -rf $apiFolder/.git
+rm -rf /tmp/unbrake_staged
+
+[ $didBrakeFront = "0" ] && [ $didBrakeApi = "0" ] && exit 0
+exit 1

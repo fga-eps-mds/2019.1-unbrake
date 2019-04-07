@@ -20,6 +20,7 @@ COPY .eslintrc.json .prettierrc scripts/entrypoint.dev ./
 COPY public public
 COPY scripts scripts
 COPY src src
+COPY hooks hooks
 
 ENTRYPOINT ["/app/frontend/entrypoint.dev"]
 CMD ["start"]

@@ -5,6 +5,10 @@ import sys
 
 
 def main():
+    """
+    Make available for the developer a set of commands for managing
+    the Django project
+    """
     os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'unbrake_api.settings')
     try:
         from django.core.management import execute_from_command_line

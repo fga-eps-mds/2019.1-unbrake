@@ -1,6 +1,11 @@
+'''
+Tests for models of configuration app
+'''
+
 import pytest
 from django.test import Client
 from .models import Cycles, Velocity, Wait, Shutdown, AuxiliaryOutput
+
 
 # First argument are the parameters names
 # Second is a tuple of params
