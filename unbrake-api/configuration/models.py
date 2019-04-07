@@ -5,6 +5,7 @@ class Cycles(models.Model):
 	CyclesNumber = models.PositiveIntegerField()
 	CyclesTime = models.PositiveIntegerField()
 
+
 class Velocity(models.Model):
 	UpperLimit = models.IntegerField() 
 	InferiorLimit = models.IntegerField()

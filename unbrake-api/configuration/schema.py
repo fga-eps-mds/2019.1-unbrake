@@ -25,14 +25,23 @@ class AuxiliaryOutputType(DjangoObjectType):
         model = AuxiliaryOutput
 
 class Query(object):
-    all_cycles = graphene.List(CyclesType)
+    cycles = graphene.Field(CyclesType, id=graphene.Int(), CyclesNumber=graphene.Int(), CyclesTime=graphene.Int() )
+    all_cycles = graphene.List(CyclesType, id=graphene.Int())
     all_velocity = graphene.List(VelocityType)
     all_wait = graphene.List(WaitType)
     all_shutdown = graphene.List(ShutdownType)
     all_auxiliaryoutuput = graphene.List(AuxiliaryOutputType)
 
     def resolve_all_cycles(self, info, ** kwargs):
-        return Cycles.objects.all ()
+        return Cycles.objects.all()
+
+    def resolve_cycles(self, info, **kwargs):
+        id = kwargs.get('id')
+
+        if id is not None:
+            return Cycles.objects.get(pk=id)
+
+        return None
 
     def resolve_all_velocity(self, info, ** kwargs):
         return Velocity.objects.all()
