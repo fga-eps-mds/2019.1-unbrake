@@ -29,7 +29,7 @@ convert_git_workspace() {
 convert_git_workspace
 
 echo -e "\n=========================================================================="
-echo "Checking everything on API..."
+echo "Checking API..."
 echo -e "==========================================================================\n"
 
 /app/api/hooks/$hookName ${@:2}

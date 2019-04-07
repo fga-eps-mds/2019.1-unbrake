@@ -53,5 +53,10 @@ fi
 
 if [ $# != 0 ]; then
     convert_git_workspace
+
+	echo -e "\n=========================================================================="
+	echo "Checking Frontend..."
+	echo -e "==========================================================================\n"
+
     /app/frontend/.git/hooks/$hookName ${@:2}
 fi
