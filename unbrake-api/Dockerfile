@@ -12,6 +12,7 @@ RUN set +x \
     && apk update \
     && apk add --no-cache build-base git \
     && pip install -r requirements.txt \
+	&& ln -s $PWD/scripts/check /usr/local/bin \
     && rm -rf /var/cache/apk/*
 
 COPY . .
