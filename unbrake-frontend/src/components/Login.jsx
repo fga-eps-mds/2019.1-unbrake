@@ -128,7 +128,7 @@ class Login extends React.PureComponent {
         justify="center"
         style={{ minHeight: "100vh" }}
         container
-        spacing={24}
+        spacing={12}
       >
         {loginPaper(classes, handleSubmit, submitting)}
       </Grid>
