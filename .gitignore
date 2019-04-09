@@ -1,15 +1,12 @@
-# Created by https://www.gitignore.io/api/node,reactnative
+    # Created by https://www.gitignore.io/api/node,reactnative
 # Edit at https://www.gitignore.io/?templates=node,reactnative
 
-<<<<<<< HEAD
 ### Python ###
 *.pyc
 
-=======
 # Docker Secrets
 */secrets/*
 !*/secrets/*.enc
->>>>>>> devel
 
 ### Node ###
 # Logs
