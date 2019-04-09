@@ -7,7 +7,7 @@ import PropTypes from "prop-types";
 const FIRST_FIELD = "firstField";
 const SECOND_FIELD = "secondField";
 
-class CalibrationFields extends React.Component {
+export class CalibrationFields extends React.Component {
   renderFields1() {
     const { field } = this.props;
     if (field === FIRST_FIELD)
