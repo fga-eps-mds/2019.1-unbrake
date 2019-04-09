@@ -1,95 +1,189 @@
+'''
+    Schema to use graphene framework to requirement on db
+'''
+
 import graphene
-
 from graphene_django.types import DjangoObjectType
+from configuration.models import CyclesConfig, VelocityConfig, WaitConfig
+from configuration.models import ShutdownConfig, AuxiliaryOutputConfig
 
-from configuration.models import Cycles, Velocity, Wait, Shutdown, AuxiliaryOutput
+# pylint: disable = too-few-public-methods
 
-class CyclesType(DjangoObjectType):
+
+class CyclesConfigType(DjangoObjectType):
+
+    '''
+        Defining the CyclesConfig Type
+    '''
+
     class Meta:
-        model = Cycles
+        '''
+            Defining the CyclesConfig Type
+        '''
+        model = CyclesConfig
 
-class VelocityType(DjangoObjectType):
+
+class VelocityConfigType(DjangoObjectType):
+    '''
+        Defining the VelocityConfig Type
+    '''
+
     class Meta:
-        model = Velocity
+        '''
+            Defining the VelocityConfig Type
+        '''
+        model = VelocityConfig
 
-class WaitType(DjangoObjectType):
+
+class WaitConfigType(DjangoObjectType):
+    '''
+        Defining the WaitConfig Type
+    '''
     class Meta:
-        model = Wait
+        '''
+            Defining the WaitConfig Type
+        '''
+        model = WaitConfig
 
-class ShutdownType(DjangoObjectType):
+
+class ShutdownConfigType(DjangoObjectType):
+    '''
+        Defining the ShutdownConfig Type
+    '''
     class Meta:
-        model = Shutdown
+        '''
+            Defining the ShutdownConfig Type
+        '''
+        model = ShutdownConfig
 
-class AuxiliaryOutputType(DjangoObjectType):
+
+class AuxiliaryOutputConfigType(DjangoObjectType):
+    '''
+        Defining the AuxiliaryOutputConfig Type
+    '''
     class Meta:
-        model = AuxiliaryOutput
+        '''
+            Defining the AuxiliaryOutputConfig Type
+        '''
+        model = AuxiliaryOutputConfig
 
-class Query(object):
-    cycles = graphene.Field(CyclesType, id=graphene.Int(), CyclesNumber=graphene.Int(), CyclesTime=graphene.Int() )
-    all_cycles = graphene.List(CyclesType, id=graphene.Int())
 
-    velocity = graphene.Field(VelocityType, id=graphene.Int(), UpperLimit=graphene.Int(), InferiorLimit=graphene.Int() )
-    all_velocity = graphene.List(VelocityType)
+class Query:
+    # pylint: disable =  unused-argument, no-self-use
+    '''
+        The Query list all the types created above
+    '''
+    cycles_config = graphene.Field(
+        CyclesConfigType,
+        id=graphene.Int(),
+        number=graphene.Int(),
+        time_between_cycles=graphene.Int())
+    all_cycles_config = graphene.List(CyclesConfigType, id=graphene.Int())
 
-    wait = graphene.Field(WaitType, id=graphene.Int(), UpperTime=graphene.Int(), InferiorTime=graphene.Int() )
-    all_wait = graphene.List(WaitType)
+    velocity_config = graphene.Field(
+        VelocityConfigType,
+        id=graphene.Int(),
+        upper_limit=graphene.Int(),
+        inferior_limit=graphene.Int())
+    all_velocity_config = graphene.List(VelocityConfigType)
 
-    shutdown = graphene.Field(ShutdownType, id=graphene.Int(), DisablesShutdown=graphene.Boolean() )
-    all_shutdown = graphene.List(ShutdownType)
+    wait_config = graphene.Field(
+        WaitConfigType,
+        id=graphene.Int(),
+        upper_time=graphene.Int(),
+        inferior_time=graphene.Int())
+    all_wait_config = graphene.List(WaitConfigType)
 
-    auxiliaryoutput = graphene.Field(AuxiliaryOutputType, id=graphene.Int(), EnableOutput=graphene.Boolean(), Temperature=graphene.Float(), Time=graphene.Float() )
-    all_auxiliaryoutuput = graphene.List(AuxiliaryOutputType)
+    shutdown_config = graphene.Field(
+        ShutdownConfigType,
+        id=graphene.Int(),
+        disables_shutdown=graphene.Boolean())
+    all_shutdown_config = graphene.List(ShutdownConfigType)
 
-    def resolve_all_cycles(self, info, ** kwargs):
-        return Cycles.objects.all()
+    auxiliary_output_config = graphene.Field(
+        AuxiliaryOutputConfigType,
+        id=graphene.Int(),
+        enable_output=graphene.Boolean(),
+        temperature=graphene.Float(),
+        Time=graphene.Float())
+    all_auxiliary_output_config = graphene.List(AuxiliaryOutputConfigType)
 
-    def resolve_cycles(self, info, **kwargs):
-        id = kwargs.get('id')
+    def resolve_all_cycles_config(self, info, **kwargs):
+        '''
+            Returning all CyclesConfig on db
+        '''
+        return CyclesConfig.objects.all()
 
-        if id is not None:
-            return Cycles.objects.get(pk=id)
+    def resolve_cycles_config(self, info, **kwargs):
+        '''
+            Returning only one CyclesConfig by id
+        '''
+        pk = kwargs.get('id')
+
+        if pk is not None:
+            return CyclesConfig.objects.get(pk=pk)
         return None
 
+    def resolve_all_velocity_config(self, info, **kwargs):
+        '''
+            Returning all VelocityConfig on db
+        '''
+        return VelocityConfig.objects.all()
 
-    def resolve_all_velocity(self, info, ** kwargs):
-        return Velocity.objects.all()
+    def resolve_velocity_config(self, info, **kwargs):
+        '''
+            Returning only one VelocityConfig by id
+        '''
+        pk = kwargs.get('id')
 
-    def resolve_velocity(self, info, **kwargs):
-        id = kwargs.get('id')
-
-        if id is not None:
-            return Velocity.objects.get(pk=id)
+        if pk is not None:
+            return VelocityConfig.objects.get(pk=pk)
         return None
 
+    def resolve_all_wait_config(self, info, **kwargs):
+        '''
+            Returning all WaitConfig on db
+        '''
+        return WaitConfig.objects.all()
 
-    def resolve_all_wait(self, info, ** kwargs):
-        return  Wait.objects.all()
+    def resolve_wait_config(self, info, **kwargs):
+        '''
+            Returning only one WaitConfig by id
+        '''
+        pk = kwargs.get('id')
 
-    def resolve_wait(self, info, **kwargs):
-        id = kwargs.get('id')
-
-        if id is not None:
-            return Wait.objects.get(pk=id)
+        if pk is not None:
+            return WaitConfig.objects.get(pk=pk)
         return None
 
+    def resolve_all_shutdown_config(self, info, **kwargs):
+        '''
+            Returning all ShutdownConfig on db
+        '''
+        return ShutdownConfig.objects.all()
 
-    def resolve_all_shutdown(self, info, ** kwargs):
-        return  Shutdown.objects.all()
+    def resolve_shutdown_config(self, info, **kwargs):
+        '''
+            Returning only one ShutdownConfig by id
+        '''
+        pk = kwargs.get('id')
 
-    def resolve_shutdown(self, info, **kwargs):
-        id = kwargs.get('id')
-
-        if id is not None:
-            return Shutdown.objects.get(pk=id)
+        if pk is not None:
+            return ShutdownConfig.objects.get(pk=pk)
         return None
-        
 
-    def resolve_all_auxiliaryoutput(self, info, ** kwargs):
-        return  AuxiliaryOutput.objects.all()
+    def resolve_all_auxiliary_output_config(self, info, **kwargs):
+        '''
+            Returning all AuxiliaryOutputConfig on db
+        '''
+        return AuxiliaryOutputConfig.objects.all()
 
-    def resolve_auxiliaryoutput(self, info, **kwargs):
-        id = kwargs.get('id')
+    def resolve_auxiliary_output_config(self, info, **kwargs):
+        '''
+            Returning only one AuxiliaryOutputConfig by id
+        '''
+        pk = kwargs.get('id')
 
-        if id is not None:
-            return AuxiliaryOutput.objects.get(pk=id)
+        if pk is not None:
+            return AuxiliaryOutputConfig.objects.get(pk=pk)
         return None
