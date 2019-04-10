@@ -17,6 +17,7 @@
     "redux-form-material-ui": "^5.0.0-beta.3",
     "recharts": "^1.5.0"
   },
+  "proxy": "http://localhost:8000/",
   "scripts": {
     "start": "react-scripts start",
     "build": "react-scripts build",
