@@ -97,7 +97,7 @@ class Query:
     shutdown_config = graphene.Field(
         ShutdownConfigType,
         id=graphene.Int(),
-        disables_shutdown=graphene.Boolean())
+        disable_shutdown=graphene.Boolean())
     all_shutdown_config = graphene.List(ShutdownConfigType)
 
     auxiliary_output_config = graphene.Field(

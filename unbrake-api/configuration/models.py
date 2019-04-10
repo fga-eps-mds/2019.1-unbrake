@@ -41,7 +41,7 @@ class ShutdownConfig(models.Model):
         The boolean DesablesShutdown inhibits the engine
         shutdown during the test
     '''
-    disables_shutdown = models.BooleanField()
+    disable_shutdown = models.BooleanField()
 
 
 class AuxiliaryOutputConfig(models.Model):

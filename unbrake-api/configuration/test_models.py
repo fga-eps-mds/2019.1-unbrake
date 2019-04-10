@@ -218,12 +218,12 @@ def test_all_wait_config(upper_time_aux_0, upper_time_aux_1,
 
 @pytest.mark.django_db
 @pytest.mark.parametrize(
-    "disables_shutdown_aux", (
+    "disable_shutdown_aux", (
         pytest.param(True, id='shutdown_test_1'),
         pytest.param(False, id='shutdown_test_2'),
     )
 )
-def test_shutdown_config(disables_shutdown_aux):
+def test_shutdown_config(disable_shutdown_aux):
     '''
         This test save a ShutdownConfigType object on db,
         require the saved object by graphql,
@@ -231,47 +231,47 @@ def test_shutdown_config(disables_shutdown_aux):
     '''
 
     ShutdownConfig(
-        disables_shutdown=disables_shutdown_aux
+        disable_shutdown=disable_shutdown_aux
     ).save()
 
     client = Client()
     result = client.get(
-        '/graphql?query={shutdownConfig(id: 1){disablesShutdown}}')
+        '/graphql?query={shutdownConfig(id: 1){disableShutdown}}')
     assert result.status_code == 200
     shutdown_config = result.json()['data']['shutdownConfig']
-    assert shutdown_config['disablesShutdown'] == disables_shutdown_aux
+    assert shutdown_config['disableShutdown'] == disable_shutdown_aux
 
 
 @pytest.mark.django_db
 @pytest.mark.parametrize(
-    "disables_shutdown_aux_0,disables_shutdown_aux_1,", (
+    "disable_shutdown_aux_0,disable_shutdown_aux_1,", (
         pytest.param(True, False, id='all_shut_down_test_1'),
     )
 )
-def test_all_shutdown_config(disables_shutdown_aux_0, disables_shutdown_aux_1):
+def test_all_shutdown_config(disable_shutdown_aux_0, disable_shutdown_aux_1):
     '''
         This test save two ShutdownConfigType objects on db,
         require all the saved objects by graphql,
         and check if the requirement is equal the saveds objects
     '''
     ShutdownConfig(
-        disables_shutdown=disables_shutdown_aux_0
+        disable_shutdown=disable_shutdown_aux_0
     ).save()
 
     ShutdownConfig(
-        disables_shutdown=disables_shutdown_aux_1
+        disable_shutdown=disable_shutdown_aux_1
     ).save()
 
     client = Client()
     result = client.get(
-        '/graphql?query={allShutdownConfig{id, disablesShutdown}}')
+        '/graphql?query={allShutdownConfig{id, disableShutdown}}')
     assert result.status_code == 200
 
     shut_down_config0 = result.json()['data']['allShutdownConfig'][0]
     shut_down_config1 = result.json()['data']['allShutdownConfig'][1]
 
-    assert shut_down_config0['disablesShutdown'] == disables_shutdown_aux_0
-    assert shut_down_config1['disablesShutdown'] == disables_shutdown_aux_1
+    assert shut_down_config0['disableShutdown'] == disable_shutdown_aux_0
+    assert shut_down_config1['disableShutdown'] == disable_shutdown_aux_1
 
 
 @pytest.mark.django_db
