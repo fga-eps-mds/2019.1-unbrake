@@ -5,7 +5,7 @@ tmpFile="/tmp/unbrake_hook_log"
 
 get_staged_files() {
 	git diff --name-only --cached \
-		| grep .py \
+		| grep .\.py$ \
 		| sed -e 's@unbrake-api/@@g'
 }
 
