@@ -8,6 +8,7 @@ import { withStyles } from "@material-ui/core/styles";
 import PropTypes from "prop-types";
 
 const padding = 10;
+const baseUrl = "http://localhost:8000/graphql";
 
 const styles = theme => ({
   root: {
@@ -81,8 +82,15 @@ const loginButtons = (classes, submitting) => {
   );
 };
 
-const submit = () => {
-  return "Usuário logado";
+const submit = values => {
+  fetch(
+    `${baseUrl}?query=mutation{tokenAuth(username:"${
+      values.username
+    }",password:"${values.password}"){token}}`,
+    {
+      method: "POST"
+    }
+  ); // .then(response => console.log(response));
 };
 const loginPaper = (classes, handleSubmit, submitting) => {
   return (
