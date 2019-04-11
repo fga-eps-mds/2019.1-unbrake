@@ -1,5 +1,5 @@
 ---
-name: Bug reporte
+name: Reportar Bug
 about: Reporte um bug ou nos ajude a resolver algum
 title: ''
 labels: bug
@@ -11,13 +11,13 @@ assignees: ''
 
 Um descrição clara e concisa sobre o problema
 
-## Passos para reprodução 
+## Passos para reprodução
 
 Passos para reproduzir o comportamento.
 
 1. Vá para...
 2. Click em...
-...
+3. ...
 
 ### Comportamento atual
 
