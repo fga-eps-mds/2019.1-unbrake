@@ -16,7 +16,6 @@
     "redux-form": "^8.1.0",
     "redux-form-material-ui": "^5.0.0-beta.3",
     "recharts": "^1.5.0",
-    "axios": "^0.18.0",
     "redux-file-upload": "^0.0.19",
     "iniparser": "^1.0.5"
   },

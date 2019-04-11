@@ -1,0 +1,6 @@
+#!/bin/sh
+
+./manage.py makemigrations
+./manage.py migrate
+
+exec python manage.py "$@"

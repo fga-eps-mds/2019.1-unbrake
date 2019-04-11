@@ -1,0 +1,12 @@
+[flake8]
+
+exclude =
+  .git,
+  __pycache__,
+  env,
+  venv,
+  .env,
+  .venv
+
+per-file-ignores =
+    unbrake_api/settings.py:E501

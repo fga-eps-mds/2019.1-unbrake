@@ -2,18 +2,12 @@ import React from "react";
 import "./App.css";
 import { Route, BrowserRouter } from "react-router-dom";
 
-import Index from "./components/Index";
-import Configuration from "./components/Configuration";
-import Calibration from "./components/Calibration";
-import Test from "./components/Test";
-import Analysis from "./components/Analysis";
+// import Login from "./components/Login";
+import Login from "./components/Login";
 
 export default () => (
   <BrowserRouter>
-    <Route path="/Index" component={Index} />
-    <Route path="/configuration" component={Configuration} />
-    <Route path="/calibration" component={Calibration} />
-    <Route path="/test" component={Test} />
-    <Route path="/analysis" component={Analysis} />
+    {/* <Route exact path="/" component={Login} /> */}
+    <Route path="/index" component={Login} />
   </BrowserRouter>
 );
