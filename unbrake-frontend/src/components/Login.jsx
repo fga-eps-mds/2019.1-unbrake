@@ -90,7 +90,14 @@ const submit = values => {
     {
       method: "POST"
     }
-  ); // .then(response => console.log(response));
+  ).then(function(response) {
+    return response.json();
+  });
+  /*
+   * .then(function(parsedData) {
+   *   alert(`Seu token é: ${parsedData.data.tokenAuth.token}`);
+   * });
+   */
 };
 const loginPaper = (classes, handleSubmit, submitting) => {
   return (
