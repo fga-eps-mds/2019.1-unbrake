@@ -76,7 +76,6 @@ const loginButtons = (classes, submitting) => {
           variant="contained"
           disabled={submitting}
           fullWidth
-          onPress={cookie.set("token", "default", { path: "/" })}
         >
           Cadastrar
         </Button>
