@@ -28,7 +28,7 @@
     "fix": "npm run format && npm run lint",
     "check_lint": "eslint 'src/**/*.{js,jsx}'",
     "check_format": "prettier --check 'src/**/*.{js,jsx,css,scss}'",
-    "check_tests": "npm test -- --no-cache --coverage",
+    "check_tests": "./scripts/check_tests",
     "check": "npm run check_lint && npm run check_format && npm run check_tests"
   },
   "browserslist": [
