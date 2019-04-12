@@ -6,9 +6,11 @@ import Grid from "@material-ui/core/Grid";
 import Paper from "@material-ui/core/Paper";
 import { withStyles } from "@material-ui/core/styles";
 import PropTypes from "prop-types";
+import Cookies from "universal-cookie";
 
 const padding = 10;
 const baseUrl = "http://localhost:8000/graphql";
+const cookie = new Cookies();
 
 const styles = theme => ({
   root: {
@@ -74,6 +76,7 @@ const loginButtons = (classes, submitting) => {
           variant="contained"
           disabled={submitting}
           fullWidth
+          onPress={cookie.set("token", "default", { path: "/" })}
         >
           Cadastrar
         </Button>
@@ -90,14 +93,17 @@ const submit = values => {
     {
       method: "POST"
     }
-  ).then(function(response) {
-    return response.json();
-  });
-  /*
-   * .then(function(parsedData) {
-   *   alert(`Seu token é: ${parsedData.data.tokenAuth.token}`);
-   * });
-   */
+  )
+    .then(function(response) {
+      return response.json();
+    })
+    .then(function(parsedData) {
+      if (parsedData.data.tokenAuth !== null) {
+        cookie.set("token", parsedData.data.tokenAuth.token, { path: "/" });
+      } else {
+        // block login
+      }
+    });
 };
 const loginPaper = (classes, handleSubmit, submitting) => {
   return (
