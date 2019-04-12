@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
         <meta charset="utf-8" />
-        <title>UnBrake - Design Docs</title>
+        <title>UnBrake - Diagrama de Classe</title>
         <link rel="stylesheet" href="../theme/css/main.css" />
 </head>
 
@@ -11,8 +11,8 @@
                 <h1><a href="../">UnBrake </a></h1>
                 <nav><ul>
                     <li><a href="../category/arquitetura.html">Arquitetura</a></li>
-                    <li class="active"><a href="../category/design-docs.html">Design Docs</a></li>
-                    <li><a href="../category/diagrama-de-classe.html">Diagrama de Classe</a></li>
+                    <li><a href="../category/design-docs.html">Design Docs</a></li>
+                    <li class="active"><a href="../category/diagrama-de-classe.html">Diagrama de Classe</a></li>
                     <li><a href="../category/eap.html">EAP</a></li>
                     <li><a href="../category/plano-de-custo.html">Plano de Custo</a></li>
                     <li><a href="../category/requisitos.html">Requisitos</a></li>
@@ -22,35 +22,38 @@
 
             <aside id="featured" class="body">
                 <article>
-                    <h1 class="entry-title"><a href="../comunicacao-do-grafico-em-tempo-real.html">Comunicação do gráfico em tempo real</a></h1>
+                    <h1 class="entry-title"><a href="../diagrama-de-classes-da-api.html">Diagrama de Classes da API</a></h1>
 <footer class="post-info">
-        <abbr class="published" title="2018-04-06T15:59:00-04:00">
-                Published: Fri 06 April 2018
+        <abbr class="published" title="2019-04-06T17:51:00-04:00">
+                Published: Sat 06 April 2019
         </abbr>
 
         <address class="vcard author">
                 By                         <a class="url fn" href="../author/grupo-5.html">Grupo 5</a>
         </address>
-<p>In <a href="../category/design-docs.html">Design Docs</a>.</p>
+<p>In <a href="../category/diagrama-de-classe.html">Diagrama de Classe</a>.</p>
 
-</footer><!-- /.post-info --><h3>Descrição do problema</h3>
-<p>Como definido nos cenários do projeto o software necessita de atualização em tempo real das informações dos sensores em um gráfico com latência de até 2 segundos. O problema é que a arquitetura de micro serviços faz com que a comunicação entre os serviços seja feita pela rede e portanto está sensivel a dinâmica da internet: alta latência, perda de pacotes, mudanças de rotas, entrega de pacotes de forma não ordenada.</p>
-<hr>
-<h3>Impacto</h3>
-<p>Dependendo da arquitetura assumida o software fica dependendo totalmente da entrega da rede podendo assim fazer com que o gráfico não fique flúido para o usuário e impedindo o mesmo de tomar algumas decisões baseadas no feedback (como por exemplo desligar a máquina caso o experimento não esteja indo bem).</p>
-<hr>
-<h3>Possíveis soluções</h3>
-<h4>Utilizar comunicação via socket (João Robson)</h4>
-<p>Apenas utilizar um socket para comunicar diretamente ao backend</p>
-<h4>Comunicar direto com o backend</h4>
-<p>Fazer com que o Front-end comunique com o back-end diretamente sem passar pela API</p>
-<h4>Assinatura via API e comunicação direta (Felipe Borges)</h4>
-<p>Fazer com que a API envie para o simulador informações sobre a porta e ip e com isso comunicar uma stream de dados diretamente via front-back utilizando a API como um intemediário</p>
-<h4>Utilizar MQTT (Icaro Pires)</h4>
-<p>Usar o protocolo MQTT</p>
-<hr>
-<h3>Conclusão</h3>
-<p>Decidimos mesclar duas soluções, utilizar a API como um intermediário para fazer as assinaturas e estabelecer uma stream de dados diretamente com o backend porém utilizando o protocolo MQTT para transferir essas informações. Perceba que o protocolo MQTT necessita de um broker para realizar a documentação assincrona.</p>                </article>
+</footer><!-- /.post-info --><h2>Histórico de Revisão</h2>
+<table>
+<thead>
+<tr>
+<th align="center">Data</th>
+<th>Responsável</th>
+<th align="center">Versão</th>
+<th>Mudança realizada</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td align="center"><strong>06/04/19</strong></td>
+<td><a href="https://github.com/leticiaarj">@leticiaarj</a></td>
+<td align="center">1</td>
+<td>Modelo Inicial do Diagrama em UML que será utilizado no projeto</td>
+</tr>
+</tbody>
+</table>
+<h2>Versão 1</h2>
+<p><img src="../site/images/diagrama-de-classe-v1.png"></p>                </article>
             </aside><!-- /#featured -->
         <section id="extras" class="body">
                 <div class="blogroll">
