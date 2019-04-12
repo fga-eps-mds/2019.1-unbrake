@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+        <meta charset="utf-8" />
+        <title>UnBrake - Plano de Custo</title>
+        <link rel="stylesheet" href="../theme/css/main.css" />
+</head>
+
+<body id="index" class="home">
+        <header id="banner" class="body">
+                <h1><a href="../">UnBrake </a></h1>
+                <nav><ul>
+                    <li><a href="../category/arquitetura.html">Arquitetura</a></li>
+                    <li><a href="../category/design-docs.html">Design Docs</a></li>
+                    <li><a href="../category/diagrama-de-classe.html">Diagrama de Classe</a></li>
+                    <li><a href="../category/eap.html">EAP</a></li>
+                    <li class="active"><a href="../category/plano-de-custo.html">Plano de Custo</a></li>
+                    <li><a href="../category/requisitos.html">Requisitos</a></li>
+                    <li><a href="../category/tap.html">TAP</a></li>
+                </ul></nav>
+        </header><!-- /#banner -->
+
+            <aside id="featured" class="body">
+                <article>
+                    <h1 class="entry-title"><a href="../plano-de-custo-do-unbrake.html">Plano de Custo do UnBrake</a></h1>
+<footer class="post-info">
+        <abbr class="published" title="2019-04-06T17:30:00-04:00">
+                Published: Sat 06 April 2019
+        </abbr>
+
+        <address class="vcard author">
+                By                         <a class="url fn" href="../author/grupo-5.html">Grupo 5</a>
+        </address>
+<p>In <a href="../category/plano-de-custo.html">Plano de Custo</a>.</p>
+
+</footer><!-- /.post-info --><script type="text/x-mathjax-config">
+    MathJax.Hub.Config({
+      tex2jax: {
+        skipTags: ['script', 'noscript', 'style', 'textarea', 'pre'],
+        inlineMath: [['$','$']]
+      }
+    });
+</script>
+
+<script src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML" type="text/javascript"></script>
+
+<h2>1. Introdução</h2>
+<p>Este documento abrange uma visão detalhada do custo estimado para o desenvolvimento do produto UnBrake. O custo total está dividido em 3 parte:</p>
+<ul>
+<li>Custo dos desenvolvedores e gerentes;</li>
+<li>Custo de equipamentos e infraestrutura;</li>
+<li>Margem de lucro e risco do projeto (dependem dos dois citados acima)</li>
+</ul>
+<h2>2. Estimativa do custo de pessoal</h2>
+<p>Levando em consideração a média salarial para cada papel específico da equipe (desenvolvedor, arquiteto, devops, scrum master e product owner), a estimativa do custo de pessoal do desenvolvimento do produto é dado pela seguinte equação:</p>
+<blockquote>
+<p>Equação custo de pessoal $cp$</p>
+<p>$$cp = (nDevelopers * hourDeveloper + nManagers * hourManager) * (nSprints * hoursPerWeek)$$ (1)</p>
+</blockquote>
+<p>onde:</p>
+<ul>
+<li>$cp$: custo total de pessoal;</li>
+<li>$nDevelopers$: constante de valor 5 representando o número de desenvolvedores na equipe;</li>
+<li>$nManagers$: constante de valor 4 representando o número de gerentes na equipe;</li>
+<li>$hourDeveloper$: variável que representa o valor da hora de um desenvolvedor. Considerado como sendo igual a 35;</li>
+<li>$hourManager$: variável que representa o valor da hora de um desenvolvedor. Considerado como sendo igual a 48;</li>
+<li>$nSprints$: constante de valor 13 considerando a sprint 0;</li>
+<li>$hoursPerWeek$: variável com o esforço médio em horas por semana requirido para cada membro da equipe. Considerado como sendo igual a 8.</li>
+</ul>
+<p>Sendo assim, temos que $cp$ é igual a:</p>
+<blockquote>
+<p>$$cp = (5 * 35 + 4 * 48) * 13 * 8$$
+$$cp = 38.168,00$$</p>
+</blockquote>
+<h2>3. Estimativa de custo de equipamento e infraestrutura</h2>
+<h3>3.1 Equipamento</h3>
+<p>Para o cáculo de equipamento, será considerado o valor de depreciação dos notebooks utilizados pelos integrantes da equipe. Serão necessárias as seguintes equações de descapitalização e conversão de juros para que o cálculo seja aplicado corretamente:</p>
+<blockquote>
+<p>Equação de descapitalização em um período de tempo</p>
+<p>$$valorFuturo = \frac{valorPresente}{(1+(\frac{taxaDepreciacaoMensal}{100})^{(\frac{nInicio}{nFim})})}$$ (2)</p>
+<p>Equação de conversão de taxa de juros</p>
+<p>$$1+taxaConhecida = (1+taxaAlvo)^{periodo}$$ (3)</p>
+</blockquote>
+<p>O valor total de depreciação dos equipamentos é o somatório da diferença do valor de aquisição de cada notebook com o seu valor ao final do projeto para uma $taxaDepreciacaoAnual$ igual a 20%, $nInicio=1$ e $nFim=3$ (o projeto possui duração de 13 sprints de 1 semana). A seguinte equação torna isso mais claro:</p>
+<blockquote>
+<p>Equação para o cálculo total do custo de equipamento $ce$</p>
+<p>$$ce = \sum_{i=1}^9 valorPresente_{i} - valorFuturo_{i}$$ (4)</p>
+</blockquote>
+<p>Aplicando a conversão da $taxaDepreciacaoAnual$ (3) obtemos a $taxaDepreciacaoMensal$:</p>
+<blockquote>
+<p>$$1 + 0.2 = (1 + taxaDepreciacaoMensal)^{12}$$
+$$(1 + 0.2)^{\frac{1}{12}} = 1 + taxaDepreciacaoMensal$$
+$$taxaDepreciacaoMensal = 0.0153$$</p>
+</blockquote>
+<p>Aplicando a equação (2) para cada um dos notebooks dos 9 membros da equipe, considerando que todos possuem o $valorPresente = 3.000,00$ e em seguida utilizando os valores conhecidos na equação (4) chegaremos ao resultado de $ce$</p>
+<blockquote>
+<p>Valor final de $ce$</p>
+<p>$$valorFuturo = \frac{3000}{1+\frac{0.0153}{100}^{\frac{1}{3}}}$$
+$$valorFuturo = 2.847,69$$</p>
+<p>$$ce = 9*(3000 - 2847,69)$$
+$$ce = 1.370,79$$</p>
+</blockquote>
+<h3>3.2 Infraestrutura</h3>
+<p>O sistema ficará hospedado em um servidor Kubernetes em nuvem da DigitalOcean durante seus 3 meses de duração. De acordo com o <a href="https://www.digitalocean.com/pricing/">site oficial da DigitalOcean</a>, o valor mensal de um Kubernetes é de 30 dólares americanos. Considerando o valor médio do dólar americano como sendo R$ 3,85, temos que o custo de infraestrutura $ci$ do projeto é de:</p>
+<blockquote>
+<p>Custo de infraestrutura $ci$</p>
+<p>$$ci = 3 * 30 * 3,85$$
+$$ci = 346,50$$</p>
+</blockquote>
+<h2>4. Lucro, Risco e custo total</h2>
+<p>A porcentagem de lucro e risco serão aplicados sobre a somatória do custo de pessoal $cp$, custo de equipamento $ce$ e custo da infraestrutura $ci$ calculados nos tópicos anteriores.
+A taxa de lucro aplicada sera de 20% ($lucro = 0.2$). Já a taxa de risco será de 45% devido aos seguintes fatores:
+* O sistema precisa lidar com dados em real time;
+* É necessário fazer comunicação serial com o sistema embarcado controlador do simulador de frenagem;
+* Como o simulador de frenagem é um sistema mecânico, existe o requisito implícito que o software precisa ter uma alta qualidade e nível de testes.</p>
+<p>Sendo assim, o custo total $ct$ to projeto fica:</p>
+<blockquote>
+<p>Custo total do projeto</p>
+<p>$$ct = (cp + ce + ci) * (1 + 0.2 + 0.45)$$
+$$ct = (38.168,00 + 1.370,79 + 346,50) * (1,65)$$
+$$ct = 65.810,73$$</p>
+</blockquote>                </article>
+            </aside><!-- /#featured -->
+        <section id="extras" class="body">
+                <div class="blogroll">
+                        <h2>links</h2>
+                        <ul>
+                            <li><a href="http://getpelican.com/">Pelican</a></li>
+                            <li><a href="http://python.org/">Python.org</a></li>
+                            <li><a href="http://jinja.pocoo.org/">Jinja2</a></li>
+                            <li><a href="#">You can modify those links in your config file</a></li>
+                        </ul>
+                </div><!-- /.blogroll -->
+                <div class="social">
+                        <h2>social</h2>
+                        <ul>
+
+                            <li><a href="#">You can add links in your config file</a></li>
+                            <li><a href="#">Another social link</a></li>
+                        </ul>
+                </div><!-- /.social -->
+        </section><!-- /#extras -->
+
+        <footer id="contentinfo" class="body">
+                <address id="about" class="vcard body">
+                Proudly powered by <a href="http://getpelican.com/">Pelican</a>, which takes great advantage of <a href="http://python.org">Python</a>.
+                </address><!-- /#about -->
+
+                <p>The theme is by <a href="http://coding.smashingmagazine.com/2009/08/04/designing-a-html-5-layout-from-scratch/">Smashing Magazine</a>, thanks!</p>
+        </footer><!-- /#contentinfo -->
+
+</body>
+</html>
