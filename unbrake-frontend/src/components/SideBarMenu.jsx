@@ -32,34 +32,33 @@ import Test from "./Test";
 import Analysis from "./Analysis";
 
 const drawerWidth = 240;
-const ZERO = 0;
-const UM = 1;
-const DOIS = 2;
-const TRES = 3;
-const SETE = 7;
-const NOVE = 9;
-const DOZE = 12;
-const TRINTA_SEIS = 36;
+const drawerCloseWidth = 7;
+const themeWidth = 9;
+const flexGrowValue = 1;
+const menuButtonLeft = 12;
+const menuButtonRight = 36;
+const flexShrinkValue = 0;
+const optionsId = ["analysisId", "configurationId", "calibrationId", "testId"];
 
 const listMenu = (location, history) => {
   const list = ["analysis", "configuration", "calibration", "test"].map(
     (text, index) => {
       let nome;
       let icon;
-      switch (index) {
-        case ZERO:
+      switch (optionsId[index]) {
+        case "analysisId":
           nome = "Análise";
           icon = <ShowChart />;
           break;
-        case UM:
+        case "configurationId":
           nome = "Configuração";
           icon = <Settings />;
           break;
-        case DOIS:
+        case "calibrationId":
           nome = "Calibração";
           icon = <Equalizer />;
           break;
-        case TRES:
+        case "testId":
           nome = "Teste";
           icon = <Assignment />;
           break;
@@ -126,7 +125,7 @@ const IconButtons = (classes, handleDrawerClose, theme) => {
 
 const RouteLogic = () => {
   return (
-    <main style={{ flex: 1 }}>
+    <main style={{ flex: flexGrowValue }}>
       <Route path="/configuration" component={() => <Configuration />} />
       <Route path="/analysis" component={() => <Analysis />} />
       <Route path="/calibration" component={() => <Calibration />} />
@@ -201,7 +200,7 @@ SideBarMenu.propTypes = {
 };
 const appBar = theme => ({
   backgroundColor: "#8B0000",
-  zIndex: theme.zIndex.drawer + UM,
+  zIndex: theme.zIndex.drawer + flexGrowValue,
   transition: theme.transitions.create(["width", "margin"], {
     easing: theme.transitions.easing.sharp,
     duration: theme.transitions.duration.leavingScreen
@@ -224,15 +223,15 @@ const styles = theme => ({
   appBar: appBar(theme),
   appBarShift: appBarShift(theme),
   menuButton: {
-    marginLeft: DOZE,
-    marginRight: TRINTA_SEIS
+    marginLeft: menuButtonLeft,
+    marginRight: menuButtonRight
   },
   hide: {
     display: "none"
   },
   drawer: {
     width: drawerWidth,
-    flexShrink: ZERO,
+    flexShrink: flexShrinkValue,
     whiteSpace: "nowrap"
   },
   drawerOpen: {
@@ -248,9 +247,9 @@ const styles = theme => ({
       duration: theme.transitions.duration.leavingScreen
     }),
     overflowX: "hidden",
-    width: theme.spacing.unit * SETE + UM,
+    width: theme.spacing.unit * drawerCloseWidth + flexGrowValue,
     [theme.breakpoints.up("sm")]: {
-      width: theme.spacing.unit * NOVE + UM
+      width: theme.spacing.unit * themeWidth + flexGrowValue
     }
   },
   toolbar: {
@@ -261,8 +260,8 @@ const styles = theme => ({
     ...theme.mixins.toolbar
   },
   content: {
-    flexGrow: UM,
-    padding: theme.spacing.unit * TRES
+    flexGrow: flexGrowValue,
+    padding: theme.spacing.unit + theme.spacing.unit + theme.spacing.unit
   }
 });
 
