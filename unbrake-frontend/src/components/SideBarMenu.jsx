@@ -32,6 +32,8 @@ import Test from "./Test";
 import Analysis from "./Analysis";
 
 const drawerWidth = 240;
+
+// Fix this!!!!!
 const ZERO = 0;
 const UM = 1;
 const DOIS = 2;
@@ -40,11 +42,12 @@ const SETE = 7;
 const NOVE = 9;
 const DOZE = 12;
 const TRINTA_SEIS = 36;
+//
 
 const listMenu = (location, history) => {
   const list = ["analysis", "configuration", "calibration", "test"].map(
     (text, index) => {
-      let nome;
+      let nome; // Fix this!!!
       let icon;
       switch (index) {
         case ZERO:
@@ -68,10 +71,9 @@ const listMenu = (location, history) => {
           break;
       }
       return (
-        <React.Fragment>
+        <React.Fragment key={text}>
           <ListItem
             button
-            key={text}
             onClick={() => {
               const to = `/${text}`;
               if (location.pathname !== to) {
@@ -103,11 +105,7 @@ const ToolBar = (classes, open, handleDrawerOpen) => {
       >
         <Menu />
       </IconButton>
-      <Button
-        style={{ "text-transform": "none" }}
-        color="inherit"
-        href="/index"
-      >
+      <Button style={{ textTransform: "none" }} color="inherit" href="/index">
         UnBrake
       </Button>
     </Toolbar>
@@ -152,6 +150,7 @@ const SideBarMenu = class extends React.PureComponent {
   render() {
     const { classes, theme } = this.props;
     const { open } = this.state;
+
     return (
       <BrowserRouter>
         <Route
@@ -197,7 +196,11 @@ const SideBarMenu = class extends React.PureComponent {
 
 SideBarMenu.propTypes = {
   classes: PropTypes.objectOf(PropTypes.string).isRequired,
-  theme: PropTypes.objectOf(PropTypes.string).isRequired
+  theme: PropTypes.oneOfType([
+    PropTypes.func,
+    PropTypes.string,
+    PropTypes.object
+  ]).isRequired
 };
 const appBar = theme => ({
   backgroundColor: "#8B0000",
