@@ -22,9 +22,7 @@ describe("<RealTimeChart />", () => {
         <Provider context={context} store={store}>
           <RealTimeChart context={context} />
         </Provider>
-        
       );
-      
 
       expect(toJson(wrapper)).toMatchSnapshot();
     });
