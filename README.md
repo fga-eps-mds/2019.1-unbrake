@@ -1,6 +1,8 @@
 # 2019.1 UnBrake
 
 [![Build Status](https://travis-ci.com/fga-eps-mds/2019.1-unbrake.svg?branch=master)](https://travis-ci.com/fga-eps-mds/2019.1-unbrake)
+[![Maintainability](https://api.codeclimate.com/v1/badges/f8957e6e7e0bdced21c9/maintainability)](https://codeclimate.com/github/fga-eps-mds/2019.1-unbrake/maintainability)
+[![Test Coverage](https://api.codeclimate.com/v1/badges/f8957e6e7e0bdced21c9/test_coverage)](https://codeclimate.com/github/fga-eps-mds/2019.1-unbrake/test_coverage)
 [![code style: prettier](https://img.shields.io/badge/code_style-prettier-ff69b4.svg?style=flat-square)](https://github.com/prettier/prettier)
 [![pullreminders](https://pullreminders.com/badge.svg)](https://pullreminders.com?ref=badge)
 

@@ -1,0 +1,39 @@
+version: "2"
+plugins:
+  eslint:
+    enabled: true
+  csslint:
+    enabled: true
+  pep8:
+    enabled: true
+  radon:
+    enabled: true
+  sonar-python:
+    enabled: true
+  nodesecurity:
+    enabled: true
+  fixme:
+    enabled: true
+  duplication:
+    enabled: true
+  exclude_patterns:
+    - "**/node_modules/"
+    - "**/scripts/"
+    - "**/hooks/"
+    - "**/secrets/"
+    - "**/spec/"
+    - "**/tests/"
+    - "**/test_*/"
+    - "**/__pycache__/"
+    - "**/migrations/"
+    - "**/env/"
+    - "**/.env/"
+    - "**/venv/"
+    - "**/.venv/"
+    - ".*"
+    - "wsgi.py"
+    - "settings.py"
+    - "runner.py"
+    - "schema.py"
+    - "manage.py"
+    - "db.sqlite3"
