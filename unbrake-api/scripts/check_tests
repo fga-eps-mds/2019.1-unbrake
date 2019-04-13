@@ -1,4 +1,4 @@
 #!/bin/sh
 
 cd /app/api
-pytest
+python manage.py test

@@ -1,0 +1,13 @@
+#!/bin/sh
+
+echo -e "\n=========================================================================="
+echo "Checking everything on API..."
+echo -e "==========================================================================\n"
+
+cd /app/api/scripts
+
+(./check_format \
+   && ./check_lint \
+   && ./check_tests \
+   && echo -e "\n\033[0;32mCool! All checks succeeded!\033[0m" \
+   && exit 0; exit 1)
