@@ -41,10 +41,10 @@ script:
   - if [ -d unbrake ]; then echo 'The unbrake folder must not exist!' && (exit 1); fi
 
   # Frontend checks
-  - docker-compose exec frontend npm run check
+  - docker-compose exec frontend npm run check_all
 
   # API checks
-  - docker-compose exec api check
+  - docker-compose exec api python manage.py check_all
 
 after_install:
   - docker-compose down -v

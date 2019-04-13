@@ -98,7 +98,10 @@ const submit = values => {
     })
     .then(function(parsedData) {
       if (parsedData.data.tokenAuth !== null) {
-        cookie.set("token", parsedData.data.tokenAuth.token, { path: "/" });
+        cookie.set("token", parsedData.data.tokenAuth.token, {
+          path: "/",
+          httpOnly: false
+        });
       } else {
         // block login
       }

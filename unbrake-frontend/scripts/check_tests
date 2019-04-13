@@ -1,0 +1,18 @@
+#!/bin/sh
+
+tmpFile="/tmp/unbrake_frontend_test"
+
+npm test -- -u --no-cache --coverage --ci --colors 2>&1 | tee $tmpFile
+
+# Check for console.log or warnings on tests
+grep -e 'console\.*' \
+	 -e 'Warning: ' \
+	 $tmpFile &>/dev/null \
+  && echo -e "\033[0;31m=======================================\033[0m" \
+  && echo -e "\033[0;31m>> Found warnings or consoles on tests <<\033[0m" \
+  && echo -e "\033[0;31m=======================================\033[0m" \
+  && rm -rf $tmpFile \
+  && exit 1
+
+rm -rf $tmpFile
+exit 0
