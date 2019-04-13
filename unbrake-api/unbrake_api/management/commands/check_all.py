@@ -1,5 +1,5 @@
 '''
-Link check_all script to a manage.py commanD
+Link check_all script to a manage.py command
 '''
 
 import os

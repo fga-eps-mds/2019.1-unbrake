@@ -44,7 +44,6 @@ script:
   - docker-compose exec frontend npm run check_all
 
   # API checks
-  - docker-compose exec api python manage.py check # From Django
   - docker-compose exec api python manage.py check_all
 
 after_install:

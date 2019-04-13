@@ -3,7 +3,7 @@
 source scripts/scripts_environments
 
 run_command(){
-	echo -n "Running $1..."
+	echo -n "Running ${0:2}..."
 	$* &> $tmpOutputFile
 
 	if [ $? = 0 ]; then
