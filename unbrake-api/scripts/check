@@ -1,34 +1,13 @@
 #!/bin/sh
 
-run_command(){
-	echo -n "Running $1..."
-	$* &> $tmpOutputFile
-
-	if [ $? = 0 ]; then
-		echo -e " \033[0;32mOK!\033[0m"
-	else
-		echo -e " \033[0;31mFAILED!\033[0m\n"
-		cat $tmpOutputFile
-
-		echo -e "\033[0;31mSome check failed :(\033[0m"
-		echo -e "\033[0;33mHave you tried to rebuilding the image? Try look the tool documentation as well!\033[0m"
-
-		exit 1
-	fi
-}
-
-source scripts/scripts_environments
-cd /app/api
-
 echo -e "\n=========================================================================="
 echo "Checking everything on API..."
 echo -e "==========================================================================\n"
 
-run_command autopep8 -a -a -r --diff --exit-code .
-run_command flake8 .
-run_command pylint *
+cd /app/api/scripts
 
-rm -rf $tmpOutputFile
-echo -e "\n\033[0;32mCool! All checks succeeded! What about tests?...\033[0m"
-
-pytest && echo -e "\n\033[0;32mEverything is fine!\033[0m"
+(./check_format \
+   && ./check_lint \
+   && ./check_tests \
+   && echo -e "\n\033[0;32mCool! All checks succeeded!\033[0m" \
+   && exit 0; exit 1)

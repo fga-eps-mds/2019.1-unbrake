@@ -1,0 +1,6 @@
+#!/bin/sh
+
+cd /app/api
+source scripts/functions.sh
+
+run_command pylint *

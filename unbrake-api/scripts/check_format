@@ -1,0 +1,7 @@
+#!/bin/sh
+
+cd /app/api
+source scripts/functions.sh
+
+run_command flake8 .
+run_command autopep8 -a -a -r --diff --exit-code .
