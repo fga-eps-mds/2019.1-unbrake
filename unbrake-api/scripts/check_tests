@@ -3,4 +3,4 @@
 cd /app/api
 source scripts/functions.sh
 
-run_command python manage.py check
+run_command python manage.py test

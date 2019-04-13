@@ -3,4 +3,5 @@
 cd /app/api
 source scripts/functions.sh
 
-run_command python manage.py check
+autopep8 -i -a -a -r .
+echo 'Files fixed!'
