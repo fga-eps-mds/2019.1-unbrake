@@ -93,10 +93,10 @@ const submit = values => {
       method: "POST"
     }
   )
-    .then(function(response) {
+    .then(response => {
       return response.json();
     })
-    .then(function(parsedData) {
+    .then(parsedData => {
       if (parsedData.data.tokenAuth !== null) {
         cookie.set("token", parsedData.data.tokenAuth.token, {
           path: "/",
