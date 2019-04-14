@@ -1,0 +1,8 @@
+#!/bin/sh
+
+cd /app/api
+source scripts/functions.sh
+
+run_command coverage run --source "." manage.py test \
+	&& coverage xml \
+	&& coverage report
