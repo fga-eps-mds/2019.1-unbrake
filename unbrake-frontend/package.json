@@ -29,7 +29,9 @@
     "check_lint": "eslint 'src/**/*.{js,jsx}'",
     "check_format": "prettier --check 'src/**/*.{js,jsx,css,scss}'",
     "check_tests": "./scripts/check_tests",
-    "check_all": "npm run check_lint && npm run check_format && npm run check_tests"
+    "check_tests:coverage": "npm test -- --ci --coverage --coveragePathIgnorePatterns src/serviceWorker.js index.js src/tests --coverageReporters lcov text --coverageDirectory src/tests/coverage",
+    "check_tests:coverage:html": "npm test -- --ci --coverage --coveragePathIgnorePatterns src/serviceWorker.js index.js src/tests --coverageReporters html text --coverageDirectory src/tests/coverage",
+    "check_all": "npm run check_lint && npm run check_format && npm run check_tests:coverage"
   },
   "browserslist": [
     ">0.2%",

@@ -2,7 +2,7 @@
 
 tmpFile="/tmp/unbrake_frontend_test"
 
-npm test -- -u --no-cache --coverage --ci --colors 2>&1 | tee $tmpFile
+npm test -- -u --no-watch --no-cache --ci --colors 2>&1 | tee $tmpFile
 
 # Check for console.log or warnings on tests
 grep -e 'console\.*' \
