@@ -1,5 +1,6 @@
 import React from "react";
 import PropTypes from "prop-types";
+import { connect } from "react-redux";
 
 import {
   LineChart,
@@ -12,6 +13,30 @@ import {
 } from "recharts";
 
 class RealTimeChart extends React.PureComponent {
+  renderGraphic1(Label1) {
+    const { graphic1 } = this.props;
+    if (graphic1)
+      return (
+        <Line
+          type="monotone"
+          dataKey={Label1}
+          stroke="#FF1493"
+          activeDot={{ r: 8 }}
+        />
+      );
+
+    return null;
+  }
+
+  renderGraphic2(Label2) {
+    const { graphic2 } = this.props;
+
+    if (graphic2)
+      return <Line type="monotone" dataKey={Label2} stroke=" #FF8C69" />;
+
+    return null;
+  }
+
   render() {
     const { data, X, Y, Label1, Label2 } = this.props;
     return (
@@ -38,13 +63,8 @@ class RealTimeChart extends React.PureComponent {
         <YAxis label={{ value: Y, angle: -90, position: "insideLeft" }} />
         <Tooltip />
         <Legend />
-        <Line
-          type="monotone"
-          dataKey={Label1}
-          stroke="#FF1493"
-          activeDot={{ r: 8 }}
-        />
-        <Line type="monotone" dataKey={Label2} stroke=" #FF8C69" />
+        {this.renderGraphic1(Label1)}
+        {this.renderGraphic2(Label2)}
       </LineChart>
     );
   }
@@ -54,7 +74,9 @@ RealTimeChart.propTypes = {
   X: PropTypes.string,
   Y: PropTypes.string,
   Label1: PropTypes.string,
-  Label2: PropTypes.string
+  Label2: PropTypes.string,
+  graphic1: PropTypes.bool,
+  graphic2: PropTypes.bool
 };
 RealTimeChart.defaultProps = {
   data: [
@@ -77,7 +99,17 @@ RealTimeChart.defaultProps = {
   X: "Eixo X",
   Y: "Eixo Y",
   Label1: "Frenagem",
-  Label2: "Velocidade"
+  Label2: "Velocidade",
+  graphic1: false,
+  graphic2: false
 };
 
-export default RealTimeChart;
+const mapStateToProps = state => ({
+  graphic1: state.configReducer.graphic1,
+  graphic2: state.configReducer.graphic2
+});
+
+export default connect(
+  mapStateToProps,
+  {}
+)(RealTimeChart);

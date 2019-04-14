@@ -6,8 +6,11 @@ import Grid from "@material-ui/core/Grid";
 import Paper from "@material-ui/core/Paper";
 import { withStyles } from "@material-ui/core/styles";
 import PropTypes from "prop-types";
+import Cookies from "universal-cookie";
 
 const padding = 10;
+const baseUrl = "http://localhost:8000/graphql";
+const cookie = new Cookies();
 
 const styles = theme => ({
   root: {
@@ -81,8 +84,28 @@ const loginButtons = (classes, submitting) => {
   );
 };
 
-const submit = () => {
-  return "Usuário logado";
+const submit = values => {
+  fetch(
+    `${baseUrl}?query=mutation{tokenAuth(username:"${
+      values.username
+    }",password:"${values.password}"){token}}`,
+    {
+      method: "POST"
+    }
+  )
+    .then(function(response) {
+      return response.json();
+    })
+    .then(function(parsedData) {
+      if (parsedData.data.tokenAuth !== null) {
+        cookie.set("token", parsedData.data.tokenAuth.token, {
+          path: "/",
+          httpOnly: false
+        });
+      } else {
+        // block login
+      }
+    });
 };
 const loginPaper = (classes, handleSubmit, submitting) => {
   return (
