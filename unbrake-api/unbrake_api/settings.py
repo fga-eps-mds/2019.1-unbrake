@@ -63,16 +63,19 @@ INSTALLED_APPS = [
     'unbrake_api',
     'graphene_django',
     'configuration',
+    'corsheaders',
 ]
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
+    'corsheaders.middleware.CorsMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+
 ]
 
 ROOT_URLCONF = 'unbrake_api.urls'
@@ -148,5 +151,22 @@ STATIC_URL = '/static/'
 
 
 GRAPHENE = {
+    'MIDDLEWARE': [
+        'graphql_jwt.middleware.JSONWebTokenMiddleware',
+    ],
     'SCHEMA': 'unbrake_api.schema.schema'
 }
+
+AUTHENTICATION_BACKENDS = {
+    'graphql_jwt.backends.JSONWebTokenBackend',
+    'django.contrib.auth.backends.ModelBackend',
+}
+
+CORS_ORIGIN_WHITELIST = (
+    'localhost:3000'
+)
+
+CORS_ALLOW_METHODS = (
+    'GET',
+    'POST',
+)
