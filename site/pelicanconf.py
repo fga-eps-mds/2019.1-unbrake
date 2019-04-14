@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*- #
 from __future__ import unicode_literals
 
-AUTHOR = 'Grupo 5'
+AUTHOR = 'UnBrake'
 SITENAME = 'UnBrake'
 SITEURL = 'https://fga-eps-mds.github.io/2019.1-unbrake'
 
@@ -25,10 +25,9 @@ AUTHOR_FEED_RSS = None
 
 
 # Blogroll
-LINKS = (('Pelican', 'http://getpelican.com/'),
-         ('Python.org', 'http://python.org/'),
-         ('Jinja2', 'http://jinja.pocoo.org/'),
-         ('You can modify those links in your config file', '#'),)
+LINKS = (
+            ('GitHub', 'https://github.com/fga-eps-mds/2019.1-unbrake'),
+        )
 
 # Social widget
 SOCIAL = (('You can add links in your config file', '#'),
@@ -38,3 +37,10 @@ DEFAULT_PAGINATION = 10
 
 # Uncomment following line if you want document-relative URLs when developing
 RELATIVE_URLS = True
+
+# Theme configuration
+THEME = 'theme'
+SIDEBAR_DIGEST = "Com a UnBrake você nunca ficará sem freio!"
+SOCIAL = (
+            ('GitHub', 'https://github.com/fga-eps-mds/2019.1-unbrake'),
+         )

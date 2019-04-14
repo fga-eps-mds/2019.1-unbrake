@@ -1,6 +1,6 @@
 Title: Estrutura Analítica do UnBrake
 Date: 2019-04-05 16:25
-Category: EAP
+Category: Engenharia de Produto
 
 
 ## Histórico de Revisão

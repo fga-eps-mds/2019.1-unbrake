@@ -1,44 +1,94 @@
-<!DOCTYPE html>
-<html lang="en">
+<!doctype html>
+<html lang="en" itemscope itemtype="http://schema.org/Person">
 <head>
-        <meta charset="utf-8" />
+            <meta charset="utf-8">
+        <!-- Site Meta Data -->
         <title>Arquitetura do projeto</title>
-        <link rel="stylesheet" href="./theme/css/main.css" />
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="description" content="">
+        <meta name="author" content="UnBrake">
+
+        <link rel="shortcut icon" href="">
+
+        <!-- schema.org -->
+        <meta itemprop="name" content="UnBrake">
+        <meta itemprop="image" content="">
+        <meta itemprop="description" content="">
+
+        <link href='https://fonts.googleapis.com/css?family=Open+Sans:400,600,700' rel='stylesheet' type='text/css'>
+        <!-- Style Meta Data -->
+        <link rel="stylesheet" href="./theme/css/style.css" type="text/css"/>
+        <link rel="stylesheet" href="./theme/css/pygments.css" type="text/css"/>
+
+        <!-- Feed Meta Data -->
+
+        <!-- Twitter Feed -->
+        <meta name="twitter:card" content="summary">
+        <meta name="twitter:site" content="">
+        <meta name="twitter:image" content="">
+
+    <meta name="twitter:creator" content="">
+    <meta name="twitter:url" content="./arquitetura-do-projeto.html">
+    <meta name="twitter:title" content="UnBrake ~ Arquitetura do projeto">
+    <meta name="twitter:description" content="Documento de Arquitetura Este documento tem como objetivo relatar de forma técnica o software utilizando várias visões da arquitetura do mesmo. Este documento é conhecido na literatura como 4+1 architecture blueprints. Cenários Os cenários estão escritos neste link. Visão Lógica Uma breve visão de nossa arquitetura Nosso projeto está …">
+
+    <!-- Facebook Meta Data -->
+    <meta property="og:title" content="UnBrake ~ Arquitetura do projeto"/>
+    <meta property="og:description" content="Documento de Arquitetura Este documento tem como objetivo relatar de forma técnica o software utilizando várias visões da arquitetura do mesmo. Este documento é conhecido na literatura como 4+1 architecture blueprints. Cenários Os cenários estão escritos neste link. Visão Lógica Uma breve visão de nossa arquitetura Nosso projeto está …"/>
+    <meta property="og:image" content=""/>
 </head>
 
-<body id="index" class="home">
-        <header id="banner" class="body">
-                <h1><a href="./">UnBrake </a></h1>
-                <nav><ul>
-                    <li class="active"><a href="./category/arquitetura.html">Arquitetura</a></li>
-                    <li><a href="./category/design-docs.html">Design Docs</a></li>
-                    <li><a href="./category/diagrama-de-classe.html">Diagrama de Classe</a></li>
-                    <li><a href="./category/eap.html">EAP</a></li>
-                    <li><a href="./category/plano-de-custo.html">Plano de Custo</a></li>
-                    <li><a href="./category/requisitos.html">Requisitos</a></li>
-                    <li><a href="./category/tap.html">TAP</a></li>
-                </ul></nav>
-        </header><!-- /#banner -->
-<section id="content" class="body">
-  <article>
-    <header>
-      <h1 class="entry-title">
-        <a href="./arquitetura-do-projeto.html" rel="bookmark"
-           title="Permalink to Arquitetura do projeto">Arquitetura do projeto</a></h1>
-    </header>
+<body>
+<!-- Sidebar -->
+<aside>
+    <!--<center><a href="."><img id="avatar" src=""></a></center>-->
+    <h1>UnBrake</h1>
+        <p>Com a UnBrake você nunca ficará sem freio!</p>
+    <br>
 
-    <div class="entry-content">
-<footer class="post-info">
-        <abbr class="published" title="2018-04-02T21:11:00-04:00">
-                Published: Mon 02 April 2018
-        </abbr>
 
-        <address class="vcard author">
-                By                         <a class="url fn" href="./author/felipe-borges.html">Felipe Borges</a>
-        </address>
-<p>In <a href="./category/arquitetura.html">Arquitetura</a>.</p>
+    <nav class="nav">
+        <ul class="list-bare">
 
-</footer><!-- /.post-info -->      <h2>Documento de Arquitetura</h2>
+
+
+        </ul>
+    </nav>
+
+    <p class="social">
+                <a href="https://github.com/fga-eps-mds/2019.1-unbrake" target="_blank"><img
+                        src="./theme/images/icons/github.png"></a>
+    </p>
+
+        <h2>Categories</h2>
+        <ul class="navbar">
+                <li class="active"><a
+                        href="./category/arquitetura.html">Arquitetura</a></li>
+                <li><a
+                        href="./category/design-docs.html">Design Docs</a></li>
+                <li><a
+                        href="./category/diagrama-de-classe.html">Diagrama de Classe</a></li>
+                <li><a
+                        href="./category/engenharia-de-produto.html">Engenharia de Produto</a></li>
+                <li><a
+                        href="./category/requisitos.html">Requisitos</a></li>
+        </ul>
+
+        <h2 class="blog_roll_link"><br/>BLOGROLLS</h2>
+        <ul class="navbar">
+                <li><a href="https://github.com/fga-eps-mds/2019.1-unbrake">GitHub</a></li>
+        </ul>
+
+</aside>
+
+<!-- Content -->
+<article>
+    <section id="content">
+        <article>
+            <h2 class="post_title post_detail"><a href="./arquitetura-do-projeto.html" rel="bookmark"
+                                                  title="Permalink to Arquitetura do projeto">Arquitetura do projeto</a></h2>
+            <div class="entry-content blog-post">
+                <h2>Documento de Arquitetura</h2>
 <p>Este documento tem como objetivo relatar de forma técnica o software utilizando várias visões da arquitetura do mesmo. Este documento é conhecido na literatura como <em>4+1 architecture blueprints</em>.</p>
 <hr>
 <h3>Cenários</h3>
@@ -97,37 +147,61 @@
 <li><strong>Autenticador:</strong> Serviço que realiza a autenticação dos usuários para o uso dos outros serviços.</li>
 </ul>
 <p>O deploy será realizado utilizando o orquestrador de containers <a href="https://kubernetes.io/">kubernetes</a> neste <a href="">link</a>.</p>
-    </div><!-- /.entry-content -->
+            </div>
+            <div class="post_list">
+                <span>By </span>
+                <a href="./author/felipe-borges.html">@Felipe Borges</a>
+                <span> in </span>
+                <span class="post_category"><a href="./category/arquitetura.html" rel="bookmark"
+                                               title="Permalink to Arquitetura">[ Arquitetura ]</a></span>
+                <span class="post_date">Mon 02 April 2018</span>
+                <div><span>Tags : </span>
+                </div>
 
-  </article>
-</section>
-        <section id="extras" class="body">
-                <div class="blogroll">
-                        <h2>links</h2>
-                        <ul>
-                            <li><a href="http://getpelican.com/">Pelican</a></li>
-                            <li><a href="http://python.org/">Python.org</a></li>
-                            <li><a href="http://jinja.pocoo.org/">Jinja2</a></li>
-                            <li><a href="#">You can modify those links in your config file</a></li>
-                        </ul>
-                </div><!-- /.blogroll -->
-                <div class="social">
-                        <h2>social</h2>
-                        <ul>
+                <div class="entry-social">
+                    <span class="twitter"><a target="_blank" rel="nofollow"
+                                             onclick="javascript:window.open(this.href, '', 'menubar=no,toolbar=no,resizable=yes,scrollbars=yes,height=400,width=700');return false;"
+                                             title="Twitter"
+                                             href="https://twitter.com/share?url=./arquitetura-do-projeto.html&text=Arquitetura do projeto&via="><img
+                            src="./theme/images/icons/twitter-s.png"></a></span>
 
-                            <li><a href="#">You can add links in your config file</a></li>
-                            <li><a href="#">Another social link</a></li>
-                        </ul>
-                </div><!-- /.social -->
-        </section><!-- /#extras -->
+                    <span class="gplus"><a target="_blank" title="Google +"
+                                           href="https://plus.google.com/share?url=./arquitetura-do-projeto.html&hl=fr"
+                                           rel="nofollow"
+                                           onclick="javascript:window.open(this.href, '', 'menubar=no,toolbar=no,resizable=yes,scrollbars=yes,height=450,width=650');return false;"><img
+                            src="./theme/images/icons/google-s.png"></a></span>
 
-        <footer id="contentinfo" class="body">
-                <address id="about" class="vcard body">
-                Proudly powered by <a href="http://getpelican.com/">Pelican</a>, which takes great advantage of <a href="http://python.org">Python</a>.
-                </address><!-- /#about -->
+                    <span class="facebook"><a target="_blank" title="Facebook" rel="nofollow"
+                                              onclick="javascript:window.open(this.href, '', 'menubar=no,toolbar=no,resizable=yes,scrollbars=yes,height=500,width=700');return false;"
+                                              href="https://www.facebook.com/sharer.php?u=./arquitetura-do-projeto.html&t=Arquitetura do projeto"><img
+                            src="./theme/images/icons/facebook-s.png"></a></span>
 
-                <p>The theme is by <a href="http://coding.smashingmagazine.com/2009/08/04/designing-a-html-5-layout-from-scratch/">Smashing Magazine</a>, thanks!</p>
-        </footer><!-- /#contentinfo -->
+                    <a target="_blank" title="Linkedin"
+                       href="https://www.linkedin.com/shareArticle?mini=true&url=./arquitetura-do-projeto.html&title=Arquitetura do projeto"
+                       rel="nofollow"
+                       onclick="javascript:window.open(this.href, '', 'menubar=no,toolbar=no,resizable=yes,scrollbars=yes,height=450,width=650');return false;"><img
+                            src="./theme/images/icons/linkedin-s.png"></a>
+
+                    <span class="mail"><a
+                            href="mailto:?subject=Arquitetura do projeto&amp;body=Viens découvrir un article à propos de [Arquitetura do projeto] sur le site de UnBrake. ./arquitetura-do-projeto.html"
+                            title="Share by Email" target="_blank"><img
+                            src="./theme/images/icons/mail-s.png"></a></span>
+                </div>
+            </div>
+        </article>
+    </section>
+</article>
+
+<!-- Footer -->
+    <footer>
+        <p>
+            Blog powered by <a href="http://getpelican.com/">Pelican</a>,
+            which takes great advantage of <a href="http://python.org">Python</a>.
+            Theme <a href="https://github.com/parbhat/pelican-blue">Pelican-Blue</a> by <a
+                href="https://parbhatpuri.com/">@parbhat</a>.
+        </p>
+    </footer>
+
 
 </body>
 </html>

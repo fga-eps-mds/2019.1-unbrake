@@ -1,6 +1,6 @@
 Title: Termo de Abertura
 Date: 2019-04-02 19:33
-Category: TAP
+Category: Engenharia de Produto
 
 ## 1. Introdução
 Este documento abordará os objetivos, descrição geral, propósito e justificativa, requisitos de alto nível e partes interessadas do projeto.
