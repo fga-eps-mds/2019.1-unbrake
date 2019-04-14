@@ -12,8 +12,13 @@ notifications:
 cache:
   directories:
     - "unbrake-frontend/node_modules"
+
 env:
-  - DOCKER_COMPOSE_VERSION=1.23.2
+  global:
+    - DOCKER_COMPOSE_VERSION=1.23.2
+
+    # code climate test reporter id (it's not so secret)
+    - secure: "CFCx6LcmtNOBVyFjxgW8NcrmAs3Fr7ueq4tbjg8f7LCHRodsQMxAAL8+8BbeP41YDZ34mqEwemc8QG5dXXSE8lFVAzJfUUQnYncpu1YiywwYmxP6cNWcBtu1h6sBUOfObBz2mQyJnt1yL2TKob4vaK0jtzy099Mew8aIxRzqcHL04TqxG902ITdGiraH89nIN64MKw7CQMUy65S0kRo1RJkQQDJ9s5CKVnBy3n0Vv8qJj+JqKrzJeRSOrpxElg0yOEe7hFNQkavyBbyGt++f0O1AupQxP9drCxrWRsYTUt/+WNWiZnkNXWSBqHgwrYn13ObthrmgHw5vNTA8sYnzav68kypRbuQm4b4oUaSuQWa5c6cfl0wKa7Uk5t8np78wVByK9+yy84+KL91kDYrxFVEoWe55CDDvL1G6HWP28x1cmL8GA35H+rADDdXQaxxEeDpbExTwOf7N3brNfUh416psDF9VyVqDq46wtJapuAE3Onj9rWmP+EMYxaBdVeV+2wi24/sowwqPQF+sBHWnW0pM+xmOztrptZRdMnwCuVzWt+ROVWm+/tAVn5k+Q1/KW9IXF3JF3975A14Bj+x5HxbbHAs95TOcD79qsAO0L+FMHxadgrMcEFwSPP9sTEfwagKLoX7jnXwOQq9hFwkUxGHDDH4Tj7y7OEM/JXo+JJw="
 
 before_install:
   # Update Docker Compose
@@ -33,6 +38,11 @@ before_install:
   # Run containers
   - docker-compose up -d
 
+before_script:
+  - curl -L https://codeclimate.com/downloads/test-reporter/test-reporter-latest-linux-amd64 > ./cc-test-reporter
+  - chmod +x ./cc-test-reporter
+  - ./cc-test-reporter before-build
+
 script:
   # Checking for trailing spaces and conflict marks
   - git diff --check || (echo 'Trailing whitespaces or conflict marks found!' && exit 1)
@@ -46,5 +56,18 @@ script:
   # API checks
   - docker-compose exec api python manage.py check_all
 
-after_install:
+# after_install:
+#   - docker-compose down -v
+
+after_sucess:
+  - mkdir coverage
+
+  # Collect all coverages
+  - ./cc-test-reporter format-coverage -t coverage.py -o coverage/api -p unbrake-api
+  - ./cc-test-reporter format-coverage -t lcov -o coverage/frontend -p unbrake-frontend/src/tests/coverage
+
+  # Merge results and upload
+  - ./cc-test-reporter sum-coverage -o coverage/codeclimate.json -p 2 coverage/*
+  - ./cc-test-reporter upload-coverage -i coverage/codeclimate.json
+
   - docker-compose down -v
