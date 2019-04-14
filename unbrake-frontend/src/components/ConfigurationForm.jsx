@@ -1,14 +1,8 @@
 import React from "react";
 import PropTypes from "prop-types";
-import {
-  withStyles,
-  TextField,
-  Button,
-  Checkbox,
-  FormControlLabel,
-  Grid
-} from "@material-ui/core";
-import { reduxForm } from "redux-form";
+import { initialize, Field, reduxForm } from "redux-form";
+import { TextField, Checkbox } from "redux-form-material-ui";
+import { withStyles, Button, FormControlLabel, Grid } from "@material-ui/core";
 
 const styles = theme => ({
   container: {
@@ -49,13 +43,11 @@ const textLabel = name => {
   return "Tempo (s)(AUX1)";
 };
 
-const Grid1 = (classes, TMO, handleChange) => {
+const Grid1 = (classes, type) => {
   return (
     <Grid item xs={3} className={classes.gridButton} justify="center">
       <FormControlLabel
-        control={
-          <Checkbox checked={TMO} onChange={handleChange("TMO")} value="TMO" />
-        }
+        control={<Field component={Checkbox} name={type[1]} value={type[0]} />}
         label="Inibe Desligamento do Motor"
       />
     </Grid>
@@ -65,10 +57,12 @@ const Grid1 = (classes, TMO, handleChange) => {
 const Grid2 = (classes, type, handleChange) => {
   return (
     <Grid item xs={6} className={classes.grid}>
-      <TextField
+      <Field
         id={type[1]}
+        name={type[1]}
         label={textLabel(type[1])}
-        value={type.NOS}
+        value={type[0]}
+        component={TextField}
         onChange={handleChange(type[1])}
         type="number"
         className={classes.textField}
@@ -77,19 +71,6 @@ const Grid2 = (classes, type, handleChange) => {
         }}
         margin="normal"
         variant="outlined"
-      />
-    </Grid>
-  );
-};
-
-const Grid3 = (classes, TAO, handleChange) => {
-  return (
-    <Grid item xs={3} className={classes.gridButton}>
-      <FormControlLabel
-        control={
-          <Checkbox checked={TAO} onChange={handleChange("TAO")} value="TAO" />
-        }
-        label="Ativa Saída Auxiliar"
       />
     </Grid>
   );
@@ -108,12 +89,14 @@ const Grid4 = (classes, submitting) => {
 const CommunGrid = (classes, type, handleChange) => {
   return (
     <Grid item xs={3} className={classes.grid}>
-      <TextField
+      <Field
         id={type[1]}
+        component={TextField}
         label={textLabel(type[1])}
-        value={type.NOS}
+        value={type[0]}
         onChange={handleChange(type[1])}
         type="number"
+        name={type[1]}
         className={classes.textField}
         InputLabelProps={{
           shrink: true
@@ -146,40 +129,69 @@ class ConfigurationForm extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
-      NOS: "",
-      USL: "",
-      LSL: "",
-      UWT: "",
-      LWT: "",
-      TBS: "",
-      TAS: "",
-      TAT: "",
-      TMO: "",
-      TAO: ""
+      configuration: {
+        NOS: "",
+        USL: "",
+        LSL: "",
+        UWT: "",
+        LWT: "",
+        TBS: "",
+        TAS: "",
+        TAT: "",
+        TMO: false,
+        TAO: ""
+      }
     };
     this.handleChange = name => event => {
-      this.setState({
-        [name]: event.target.value
-      });
+      const configuration = {};
+      configuration[name] = event.target.value;
+      // console.log(configuration);
+      this.setState(prevState => ({
+        configuration: { ...prevState.configuration, ...configuration }
+      }));
     };
     this.checkHandleChange = name => event => {
-      this.setState({ [name]: event.target.checked });
+      this.setState({ configuration: { [name]: event.target.checked } });
     };
   }
 
+  shouldComponentUpdate(nextProps) {
+    const { configuration } = this.props;
+    // console.log(this.state);
+
+    if (configuration !== nextProps.configuration) {
+      // console.log("bla", nextProps.configuration.CONFIG_ENSAIO.NOS);
+      const rightConfig = Object.assign({}, nextProps.configuration);
+      rightConfig.CONFIG_ENSAIO.TMO =
+        nextProps.configuration.CONFIG_ENSAIO.TMO !== "FALSE";
+
+      const { dispatch } = this.props;
+      dispatch(initialize("configuration", rightConfig.CONFIG_ENSAIO));
+      this.setState({ configuration: rightConfig.CONFIG_ENSAIO });
+      return true;
+    }
+    return false;
+  }
+
   render() {
+    // console.log("teste");
     const { classes, handleSubmit, submitting } = this.props;
-    const { TAS, TAT, TMO, TAO, UWT, NOS, LSL, USL, TBS, LWT } = this.state;
+    const { configuration } = this.state;
+    const { TAS, TAT, TMO, TAO, UWT, NOS, LSL, USL, TBS, LWT } = configuration;
     const dictionary = {
       snub: [NOS, "NOS"],
-      limLow: [LSL, "LSL"],
       limUp: [USL, "USL"],
       waitUp: [UWT, "UWT"],
+      cicleTime: [TBS, "TBS"],
+      limLow: [LSL, "LSL"],
       waitLow: [LWT, "LWT"],
-      cicleTime: [TBS, "TBS"]
+      powerMotor: [TMO, "TMO"],
+      exitAux: [TAO, "TAO"],
+      temp: [TAS, "TAS"],
+      time: [TAT, "TAT"]
     };
-    const time = [TAT, "TAT"];
 
+    // console.log(this.props);
     return (
       <form
         className={classes.container}
@@ -188,12 +200,12 @@ class ConfigurationForm extends React.Component {
       >
         {Grids(classes, this.handleChange, dictionary)}
         <Grid container item xs={24} alignItems="center" justify="center">
-          {Grid1(classes, TMO, this.checkHandleChange)}
-          {Grid2(classes, TAS, this.handleChange)}
+          {Grid1(classes, dictionary.powerMotor)}
+          {Grid2(classes, dictionary.temp, this.handleChange)}
         </Grid>
         <Grid container item xs={24} alignItems="center" justify="center">
-          {Grid3(classes, TAO, this.checkHandleChange)}
-          {CommunGrid(classes, time, this.handleChange)}
+          {Grid1(classes, dictionary.powerMotor)}
+          {CommunGrid(classes, dictionary.time, this.handleChange)}
           {Grid4(classes, submitting)}
         </Grid>
       </form>
@@ -204,11 +216,13 @@ class ConfigurationForm extends React.Component {
 ConfigurationForm.propTypes = {
   classes: PropTypes.objectOf(PropTypes.string).isRequired,
   handleSubmit: PropTypes.func.isRequired,
-  submitting: PropTypes.bool.isRequired
+  submitting: PropTypes.bool.isRequired,
+  configuration: PropTypes.string.isRequired,
+  dispatch: PropTypes.func.isRequired
 };
 
 const Configuration = reduxForm({
-  form: "login"
+  form: "configuration"
 })(ConfigurationForm);
 
 export default withStyles(styles)(Configuration);
