@@ -70,3 +70,11 @@ Uma das possíveis formas de se executar os scripts da API é executando o segui
 # 'manage.py' é o entrypoint
 $ sudo docker-compose up --build --rm api [nome_do_script]
 ```
+
+### CodeClimate CLI
+
+O CodeClimate dispõe de uma ferramenta de linha de comando (CLI) para que as checagens possam ser executadas localmente, ela pode ser encontrada (aqui)[https://github.com/codeclimate/codeclimate]. Ela está integrada no projeto através do serviço `codeclimate`, no docker-compose. Para executá-la, basta executar o seguinte comando:
+``` bash
+sudo docker-compose run --rm codeclimate [comando]
+```
+a lista completa de comandos pode ser encontrada [aqui](https://github.com/codeclimate/codeclimate#commands), ou então executando o serviço disponível no docker-compose sem passar nenhum comando em específico.

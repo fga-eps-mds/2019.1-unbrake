@@ -23,12 +23,22 @@ services:
       dockerfile: Dockerfile
     image: unbrake_api_development
     volumes:
-      - "./unbrake-api:/app/api" # Needed for git hooks
+      - "./unbrake-api:/app/api"
       - "./.git:/app/.git" # Needed for git hooks
     ports:
       - "8000:8000"
     secrets:
       - api-django-secret-key
+
+  codeclimate:
+    container_name: 'codeclimate'
+    image: 'codeclimate/codeclimate'
+    volumes:
+      - "./:/code"
+      - "/var/run/docker.sock:/var/run/docker.sock"
+      - "/tmp/cc:/tmp/cc"
+    environment:
+      - CODECLIMATE_CODE="."
 
 secrets:
   api-django-secret-key:
