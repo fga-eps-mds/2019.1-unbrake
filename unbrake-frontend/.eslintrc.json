@@ -76,7 +76,8 @@
 		"no-param-reassign": [2, { 
 			"props": true,
 			"ignorePropertyModificationsFor": []
-		}]
+		}],
+    "func-names": "error"
 	},
 	"settings": {
 		"react": {

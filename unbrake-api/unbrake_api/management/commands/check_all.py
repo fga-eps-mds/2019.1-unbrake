@@ -2,8 +2,8 @@
 Link check_all script to a manage.py command
 '''
 
-import os
 from django.core.management import BaseCommand
+from ._script import run_script
 
 
 class Command(BaseCommand):
@@ -13,4 +13,4 @@ class Command(BaseCommand):
     help = "Run general script for checking"
 
     def handle(self, *args, **options):
-        os.system('./scripts/check_all')
+        run_script('./scripts/check_all')

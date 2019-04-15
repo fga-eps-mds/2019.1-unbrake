@@ -2,8 +2,8 @@
 Link check_format script to a manage.py commanD
 '''
 
-import os
 from django.core.management import BaseCommand
+from ._script import run_script
 
 
 class Command(BaseCommand):
@@ -13,4 +13,4 @@ class Command(BaseCommand):
     help = "Fix some formatting fixes"
 
     def handle(self, *args, **options):
-        os.system('./scripts/fix')
+        run_script('./scripts/fix')
