@@ -52,24 +52,30 @@ ALLOWED_HOSTS = ['*']
 # Application definition
 
 INSTALLED_APPS = [
+    # Default
     'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+
+    # UnBrake
+    'unbrake_api',
     'graphene_django',
     'configuration',
-
+    'corsheaders',
 ]
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
+    'corsheaders.middleware.CorsMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+
 ]
 
 ROOT_URLCONF = 'unbrake_api.urls'
@@ -103,7 +109,6 @@ DATABASES = {
     }
 }
 
-
 # Password validation
 # https://docs.djangoproject.com/en/2.2/ref/settings/#auth-password-validators
 
@@ -121,6 +126,8 @@ AUTH_PASSWORD_VALIDATORS = [
         'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator',
     },
 ]
+
+TEST_RUNNER = 'unbrake_api.runner.PytestTestRunner'
 
 
 # Internationalization
@@ -144,5 +151,22 @@ STATIC_URL = '/static/'
 
 
 GRAPHENE = {
+    'MIDDLEWARE': [
+        'graphql_jwt.middleware.JSONWebTokenMiddleware',
+    ],
     'SCHEMA': 'unbrake_api.schema.schema'
 }
+
+AUTHENTICATION_BACKENDS = {
+    'graphql_jwt.backends.JSONWebTokenBackend',
+    'django.contrib.auth.backends.ModelBackend',
+}
+
+CORS_ORIGIN_WHITELIST = (
+    'localhost:3000'
+)
+
+CORS_ALLOW_METHODS = (
+    'GET',
+    'POST',
+)
