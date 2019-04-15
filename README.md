@@ -35,10 +35,12 @@ Caso alguma das checagens falhe, antes do commit ou antes do push, o procediment
 ### Frontend
 #### Scripts disponíveis
 
-* **check_all:** Executa todos os outros scripts de checagem em sequência
+* **check_all:** Executa todos os outros scripts de checagem em sequência, na checagem de testes é executado o com coverage sem html
 * **check_lint**: Checa por erros apontados pelo linter `eslint`
 * **check_format**: Checa por erros de formatação apontados pelo `prettier`
 * **check_tests**: Checa se todos os testes estão passando sem warnings ou mensagens de console utilizando o `jest`
+* **check_tests_coverage**: Executa o que o check_tests faz, mas também gera arquivos de coverage para análise
+* **check_tests_coverage_html**:  Executa o que o check_tests faz, mas gera o relatório em HTML sobre as estatísticas de testes
 * **fix**: Corrige automaticamente erros de formatação possíveis de serem consertados pelo `eslint` e pelo `prettier`
 
 #### Execução de um script
@@ -52,11 +54,13 @@ $ sudo docker-compose up --build --rm frontend run [nome_do_script]
 ### API
 #### Scripts disponíveis
 
-* **check_all:** Todos os outros scripts de checagem são executados em sequência
+* **check_all:** Todos os outros scripts de checagem são executados em sequência, na checagem de testes é executado o com coverage sem html
 * **check:** Executa checagem padrão do django por erros em geral
 * **check_lint**: Checa por erros apontados pelo linter `pylint`
 * **check_format**: Checa por erros de formatação apontados pelo `flake8` ou falta de execução do `autopep8`
 * **check_tests**: Checa se todos os testes estão passando, utilizando o `pytest`
+* **check_tests:coverage**: Executa o que o check_tests faz, mas também gera arquivos de coverage para análise
+* **check_tests:coverage:html**:  Executa o que o check_tests faz, mas gera o relatório em HTML sobre as estatísticas de testes
 * **fix**: Corrige automaticamente erros de formatação possíveis de serem consertados pelo `autopep8`
 
 #### Execução de um script
