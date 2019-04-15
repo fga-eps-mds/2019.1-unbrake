@@ -1,7 +1,12 @@
 version: "2"
+
 plugins:
   eslint:
     enabled: true
+    config:
+      extensions:
+        - .js
+        - .jsx
   csslint:
     enabled: true
   pep8:
@@ -10,30 +15,36 @@ plugins:
     enabled: true
   sonar-python:
     enabled: true
+    config:
+      tests_patterns:
+        - test_*
   nodesecurity:
     enabled: true
   fixme:
     enabled: true
   duplication:
     enabled: true
-  exclude_patterns:
-    - "**/node_modules/"
-    - "**/scripts/"
-    - "**/hooks/"
-    - "**/secrets/"
-    - "**/spec/"
-    - "**/tests/"
-    - "**/test_*/"
-    - "**/__pycache__/"
-    - "**/migrations/"
-    - "**/env/"
-    - "**/.env/"
-    - "**/venv/"
-    - "**/.venv/"
-    - ".*"
-    - "wsgi.py"
-    - "settings.py"
-    - "runner.py"
-    - "schema.py"
-    - "manage.py"
-    - "db.sqlite3"
+    config:
+      languages:
+      - javascript
+      - python
+
+exclude_patterns:
+- "**/node_modules/"
+- "**/scripts/"
+- "**/hooks/"
+- "**/secrets/"
+- "**/spec/"
+- "**/tests/"
+- "**/test_*/"
+- "**/__pycache__/"
+- "**/migrations/"
+- "**/env/"
+- "**/venv/"
+- "**/.*"
+- "wsgi.py"
+- "settings.py"
+- "runner.py"
+- "schema.py"
+- "manage.py"
+- "db.sqlite3"
