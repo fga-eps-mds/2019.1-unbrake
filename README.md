@@ -1,6 +1,8 @@
 # 2019.1 UnBrake
 
 [![Build Status](https://travis-ci.com/fga-eps-mds/2019.1-unbrake.svg?branch=master)](https://travis-ci.com/fga-eps-mds/2019.1-unbrake)
+[![Maintainability](https://api.codeclimate.com/v1/badges/f8957e6e7e0bdced21c9/maintainability)](https://codeclimate.com/github/fga-eps-mds/2019.1-unbrake/maintainability)
+[![Test Coverage](https://api.codeclimate.com/v1/badges/f8957e6e7e0bdced21c9/test_coverage)](https://codeclimate.com/github/fga-eps-mds/2019.1-unbrake/test_coverage)
 [![code style: prettier](https://img.shields.io/badge/code_style-prettier-ff69b4.svg?style=flat-square)](https://github.com/prettier/prettier)
 [![pullreminders](https://pullreminders.com/badge.svg)](https://pullreminders.com?ref=badge)
 
@@ -33,10 +35,12 @@ Caso alguma das checagens falhe, antes do commit ou antes do push, o procediment
 ### Frontend
 #### Scripts disponíveis
 
-* **check_all:** Executa todos os outros scripts de checagem em sequência
+* **check_all:** Executa todos os outros scripts de checagem em sequência, na checagem de testes é executado o com coverage sem html
 * **check_lint**: Checa por erros apontados pelo linter `eslint`
 * **check_format**: Checa por erros de formatação apontados pelo `prettier`
 * **check_tests**: Checa se todos os testes estão passando sem warnings ou mensagens de console utilizando o `jest`
+* **check_tests_coverage**: Executa o que o check_tests faz, mas também gera arquivos de coverage para análise
+* **check_tests_coverage_html**:  Executa o que o check_tests faz, mas gera o relatório em HTML sobre as estatísticas de testes
 * **fix**: Corrige automaticamente erros de formatação possíveis de serem consertados pelo `eslint` e pelo `prettier`
 
 #### Execução de um script
@@ -50,11 +54,13 @@ $ sudo docker-compose up --build --rm frontend run [nome_do_script]
 ### API
 #### Scripts disponíveis
 
-* **check_all:** Todos os outros scripts de checagem são executados em sequência
+* **check_all:** Todos os outros scripts de checagem são executados em sequência, na checagem de testes é executado o com coverage sem html
 * **check:** Executa checagem padrão do django por erros em geral
 * **check_lint**: Checa por erros apontados pelo linter `pylint`
 * **check_format**: Checa por erros de formatação apontados pelo `flake8` ou falta de execução do `autopep8`
 * **check_tests**: Checa se todos os testes estão passando, utilizando o `pytest`
+* **check_tests:coverage**: Executa o que o check_tests faz, mas também gera arquivos de coverage para análise
+* **check_tests:coverage:html**:  Executa o que o check_tests faz, mas gera o relatório em HTML sobre as estatísticas de testes
 * **fix**: Corrige automaticamente erros de formatação possíveis de serem consertados pelo `autopep8`
 
 #### Execução de um script
@@ -64,3 +70,11 @@ Uma das possíveis formas de se executar os scripts da API é executando o segui
 # 'manage.py' é o entrypoint
 $ sudo docker-compose up --build --rm api [nome_do_script]
 ```
+
+### CodeClimate CLI
+
+O CodeClimate dispõe de uma ferramenta de linha de comando (CLI) para que as checagens possam ser executadas localmente, ela pode ser encontrada (aqui)[https://github.com/codeclimate/codeclimate]. Ela está integrada no projeto através do serviço `codeclimate`, no docker-compose. Para executá-la, basta executar o seguinte comando:
+``` bash
+sudo docker-compose run --rm codeclimate [comando]
+```
+a lista completa de comandos pode ser encontrada [aqui](https://github.com/codeclimate/codeclimate#commands), ou então executando o serviço disponível no docker-compose sem passar nenhum comando em específico.
