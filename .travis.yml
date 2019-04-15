@@ -56,18 +56,16 @@ script:
   # API checks
   - docker-compose exec api python manage.py check_all
 
-# after_install:
-#   - docker-compose down -v
-
-after_sucess:
-  - mkdir coverage
+after_script:
+  # Stop docker
+  - docker-compose down -v
 
   # Collect all coverages
-  - ./cc-test-reporter format-coverage -t coverage.py -o coverage/api -p unbrake-api
-  - ./cc-test-reporter format-coverage -t lcov -o coverage/frontend -p unbrake-frontend/src/tests/coverage
+  - mkdir coverage
+  - (cd unbrake-frontend && ./../cc-test-reporter format-coverage -t lcov -o ../coverage/frontend.json -p /app/frontend src/tests/coverage/lcov.info)
+  - (cd unbrake-api && ./../cc-test-reporter format-coverage -t coverage.py -o ../coverage/api.json -p /app/api)
 
   # Merge results and upload
-  - ./cc-test-reporter sum-coverage -o coverage/codeclimate.json -p 2 coverage/*
-  - ./cc-test-reporter upload-coverage -i coverage/codeclimate.json
+  - ./cc-test-reporter sum-coverage -o coverage/codeclimate.json -p 2 coverage/*.json
 
-  - docker-compose down -v
+  - if [[ "$TRAVIS_TEST_RESULT" == 0 ]]; then ./cc-test-reporter upload-coverage -i coverage/codeclimate.json; fi
