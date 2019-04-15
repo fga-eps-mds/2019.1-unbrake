@@ -1,0 +1,24 @@
+[run]
+branch = True
+omit = 
+  **/.env,
+  **/env,
+  **/.venv,
+  **/venv,
+  **/*egg*,
+  **/__pycache__/*,
+  **/scripts/*,
+  **/migrations/*,
+  wsgi.py,
+  manage.py,
+  unbrake_api/management/*,
+  unbrake_api/settings.py,
+  unbrake_api/runner.py,
+  unbrake_api/wsgi.py
+
+[report]
+fail_under = 90
+show_missing = True
+
+[html]
+title = Testes da API do UnBrake
