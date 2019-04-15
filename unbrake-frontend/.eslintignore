@@ -1,0 +1,2 @@
+src/tests/coverage/*
+src/tests/__snapshots__/*
