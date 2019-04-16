@@ -1,0 +1,5 @@
+site_name: UnBrake 
+theme:
+  name: 'material'
+  logo: 'https://image.flaticon.com/icons/svg/1672/1672606.svg'
+  favicon: 'https://cdn3.iconfinder.com/data/icons/auto-parts-icons/420/Car_Brakes-512.png'
