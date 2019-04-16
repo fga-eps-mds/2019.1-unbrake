@@ -1,5 +1,5 @@
 import React from "react";
-import { Field, reduxForm } from "redux-form";
+import { Field, reduxForm, SubmissionError } from "redux-form";
 import { TextField } from "redux-form-material-ui";
 import Button from "@material-ui/core/Button";
 import Grid from "@material-ui/core/Grid";
@@ -34,7 +34,7 @@ const validate = values => {
   const requiredFields = ["username", "password", "confirmPassword"];
   requiredFields.forEach(field => {
     if (!values[field]) {
-      errors[field] = "Required";
+      errors[field] = "Obrigatório";
     } else if (values.password !== values.confirmPassword) {
       errors.confirmPassword = "Não confere";
     }
@@ -76,24 +76,27 @@ const signUpButton = (classes, submitting) => {
 };
 
 const submit = values => {
-  fetch(
+  return fetch(
     `${baseUrl}?query=mutation{createUser(password: "${values.password}",
      username: "${values.username}"){user{id}}}`,
     {
       method: "POST"
     }
-  ).then(response => {
-    return response.json();
-  });
-  /*
-   * .then(parsedData => {
-   *   // if (
-   *   //   parsedData.errors[0].message ===
-   *   //   "UNIQUE constraint failed: auth_user.username"
-   *   // ) {
-   *   // }
-   * });
-   */
+  )
+    .then(response => {
+      return response.json();
+    })
+    .then(parsedData => {
+      if (
+        parsedData.errors[0].message ===
+        "UNIQUE constraint failed: auth_user.username"
+      ) {
+        throw new SubmissionError({
+          username: "O usuário já está em uso",
+          _error: "Login failed!"
+        });
+      }
+    });
 };
 const signUpPaper = (classes, handleSubmit, submitting) => {
   return (
