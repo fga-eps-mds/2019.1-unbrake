@@ -6,7 +6,7 @@ import graphene
 import graphql_jwt
 import user.schema
 import configuration.schema
-# import calibration.schema
+import calibration.schema
 
 # pylint: disable = too-few-public-methods
 
@@ -14,7 +14,7 @@ import configuration.schema
 class Query(
         user.schema.Query,
         configuration.schema.Query,
-        # calibration.schema.Query,
+        calibration.schema.Query,
         graphene.ObjectType):
     '''
     This class will inherit from multiple Queries

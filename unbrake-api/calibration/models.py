@@ -15,7 +15,7 @@ from django.db import models
 # Create your models here.
 
 
-class CabibrationVibration(models.Model):
+class CalibrationVibration(models.Model):
     '''
         This class has vibration calibration information.
         aqusitionTemp is CHVB in the file,
@@ -102,8 +102,8 @@ class Calibration(models.Model):
     '''
         This class has all the information of a calibration definition.
     '''
-    cabibrationVibration = models.OneToOneField(
-        CabibrationVibration, on_delete=models.CASCADE)
+    calibrationVibration = models.OneToOneField(
+        CalibrationVibration, on_delete=models.CASCADE)
     calibrationForce = models.ManyToManyField(CalibrationForce)
     calibrationSpeed = models.OneToOneField(
         CalibrationSpeed, on_delete=models.CASCADE)
