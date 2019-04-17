@@ -7,6 +7,7 @@ import Paper from "@material-ui/core/Paper";
 import { withStyles } from "@material-ui/core/styles";
 import PropTypes from "prop-types";
 import Cookies from "universal-cookie";
+import request from "../utils/request";
 
 const padding = 10;
 const baseUrl = "http://localhost:8000/graphql";
@@ -84,29 +85,24 @@ const loginButtons = (classes, submitting) => {
   );
 };
 
-const submit = values => {
-  fetch(
-    `${baseUrl}?query=mutation{tokenAuth(username:"${
-      values.username
-    }",password:"${values.password}"){token}}`,
-    {
-      method: "POST"
-    }
-  )
-    .then(response => {
-      return response.json();
-    })
-    .then(parsedData => {
-      if (parsedData.data.tokenAuth !== null) {
-        cookie.set("token", parsedData.data.tokenAuth.token, {
-          path: "/",
-          httpOnly: false
-        });
-      } else {
-        // block login
-      }
+async function submit(values) {
+  const url = `${baseUrl}?query=mutation{tokenAuth(username:"${
+    values.username
+  }",password:"${values.password}"){token}}`;
+
+  const method = "POST";
+
+  const parsedData = await request(url, method);
+
+  if (parsedData.data.tokenAuth !== null) {
+    cookie.set("token", parsedData.data.tokenAuth.token, {
+      path: "/",
+      httpOnly: false
     });
-};
+  } else {
+    // block login
+  }
+}
 const loginPaper = (classes, handleSubmit, submitting) => {
   return (
     <Paper className={classes.paper}>

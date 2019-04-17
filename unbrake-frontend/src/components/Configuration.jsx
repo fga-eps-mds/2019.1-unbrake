@@ -9,6 +9,18 @@ import {
   Grid
 } from "@material-ui/core";
 import { reduxForm } from "redux-form";
+import request from "../utils/request";
+
+const baseUrl = "http://localhost:8000/graphql";
+
+const validate = state => {
+  const errors = {};
+  if (state.USL <= state.LSL) {
+    errors.USL = "Valor inválido";
+    errors.LSL = "Valor inválido";
+  }
+  return errors;
+};
 
 const styles = theme => ({
   container: {
@@ -68,7 +80,7 @@ const Grid2 = (classes, type, handleChange) => {
       <TextField
         id={type[1]}
         label={textLabel(type[1])}
-        value={type.NOS}
+        value={type[0]}
         onChange={handleChange(type[1])}
         type="number"
         className={classes.textField}
@@ -98,7 +110,12 @@ const Grid3 = (classes, TAO, handleChange) => {
 const Grid4 = (classes, submitting) => {
   return (
     <Grid item xs={3} className={classes.grid} justify="right">
-      <Button color="secondary" variant="contained" disabled={submitting}>
+      <Button
+        color="secondary"
+        variant="contained"
+        type="submit"
+        disabled={submitting}
+      >
         Cadastrar
       </Button>
     </Grid>
@@ -142,6 +159,24 @@ const Grids = (classes, handleChange, dictionary) => {
   );
 };
 
+async function submit(values, state) {
+  const url = `${baseUrl}?query=mutation{createConfig(number:${
+    state.NOS
+  },timeBetweenCycles:${state.TBS},upperLimit:${state.USL},inferiorLimit:${
+    state.LSL
+  },upperTime:${state.UWT},inferiorTime:${state.LWT},disableShutdown:${
+    state.TMO
+  },enableOutput:${state.TAO},temperature:${state.TAS},time:${
+    state.TAT
+  }){config{number, timeBetweenCycles,upperLimit,inferiorLimit}}}`;
+
+  const method = "POST";
+
+  const response = await request(url, method);
+
+  return response;
+}
+
 class Configuration extends React.Component {
   constructor(props) {
     super(props);
@@ -154,8 +189,8 @@ class Configuration extends React.Component {
       TBS: "",
       TAS: "",
       TAT: "",
-      TMO: "",
-      TAO: ""
+      TMO: false,
+      TAO: false
     };
     this.handleChange = name => event => {
       this.setState({
@@ -176,7 +211,8 @@ class Configuration extends React.Component {
       limUp: [USL, "USL"],
       waitUp: [UWT, "UWT"],
       waitLow: [LWT, "LWT"],
-      cicleTime: [TBS, "TBS"]
+      cicleTime: [TBS, "TBS"],
+      temperature: [TAS, "TAS"]
     };
     const time = [TAT, "TAT"];
 
@@ -191,12 +227,14 @@ class Configuration extends React.Component {
         <form
           className={classes.container}
           autoComplete="off"
-          onSubmit={handleSubmit}
+          onSubmit={handleSubmit(values => {
+            submit(values, this.state);
+          })}
         >
           {Grids(classes, this.handleChange, dictionary)}
           <Grid container item xs={24} alignItems="center" justify="center">
             {Grid1(classes, TMO, this.checkHandleChange)}
-            {Grid2(classes, TAS, this.handleChange)}
+            {Grid2(classes, dictionary.temperature, this.handleChange)}
           </Grid>
           <Grid container item xs={24} alignItems="center" justify="center">
             {Grid3(classes, TAO, this.checkHandleChange)}
@@ -216,7 +254,8 @@ Configuration.propTypes = {
 };
 
 const ConfigurationForm = reduxForm({
-  form: "login"
+  form: "configuration",
+  validate
 })(Configuration);
 
 export default withStyles(styles)(ConfigurationForm);
