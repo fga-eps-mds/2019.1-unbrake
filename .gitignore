@@ -171,4 +171,7 @@ venv.bak/
 # mkdocs documentation
 /site
 
+# vscode
+.vscode/
+
 # End of https://www.gitignore.io/api/django

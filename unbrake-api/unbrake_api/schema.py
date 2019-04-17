@@ -20,7 +20,10 @@ class Query(
     '''
 
 
-class Mutation(user.schema.Mutation, graphene.ObjectType,):
+class Mutation(
+        user.schema.Mutation,
+        configuration.schema.Mutation,
+        graphene.ObjectType,):
     '''
     This class is responsible for providing the token to user
     '''
