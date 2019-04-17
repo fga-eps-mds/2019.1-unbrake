@@ -1,15 +1,16 @@
 import React from "react";
 import "./App.css";
-import { Route, BrowserRouter } from "react-router-dom";
+import { Route, Router } from "react-router-dom";
+import history from "./utils/history";
 
 // import Login from "./components/Login";
 import Login from "./components/Login";
 import SignUp from "./components/SignUp";
 
 export default () => (
-  <BrowserRouter>
+  <Router history={history}>
     {/* <Route exact path="/" component={Login} /> */}
     <Route path="/login" component={Login} />
     <Route path="/signup" component={SignUp} />
-  </BrowserRouter>
+  </Router>
 );

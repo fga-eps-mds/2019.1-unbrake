@@ -6,6 +6,7 @@ import Grid from "@material-ui/core/Grid";
 import Paper from "@material-ui/core/Paper";
 import { withStyles } from "@material-ui/core/styles";
 import PropTypes from "prop-types";
+import history from "../utils/history";
 
 const padding = 10;
 const baseUrl = "http://localhost:8000/graphql";
@@ -87,14 +88,18 @@ const submit = values => {
       return response.json();
     })
     .then(parsedData => {
-      if (
-        parsedData.errors[0].message ===
-        "UNIQUE constraint failed: auth_user.username"
-      ) {
-        throw new SubmissionError({
-          username: "O usuário já está em uso",
-          _error: "Login failed!"
-        });
+      if (parsedData.errors !== undefined) {
+        if (
+          parsedData.errors[0].message ===
+          "UNIQUE constraint failed: auth_user.username"
+        ) {
+          throw new SubmissionError({
+            username: "O usuário já está em uso",
+            _error: "Login failed!"
+          });
+        }
+      } else if (parsedData.data.createUser.user !== null) {
+        history.push("/login");
       }
     });
 };
