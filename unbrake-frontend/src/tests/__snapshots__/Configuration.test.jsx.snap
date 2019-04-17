@@ -15,7 +15,7 @@ exports[`<Configuration /> render() renders the component 1`] = `
   destroyOnUnmount={true}
   enableReinitialize={false}
   forceUnregisterOnUnmount={false}
-  form="login"
+  form="configuration"
   forwardedRef={null}
   getFormState={[Function]}
   keepDirtyOnReinitialize={false}
@@ -29,5 +29,6 @@ exports[`<Configuration /> render() renders the component 1`] = `
   touchOnBlur={true}
   touchOnChange={false}
   updateUnregisteredFields={false}
+  validate={[Function]}
 />
 `;
