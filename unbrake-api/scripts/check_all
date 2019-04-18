@@ -6,7 +6,7 @@ echo -e "=======================================================================
 
 cd /app/api/scripts
 
-for checker in $(ls check* | grep -wv "check_all"); do
+for checker in check check_lint check_format check_tests_coverage; do
 	./$checker || exit 1
 done
 

@@ -2,8 +2,8 @@
 Link check_tests script to a manage.py commanD
 '''
 
+import os
 from django.core.management import BaseCommand
-from ._script import run_script
 
 
 class Command(BaseCommand):
@@ -13,4 +13,4 @@ class Command(BaseCommand):
     help = "Check if tests are OK"
 
     def handle(self, *args, **options):
-        run_script('./scripts/check_tests')
+        os.system('./scripts/check_tests_coverage_html')
