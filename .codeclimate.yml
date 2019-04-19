@@ -1,26 +1,35 @@
 version: "2"
 
 plugins:
+  # CodeClimate can't find pylint and I don't know why, maybe it's outdated
+  pylint:
+    enabled: true
+    channel: beta 
+    config: unbrake-api/.pylintrc
+  sonar-python:
+    enabled: true
   eslint:
     enabled: true
-    config:
-      extensions:
-        - .js
-        - .jsx
-  csslint:
+    config: unbrake-frontend/.eslintrc.json
+  markdownlint:
     enabled: true
+    checks:
+      # Ordered list item prefix
+      MD029:
+        enabled: false
+  # Fixed relevant ones, but most of errors is about POSIX
+  # which doesn't matter since environment is dockerized
+  # shellcheck:
+  #   enabled: true
   pep8:
+    enabled: true
+  nodesecurity:
     enabled: true
   radon:
     enabled: true
-  sonar-python:
-    enabled: true
-    config:
-      tests_patterns:
-        - test_*
-  nodesecurity:
-    enabled: true
   fixme:
+    enabled: true
+  git-legal:
     enabled: true
   duplication:
     enabled: true
