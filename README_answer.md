@@ -26,9 +26,9 @@ sudo docker-compose up --build frontend
 
 ## Executando checagens de código
 
-Desde que o serviço do frontend já tenha sido construído
-(build executado pelo menos uma vez) no ambiente do usuário, algumas checagens
-serão executadas através de _git hooks_.
+Desde que o serviço do frontend já tenha sido construído (build executado pelo
+menos uma vez) no ambiente do usuário, algumas checagens serão executadas
+através de _git hooks_.
 
 Como comportamento _pre-commit_, são executados os seguintes scripts: `fix`,
 `check_lint` e `check_format`, sem ser necessário nenhuma configuração ou
@@ -48,23 +48,23 @@ evitar as checagens utilizando-se a flag `--no-verify` nos comandos do git,
 
 #### Scripts disponíveis (frontend)
 
-* **check_all:** Executa todos os outros scripts de checagem em sequência,
-  na checagem de testes é executado o com coverage sem html
+* **check_all:** Executa todos os outros scripts de checagem em sequência, na
+  checagem de testes é executado o com coverage sem html
 * **check_lint**: Checa por erros apontados pelo linter `eslint`
 * **check_format**: Checa por erros de formatação apontados pelo `prettier`
 * **check_tests**: Checa se todos os testes estão passando sem warnings ou
   mensagens de console utilizando o `jest`
-* **check_tests_coverage**: Executa o que o check_tests faz, mas também
-  gera arquivos de coverage para análise
-* **check_tests_coverage_html**:  Executa o que o check_tests faz, mas gera
-  o relatório em HTML sobre as estatísticas de testes
+* **check_tests_coverage**: Executa o que o check_tests faz, mas também gera
+  arquivos de coverage para análise
+* **check_tests_coverage_html**:  Executa o que o check_tests faz, mas gera o
+  relatório em HTML sobre as estatísticas de testes
 * **fix**: Corrige automaticamente erros de formatação possíveis de serem
   consertados pelo `eslint` e pelo `prettier`
 
 #### Execução de um script (frontend)
 
-Uma das possíveis formas de se executar os scripts no
-frontend é executando o seguinte comando:
+Uma das possíveis formas de se executar os scripts no frontend é executando
+o seguinte comando:
 
 ``` bash
 # 'npm' é o entrypoint
@@ -73,44 +73,45 @@ $ sudo docker-compose up --build --rm frontend run [nome_do_script]
 
 ### API
 
-#### Scripts disponíveis (API)
+#### Scripts disponíveis (api)
 
 * **check_all:** Todos os outros scripts de checagem são executados
   em sequência, na checagem de testes é executado o com coverage sem html
 * **check:** Executa checagem padrão do django por erros em geral
 * **check_lint**: Checa por erros apontados pelo linter `pylint`
-* **check_format**: Checa por erros de formatação apontados pelo `flake8`
-  ou falta de execução do `autopep8`
+* **check_format**: Checa por erros de formatação
+  apontados pelo `flake8` ou falta de execução do `autopep8`
 * **check_tests**: Checa se todos os testes estão passando, utilizando o `pytest`
 * **check_tests:coverage**: Executa o que o check_tests faz, mas também gera
   arquivos de coverage para análise
 * **check_tests:coverage:html**:  Executa o que o check_tests faz, mas gera o
   relatório em HTML sobre as estatísticas de testes
-* **fix**: Corrige automaticamente erros de formatação possíveis de serem
-  consertados pelo `autopep8`
+* **fix**: Corrige automaticamente erros de formatação possíveis
+  de serem consertados pelo `autopep8`
 
-#### Execução de um script (API)
+#### Execução de um script (api)
 
-Uma das possíveis formas de se executar os scripts da API
-  é executando o seguinte comando:
+Uma das possíveis formas de se executar os scripts da API é executando
+o seguinte comando:
 
 ``` bash
 # 'manage.py' é o entrypoint
-sudo docker-compose up --build --rm api [nome_do_script]
+$ sudo docker-compose up --build --rm api [nome_do_script]
 ```
 
 ### CodeClimate CLI
 
-O codeclimate irá checar algumas coisas já checadas localmente e outras
-menos importantes, que só serão exigidas de serem consertadas antes do
-do pull request, ao invés de em cada commit.
-Para executar as ferramentas do codeclimate localmente, execute o seguinte comando:
+O CodeClimate dispõe de uma ferramenta de linha de comando (CLI) para que as
+checagens possam ser executadas localmente, ela
+pode ser encontrada [aqui](https://github.com/codeclimate/codeclimate]).
+Ela está integrada no projeto através do serviço `codeclimate`,
+no docker-compose. Para executá-la, basta executar o seguinte comando:
 
 ``` bash
-sudo docker-compose run -e CODECLIMATE_CODE=${PWD} --rm codeclimate analyze
+sudo docker-compose run --rm codeclimate [comando]
 ```
 
-Nesse caso foi usado o comando `analyze`, a lista completa de comandos
+a lista completa de comandos
 pode ser encontrada [aqui](https://github.com/codeclimate/codeclimate#commands),
-ou então executando o serviço disponível no docker-compose sem passar nenhum
-comando em específico.
+ou então executando o serviço disponível no docker-compose sem passar
+nenhum comando em específico.

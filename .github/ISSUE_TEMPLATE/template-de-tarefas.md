@@ -7,6 +7,8 @@ assignees: ''
 
 ---
 
+# Template de tarefas
+
 ## Descrição
 
 Descreva a tarefa aqui
@@ -19,4 +21,5 @@ Descreva a tarefa aqui
 
 ## Informação adicional
 
-Dê mais informação sobre a tarefa (sites, imagens, ideias, qualquer coisa que possa ser útil para quem estiver trabalhando)
+Dê mais informação sobre a tarefa (sites, imagens, ideias, qualquer coisa que
+possa ser útil para quem estiver trabalhando)
