@@ -30,21 +30,22 @@ plugins:
       - python
 
 exclude_patterns:
-- "**/node_modules/"
-- "**/scripts/"
-- "**/hooks/"
-- "**/secrets/"
-- "**/spec/"
-- "**/tests/"
-- "**/test_*/"
-- "**/__pycache__/"
-- "**/migrations/"
-- "**/env/"
-- "**/venv/"
-- "**/.*"
-- "wsgi.py"
-- "settings.py"
-- "runner.py"
-- "schema.py"
-- "manage.py"
-- "db.sqlite3"
+  - "**/node_modules/"
+  - "**/hooks/"
+  - "**/secrets/"
+  - "**/spec/"
+  - "**/tests/"
+  - "**/test_*/"
+  - "**/__pycache__/"
+  - "**/migrations/"
+  - "**/env/"
+  - "**/.env/"
+  - "**/venv/"
+  - "**/.venv/"
+  - "**/.*rc"
+  - unbrake-api/schema.py
+  - unbrake-api/manage.py
+  - unbrake-api/db.sqlite3
+  - unbrake-api/unbrake_api/wsgi.py
+  - unbrake-api/unbrake_api/settings.py
+  - unbrake-api/unbrake_api/runner.py
