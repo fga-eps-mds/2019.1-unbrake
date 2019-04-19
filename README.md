@@ -68,7 +68,7 @@ frontend é executando o seguinte comando:
 
 ``` bash
 # 'npm' é o entrypoint
-$ sudo docker-compose up --build --rm frontend run [nome_do_script]
+$ sudo docker-compose run --rm frontend run [nome_do_script]
 ```
 
 ### API
@@ -96,7 +96,7 @@ Uma das possíveis formas de se executar os scripts da API
 
 ``` bash
 # 'manage.py' é o entrypoint
-sudo docker-compose up --build --rm api [nome_do_script]
+$ sudo docker-compose run --rm api [nome_do_script]
 ```
 
 ### CodeClimate CLI
