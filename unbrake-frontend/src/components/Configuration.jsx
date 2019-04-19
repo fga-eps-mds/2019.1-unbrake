@@ -2,24 +2,18 @@ import React from "react";
 import PropTypes from "prop-types";
 import {
   withStyles,
-  TextField,
   Button,
   Checkbox,
   FormControlLabel,
   Grid
 } from "@material-ui/core";
-import { reduxForm } from "redux-form";
+import { TextField } from "redux-form-material-ui";
+import { reduxForm, Field } from "redux-form";
 import request from "../utils/request";
 
 const baseUrl = "http://localhost:8000/graphql";
-
-const validate = state => {
-  const errors = {};
-  if (state.USL <= state.LSL) {
-    errors.USL = "Valor inválido";
-    errors.LSL = "Valor inválido";
-  }
-  return errors;
+const limits = (value, allValues) => {
+  return allValues.LSL >= allValues.USL ? "Valores Inválidos" : undefined;
 };
 
 const styles = theme => ({
@@ -50,7 +44,9 @@ const textLabel = name => {
 
   if (name === "USL") return "Limite Superior(km/h)";
 
-  if (name === "UWT" || name === "LWT") return "Tempo de Espera(s)";
+  if (name === "UWT") return "Tempo de Espera Superior(s)";
+
+  if (name === "LWT") return "Tempo de Espera Inferior(s)";
 
   if (name === "TBS") return "Tempo Entre Ciclos";
 
@@ -77,10 +73,12 @@ const Grid1 = (classes, TMO, handleChange) => {
 const Grid2 = (classes, type, handleChange) => {
   return (
     <Grid item xs={6} className={classes.grid}>
-      <TextField
+      <Field
         id={type[1]}
+        name={type[1]}
         label={textLabel(type[1])}
         value={type[0]}
+        component={TextField}
         onChange={handleChange(type[1])}
         type="number"
         className={classes.textField}
@@ -125,12 +123,15 @@ const Grid4 = (classes, submitting) => {
 const CommunGrid = (classes, type, handleChange) => {
   return (
     <Grid item xs={3} className={classes.grid}>
-      <TextField
+      <Field
         id={type[1]}
+        component={TextField}
         label={textLabel(type[1])}
-        value={type.NOS}
+        value={type[0]}
         onChange={handleChange(type[1])}
         type="number"
+        validate={limits}
+        name={type[1]}
         className={classes.textField}
         InputLabelProps={{
           shrink: true
@@ -234,7 +235,12 @@ class Configuration extends React.Component {
           {Grids(classes, this.handleChange, dictionary)}
           <Grid container item xs={24} alignItems="center" justify="center">
             {Grid1(classes, TMO, this.checkHandleChange)}
-            {Grid2(classes, dictionary.temperature, this.handleChange)}
+            {Grid2(
+              classes,
+              dictionary.temperature,
+              this.handleChange,
+              submitting
+            )}
           </Grid>
           <Grid container item xs={24} alignItems="center" justify="center">
             {Grid3(classes, TAO, this.checkHandleChange)}
@@ -254,8 +260,7 @@ Configuration.propTypes = {
 };
 
 const ConfigurationForm = reduxForm({
-  form: "configuration",
-  validate
+  form: "configuration"
 })(Configuration);
 
 export default withStyles(styles)(ConfigurationForm);
