@@ -37,8 +37,11 @@ services:
       - "./:/code"
       - "/var/run/docker.sock:/var/run/docker.sock"
       - "/tmp/cc:/tmp/cc"
-    environment:
-      - CODECLIMATE_CODE="."
+    # environment:
+    # All calls with sudo would require -E to avoid warning
+    #   - CODECLIMATE_CODE=${PWD}
+    tty: true
+    stdin_open: true
 
 secrets:
   api-django-secret-key:
