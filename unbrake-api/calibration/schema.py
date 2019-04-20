@@ -50,7 +50,7 @@ class CalibrationSpeedType(DjangoObjectType):
         '''
             Defining the CalibrationSpeed Type
         '''
-        model = CalibrationForce
+        model = CalibrationSpeed
 
 
 class CalibrationRelationsType(DjangoObjectType):
@@ -133,7 +133,7 @@ class Query:
     )
     all_calibration_speed = graphene.List(CalibrationSpeedType)
 
-    calibratin_relations = graphene.Field(
+    calibration_relations = graphene.Field(
         CalibrationRelationsType,
         id=graphene.ID(),
         transversal_selection_width=graphene.Int(),
@@ -148,7 +148,7 @@ class Query:
     calibration_temperature = graphene.Field(
         CalibrationTemperatureType,
         id=graphene.ID(),
-        acquisiton_temp=graphene.Int(),
+        acquisition_temp=graphene.Int(),
         conversion_factor=graphene.Float(),
         temperature_offset=graphene.Float(),
     )
@@ -195,7 +195,7 @@ class Query:
         pk = kwargs.get('id')
 
         if pk is not None:
-            return CalibrationForce.object.get(pk=pk)
+            return CalibrationForce.objects.get(pk=pk)
         return None
 
     def resolve_all_calibration_speed(self, info, **kwargs):
@@ -211,10 +211,10 @@ class Query:
         pk = kwargs.get('id')
 
         if pk is not None:
-            return CalibrationSpeed.object.get(pk=pk)
+            return CalibrationSpeed.objects.get(pk=pk)
         return None
 
-    def resolve_all_calibraton_relations(self, info, **kwargs):
+    def resolve_all_calibration_relations(self, info, **kwargs):
         '''
             Returning all CalibrationRelations on db
         '''
@@ -227,16 +227,16 @@ class Query:
         pk = kwargs.get('id')
 
         if pk is not None:
-            return CalibrationRelations.get(pk=pk)
+            return CalibrationRelations.objects.get(pk=pk)
         return None
 
-    def resolves_all_calibration_temperature(self, info, **kwargs):
+    def resolve_all_calibration_temperature(self, info, **kwargs):
         '''
             Returning all CalibrationTemperature on db
         '''
         return CalibrationTemperature.objects.all()
 
-    def resolves_calibration_temperature(self, info, **kwargs):
+    def resolve_calibration_temperature(self, info, **kwargs):
         '''
             Returning only one CalibrationTemperature by id
         '''
@@ -246,13 +246,13 @@ class Query:
             return CalibrationTemperature.objects.get(pk=pk)
         return None
 
-    def resolves_all_calibration_command(self, info, **kwargs):
+    def resolve_all_calibration_command(self, info, **kwargs):
         '''
             Returning all CalibrationCommand on db
         '''
         return CalibrationCommand.objects.all()
 
-    def resolves_calibration_command(self, info, **kwargs):
+    def resolve_calibration_command(self, info, **kwargs):
         '''
             Returning only one CalibrationCommand by id
         '''

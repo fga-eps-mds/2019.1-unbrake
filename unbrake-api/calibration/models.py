@@ -22,22 +22,22 @@ class CalibrationVibration(models.Model):
         conversionFactor is FCVB in the file,
         vibrationOffset is OFVB in the file.
     '''
-    acquisitionTemp = models.IntegerField()
-    conversionFactor = models.FloatField()
-    vibrationOffset = models.FloatField()
+    acquisition_temp = models.IntegerField()
+    conversion_factor = models.FloatField()
+    vibration_offset = models.FloatField()
 
 
 class CalibrationForce(models.Model):
     '''
         This class has force calibration information.
         This class is used twice per calibration.
-        acquisitonTemp is CNHF in the file,
+        acquisitionTemp is CNHF in the file,
         converionFactor is FCF int the file,
         forceOffset is OFF 1int the file.
     '''
-    acquisitionTemp = models.IntegerField()
-    conversionFactor = models.FloatField()
-    forceOffset = models.FloatField()
+    acquisition_temp = models.IntegerField()
+    conversion_factor = models.FloatField()
+    force_offset = models.FloatField()
 
 
 class CalibrationSpeed(models.Model):
@@ -46,8 +46,8 @@ class CalibrationSpeed(models.Model):
         acquitionChanel is CHR1 in the file,
         tireRadius is RAP in the file.
     '''
-    acquisitionChanel = models.IntegerField()
-    tireRadius = models.FloatField()
+    acquisition_chanel = models.IntegerField()
+    tire_radius = models.FloatField()
 
 
 class CalibrationRelations(models.Model):
@@ -60,12 +60,12 @@ class CalibrationRelations(models.Model):
         sheaveMoveDiameter is DPM in the file,
         sheaveMotorDiameter is DPO in the file.
     '''
-    transversalSelectionWidth = models.IntegerField()
-    heigthWidthRelation = models.IntegerField()
-    rimDiameter = models.IntegerField()
-    syncMotorRodation = models.IntegerField()
-    sheaveMoveDiameter = models.IntegerField()
-    sheaveMotorDiameter = models.IntegerField()
+    transversal_selection_width = models.IntegerField()
+    heigth_width_relation = models.IntegerField()
+    rim_diameter = models.IntegerField()
+    sync_motor_rodation = models.IntegerField()
+    sheave_move_diameter = models.IntegerField()
+    sheave_motor_diameter = models.IntegerField()
 
 
 class CalibrationTemperature(models.Model):
@@ -75,9 +75,9 @@ class CalibrationTemperature(models.Model):
         acqusitonTemp is CTH in the file,
         conversionFactor is FCT in the file.
     '''
-    acquisitonTemp = models.IntegerField()
-    conversionFactor = models.FloatField()
-    temperatureOffset = models.FloatField()
+    acquisition_temp = models.IntegerField()
+    conversion_factor = models.FloatField()
+    temperature_offset = models.FloatField()
 
 
 class CalibrationCommand(models.Model):
@@ -90,26 +90,26 @@ class CalibrationCommand(models.Model):
         actualPression is CUPC in the file,
         maxPression is MAPC in the file.
     '''
-    commandChanelSpeed = models.IntegerField()
-    actualSpeed = models.FloatField()
-    maxSpeed = models.FloatField()
-    chanelCommandPression = models.IntegerField()
-    actualPression = models.FloatField()
-    maxPression = models.FloatField()
+    command_chanel_speed = models.IntegerField()
+    actual_speed = models.FloatField()
+    max_speed = models.FloatField()
+    chanel_command_pression = models.IntegerField()
+    actual_pression = models.FloatField()
+    max_pression = models.FloatField()
 
 
 class Calibration(models.Model):
     '''
         This class has all the information of a calibration definition.
     '''
-    calibrationVibration = models.OneToOneField(
+    calibration_vibration = models.OneToOneField(
         CalibrationVibration, on_delete=models.CASCADE)
-    calibrationForce = models.ManyToManyField(CalibrationForce)
-    calibrationSpeed = models.OneToOneField(
+    calibration_force = models.ManyToManyField(CalibrationForce)
+    calibration_speed = models.OneToOneField(
         CalibrationSpeed, on_delete=models.CASCADE)
-    calibrationRelations = models.OneToOneField(
+    calibration_relations = models.OneToOneField(
         CalibrationRelations, on_delete=models.CASCADE)
-    calibrationTemperature = models.ManyToManyField(
+    calibration_temperature = models.ManyToManyField(
         CalibrationTemperature)
-    calibrationCommand = models.OneToOneField(
+    calibration_command = models.OneToOneField(
         CalibrationCommand, on_delete=models.CASCADE)
