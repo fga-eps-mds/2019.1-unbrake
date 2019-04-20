@@ -16,7 +16,7 @@ RUN set -x \
 
 EXPOSE 3000
 
-COPY .eslintrc.json .prettierrc scripts/entrypoint.dev ./
+COPY .eslintrc.json .eslintignore .prettierrc scripts/entrypoint.dev ./
 COPY public public
 COPY scripts scripts
 COPY src src
