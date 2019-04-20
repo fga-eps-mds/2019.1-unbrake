@@ -40,6 +40,7 @@ services:
     # environment:
     # All calls with sudo would require -E to avoid warning
     #   - CODECLIMATE_CODE=${PWD}
+    command: validate-config
     tty: true
     stdin_open: true
 

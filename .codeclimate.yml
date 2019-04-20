@@ -26,10 +26,10 @@ checks:
 
 plugins:
   # CodeClimate can't find pylint and I don't know why, maybe it's outdated
-  pylint:
-    enabled: true
-    channel: beta 
-    config: unbrake-api/.pylintrc
+  #pylint:
+  #  enabled: true
+  #  channel: beta
+  #  config: unbrake-api/.pylintrc
   sonar-python:
     enabled: true
   eslint:
@@ -59,16 +59,19 @@ plugins:
     enabled: true
     config:
       languages:
-      - javascript
-      - python
+        python:
+          python_version: 3
+        javascript:
+    # Multiple false positive due to nature of these file structures
+    exclude_patterns:
+      - unbrake-api/unbrake_api/management/commands/*
+      - unbrake-api/**/test_*
 
 exclude_patterns:
   - "**/node_modules/"
   - "**/hooks/"
   - "**/secrets/"
   - "**/spec/"
-  - "**/tests/"
-  - "**/test_*/"
   - "**/__pycache__/"
   - "**/migrations/"
   - "**/env/"
