@@ -1,0 +1,6 @@
+#!/bin/sh
+
+cd /app/api
+. scripts/functions.sh
+
+run_command python manage.py test

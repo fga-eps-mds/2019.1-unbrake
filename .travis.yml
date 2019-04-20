@@ -1,0 +1,71 @@
+sudo: required
+
+language: minimal
+
+services:
+  - docker
+
+notifications:
+  slack:
+    secure: pP5E+YX1+qR3chyZmyBwt/00wZ2HL4ENjFBSxqLbf/0rOjr+SBwf/IwQbFCEqdWkAGxccD71uegZ0q7Kgs4nCNqItCyau/2S61QWBOvGUJtdhsnSZQ7sQjLOKBUUgeQlZGC7xDandxRV6XgVegUu6/l28xttxTkNcE1Q3i/0WoAXUcmOyH32Flw454WxIlSMgOX0xb1Npj+15F+sKoo3od26/Nd7UyHnGQD3fO0Kk5DHLMs2Kr8x1UFI7+nIrQmI4FVGcVEnOMa+mKI0LlhvAi7Ma6C8l+BQJTAwPG3HqamCrq7l7cyWmDpQY3ySjPSfp2f1LzPBLx3Bx54wb0YQiLt0nQlW/oymlXDH+8q53KEIyXm72yOTvWZR5bldmjf5Ap7OEAWLbSZRMEleZCcKrZ6q8zJn+IRuSqT0VJQUS89IjTlG9MKznipD0qBmI9N5QbPl8wk502po+5U3oYuptGV+JOSC2aC6RcJqWtgKaElHFJMfAqm80VDzuW9+9f7llIsLEpwbKCj3xpysHZQOYVT0zwo2gP/15kGr445xbGOaYhJ7rEnTXhixgyRD+SeXmJkzTLX6HY1HlPaNLNy3ggcbg+4yEr/t4lN61RVGK+hfsO0DwSta++rLC8xj/prfI91BPS4ttCB8/5R5f5plN15sRgkyZ9zboUAxv0ERWyE=
+
+cache:
+  directories:
+    - "unbrake-frontend/node_modules"
+
+env:
+  global:
+    - DOCKER_COMPOSE_VERSION=1.23.2
+
+    # code climate test reporter id (it's not so secret)
+    - secure: "CFCx6LcmtNOBVyFjxgW8NcrmAs3Fr7ueq4tbjg8f7LCHRodsQMxAAL8+8BbeP41YDZ34mqEwemc8QG5dXXSE8lFVAzJfUUQnYncpu1YiywwYmxP6cNWcBtu1h6sBUOfObBz2mQyJnt1yL2TKob4vaK0jtzy099Mew8aIxRzqcHL04TqxG902ITdGiraH89nIN64MKw7CQMUy65S0kRo1RJkQQDJ9s5CKVnBy3n0Vv8qJj+JqKrzJeRSOrpxElg0yOEe7hFNQkavyBbyGt++f0O1AupQxP9drCxrWRsYTUt/+WNWiZnkNXWSBqHgwrYn13ObthrmgHw5vNTA8sYnzav68kypRbuQm4b4oUaSuQWa5c6cfl0wKa7Uk5t8np78wVByK9+yy84+KL91kDYrxFVEoWe55CDDvL1G6HWP28x1cmL8GA35H+rADDdXQaxxEeDpbExTwOf7N3brNfUh416psDF9VyVqDq46wtJapuAE3Onj9rWmP+EMYxaBdVeV+2wi24/sowwqPQF+sBHWnW0pM+xmOztrptZRdMnwCuVzWt+ROVWm+/tAVn5k+Q1/KW9IXF3JF3975A14Bj+x5HxbbHAs95TOcD79qsAO0L+FMHxadgrMcEFwSPP9sTEfwagKLoX7jnXwOQq9hFwkUxGHDDH4Tj7y7OEM/JXo+JJw="
+
+before_install:
+  # Update Docker Compose
+  - sudo rm /usr/local/bin/docker-compose
+  - curl -L https://github.com/docker/compose/releases/download/${DOCKER_COMPOSE_VERSION}/docker-compose-`uname -s`-`uname -m` > docker-compose
+  - chmod +x docker-compose
+  - sudo mv docker-compose /usr/local/bin
+
+  # Update Docker
+  - curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
+  - sudo add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable"
+  - sudo apt-get update
+  - sudo apt-get -y -o Dpkg::Options::="--force-confnew" install docker-ce
+
+  - openssl aes-256-cbc -K $encrypted_60c0c29d8825_key -iv $encrypted_60c0c29d8825_iv -in unbrake-api/secrets/API_DJANGO_SECRET_KEY.enc -out unbrake-api/secrets/API_DJANGO_SECRET_KEY -d
+
+  # Run containers
+  - docker-compose up -d
+
+before_script:
+  - curl -L https://codeclimate.com/downloads/test-reporter/test-reporter-latest-linux-amd64 > ./cc-test-reporter
+  - chmod +x ./cc-test-reporter
+  - ./cc-test-reporter before-build
+
+script:
+  # Checking for trailing spaces and conflict marks
+  - git diff --check || (echo 'Trailing whitespaces or conflict marks found!' && exit 1)
+
+  # Unbrake folder is merge error!!! Don't let this folder return!!!
+  - if [ -d unbrake ]; then echo 'The unbrake folder must not exist!' && (exit 1); fi
+
+  # Frontend checks
+  - docker-compose exec frontend npm run check_all
+
+  # API checks
+  - docker-compose exec api python manage.py check_all
+
+after_script:
+  # Stop docker
+  - docker-compose down -v
+
+  # Collect all coverages
+  - mkdir coverage
+  - (cd unbrake-frontend && ./../cc-test-reporter format-coverage -t lcov -o ../coverage/frontend.json -p /app/frontend src/tests/coverage/lcov.info)
+  - (cd unbrake-api && ./../cc-test-reporter format-coverage -t coverage.py -o ../coverage/api.json -p /app/api)
+
+  # Merge results and upload
+  - ./cc-test-reporter sum-coverage -o coverage/codeclimate.json -p 2 coverage/*.json
+
+  - if [[ "$TRAVIS_TEST_RESULT" == 0 ]]; then ./cc-test-reporter upload-coverage -i coverage/codeclimate.json; fi

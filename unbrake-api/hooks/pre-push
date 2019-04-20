@@ -1,0 +1,5 @@
+#!/bin/sh
+
+cd /app/api
+python manage.py check
+python manage.py test

@@ -1,0 +1,4 @@
+#!/bin/sh
+
+bash /app/frontend/scripts/run_container_hook
+exec /usr/local/bin/npm $@

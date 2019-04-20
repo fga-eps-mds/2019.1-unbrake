@@ -1,0 +1,14 @@
+[flake8]
+
+exclude =
+  .git,
+  __pycache__,
+  env,
+  venv,
+  .env,
+  .venv,
+  .pylintrc,
+  migrations
+
+per-file-ignores =
+    unbrake_api/settings.py:E501

@@ -1,0 +1,62 @@
+#!/bin/sh
+
+add_file(){
+    file="$1"
+    if [ -e "$file" ]; then
+        git add "$file"
+    elif [ "$hookName" = "pre-commit" ] || [ "$hookName" = "pre-push" ]; then
+        echo -e "\033[0;33mINFO:\033[0m file '$file' will not be checked because it's not allowed to be in docker."
+    fi
+}
+
+convert_git_workspace() {
+    git diff --name-only --cached | grep unbrake-frontend | sed s@unbrake-frontend/@@ > /tmp/unbrake_staged \
+    && git reset &>/dev/null \
+    && git init &>/dev/null \
+    && [ -s /tmp/unbrake_staged ] \
+    && for file in $(cat /tmp/unbrake_staged); do add_file "$file"; done \
+    && rm -rf /tmp/unbrake_staged
+}
+
+setHooks="$(node -e "var package = require('./package.json'); Object.keys(package.husky.hooks).forEach(key => console.log(key))")"
+
+update_host_hooks() {
+   for hook in $setHooks; do
+       cp /app/frontend/hooks/host_hook_template "/app/.git/hooks/$hook" \
+       && chmod +x "/app/.git/hooks/$hook"
+   done
+}
+
+is_hooks_outdated() {
+    for hook in $setHooks; do
+        diff /app/frontend/hooks/host_hook_template "/app/.git/hooks/$hook" &> /dev/null || return 1
+    done
+}
+
+hookName="$1"
+echo "$hookName" | grep -q "^pre-" && isPreHook=1
+[ -d /app/.git ] && isGitMounted=1
+[ -z "$(ls /app/.git/hooks | grep -v \.sample)" ] && hooksNotGenerated=1
+
+if [ $isGitMounted ]; then
+    if [ $hooksNotGenerated ]; then
+        echo -e "\n\033[0;32mINFO:\033[0m Git folder found on volume, git hooks will be created"
+        update_host_hooks
+    else
+		is_hooks_outdated \
+        || (echo -e "\n\033[0;32mINFO:\033[0m Hooks from host are outdated, they will be updated" \
+        && update_host_hooks)
+    fi
+elif [ $isPreHook ]; then # Only pre-* hooks are running checks
+    echo -e "\n\033[0;33mINFO:\033[0m No git folder on volume, git hooks will not be updated"
+fi
+
+if [ $# != 0 ]; then
+    convert_git_workspace
+
+	echo -e "\n=========================================================================="
+	echo "Checking Frontend..."
+	echo -e "==========================================================================\n"
+
+    "/app/frontend/.git/hooks/$hookName" "${@:2}"
+fi

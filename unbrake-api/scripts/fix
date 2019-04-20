@@ -1,0 +1,7 @@
+#!/bin/sh
+
+cd /app/api
+source scripts/functions.sh
+
+autopep8 -i -a -a -r .
+echo 'Files fixed!'

@@ -1,0 +1,49 @@
+# docker-compose for development
+
+version: '3.7'
+
+services:
+  frontend:
+    container_name: 'unbrake-frontend-development'
+    build:
+      context: ./unbrake-frontend
+      dockerfile: Dockerfile
+    image: unbrake_frontend_development
+    volumes:
+      - "./unbrake-frontend/src:/app/frontend/src"
+      - "./unbrake-frontend/scripts:/app/frontend/scripts"
+      - "./.git:/app/.git" # Needed for git hooks
+    ports:
+      - "3000:3000"
+
+  api:
+    container_name: 'unbrake-api-development'
+    build:
+      context: ./unbrake-api
+      dockerfile: Dockerfile
+    image: unbrake_api_development
+    volumes:
+      - "./unbrake-api:/app/api"
+      - "./.git:/app/.git" # Needed for git hooks
+    ports:
+      - "8000:8000"
+    secrets:
+      - api-django-secret-key
+
+  codeclimate:
+    container_name: 'codeclimate'
+    image: 'codeclimate/codeclimate'
+    volumes:
+      - "./:/code"
+      - "/var/run/docker.sock:/var/run/docker.sock"
+      - "/tmp/cc:/tmp/cc"
+    # environment:
+    # All calls with sudo would require -E to avoid warning
+    #   - CODECLIMATE_CODE=${PWD}
+    command: validate-config
+    tty: true
+    stdin_open: true
+
+secrets:
+  api-django-secret-key:
+    file: ./unbrake-api/secrets/API_DJANGO_SECRET_KEY
