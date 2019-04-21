@@ -8,4 +8,5 @@
 
 ## Diagrama
 
-![Diagrama Roadmap](../images/diagrama-roadmap-papeis.png)
+![Diagrama Roadmap](images/diagrama-roadmap-papeis.png)
+[Ampliar](images/diagrama-roadmap-papeis.png)
