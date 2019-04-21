@@ -5,15 +5,15 @@
 |Pontuação|Valores|
 |-----|-----|
 |Planejada|87|
-|Total entregue|43|
-|Dívida técnica|44|
+|Total entregue|40|
+|Dívida técnica|47|
 
 ## Issues
 
 |Nome da issue|Pontos|Situação|
 |-----|-----|----|
-|[Create form for configuration module](https://github.com/fga-eps-mds/2019.1-unbrake/issues/9)|Não fechada|
-|[Criar Estrutura Analítica do Projeto (EAP)](https://github.com/fga-eps-mds/2019.1-unbrake/issues/29)|Fechada|
+|[Create form for configuration module](https://github.com/fga-eps-mds/2019.1-unbrake/issues/9)|3|Não fechada|
+|[Criar Estrutura Analítica do Projeto (EAP)](https://github.com/fga-eps-mds/2019.1-unbrake/issues/29)|2|Fechada|
 |[Criar autenticação de usuário](https://github.com/fga-eps-mds/2019.1-unbrake/issues/36)|13|Não fechada|
 |[Criar view para receber configurações](https://github.com/fga-eps-mds/2019.1-unbrake/issues/38) |13|Não fechada|
 |[Criar formulário para calibração de temperatura](https://github.com/fga-eps-mds/2019.1-unbrake/issues/39) |5|Não fechada|
