@@ -15,11 +15,10 @@
 
 
 ## Burndown
-
-![sprint_0](/images/sprint0.png)
+![sprint_0](images/sprint0.png)
 
 ## Velocity
-![velocity_0](/images/velocity0.png)
+![velocity_0](images/velocity0.png)
 
 ## Comentários do Scrum Master
 
