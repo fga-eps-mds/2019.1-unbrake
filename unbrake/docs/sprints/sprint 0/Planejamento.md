@@ -1,4 +1,4 @@
-# Planejamento da Sprint 0 
+# Planejamento
 
 <p align="justify">
 Sprint inicial que teve o objetivo de realizar a primeira interação entre os membros do grupo, buscando entender os horários e tempo livre de cada membro ao longo da semana assim como experiências prévias com outros projetos/tecnologias. Nessa sprint, também foram feitos os primeiros treinamentos, focando na metodologia ágil, em conceitos básicos de redes de computadores e git.
@@ -25,7 +25,6 @@ Sprint inicial que teve o objetivo de realizar a primeira interação entre os m
 |[Agile methodologies and networks basic concepts training - Meeting 2](https://github.com/fga-eps-mds/2019.1-unbrake/issues/17)|3|
 
 ## Papéis
-
 
 |Papel|Responsável|
 |-----|-----|

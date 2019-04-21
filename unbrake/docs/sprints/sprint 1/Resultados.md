@@ -1,7 +1,6 @@
-# Resultados da Sprint 1  
+# Resultados
 
 ## Issues
-
 
 |Nome da issue|Pontos|Situação|
 |-----|-----|----|
@@ -21,11 +20,12 @@
 |[Configuração inicial de regras de estilo e linting](https://github.com/fga-eps-mds/2019.1-unbrake/issues/30)|1|Fechada|
 |[Consertar eslint-plugin-react 'react/prefer-stateless-function'](https://github.com/fga-eps-mds/2019.1-unbrake/issues/35)|1|Fechada|
 
-
 ## Burndown
+
 ![sprint_1](images/sprint1.png)
 
 ## Velocity
+
 ![velocity_1](images/velocity1.png)
 
 ## Comentários do Scrum Master

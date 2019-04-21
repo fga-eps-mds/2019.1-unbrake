@@ -1,4 +1,4 @@
-# Planejamento da Sprint 1
+# Planejamento
 
 <p align="justify">
 Sprint onde primeiras linhas de código do projeto são criadas. O desenvolvimento se inicia com o Front-end e para isso, um treinamento de React/Redux e Docker deve ocorrer no sábado que marca o início da sprint. Nessa sprint, a documentação oficial do projeto também tem seu início com os documentos de EAP e TAP.
@@ -33,9 +33,7 @@ Sprint onde primeiras linhas de código do projeto são criadas. O desenvolvimen
 |[Configuração inicial de regras de estilo e linting](https://github.com/fga-eps-mds/2019.1-unbrake/issues/30)|1|
 |[Consertar eslint-plugin-react 'react/prefer-stateless-function'](https://github.com/fga-eps-mds/2019.1-unbrake/issues/35)|1|
 
-
 ## Papéis
-
 
 |Papel|Responsável|
 |-----|-----|

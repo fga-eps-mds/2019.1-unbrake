@@ -1,4 +1,4 @@
-# Resultados da sprint 0
+# Resultados
 
 ## Issues
 
@@ -12,12 +12,12 @@
 |[Initial meeting with developer team and git training - Meeting 1](https://github.com/fga-eps-mds/2019.1-unbrake/issues/16)|3|Fechada|
 |[Agile methodologies and networks basic concepts training - Meeting 2](https://github.com/fga-eps-mds/2019.1-unbrake/issues/17)|3|Fechada|
 
-
-
 ## Burndown
+
 ![sprint_0](images/sprint0.png)
 
 ## Velocity
+
 ![velocity_0](images/velocity0.png)
 
 ## Comentários do Scrum Master
