@@ -30,7 +30,7 @@ const styles = theme => ({
   }
 });
 
-const validate = values => {
+export const validate = values => {
   const errors = {};
   const requiredFields = ["username", "password", "confirmPassword"];
   requiredFields.forEach(field => {
@@ -76,7 +76,7 @@ const signUpButton = (classes, submitting) => {
   );
 };
 
-const submit = values => {
+export const submit = values => {
   return fetch(
     `${baseUrl}?query=mutation{createUser(password: "${values.password}",
      username: "${values.username}"){user{id}}}`,
