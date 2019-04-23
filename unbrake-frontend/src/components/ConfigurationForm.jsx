@@ -123,7 +123,7 @@ const checkBox = (classes, type) => {
     case "TMO":
       label = "Inibe Desligamento do Motor";
       break;
-    case "TAT":
+    case "TAO":
       label = "Ativa saida auxiliar (AUX1)";
       break;
     default:
