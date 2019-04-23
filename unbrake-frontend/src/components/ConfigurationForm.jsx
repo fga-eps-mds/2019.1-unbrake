@@ -117,19 +117,13 @@ const rowTwo = (classes, vector, handleChange) => {
   return grids;
 };
 
-const textLabel = name => {
-  if (name === "TAS") return "Temperatura(˚C)(AUX1)";
-
-  return "Tempo (s)(AUX1)";
-};
-
 const checkBox = (classes, type) => {
   let label;
   switch (type[1]) {
     case "TMO":
       label = "Inibe Desligamento do Motor";
       break;
-    case "TAO":
+    case "TAT":
       label = "Ativa saida auxiliar (AUX1)";
       break;
     default:
@@ -156,12 +150,23 @@ const Buttons = (classes, submitting) => {
 };
 
 const CommunGrid = (classes, type, handleChange) => {
+  let label;
+  switch (type[1]) {
+    case "TAS":
+      label = "Temperatura(˚C)(AUX1)";
+      break;
+    case "TAT":
+      label = "Tempo (s)(AUX1)";
+      break;
+    default:
+      break;
+  }
   return (
     <Grid item xs={6} className={classes.grid}>
       <Field
         id={type[1]}
         component={TextField}
-        label={textLabel(type[1])}
+        label={label}
         value={type[0]}
         onChange={handleChange(type[1])}
         type="number"
