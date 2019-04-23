@@ -1,18 +1,95 @@
-import React from "react";
-import Enzyme, { shallow } from "enzyme";
-import toJson from "enzyme-to-json";
-import Adapter from "enzyme-adapter-react-16";
-import Configuration from "../components/Configuration";
+// Jest Snapshot v1, https://goo.gl/fbAQLP
 
-Enzyme.configure({ adapter: new Adapter() });
-
-describe("<Configuration />", () => {
-  describe("render()", () => {
-    test("renders the component", () => {
-      const wrapper = shallow(<Configuration />);
-      const component = wrapper.dive();
-
-      expect(toJson(component)).toMatchSnapshot();
-    });
-  });
-});
+exports[`<Configuration /> render() renders the component 1`] = `
+<WithStyles(Grid)
+  alignItems="center"
+  container={true}
+  justify="center"
+  spacing={12}
+  style={
+    Object {
+      "minHeight": "100vh",
+    }
+  }
+>
+  <form>
+    <WithStyles(Grid)
+      alignItems="center"
+      container={true}
+      item={true}
+      justify="center"
+      xs={10}
+    >
+      <WithStyles(Grid)
+        className="Configuration-title-1"
+        item={true}
+        xs={4}
+      >
+        <h2
+          justify="left"
+        >
+          Upload arquivo de Calibração
+        </h2>
+      </WithStyles(Grid)>
+      <WithStyles(Grid)
+        className="Configuration-grid-2"
+        item={true}
+        xs={4}
+      >
+        <WithStyles(Input)
+          name="configuration"
+          onChange={[Function]}
+          type="file"
+        />
+      </WithStyles(Grid)>
+    </WithStyles(Grid)>
+    <WithStyles(Grid)
+      alignItems="center"
+      container={true}
+      item={true}
+      justify="center"
+      xs={10}
+    >
+      <WithStyles(Grid)
+        className="Configuration-title-1"
+        item={true}
+        xs={4}
+      >
+        <h2>
+          Upload arquivo de Configuração
+        </h2>
+      </WithStyles(Grid)>
+      <WithStyles(Grid)
+        className="Configuration-grid-2"
+        item={true}
+        xs={4}
+      >
+        <WithStyles(Input)
+          name="configuration"
+          onChange={[Function]}
+          type="file"
+        />
+      </WithStyles(Grid)>
+    </WithStyles(Grid)>
+    <WithStyles(ReduxForm)
+      configuration={
+        Object {
+          "CONFIG_ENSAIO": Object {
+            "LSL": "",
+            "LWT": "",
+            "NOS": "",
+            "PTD": "",
+            "TAO": [Function],
+            "TAS": "",
+            "TAT": "",
+            "TBS": "",
+            "TMO": [Function],
+            "USL": "",
+            "UWT": "",
+          },
+        }
+      }
+    />
+  </form>
+</WithStyles(Grid)>
+`;

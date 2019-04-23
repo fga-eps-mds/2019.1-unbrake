@@ -27,17 +27,97 @@ const styles = theme => ({
   }
 });
 
+const caseZero = 0;
+const caseOne = 1;
+const caseTwo = 2;
+
+const rowOne = (classes, vector, handleChange) => {
+  const grids = vector.map((value, index) => {
+    let name;
+    let label;
+    switch (index) {
+      case caseZero:
+        name = "NOS";
+        label = "Numero de Snubs";
+        break;
+      case caseOne:
+        name = "USL";
+        label = "Limite Superior (km/h)";
+        break;
+      case caseTwo:
+        name = "UWT";
+        label = "Tempo de Espera (s)";
+        break;
+      default:
+        break;
+    }
+    return (
+      <Grid item xs={3} className={classes.grid}>
+        <Field
+          id={name}
+          component={TextField}
+          label={label}
+          value={value}
+          onChange={handleChange(name)}
+          type="number"
+          name={name}
+          className={classes.textField}
+          InputLabelProps={{
+            shrink: true
+          }}
+          margin="normal"
+          variant="outlined"
+        />
+      </Grid>
+    );
+  });
+  return grids;
+};
+
+const rowTwo = (classes, vector, handleChange) => {
+  const grids = vector.map((value, index) => {
+    let name;
+    let label;
+    switch (index) {
+      case caseZero:
+        name = "TBS";
+        label = "Tempo entre ciclos";
+        break;
+      case caseOne:
+        name = "LSL";
+        label = "Limite inferior (km/h)";
+        break;
+      case caseTwo:
+        name = "LWT";
+        label = "Tempo de espera (s)";
+        break;
+      default:
+        break;
+    }
+    return (
+      <Grid item xs={3} className={classes.grid}>
+        <Field
+          id={name}
+          component={TextField}
+          label={label}
+          value={value}
+          onChange={handleChange(name)}
+          type="number"
+          name={name}
+          className={classes.textField}
+          InputLabelProps={{
+            shrink: true
+          }}
+          margin="normal"
+          variant="outlined"
+        />
+      </Grid>
+    );
+  });
+  return grids;
+};
+
 const textLabel = name => {
-  if (name === "NOS") return "Número de Snubs";
-
-  if (name === "USL") return "Limite Superior(km/h)";
-
-  if (name === "UWT" || name === "LWT") return "Tempo de Espera(s)";
-
-  if (name === "TBS") return "Tempo Entre Ciclos";
-
-  if (name === "LSL") return "Limite Inferior(km/h)";
-
   if (name === "TAS") return "Temperatura(˚C)(AUX1)";
 
   return "Tempo (s)(AUX1)";
@@ -108,23 +188,6 @@ const CommunGrid = (classes, type, handleChange) => {
   );
 };
 
-const Grids = (classes, handleChange, dictionary) => {
-  return (
-    <Grid alignItems="center" justify="center" container spacing={12}>
-      <Grid container item xs={24} alignItems="center" justify="center">
-        {CommunGrid(classes, dictionary.snub, handleChange)}
-        {CommunGrid(classes, dictionary.limUp, handleChange)}
-        {CommunGrid(classes, dictionary.waitUp, handleChange)}
-      </Grid>
-      <Grid container item xs={24} alignItems="center" justify="center">
-        {CommunGrid(classes, dictionary.cicleTime, handleChange)}
-        {CommunGrid(classes, dictionary.limLow, handleChange)}
-        {CommunGrid(classes, dictionary.waitLow, handleChange)}
-      </Grid>
-    </Grid>
-  );
-};
-
 class ConfigurationForm extends React.Component {
   constructor(props) {
     super(props);
@@ -132,8 +195,8 @@ class ConfigurationForm extends React.Component {
       configuration: {
         NOS: "",
         USL: "",
-        LSL: "",
         UWT: "",
+        LSL: "",
         LWT: "",
         TBS: "",
         TAS: "",
@@ -178,13 +241,9 @@ class ConfigurationForm extends React.Component {
     const { classes, handleSubmit, submitting } = this.props;
     const { configuration } = this.state;
     const { TAS, TAT, TMO, TAO, UWT, NOS, LSL, USL, TBS, LWT } = configuration;
+    const vectorOne = [NOS, USL, UWT];
+    const vectorTwo = [TBS, LSL, LWT];
     const dictionary = {
-      snub: [NOS, "NOS"],
-      limUp: [USL, "USL"],
-      waitUp: [UWT, "UWT"],
-      cicleTime: [TBS, "TBS"],
-      limLow: [LSL, "LSL"],
-      waitLow: [LWT, "LWT"],
       powerMotor: [TMO, "TMO"],
       exitAux: [TAO, "TAO"],
       temp: [TAS, "TAS"],
@@ -198,7 +257,12 @@ class ConfigurationForm extends React.Component {
         autoComplete="off"
         onSubmit={handleSubmit}
       >
-        {Grids(classes, this.handleChange, dictionary)}
+        <Grid container item xs={24} alignItems="center" justify="center">
+          {rowOne(classes, vectorOne, this.handleChange)}
+        </Grid>
+        <Grid container item xs={24} alignItems="center" justify="center">
+          {rowTwo(classes, vectorTwo, this.handleChange)}
+        </Grid>
         <Grid container item xs={24} alignItems="center" justify="center">
           {Grid1(classes, dictionary.powerMotor)}
           {Grid2(classes, dictionary.temp, this.handleChange)}
