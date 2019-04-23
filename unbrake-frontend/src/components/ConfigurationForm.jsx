@@ -123,40 +123,29 @@ const textLabel = name => {
   return "Tempo (s)(AUX1)";
 };
 
-const Grid1 = (classes, type) => {
+const checkBox = (classes, type) => {
+  let label;
+  switch (type[1]) {
+    case "TMO":
+      label = "Inibe Desligamento do Motor";
+      break;
+    case "TAO":
+      label = "Ativa saida auxiliar (AUX1)";
+      break;
+    default:
+      break;
+  }
   return (
     <Grid item xs={3} className={classes.gridButton} justify="center">
       <FormControlLabel
         control={<Field component={Checkbox} name={type[1]} value={type[0]} />}
-        label="Inibe Desligamento do Motor"
+        label={label}
       />
     </Grid>
   );
 };
 
-const Grid2 = (classes, type, handleChange) => {
-  return (
-    <Grid item xs={6} className={classes.grid}>
-      <Field
-        id={type[1]}
-        name={type[1]}
-        label={textLabel(type[1])}
-        value={type[0]}
-        component={TextField}
-        onChange={handleChange(type[1])}
-        type="number"
-        className={classes.textField}
-        InputLabelProps={{
-          shrink: true
-        }}
-        margin="normal"
-        variant="outlined"
-      />
-    </Grid>
-  );
-};
-
-const Grid4 = (classes, submitting) => {
+const Buttons = (classes, submitting) => {
   return (
     <Grid item xs={3} className={classes.grid} justify="right">
       <Button color="secondary" variant="contained" disabled={submitting}>
@@ -168,7 +157,7 @@ const Grid4 = (classes, submitting) => {
 
 const CommunGrid = (classes, type, handleChange) => {
   return (
-    <Grid item xs={3} className={classes.grid}>
+    <Grid item xs={6} className={classes.grid}>
       <Field
         id={type[1]}
         component={TextField}
@@ -208,7 +197,6 @@ class ConfigurationForm extends React.Component {
     this.handleChange = name => event => {
       const configuration = {};
       configuration[name] = event.target.value;
-      // console.log(configuration);
       this.setState(prevState => ({
         configuration: { ...prevState.configuration, ...configuration }
       }));
@@ -220,10 +208,8 @@ class ConfigurationForm extends React.Component {
 
   shouldComponentUpdate(nextProps) {
     const { configuration } = this.props;
-    // console.log(this.state);
 
     if (configuration !== nextProps.configuration) {
-      // console.log("bla", nextProps.configuration.CONFIG_ENSAIO.NOS);
       const rightConfig = Object.assign({}, nextProps.configuration);
       rightConfig.CONFIG_ENSAIO.TMO =
         nextProps.configuration.CONFIG_ENSAIO.TMO !== "FALSE";
@@ -237,7 +223,6 @@ class ConfigurationForm extends React.Component {
   }
 
   render() {
-    // console.log("teste");
     const { classes, handleSubmit, submitting } = this.props;
     const { configuration } = this.state;
     const { TAS, TAT, TMO, TAO, UWT, NOS, LSL, USL, TBS, LWT } = configuration;
@@ -250,7 +235,6 @@ class ConfigurationForm extends React.Component {
       time: [TAT, "TAT"]
     };
 
-    // console.log(this.props);
     return (
       <form
         className={classes.container}
@@ -263,14 +247,16 @@ class ConfigurationForm extends React.Component {
         <Grid container item xs={24} alignItems="center" justify="center">
           {rowTwo(classes, vectorTwo, this.handleChange)}
         </Grid>
-        <Grid container item xs={24} alignItems="center" justify="center">
-          {Grid1(classes, dictionary.powerMotor)}
-          {Grid2(classes, dictionary.temp, this.handleChange)}
+        <Grid container item xs={12} alignItems="center" justify="center">
+          {checkBox(classes, dictionary.powerMotor)}
+          {CommunGrid(classes, dictionary.temp, this.handleChange)}
         </Grid>
-        <Grid container item xs={24} alignItems="center" justify="center">
-          {Grid1(classes, dictionary.powerMotor)}
+        <Grid container item xs={12} alignItems="center" justify="center">
+          {checkBox(classes, dictionary.exitAux)}
           {CommunGrid(classes, dictionary.time, this.handleChange)}
-          {Grid4(classes, submitting)}
+        </Grid>
+        <Grid container item xs={12} alignItems="center" justify="center">
+          {Buttons(classes, submitting)}
         </Grid>
       </form>
     );
