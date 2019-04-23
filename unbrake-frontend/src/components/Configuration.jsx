@@ -9,7 +9,7 @@ import {
 } from "@material-ui/core";
 import { TextField } from "redux-form-material-ui";
 import { reduxForm, Field } from "redux-form";
-import request from "../utils/request";
+import Request from "../utils/Request";
 
 const baseUrl = "http://localhost:8000/graphql";
 const limits = (value, allValues) => {
@@ -173,7 +173,7 @@ async function submit(values, state) {
 
   const method = "POST";
 
-  const response = await request(url, method);
+  const response = await Request(url, method);
 
   return response;
 }

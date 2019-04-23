@@ -7,7 +7,7 @@ import Paper from "@material-ui/core/Paper";
 import { withStyles } from "@material-ui/core/styles";
 import PropTypes from "prop-types";
 import Cookies from "universal-cookie";
-import request from "../utils/request";
+import Request from "../utils/Request";
 
 const padding = 10;
 const baseUrl = "http://localhost:8000/graphql";
@@ -92,7 +92,7 @@ async function submit(values) {
 
   const method = "POST";
 
-  const parsedData = await request(url, method);
+  const parsedData = await Request(url, method);
 
   if (parsedData.data.tokenAuth !== null) {
     cookie.set("token", parsedData.data.tokenAuth.token, {

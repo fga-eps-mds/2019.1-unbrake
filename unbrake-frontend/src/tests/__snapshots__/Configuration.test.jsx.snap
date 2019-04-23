@@ -29,6 +29,5 @@ exports[`<Configuration /> render() renders the component 1`] = `
   touchOnBlur={true}
   touchOnChange={false}
   updateUnregisteredFields={false}
-  validate={[Function]}
 />
 `;
