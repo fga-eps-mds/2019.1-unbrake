@@ -48,7 +48,7 @@
 |João|x|x|x|x|-|
 |Letícia|x|x|x|x|-|
 |Lucas|x|x|x|x|-|
-|Thiago|x|x|x|x|-|
+|Tiago|x|x|x|x|-|
 |Victor||||x|-|
 |Vinicius|x|x||x|-|
 
@@ -70,3 +70,7 @@ A Sprint 2 foi um ponto de virada no projeto. Nela, o back-end começou a ser de
 Vale destacar que um ponto que dificultou e atrasou muito o time de desenvolvimento foi a ferramenta de checagem de código criada na sprint anterior. Seu funcionamento é demonstrado <a href="https://github.com/fga-eps-mds/2019.1-unbrake/pull/32">aqui</a>. Basicamente, ela bloqueia commits e pushs (sendo possível evitar isso por meio de uma flag, o que foi dito pelos gerentes para ser usado com parcimônia) se as checagens de folha de estilo, typechecking e teste não estiverem passando. Com isso, ao fim da sprint, várias issues já estavam "prontas", no sentido de já estarem funcionais, mas ainda não haviam atingido o nível de qualidade exigido, o que impossibilitou a aceitação dos PR's.
 </p>
 
+
+<p align="justify">
+Outra decisão importante foi utilizar um bot do Slack para realizar a daily meeting de sexta e para reporte de membros em caso de ausência em algum dos outros dias. A retirada da reunião na sexta ocorreu pela impossibilidade de 3 membros de MDS comparecerem presencialmente.
+</p>

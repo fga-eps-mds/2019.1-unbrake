@@ -45,7 +45,7 @@
 |João|x|x|x|x|x|
 |Letícia|x|x|x|x|x|
 |Lucas|x|x|x|x|x|
-|Thiago|x|x|x|x|x|
+|Tiago|x|x|x|x|x|
 |Victor|x|x|x|x|x|
 |Vinicius||x||x|x|
 
