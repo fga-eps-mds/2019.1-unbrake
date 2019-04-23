@@ -1,15 +1,17 @@
-### Problema/Funcionalidade
+# Faz tal coisa
+
+## Problema/Funcionalidade
 
 Descreva aqui sua Funcionalidade
 
-#### Como foi implementado
+### Como foi implementado
 
 Explique rapidamente como sua solução foi pensada
 
-#### Possíveis melhorias
+### Possíveis melhorias
 
 Existe alguma coisa que acredite que possa melhorar nessa implementação
 
-#### Autores
+### Autores
 
 Menções aos autores do pull Request
