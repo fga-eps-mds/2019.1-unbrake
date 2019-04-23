@@ -1,31 +1,26 @@
 import fetch from "jest-fetch-mock";
+// import fetchMock from "fetch-mock";
 import Request from "../utils/Request";
 
-const Username = "Jest";
+const Username = "ESA";
 const password = "password";
-const BaseUrl = "http://localhost:8000";
+const BaseUrl = "http://api:8000";
 const url = `${BaseUrl}/graphql?query=mutation{createUser(username:"${Username}",password:"${password}"){user{username}}}`;
 const method = "POST";
 
-describe("Test request", () => {
+describe("asyncFetch", () => {
   beforeEach(() => {
     fetch.resetMocks();
   });
 
-  it("Call request and return response", () => {
+  it("can fetch", async () => {
     fetch.mockResponseOnce(
-      JSON.stringify({ data: { createUser: { username: Username } } })
+      JSON.stringify({ data: { createUser: { user: { username: Username } } } })
     );
 
-    Request(url, method)
-      .then(res => {
-        expect(res.data.createUser.username).toEqual(Username);
-      })
-      .catch(() => {});
+    const a = await Request(url, method);
 
-    /*
-     *expect(fetch.mock.calls.length).toEqual(1)
-     *expect(fetch.mock.calls[0][0]).toEqual(url)
-     */
+    expect(a.data.createUser.user.username).toEqual(Username);
+    // expect(fetch.mock.calls.length).toEqual(1)
   });
 });
