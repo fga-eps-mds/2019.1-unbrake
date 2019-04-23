@@ -1,6 +1,6 @@
 #!/bin/sh
 
 cd /app/api
-source scripts/functions.sh
+. scripts/functions.sh
 
 run_command python manage.py check
