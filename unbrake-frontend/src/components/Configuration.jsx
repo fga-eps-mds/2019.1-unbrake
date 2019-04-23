@@ -34,7 +34,6 @@ class Configuration extends React.Component {
           UWT: ""
         }
       }
-      // calibration: {}
     };
 
     this.fileUpload = this.fileUpload.bind(this);
@@ -50,19 +49,15 @@ class Configuration extends React.Component {
       const content = e.target.result;
       const fileUpload = iniparser.parseString(content);
       if (name === "configuration") {
-        // alert("Configuracao");
         scope.setState({ configuration: fileUpload });
         scope.setState({ configuration: fileUpload });
       }
       if (name === "calibration") {
-        // alert("Calibracao");
         scope.setState({ calibration: fileUpload });
       }
-      // console.log(this.state.calibration);
     };
 
     reader.readAsText(file, "UTF-8");
-    // console.log(this.state.configuration.CONFIG_ENSAIO.NOS);
   }
 
   render() {

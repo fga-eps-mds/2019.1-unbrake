@@ -27,24 +27,28 @@ const styles = theme => ({
   }
 });
 
-const caseZero = 0;
-const caseOne = 1;
-const caseTwo = 2;
+const caseNOS = 0;
+const caseUSL = 1;
+const caseUWT = 2;
+
+const caseTBS = 0;
+const caseLSL = 1;
+const caseLWT = 2;
 
 const rowOne = (classes, vector, handleChange) => {
   const grids = vector.map((value, index) => {
     let name;
     let label;
     switch (index) {
-      case caseZero:
+      case caseNOS:
         name = "NOS";
         label = "Numero de Snubs";
         break;
-      case caseOne:
+      case caseUSL:
         name = "USL";
         label = "Limite Superior (km/h)";
         break;
-      case caseTwo:
+      case caseUWT:
         name = "UWT";
         label = "Tempo de Espera (s)";
         break;
@@ -79,15 +83,15 @@ const rowTwo = (classes, vector, handleChange) => {
     let name;
     let label;
     switch (index) {
-      case caseZero:
+      case caseTBS:
         name = "TBS";
         label = "Tempo entre ciclos";
         break;
-      case caseOne:
+      case caseLSL:
         name = "LSL";
         label = "Limite inferior (km/h)";
         break;
-      case caseTwo:
+      case caseLWT:
         name = "LWT";
         label = "Tempo de espera (s)";
         break;
