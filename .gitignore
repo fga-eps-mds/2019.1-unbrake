@@ -172,3 +172,5 @@ venv.bak/
 /site
 
 # End of https://www.gitignore.io/api/django
+
+.idea
