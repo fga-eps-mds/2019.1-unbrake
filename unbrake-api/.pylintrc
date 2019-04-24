@@ -12,10 +12,11 @@
 # paths.
 ignore=CVS, env, venv, .env, .venv, settings.py, pytest.ini, Dockerfile,
        scripts, requirements.txt, wsgi.py, secrets, db.sqlite3, hooks, migrations,
-	   production
+	   coverage.xml, htmlcov, production
 
 # Add files or directories matching the regex patterns to the blacklist. The
 # regex matches against base names, not paths.
+# ignore-pattern=
 
 # Python code to execute, usually for sys.path manipulation such as
 # pygtk.require().
@@ -220,7 +221,8 @@ good-names=i,
            Run,
            _,
 		   pk,
-		   urlspatterns
+		   urlspatterns,
+		   id
 
 # Include a hint for the correct naming format with invalid-name.
 include-naming-hint=yes
@@ -271,7 +273,7 @@ variable-naming-style=snake_case
 
 # Format style used to check logging format string. `old` means using %
 # formatting, while `new` is for `{}` formatting.
-logging-format-style=old
+logging-format-style=new
 
 # Logging modules to check that the string format arguments are in logging
 # function parameter format.

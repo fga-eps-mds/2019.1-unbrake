@@ -1,17 +1,15 @@
 import React from "react";
-import { Field, reduxForm } from "redux-form";
+import { Field, reduxForm, SubmissionError } from "redux-form";
 import { TextField } from "redux-form-material-ui";
 import Button from "@material-ui/core/Button";
 import Grid from "@material-ui/core/Grid";
 import Paper from "@material-ui/core/Paper";
 import { withStyles } from "@material-ui/core/styles";
 import PropTypes from "prop-types";
-import Cookies from "universal-cookie";
-import Request from "../utils/Request";
+import history from "../utils/history";
 
 const padding = 10;
 const baseUrl = "http://localhost:8000/graphql";
-const cookie = new Cookies();
 
 const styles = theme => ({
   root: {
@@ -32,16 +30,19 @@ const styles = theme => ({
   }
 });
 
-const validate = values => {
+export const validate = values => {
   const errors = {};
-  const requiredFields = ["username", "password"];
+  const requiredFields = ["username", "password", "confirmPassword"];
   requiredFields.forEach(field => {
     if (!values[field]) {
-      errors[field] = "Required";
+      errors[field] = "Obrigatório";
+    } else if (values.password !== values.confirmPassword) {
+      errors.confirmPassword = "Não confere";
     }
   });
   return errors;
 };
+
 const renderField = ({ input, label, type, meta: { touched, error } }) => (
   <div>
     <TextField
@@ -57,7 +58,7 @@ const renderField = ({ input, label, type, meta: { touched, error } }) => (
   </div>
 );
 
-const loginButtons = (classes, submitting) => {
+const signUpButton = (classes, submitting) => {
   return (
     <Grid container item xs={12} alignItems="center" justify="center">
       <Grid item xs={3} className={classes.grid}>
@@ -68,46 +69,45 @@ const loginButtons = (classes, submitting) => {
           type="submit"
           disabled={submitting}
         >
-          Entrar
-        </Button>
-      </Grid>
-      <Grid item xs={3} className={classes.grid}>
-        <Button
-          color="secondary"
-          variant="contained"
-          disabled={submitting}
-          fullWidth
-        >
-          Cadastrar
+          Registrar
         </Button>
       </Grid>
     </Grid>
   );
 };
 
-async function submit(values) {
-  const url = `${baseUrl}?query=mutation{tokenAuth(username:"${
-    values.username
-  }",password:"${values.password}"){token}}`;
-
-  const method = "POST";
-
-  const parsedData = await Request(url, method);
-
-  if (parsedData.data.tokenAuth !== null) {
-    cookie.set("token", parsedData.data.tokenAuth.token, {
-      path: "/",
-      httpOnly: false
+export const submit = values => {
+  return fetch(
+    `${baseUrl}?query=mutation{createUser(password: "${values.password}",
+     username: "${values.username}"){user{id}}}`,
+    {
+      method: "POST"
+    }
+  )
+    .then(response => {
+      return response.json();
+    })
+    .then(parsedData => {
+      if (parsedData.errors !== undefined) {
+        if (
+          parsedData.errors[0].message ===
+          "UNIQUE constraint failed: auth_user.username"
+        ) {
+          throw new SubmissionError({
+            username: "O usuário já está em uso",
+            _error: "Login failed!"
+          });
+        }
+      } else if (parsedData.data.createUser.user !== null) {
+        history.push("/login");
+      }
     });
-  } else {
-    // block login
-  }
-}
-const loginPaper = (classes, handleSubmit, submitting) => {
+};
+const signUpPaper = (classes, handleSubmit, submitting) => {
   return (
     <Paper className={classes.paper}>
-      <h2 styles={{ color: "black" }}>Bem vindo!</h2>
-      <form onSubmit={handleSubmit(submit.bind(this))}>
+      <h2 styles={{ color: "black" }}>Registre-se!</h2>
+      <form onSubmit={handleSubmit(submit)}>
         <Grid className={classes.grid}>
           <Field
             name="username"
@@ -129,16 +129,23 @@ const loginPaper = (classes, handleSubmit, submitting) => {
             className={classes.field}
           />
         </Grid>
-        {loginButtons(classes, submitting)}
-        <div>
-          <a href="./"> Esqueci minha senha</a>
-        </div>
+        <Grid item xs={12} sm={12} className={classes.grid}>
+          <Field
+            name="confirmPassword"
+            type="password"
+            component={renderField}
+            label="Confirme a Senha"
+            variant="outlined"
+            className={classes.field}
+          />
+        </Grid>
+        {signUpButton(classes, submitting)}
       </form>
     </Paper>
   );
 };
 
-class Login extends React.PureComponent {
+class SignUp extends React.PureComponent {
   render() {
     const { classes, handleSubmit, submitting } = this.props;
     return (
@@ -149,7 +156,7 @@ class Login extends React.PureComponent {
         container
         spacing={12}
       >
-        {loginPaper(classes, handleSubmit, submitting)}
+        {signUpPaper(classes, handleSubmit, submitting)}
       </Grid>
     );
   }
@@ -166,14 +173,14 @@ renderField.propTypes = {
   ).isRequired
 };
 
-Login.propTypes = {
+SignUp.propTypes = {
   classes: PropTypes.objectOf(PropTypes.string).isRequired,
   handleSubmit: PropTypes.func.isRequired,
   submitting: PropTypes.bool.isRequired
 };
-const LoginForm = reduxForm({
-  form: "login",
+const SignUpForm = reduxForm({
+  form: "signup",
   validate
-})(Login);
+})(SignUp);
 
-export default withStyles(styles)(LoginForm);
+export default withStyles(styles)(SignUpForm);
