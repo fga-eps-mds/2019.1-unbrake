@@ -20,13 +20,15 @@ services:
     image: 'postgres:11.2-alpine'
     container_name: 'api-database'
     environment:
-      POSTGRES_PASSWORD_FILE: /run/secrets/postgres_password
+      POSTGRES_PASSWORD_FILE: '/run/secrets/postgres_password'
       POSTGRES_DB: 'unbrake'
       POSTGRES_USER: 'unbrake'
       TZ: 'America/Sao_Paulo'
       PGTZ: 'America/Sao_Paulo'
     volumes:
       - postgres_data:/var/lib/postgresql/data/
+    secrets:
+      - postgres_password
     restart: unless-stopped
 
   api_server:
