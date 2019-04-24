@@ -4,8 +4,7 @@ Tests for models of configuration app
 
 import pytest
 from django.test import Client
-from configuration.models import CyclesConfig, VelocityConfig, WaitConfig
-from configuration.models import ShutdownConfig, AuxiliaryOutputConfig
+from configuration.models import Config
 
 
 # First argument are the parameters names
@@ -15,280 +14,36 @@ from configuration.models import ShutdownConfig, AuxiliaryOutputConfig
 # Is possible to test only one test case with: pytest [file] -k [id]
 @pytest.mark.django_db
 @pytest.mark.parametrize(
-    "number_aux,time_between_cycles_aux", (
-        pytest.param(10, 20, id='cycle_test_1'),
+    ("parameters"), (
+        pytest.param([10, 20, 32, 16, 5, 5, True, False, 64, 51],
+                     id='config_test_1'),
     )
 )
-def test_cycle_config(number_aux, time_between_cycles_aux):
+def test_config(parameters):
     '''
-        This test save a CyclesConfigType object on db,
+        This test save a ConfigType object on db,
         require the saved object by graphql,
         and check if the requirement is equal the saved object
     '''
+    number_aux = parameters[0]
+    time_between_cycles_aux = parameters[1]
+    upper_limit_aux = parameters[2]
+    inferior_limit_aux = parameters[3]
+    upper_time_aux = parameters[4]
+    inferior_time_aux = parameters[5]
+    disable_shutdown_aux = parameters[6]
+    enable_output_aux = parameters[7]
+    temperature_aux = parameters[8]
+    time_aux = parameters[9]
 
-    CyclesConfig(
+    Config(
         number=number_aux,
         time_between_cycles=time_between_cycles_aux,
-    ).save()
-
-    client = Client()
-    result = client.get(
-        '/graphql?query={cyclesConfig(id: 1){number, timeBetweenCycles}}')
-    assert result.status_code == 200
-    cycles_config = result.json()['data']['cyclesConfig']
-    assert cycles_config['number'] == number_aux
-    assert cycles_config['timeBetweenCycles'] == time_between_cycles_aux
-
-
-@pytest.mark.django_db
-@pytest.mark.parametrize(
-    ("number_aux_0,number_aux_1,"
-     "time_between_cycles_aux_0, time_between_cycles_aux_1"),
-    (pytest.param(10, 20, 20, 10, id='all_cycle_test_1'),
-     )
-)
-def test_all_cycle_config(
-        number_aux_0,
-        number_aux_1,
-        time_between_cycles_aux_0,
-        time_between_cycles_aux_1):
-    '''
-        This test save two CyclesConfigType objects on db,
-        require all the saved objects by graphql,
-        and check if the requirement is equal the saveds objects
-    '''
-
-    CyclesConfig(
-        number=number_aux_0,
-        time_between_cycles=time_between_cycles_aux_0,
-    ).save()
-
-    CyclesConfig(
-        number=number_aux_1,
-        time_between_cycles=time_between_cycles_aux_1,
-    ).save()
-
-    client = Client()
-    result = client.get(
-        '/graphql?query={allCyclesConfig{id, number, timeBetweenCycles}}')
-    assert result.status_code == 200
-    cycles_config0 = result.json()['data']['allCyclesConfig'][0]
-    cycles_config1 = result.json()['data']['allCyclesConfig'][1]
-    assert cycles_config0['number'] == number_aux_0
-    assert cycles_config0['timeBetweenCycles'] == time_between_cycles_aux_0
-    assert cycles_config1['number'] == number_aux_1
-    assert cycles_config1['timeBetweenCycles'] == time_between_cycles_aux_1
-
-
-@pytest.mark.django_db
-@pytest.mark.parametrize(
-    "upper_limit_aux,inferior_limit_aux", (
-        pytest.param(30, 15, id='velocity_test_1'),
-    )
-)
-def test_velocity_config(upper_limit_aux, inferior_limit_aux):
-    '''
-        This test save a VelocityConfigType object on db,
-        require the saved object by graphql,
-        and check if the requirement is equal the saved object
-    '''
-
-    VelocityConfig(
         upper_limit=upper_limit_aux,
         inferior_limit=inferior_limit_aux,
-    ).save()
-
-    client = Client()
-    result = client.get(
-        '/graphql?query={velocityConfig(id: 1){upperLimit, inferiorLimit}}')
-    assert result.status_code == 200
-
-    velocity_config = result.json()['data']['velocityConfig']
-
-    assert velocity_config['upperLimit'] == upper_limit_aux
-    assert velocity_config['inferiorLimit'] == inferior_limit_aux
-
-
-@pytest.mark.django_db
-@pytest.mark.parametrize(
-    ("upper_limit_aux_0,upper_limit_aux_1,"
-     "inferior_limit_aux_0, inferior_limit_aux_1"),
-    (pytest.param(30, 15, 40, 30, id='all_velocity_test_1'),
-     )
-)
-def test_all_velocity_config(upper_limit_aux_0, upper_limit_aux_1,
-                             inferior_limit_aux_0, inferior_limit_aux_1):
-    '''
-        This test save two VelocityConfigType objects on db,
-        require all the saved objects by graphql,
-        and check if the requirement is equal the saveds objects
-    '''
-
-    VelocityConfig(
-        upper_limit=upper_limit_aux_0,
-        inferior_limit=inferior_limit_aux_0,
-    ).save()
-
-    VelocityConfig(
-        upper_limit=upper_limit_aux_1,
-        inferior_limit=inferior_limit_aux_1,
-    ).save()
-
-    client = Client()
-    result = client.get(
-        '/graphql?query={allVelocityConfig{id, upperLimit, inferiorLimit}}')
-    assert result.status_code == 200
-
-    velocity_config0 = result.json()['data']['allVelocityConfig'][0]
-    velocity_config1 = result.json()['data']['allVelocityConfig'][1]
-
-    assert velocity_config0['upperLimit'] == upper_limit_aux_0
-    assert velocity_config0['inferiorLimit'] == inferior_limit_aux_0
-
-    assert velocity_config1['upperLimit'] == upper_limit_aux_1
-    assert velocity_config1['inferiorLimit'] == inferior_limit_aux_1
-
-
-@pytest.mark.django_db
-@pytest.mark.parametrize(
-    "upper_time_aux,inferior_time_aux", (
-        pytest.param(42, 37, id='wait_test_1'),
-    )
-)
-def test_wait_config(upper_time_aux, inferior_time_aux):
-    '''
-        This test save a WaitConfigType object on db,
-        require the saved object by graphql,
-        and check if the requirement is equal the saved object
-    '''
-
-    WaitConfig(
         upper_time=upper_time_aux,
         inferior_time=inferior_time_aux,
-    ).save()
-
-    client = Client()
-    result = client.get(
-        '/graphql?query={waitConfig(id: 1){upperTime, inferiorTime}}')
-    assert result.status_code == 200
-    wait_config = result.json()['data']['waitConfig']
-    assert wait_config['upperTime'] == upper_time_aux
-    assert wait_config['inferiorTime'] == inferior_time_aux
-
-
-@pytest.mark.django_db
-@pytest.mark.parametrize(
-    ("upper_time_aux_0,upper_time_aux_1,"
-     "inferior_time_aux_0, inferior_time_aux_1"),
-    (pytest.param(42, 37, 37, 42, id='all_wait_test_1'),
-     )
-)
-def test_all_wait_config(upper_time_aux_0, upper_time_aux_1,
-                         inferior_time_aux_0, inferior_time_aux_1):
-    '''
-        This test save two WaitConfigType objects on db,
-        require all the saved objects by graphql,
-        and check if the requirement is equal the saveds objects
-    '''
-
-    WaitConfig(
-        upper_time=upper_time_aux_0,
-        inferior_time=inferior_time_aux_0,
-    ).save()
-
-    WaitConfig(
-        upper_time=upper_time_aux_1,
-        inferior_time=inferior_time_aux_1,
-    ).save()
-
-    client = Client()
-    result = client.get(
-        '/graphql?query={allWaitConfig{id, upperTime, inferiorTime}}')
-    assert result.status_code == 200
-
-    wait_config0 = result.json()['data']['allWaitConfig'][0]
-    wait_config1 = result.json()['data']['allWaitConfig'][1]
-
-    assert wait_config0['upperTime'] == upper_time_aux_0
-    assert wait_config0['inferiorTime'] == inferior_time_aux_0
-
-    assert wait_config1['upperTime'] == upper_time_aux_1
-    assert wait_config1['inferiorTime'] == inferior_time_aux_1
-
-
-@pytest.mark.django_db
-@pytest.mark.parametrize(
-    "disable_shutdown_aux", (
-        pytest.param(True, id='shutdown_test_1'),
-        pytest.param(False, id='shutdown_test_2'),
-    )
-)
-def test_shutdown_config(disable_shutdown_aux):
-    '''
-        This test save a ShutdownConfigType object on db,
-        require the saved object by graphql,
-        and check if the requirement is equal the saved object
-    '''
-
-    ShutdownConfig(
-        disable_shutdown=disable_shutdown_aux
-    ).save()
-
-    client = Client()
-    result = client.get(
-        '/graphql?query={shutdownConfig(id: 1){disableShutdown}}')
-    assert result.status_code == 200
-    shutdown_config = result.json()['data']['shutdownConfig']
-    assert shutdown_config['disableShutdown'] == disable_shutdown_aux
-
-
-@pytest.mark.django_db
-@pytest.mark.parametrize(
-    "disable_shutdown_aux_0,disable_shutdown_aux_1,", (
-        pytest.param(True, False, id='all_shut_down_test_1'),
-    )
-)
-def test_all_shutdown_config(disable_shutdown_aux_0, disable_shutdown_aux_1):
-    '''
-        This test save two ShutdownConfigType objects on db,
-        require all the saved objects by graphql,
-        and check if the requirement is equal the saveds objects
-    '''
-    ShutdownConfig(
-        disable_shutdown=disable_shutdown_aux_0
-    ).save()
-
-    ShutdownConfig(
-        disable_shutdown=disable_shutdown_aux_1
-    ).save()
-
-    client = Client()
-    result = client.get(
-        '/graphql?query={allShutdownConfig{id, disableShutdown}}')
-    assert result.status_code == 200
-
-    shut_down_config0 = result.json()['data']['allShutdownConfig'][0]
-    shut_down_config1 = result.json()['data']['allShutdownConfig'][1]
-
-    assert shut_down_config0['disableShutdown'] == disable_shutdown_aux_0
-    assert shut_down_config1['disableShutdown'] == disable_shutdown_aux_1
-
-
-@pytest.mark.django_db
-@pytest.mark.parametrize(
-    "enable_output_aux,temperature_aux,time_aux", (
-        pytest.param(True, 56.8, 65.7, id='auxiliary_output_test_1'),
-        pytest.param(False, 56.8, 65.7, id='auxiliary_output_test_2'),
-    )
-)
-def test_auxiliary_output_config(enable_output_aux, temperature_aux, time_aux):
-    '''
-        This test save a AuxiliaryConfigType object on db,
-        require the saved object by graphql,
-        and check if the requirement is equal the saved object
-    '''
-
-    AuxiliaryOutputConfig(
+        disable_shutdown=disable_shutdown_aux,
         enable_output=enable_output_aux,
         temperature=temperature_aux,
         time=time_aux,
@@ -296,62 +51,70 @@ def test_auxiliary_output_config(enable_output_aux, temperature_aux, time_aux):
 
     client = Client()
     result = client.get(
-        '/graphql?query={auxiliaryOutputConfig(id:1)'
-        '{enableOutput,temperature,time}}'
-    )
+        '/graphql?query={config(id: 1){number, timeBetweenCycles, upperLimit,'
+        'inferiorLimit, upperTime, inferiorTime,'
+        'disableShutdown, enableOutput, temperature,time}}')
+
     assert result.status_code == 200
-    auxiliary_output_config = result.json()['data']['auxiliaryOutputConfig']
-    assert auxiliary_output_config['enableOutput'] == enable_output_aux
-    assert auxiliary_output_config['temperature'] == temperature_aux
-    assert auxiliary_output_config['time'] == time_aux
+    cycles_config = result.json()['data']['config']
+    assert cycles_config['number'] == number_aux
+    assert cycles_config['timeBetweenCycles'] == time_between_cycles_aux
+    assert cycles_config['upperLimit'] == upper_limit_aux
+    assert cycles_config['inferiorLimit'] == inferior_limit_aux
+    assert cycles_config['upperTime'] == upper_time_aux
+    assert cycles_config['inferiorTime'] == inferior_time_aux
+    assert cycles_config['disableShutdown'] == disable_shutdown_aux
+    assert cycles_config['enableOutput'] == enable_output_aux
+    assert cycles_config['temperature'] == temperature_aux
+    assert cycles_config['time'] == time_aux
 
 
 @pytest.mark.django_db
 @pytest.mark.parametrize(
-    ("enable_output_aux_0,enable_output_aux_1,"
-     "parameters"),
-    (pytest.param(True, False, [42, 37, 37, 42], id='all_Auxliary_test_1'),
-     )
+    ("parameters"), (
+        pytest.param([10, 20, 32, 16, 5, 5, 'true', 'false', 64, 51],
+                     id='create_config_test_1'),
+    )
 )
-def test_all_auxiliary_config(enable_output_aux_0, enable_output_aux_1,
-                              parameters):
+def test_create_config(parameters):
     '''
-        This test save two AuxiliaryOutputConfigType objects on db,
-        require all the saved objects by graphql,
-        and check if the requirement is equal the saveds objects
+        This test create an object on db using a post request,
+        require the saved object by graphql,
+        and check if the requirement is equal the saved object
     '''
-
-    temperature_aux_0 = parameters[0]
-    temperature_aux_1 = parameters[1]
-    time_aux_0 = parameters[2]
-    time_aux_1 = parameters[3]
-
-    AuxiliaryOutputConfig(
-        enable_output=enable_output_aux_0,
-        temperature=temperature_aux_0,
-        time=time_aux_0,
-    ).save()
-
-    AuxiliaryOutputConfig(
-        enable_output=enable_output_aux_1,
-        temperature=temperature_aux_1,
-        time=time_aux_1,
-    ).save()
+    number = parameters[0]
+    time_between_cycles = parameters[1]
+    upper_limit = parameters[2]
+    inferior_limit = parameters[3]
+    upper_time = parameters[4]
+    inferior_time = parameters[5]
+    disable_shutdown = parameters[6]
+    enable_output = parameters[7]
+    temperature = parameters[8]
+    time = parameters[9]
 
     client = Client()
+    create = client.post(
+        '/graphql?query=mutation{createConfig'
+        '(number: ' + str(number) + ', '
+        'timeBetweenCycles: ' + str(time_between_cycles) + ', '
+        'upperLimit: ' + str(upper_limit) + ', '
+        'inferiorLimit: ' + str(inferior_limit) + ', '
+        'upperTime: ' + str(upper_time) + ', '
+        'inferiorTime: ' + str(inferior_time) + ', '
+        'disableShutdown: ' + str(disable_shutdown) + ', '
+        'enableOutput: ' + str(enable_output) + ', '
+        'temperature: ' + str(temperature) + ', '
+        'time: ' + str(time) + ')'
+        '{config{number, timeBetweenCycles,upperLimit,inferiorLimit,'
+        'upperTime, inferiorTime, disableShutdown,'
+        'enableOutput, temperature, time}}}')
+    assert create.status_code == 200
+
     result = client.get(
-        '/graphql?query={allAuxiliaryOutputConfig'
-        '{id, enableOutput, temperature, time}}'
-    )
+        '/graphql?query=query{config(id: 1){number, timeBetweenCycles,'
+        ' upperLimit, inferiorLimit, upperTime, inferiorTime,'
+        'disableShutdown, enableOutput, temperature,time}}')
     assert result.status_code == 200
 
-    auxiliary_config0 = result.json()['data']['allAuxiliaryOutputConfig'][0]
-    auxiliary_config1 = result.json()['data']['allAuxiliaryOutputConfig'][1]
-
-    assert auxiliary_config0['enableOutput'] == enable_output_aux_0
-    assert auxiliary_config0['temperature'] == temperature_aux_0
-    assert auxiliary_config0['time'] == time_aux_0
-
-    assert auxiliary_config1['enableOutput'] == enable_output_aux_1
-    assert auxiliary_config1['temperature'] == temperature_aux_1
-    assert auxiliary_config1['time'] == time_aux_1
+    assert create.json()['data']['createConfig'] == result.json()['data']
