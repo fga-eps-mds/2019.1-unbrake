@@ -8,11 +8,9 @@ COPY package*.json .
 
 # git and bash needed for running linters
 RUN set -x \
-  && apk update \
   && apk add --no-cache bash git \
   && mkdir -p .git/hooks \
-  && npm install --no-optional \
-  && rm -rf /var/cache/apk/*
+  && npm install --no-optional
 
 EXPOSE 3000
 
