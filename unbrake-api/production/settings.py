@@ -42,7 +42,7 @@ def get_secret(secret_name, filename):
 
     return secret_file.readline().strip('\n')
 
-SECRET_KEY = get_secret('API_DJANGO_SECRET_KEY')
+SECRET_KEY = get_secret('api-django-secret-key', 'API_DJANGO_SECRET_KEY')
 
 DEBUG = False
 
@@ -109,8 +109,12 @@ WSGI_APPLICATION = 'unbrake_api.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': 'unbrake',
+        'USER': 'unbrake',
+        'PASSWORD': get_secret('postgres_password', 'DB_PASSWORD'),
+        'HOST': 'db',
+        'PORT': '5432'
     }
 }
 

@@ -1,0 +1,41 @@
+# docker-compose for production
+
+version: '3.7'
+
+services:
+  api:
+    container_name: 'unbrake-api'
+    build:
+      context: ../unbrake-api
+      dockerfile: production/Dockerfile.api
+    image: unbrake_api
+    depends_on:
+      - db
+    restart: unless-stopped
+    ports:
+      - "8000:8000"
+    secrets:
+      - api-django-secret-key
+      - postgres_password
+
+  db:
+    image: 'postgres:11.2-alpine'
+    container_name: 'api-database'
+    environment:
+      POSTGRES_PASSWORD_FILE: /run/secrets/postgres_password
+      POSTGRES_DB: 'unbrake'
+      POSTGRES_USER: 'unbrake'
+      TZ: 'America/Sao_Paulo'
+      PGTZ: 'America/Sao_Paulo'
+    volumes:
+      - postgres_data:/var/lib/postgresql/data/
+    restart: unless-stopped
+
+secrets:
+  api-django-secret-key:
+    file: ../unbrake-api/secrets/API_DJANGO_SECRET_KEY
+  postgres_password:
+    file: ../unbrake-api/secrets/DB_PASSWORD
+
+volumes:
+  postgres_data:
