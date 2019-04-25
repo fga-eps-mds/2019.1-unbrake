@@ -1,8 +1,10 @@
 #!/bin/sh
 
 tmpFile="/tmp/unbrake_frontend_test"
+errorFrontend="/tmp/.error_tests_frontend"
 
-npm test -- -u --no-cache --coverage --ci --testFailureExitCode 1 --colors 2>&1 | tee $tmpFile
+{ npm test -- -u --no-cache --coverage --ci --testFailureExitCode 1 --colors 2>&1; echo $? > $errorFrontend; } | tee $tmpFile
+[ "$(cat $errorFrontend)" = "1" ] && exit 1
 
 # Check for console.log or warnings on tests
 grep -e 'console\.*' \

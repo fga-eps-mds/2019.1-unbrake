@@ -9,10 +9,8 @@ WORKDIR /app/api
 COPY requirements.txt .
 
 RUN set +x \
-    && apk update \
     && apk add --no-cache build-base git \
-    && pip install -r requirements.txt \
-    && rm -rf /var/cache/apk/*
+    && pip install --no-cache-dir -r requirements.txt
 
 COPY . .
 
