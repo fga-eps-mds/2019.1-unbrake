@@ -29,7 +29,7 @@ const styles = theme => ({
     width: 200
   },
   grid: {
-    padding: "5px"
+    padding: "px"
   },
   gridButton: {
     paddingLeft: theme.spacing.unit + theme.spacing.unit
@@ -76,9 +76,6 @@ const rowOne = (classes, vector, handleChange) => {
           name={name}
           validate={limits}
           className={classes.textField}
-          InputLabelProps={{
-            shrink: true
-          }}
           margin="normal"
           variant="outlined"
         />
@@ -120,9 +117,6 @@ const rowTwo = (classes, vector, handleChange) => {
           name={name}
           validate={limits}
           className={classes.textField}
-          InputLabelProps={{
-            shrink: true
-          }}
           margin="normal"
           variant="outlined"
         />
@@ -187,9 +181,6 @@ const CommunGrid = (classes, type, handleChange) => {
         type="number"
         name={type[1]}
         className={classes.textField}
-        InputLabelProps={{
-          shrink: true
-        }}
         margin="normal"
         variant="outlined"
       />

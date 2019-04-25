@@ -35,7 +35,6 @@ class CalibrationTempCheck extends React.Component {
               <Checkbox
                 checked={graphic1}
                 onChange={(event, value) => enableGraphic1(value)}
-                indeterminate
               />
             }
             label="Plotar Temperatura 1"
@@ -50,7 +49,6 @@ class CalibrationTempCheck extends React.Component {
             <Checkbox
               checked={graphic2}
               onChange={(event, value) => enableGraphic2(value)}
-              indeterminate
             />
           }
           label="Plotar Temperatura 2"
