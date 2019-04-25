@@ -12,11 +12,11 @@
 # paths.
 ignore=CVS, env, venv, .env, .venv, settings.py, pytest.ini, Dockerfile,
        scripts, requirements.txt, wsgi.py, secrets, db.sqlite3, hooks, migrations,
-	   coverage.xml, htmlcov
+	   coverage.xml, htmlcov, production
 
 # Add files or directories matching the regex patterns to the blacklist. The
 # regex matches against base names, not paths.
-#ignore-patterns=
+# ignore-pattern=
 
 # Python code to execute, usually for sys.path manipulation such as
 # pygtk.require().

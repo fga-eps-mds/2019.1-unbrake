@@ -1,0 +1,13 @@
+#!/bin/sh
+
+until nc -z db 5432; do
+	echo "Waiting for db initialize..."
+	sleep 1
+done
+
+echo "db initialized!"
+
+./manage.py makemigrations
+./manage.py migrate --no-input
+
+exec gunicorn unbrake_api.wsgi:application --bind 0.0.0.0:8000

@@ -9,6 +9,7 @@ omit =
   **/__pycache__/*,
   **/scripts/*,
   **/migrations/*,
+  **/production/*,
   wsgi.py,
   manage.py,
   unbrake_api/management/*,
