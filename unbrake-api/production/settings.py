@@ -19,11 +19,11 @@ import os
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
+
 def get_secret(secret_name, filename):
     '''
     Take first line of secret file
     '''
-    secret = None
     try:  # On run
         secret_path = os.path.join('/run/secrets', secret_name)
         secret_file = open(secret_path)
@@ -42,6 +42,7 @@ def get_secret(secret_name, filename):
 
     return secret_file.readline().strip('\n')
 
+
 SECRET_KEY = get_secret('api-django-secret-key', 'API_DJANGO_SECRET_KEY')
 
 DEBUG = False
@@ -50,7 +51,7 @@ CSRF_COOKIE_SECURE = True
 
 SESSION_COOKIE_SECURE = True
 
-ALLOWED_HOSTS = ['*'] # Check later
+ALLOWED_HOSTS = ['*']  # Check later
 
 LANGUAGE_CODE = 'en-us'
 
@@ -74,6 +75,7 @@ INSTALLED_APPS = [
     'unbrake_api',
     'graphene_django',
     'configuration',
+    'calibration',
 ]
 
 MIDDLEWARE = [
