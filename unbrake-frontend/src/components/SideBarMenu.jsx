@@ -28,8 +28,10 @@ import { BrowserRouter, Route } from "react-router-dom";
 
 import Configuration from "./Configuration";
 import Calibration from "./Calibration";
-import Test from "./Test";
+// import Test from "./Test";
 import Analysis from "./Analysis";
+import Login from "./Login";
+import SignUp from "./SignUp";
 
 const drawerWidth = 240;
 const drawerCloseWidth = 7;
@@ -41,7 +43,7 @@ const flexShrinkValue = 0;
 const optionsId = ["analysisId", "configurationId", "calibrationId", "testId"];
 
 const listMenu = (location, history) => {
-  const list = ["analysis", "configuration", "calibration", "test"].map(
+  const list = ["analysis", "configuration", "calibration", "singup"].map(
     (text, index) => {
       let nome; // Fix this!!!
       let icon;
@@ -121,10 +123,11 @@ const IconButtons = (classes, handleDrawerClose, theme) => {
 const RouteLogic = () => {
   return (
     <main style={{ flex: flexGrowValue }}>
+      <Route path="/index" component={() => <Login />} />
       <Route path="/configuration" component={() => <Configuration />} />
       <Route path="/analysis" component={() => <Analysis />} />
       <Route path="/calibration" component={() => <Calibration />} />
-      <Route path="/test" component={() => <Test />} />
+      <Route path="/singup" component={() => <SignUp />} />
     </main>
   );
 };

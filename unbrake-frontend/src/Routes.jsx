@@ -5,12 +5,12 @@ import history from "./utils/history";
 
 // import Login from "./components/Login";
 import Login from "./components/Login";
-import SignUp from "./components/SignUp";
+// import SignUp from "./components/SignUp";
 
 export default () => (
   <Router history={history}>
     {/* <Route exact path="/" component={Login} /> */}
     <Route path="/login" component={Login} />
-    <Route path="/signup" component={SignUp} />
+    {/* <Route path="/signup" component={SignUp} /> */}
   </Router>
 );
