@@ -76,6 +76,7 @@ const loginButtons = (classes, submitting) => {
           color="secondary"
           variant="contained"
           disabled={submitting}
+          href="/singUp"
           fullWidth
         >
           Cadastrar
@@ -147,7 +148,7 @@ class Login extends React.PureComponent {
         justify="center"
         style={{ minHeight: "100vh" }}
         container
-        spacing={12}
+        spacing={16}
       >
         {loginPaper(classes, handleSubmit, submitting)}
       </Grid>

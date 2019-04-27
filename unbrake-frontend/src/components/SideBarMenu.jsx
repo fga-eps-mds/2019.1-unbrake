@@ -40,10 +40,15 @@ const flexGrowValue = 1;
 const menuButtonLeft = 12;
 const menuButtonRight = 36;
 const flexShrinkValue = 0;
-const optionsId = ["analysisId", "configurationId", "calibrationId", "testId"];
+const optionsId = [
+  "analysisId",
+  "configurationId",
+  "calibrationId",
+  "signUpId"
+];
 
 const listMenu = (location, history) => {
-  const list = ["analysis", "configuration", "calibration", "singup"].map(
+  const list = ["analysis", "configuration", "calibration", "signup"].map(
     (text, index) => {
       let nome; // Fix this!!!
       let icon;
@@ -60,12 +65,12 @@ const listMenu = (location, history) => {
           nome = "Calibração";
           icon = <Equalizer />;
           break;
-        case "testId":
-          nome = "Teste";
+        case "signUpId":
+          nome = "Sign Up";
           icon = <Assignment />;
           break;
         default:
-          nome = "Index";
+          nome = "";
           break;
       }
       return (
@@ -103,7 +108,7 @@ const ToolBar = (classes, open, handleDrawerOpen) => {
       >
         <Menu />
       </IconButton>
-      <Button style={{ textTransform: "none" }} color="inherit" href="/index">
+      <Button style={{ textTransform: "none" }} color="inherit" href="/">
         UnBrake
       </Button>
     </Toolbar>
@@ -123,11 +128,11 @@ const IconButtons = (classes, handleDrawerClose, theme) => {
 const RouteLogic = () => {
   return (
     <main style={{ flex: flexGrowValue }}>
-      <Route path="/index" component={() => <Login />} />
       <Route path="/configuration" component={() => <Configuration />} />
       <Route path="/analysis" component={() => <Analysis />} />
       <Route path="/calibration" component={() => <Calibration />} />
       <Route path="/singup" component={() => <SignUp />} />
+      <Route path="/" component={() => <Login />} />
     </main>
   );
 };

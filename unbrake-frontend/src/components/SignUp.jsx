@@ -154,7 +154,7 @@ class SignUp extends React.PureComponent {
         justify="center"
         style={{ minHeight: "100vh" }}
         container
-        spacing={12}
+        spacing={16}
       >
         {signUpPaper(classes, handleSubmit, submitting)}
       </Grid>
