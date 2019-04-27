@@ -4,7 +4,7 @@ LABEL description="To be used in react development, just to keep environments un
 
 WORKDIR /app/frontend
 
-COPY package*.json .
+COPY package*.json ./
 
 # git and bash needed for running linters
 RUN set -x \
