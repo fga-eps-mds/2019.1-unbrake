@@ -4,10 +4,7 @@ version: '3.7'
 
 services:
   api:
-    container_name: 'unbrake-api'
-    build:
-      context: ../unbrake-api
-      dockerfile: production/Dockerfile.api
+    container_name: 'unbrake/api:latest-homolog'
     image: unbrake_api
     depends_on:
       - db
@@ -17,10 +14,7 @@ services:
       - postgres_password
 
   frontend:
-    container_name: 'unbrake-frontend'
-    build:
-      context: ../unbrake-frontend
-      dockerfile: production/Dockerfile
+    image: 'unbrake/frontend:latest-homolog'
     volumes:
       - ../unbrake-frontend/production/nginx.conf:/etc/nginx/nginx.conf
       - ../logs/nginx:/var/log/nginx_frontend
