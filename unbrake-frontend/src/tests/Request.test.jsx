@@ -1,10 +1,10 @@
 import fetch from "jest-fetch-mock";
 import Request from "../utils/Request";
+import { API_URL_GRAPHQL } from "../utils/Constants";
 
 const Username = "OPA";
 const password = "password";
-const BaseUrl = "http://localhost:8000";
-const url = `${BaseUrl}/graphql?query=mutation{createUser(username:"${Username}",password:"${password}"){user{username}}}`;
+const url = `${API_URL_GRAPHQL}?query=mutation{createUser(username:"${Username}",password:"${password}"){user{username}}}`;
 const method = "POST";
 
 describe("Test request", () => {
