@@ -20,5 +20,7 @@ COPY scripts scripts
 COPY src src
 COPY hooks hooks
 
+ENV REACT_APP_API_URL "http://localhost:8000"
+
 ENTRYPOINT ["/app/frontend/entrypoint.dev"]
 CMD ["start"]

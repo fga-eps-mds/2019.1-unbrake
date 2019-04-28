@@ -7,9 +7,9 @@ import Paper from "@material-ui/core/Paper";
 import { withStyles } from "@material-ui/core/styles";
 import PropTypes from "prop-types";
 import history from "../utils/history";
+import { API_URL_GRAPHQL } from "../utils/Constants";
 
 const padding = 10;
-const baseUrl = "http://localhost:8000/graphql";
 
 const styles = theme => ({
   root: {
@@ -78,7 +78,9 @@ const signUpButton = (classes, submitting) => {
 
 export const submit = values => {
   return fetch(
-    `${baseUrl}?query=mutation{createUser(password: "${values.password}",
+    `${API_URL_GRAPHQL}?query=mutation{createUser(password: "${
+      values.password
+    }",
      username: "${values.username}"){user{id}}}`,
     {
       method: "POST"

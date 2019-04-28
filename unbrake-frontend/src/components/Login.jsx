@@ -8,9 +8,10 @@ import { withStyles } from "@material-ui/core/styles";
 import PropTypes from "prop-types";
 import Cookies from "universal-cookie";
 import Request from "../utils/Request";
+import { API_URL_GRAPHQL } from "../utils/Constants";
 
 const padding = 10;
-const baseUrl = "http://localhost:8000/graphql";
+const baseUrl = API_URL_GRAPHQL;
 const cookie = new Cookies();
 
 const styles = theme => ({
