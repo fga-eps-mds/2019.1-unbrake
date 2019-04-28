@@ -30,6 +30,7 @@ import Configuration from "./Configuration";
 import Calibration from "./Calibration";
 import Test from "./Test";
 import Analysis from "./Analysis";
+import Login from "./Login";
 
 const drawerWidth = 240;
 const drawerCloseWidth = 7;
@@ -59,11 +60,11 @@ const listMenu = (location, history) => {
           icon = <Equalizer />;
           break;
         case "testId":
-          nome = "Teste";
+          nome = "Ensaio";
           icon = <Assignment />;
           break;
         default:
-          nome = "Index";
+          nome = "";
           break;
       }
       return (
@@ -101,7 +102,7 @@ const ToolBar = (classes, open, handleDrawerOpen) => {
       >
         <Menu />
       </IconButton>
-      <Button style={{ textTransform: "none" }} color="inherit" href="/index">
+      <Button style={{ textTransform: "none" }} color="inherit" href="/">
         UnBrake
       </Button>
     </Toolbar>
@@ -121,6 +122,7 @@ const IconButtons = (classes, handleDrawerClose, theme) => {
 const RouteLogic = () => {
   return (
     <main style={{ flex: flexGrowValue }}>
+      <Route path="/" exact component={() => <Login />} />
       <Route path="/configuration" component={() => <Configuration />} />
       <Route path="/analysis" component={() => <Analysis />} />
       <Route path="/calibration" component={() => <Calibration />} />
