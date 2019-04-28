@@ -17,11 +17,17 @@ Esta é a tela inicial da aplicação. Nela o usuário tem acesso as várias fun
 Se trata de um conjunto de 7 abas no qual o usuário realiza a calibração do sistema de frenagem, colocando informações sobre as caracteristicas das peças que estão sendo utilizadas no simulador. Esta tela também também apresenta gráficos e algumas imagens para facilitar na calibração das peças.
 
 ![calibration_general](prototypeImages/calibration_general.png)
+
 ![calibration_temperature](prototypeImages/calibration_temperature.png)
-![calibration_force](prototypeImages/calibration_force.pgn)
+
+![calibration_force](prototypeImages/calibration_force.png)
+
 ![calibration_velocity](prototypeImages/calibration_velocity.png)
+
 ![calibration_vibration](prototypeImages/calibration_vibration.png)
+
 ![calibration_command](prototypeImages/calibration_command.png)
+
 ![calibration_relations](prototypeImages/calibration_relations.png)
 
 #### 2.3 Configurações
@@ -29,7 +35,9 @@ Se trata de um conjunto de 7 abas no qual o usuário realiza a calibração do s
 Se trata de um conjunto de 3 abas no qual o usuário insere as informações necessárias para o teste. É também nesta etapa onde o usuário insere as informções referente ao usuário que está realizando o teste, informações que devem constar no relatório, realiza o upload de aquivo que contém as definições padrões de configuração e calibração e também onde é escolhido o local de que será armazenado o relatório obtido.
 
 ![configuration_general](prototypeImages/configuration_general.png)
+
 ![configuration_report](prototypeImages/configuration_report.png)
+
 ![configuration_accont](prototypeImages/configuration_accont.png)
 
 #### 2.4 Ensaio
@@ -37,4 +45,5 @@ Se trata de um conjunto de 3 abas no qual o usuário insere as informações nec
 Nesta tela podemos visualizar os dados obtidos após a realização do teste, podendo ver estas informações disponibilizada entre 2 grupos principais: Aquisições/Comandos e Dados do ensaio. Na parte inferior da tela também possui informações gráficas do sistema, separadas em 8 abas, sendo 1 aba referente as configurações utiliadas para o ensaio e as demais para gráficos dos resultados obtidos, sendo cada aba representando uma destas informações: temperatura 1, temperatura 2, força 1, força 2, rotação, velocidade e distância.
 
 ![test_configuration](prototypeImages/test_configuration.png)
+
 ![test_temperature1](prototypeImages/test_temperature1.png)
