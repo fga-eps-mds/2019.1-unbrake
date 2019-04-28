@@ -76,7 +76,7 @@ const loginButtons = (classes, submitting) => {
           color="secondary"
           variant="contained"
           disabled={submitting}
-          href="/singUp"
+          href="/signUp"
           fullWidth
         >
           Cadastrar
