@@ -4,8 +4,7 @@ import { initialize, Field, reduxForm } from "redux-form";
 import { TextField, Checkbox } from "redux-form-material-ui";
 import { withStyles, Button, FormControlLabel, Grid } from "@material-ui/core";
 import Request from "../utils/Request";
-
-const baseUrl = "http://localhost:8000/graphql";
+import { API_URL_GRAPHQL } from "../utils/Constants";
 
 const limits = (value, allValues) => {
   return parseInt(allValues.LSL, 10) >= parseInt(allValues.USL, 10)
@@ -189,7 +188,7 @@ const CommunGrid = (classes, type, handleChange) => {
 };
 
 async function submit(values, state) {
-  const url = `${baseUrl}?query=mutation{createConfig(number:${
+  const url = `${API_URL_GRAPHQL}?query=mutation{createConfig(number:${
     state.NOS
   },timeBetweenCycles:${state.TBS},upperLimit:${state.USL},inferiorLimit:${
     state.LSL

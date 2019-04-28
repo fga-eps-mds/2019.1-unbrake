@@ -4,6 +4,7 @@ import toJson from "enzyme-to-json";
 import Adapter from "enzyme-adapter-react-16";
 import fetch from "jest-fetch-mock";
 import SignUp, { validate, submit } from "../components/SignUp";
+import { API_URL_GRAPHQL } from "../utils/Constants";
 
 Enzyme.configure({ adapter: new Adapter() });
 
@@ -53,9 +54,7 @@ describe("submit", () => {
       .then(res => {
         response = res.data.createUser.username;
         expect(response).toBe(values.username);
-        expect(fetch.mock.calls[0][0]).toEqual(
-          "https://localhost:8000/graphql"
-        );
+        expect(fetch.mock.calls[0][0]).toEqual(API_URL_GRAPHQL);
       })
       .catch(() => {});
   });
