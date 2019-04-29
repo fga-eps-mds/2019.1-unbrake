@@ -5,3 +5,4 @@ theme:
   favicon: 'https://cdn3.iconfinder.com/data/icons/auto-parts-icons/420/Car_Brakes-512.png'
   feature:
     tabs: true
+dev_addr: '0.0.0.0:8000'
