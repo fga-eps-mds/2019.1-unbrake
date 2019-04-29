@@ -6,11 +6,9 @@ import NotAuthorizedRoute from "./NotAuthorizedRoute";
 
 class AuthorizedRoute extends React.PureComponent {
   render() {
-    const { superuser } = this.props;
+    const { superuser, permission } = this.props;
 
-    if (
-      Auth.isSuperuser(superuser) // || Auth.hasPermission(permission)
-    ) {
+    if (Auth.isSuperuser(superuser) || Auth.hasPermission(permission)) {
       return <Route {...this.props} />;
     }
     if (Auth.isAuthenticated()) {
@@ -27,11 +25,13 @@ class AuthorizedRoute extends React.PureComponent {
 }
 
 AuthorizedRoute.propTypes = {
-  superuser: PropTypes.bool
+  superuser: PropTypes.bool,
+  permission: PropTypes.string
 };
 
 AuthorizedRoute.defaultProps = {
-  superuser: false
+  superuser: false,
+  permission: ""
 };
 
 export default AuthorizedRoute;
