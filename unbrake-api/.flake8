@@ -8,8 +8,7 @@ exclude =
   .env,
   .venv,
   .pylintrc,
-  migrations,
-  production
+  migrations
 
 per-file-ignores =
-    unbrake_api/settings.py:E501
+    settings.py:E501,

@@ -56,14 +56,10 @@ ALLOWED_HOSTS = ['*']  # Check later
 CORS_ORIGIN_ALLOW_ALL = False
 
 CORS_ORIGIN_WHITELIST = (
-    'unbrake.ml',
-    'unbrake-hom.ml',
     'frontend'
 )
 
 CSRF_TRUSTED_ORIGINS = (
-    'unbrake.ml',
-    'unbrake-hom.ml',
     'frontend'
 )
 
