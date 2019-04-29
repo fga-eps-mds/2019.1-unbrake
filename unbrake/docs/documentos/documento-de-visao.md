@@ -2,21 +2,21 @@
 
 ## Sumário
 
-[1. Introdução](#1-Introdução)
+[1. Introdução](#1-introducao)
 
-[2. Posicionamento](#2-Posicionamento)
+[2. Posicionamento](#2-posicionamento)
 
-[3. Descrição dos Envolvidos e dos Usuários](#3-Descrição-dos-Envolvidos-e-dos-Usuários)
+[3. Descrição dos Envolvidos e dos Usuários](#3-descricao-dos-envolvidos-e-dos-usuarios)
 
-[4. Visão Geral do Produto](#4-Visão-Geral-do-Produto)
+[4. Visão Geral do Produto](#4-visao-geral-do-produto)
 
-[5. Recursos do Produto](#5-Recursos-do-Produto)
+[5. Recursos do Produto](#5-recursos-do-produto)
 
-[6. Restrições](#6-Restrições)
+[6. Restrições](#6-restricoes)
 
-[7. Requisitos não funcionais](#7-Requisitos-não-funcionais)
+[7. Requisitos não funcionais](#7-requisitos-nao-funcionais)
 
-[8. Referências Bibliográficas](#8-Referências-Bibliográficas)
+[8. Referências Bibliográficas](#8-referencias-bibliograficas)
 
 -----------------------------------------
 
