@@ -6,7 +6,7 @@ COPY . .
 
 RUN set -x \
   && npm install --no-optional --production \
-  && npm run build
+  && npm run build:staging
 
 # Frontend has his server on Dockerfile because
 # the node service will only compile, won't start
