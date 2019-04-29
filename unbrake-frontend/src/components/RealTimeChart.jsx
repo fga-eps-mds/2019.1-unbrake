@@ -78,6 +78,7 @@ RealTimeChart.propTypes = {
   graphic1: PropTypes.bool,
   graphic2: PropTypes.bool
 };
+
 RealTimeChart.defaultProps = {
   data: [
     {
