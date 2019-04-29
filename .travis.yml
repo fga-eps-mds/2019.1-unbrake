@@ -33,39 +33,43 @@ before_install:
   - sudo apt-get update
   - sudo apt-get -y -o Dpkg::Options::="--force-confnew" install docker-ce
 
+  # Decrypt secret key from Django
   - openssl aes-256-cbc -K $encrypted_60c0c29d8825_key -iv $encrypted_60c0c29d8825_iv -in unbrake-api/secrets/API_DJANGO_SECRET_KEY.enc -out unbrake-api/secrets/API_DJANGO_SECRET_KEY -d
-
-  # Run containers
-  - docker-compose up -d
 
 before_script:
   - curl -L https://codeclimate.com/downloads/test-reporter/test-reporter-latest-linux-amd64 > ./cc-test-reporter
   - chmod +x ./cc-test-reporter
   - ./cc-test-reporter before-build
 
-script:
-  # Checking for trailing spaces and conflict marks
-  - git diff --check || (echo 'Trailing whitespaces or conflict marks found!' && exit 1)
+jobs:
+  include:
+    - stage: "Development checkings and tests"
+      name: "General git checks"
+      script:
+        - git diff --check || (echo 'Trailing whitespaces or conflict marks found!' && exit 1)
+        - if [ -d unbrake ]; then echo 'The unbrake folder must not exist!' && (exit 1); fi
 
-  # Unbrake folder is merge error!!! Don't let this folder return!!!
-  - if [ -d unbrake ]; then echo 'The unbrake folder must not exist!' && (exit 1); fi
+    - name: "Static analysis, tests, collect coverage and check services"
+      script:
+        - docker-compose up -d
+        - docker-compose exec frontend npm run check_all
+        - docker-compose exec api python manage.py check_all
+        - docker-compose down -v
 
-  # Frontend checks
-  - docker-compose exec frontend npm run check_all
+        # Collect coverage
+        - mkdir coverage
+        - (cd unbrake-frontend && ./../cc-test-reporter format-coverage -t lcov -o ../coverage/frontend.json -p /app/frontend src/tests/coverage/lcov.info)
+        - (cd unbrake-api && ./../cc-test-reporter format-coverage -t coverage.py -o ../coverage/api.json -p /app/api)
 
-  # API checks
-  - docker-compose exec api python manage.py check_all
+        # Merge coverage results and upload
+        - ./cc-test-reporter sum-coverage -o coverage/codeclimate.json -p 2 coverage/*.json
+        - if [[ "$TRAVIS_TEST_RESULT" == 0 ]] && [ "$TRAVIS_PULL_REQUEST" != "false" ]; then ./cc-test-reporter upload-coverage -i coverage/codeclimate.json; fi
 
-after_script:
-  # Stop docker
-  - docker-compose down -v
+    - stage: "Prepare staging environment"
+      name: "Prepare frontend image"
+      script:
+        - docker build unbrake-frontend/ -t unbrake/frontend:latest-staging -f unbrake-frontend/production/Dockerfile
 
-  # Collect all coverages
-  - mkdir coverage
-  - (cd unbrake-frontend && ./../cc-test-reporter format-coverage -t lcov -o ../coverage/frontend.json -p /app/frontend src/tests/coverage/lcov.info)
-  - (cd unbrake-api && ./../cc-test-reporter format-coverage -t coverage.py -o ../coverage/api.json -p /app/api)
-
-  # Merge results and upload
-  - ./cc-test-reporter sum-coverage -o coverage/codeclimate.json -p 2 coverage/*.json
-
-  - if [[ "$TRAVIS_TEST_RESULT" == 0 ]]; then ./cc-test-reporter upload-coverage -i coverage/codeclimate.json; fi
+    - name: "Prepare api image"
+      script:
+        - docker build unbrake-api/ -t unbrake/api:latest-staging -f unbrake-api/production/Dockerfile.api
