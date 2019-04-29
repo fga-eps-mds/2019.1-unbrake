@@ -16,5 +16,5 @@ docker-compose up --build serve
 ## Realizar o deploy
 
 ```
-docker-compose run deploy 
+docker-compose run --rm deploy 
 ```
