@@ -20,6 +20,12 @@ env:
     # code climate test reporter id (it's not so secret)
     - secure: "CFCx6LcmtNOBVyFjxgW8NcrmAs3Fr7ueq4tbjg8f7LCHRodsQMxAAL8+8BbeP41YDZ34mqEwemc8QG5dXXSE8lFVAzJfUUQnYncpu1YiywwYmxP6cNWcBtu1h6sBUOfObBz2mQyJnt1yL2TKob4vaK0jtzy099Mew8aIxRzqcHL04TqxG902ITdGiraH89nIN64MKw7CQMUy65S0kRo1RJkQQDJ9s5CKVnBy3n0Vv8qJj+JqKrzJeRSOrpxElg0yOEe7hFNQkavyBbyGt++f0O1AupQxP9drCxrWRsYTUt/+WNWiZnkNXWSBqHgwrYn13ObthrmgHw5vNTA8sYnzav68kypRbuQm4b4oUaSuQWa5c6cfl0wKa7Uk5t8np78wVByK9+yy84+KL91kDYrxFVEoWe55CDDvL1G6HWP28x1cmL8GA35H+rADDdXQaxxEeDpbExTwOf7N3brNfUh416psDF9VyVqDq46wtJapuAE3Onj9rWmP+EMYxaBdVeV+2wi24/sowwqPQF+sBHWnW0pM+xmOztrptZRdMnwCuVzWt+ROVWm+/tAVn5k+Q1/KW9IXF3JF3975A14Bj+x5HxbbHAs95TOcD79qsAO0L+FMHxadgrMcEFwSPP9sTEfwagKLoX7jnXwOQq9hFwkUxGHDDH4Tj7y7OEM/JXo+JJw="
 
+    # docker user
+    - secure: "JjYzX/71jkBYS7NcfrXQuvNyyUepw/5ZFfKdYi7bnF6s6bDxoKGv8SFSoczToOfwaynQWc5mnG5s5BZO8rQJCN5i8dgKvoLEkRF3wzXZMa7nNAZrZW0pc/4kkRy13PZyc/ZV3MTtO5ccwLeErQ1gLDb+UixtBxDxZ7N/+lseylTO149BgiT48anc7U1rmzI8XJiMzareajJzuHssVyZTZfkxj34eHTXIAp+8mTJGL3vWA8/0bvcl0kLWQDIoGeX8qqM6CSfiK0mRj+mVqn9l8FXVgQayZQU8/HJg+5KhAbiPbtyQ+0CZWYrj2UiqV7T6IckI23NAsvG9TISr9q77fzgNLgEL7yEwVzSntcGjeD5bq8aODrMSlLxbqZPykptZtv/NuXDbtH4pASQe14mjTNtvYGk9E1yIKH4WfmKKMU1GePclb5bN3J+j33lWqpLGOhHnAgJtpkoJ1UREu1ves6TP5ELdaDXx9dBNQh/IrUBQwYcjj5qhxr6iA2wzei7jWJv3RcN1s7m80kSHRcaTSQZkuNUaXhNbtZYXO/aVu3y2KspRByu9gITnmG0Dib5Ed2nx8QYKWZppb3SHCz14jWAFRiSua7pkCJ/QheJLAIFIPTuDCAOHpC7Y7+AUuGYfn2CUJkajoXg9dAb9tKaGU32Eo2PYR3cq/PM5HhIqgns="
+
+    # docker password
+    - secure: "WOvXPmJMLdtgUdCw96qn78erQ35ggcVh7OJ6pzhdoOt8vCufROgnGqGMDlQYRoIL1MnFFo5zoaaw09kOi92WiL7w2Q0QcFBQ3VkJR4Q3ooH3A/Vk0mlmGD3RXQHNzOA8Af+jK/vMxt3VVS/CUvIOI4pPWvettiazVE/KCaPDODVyT7P11iHXXO5BvufJ/BGs5g/m5q97M8xPF3GPbObCWZ6BvATIX1vfbPdiPXLzMwfzI0UrfApSaxZwVzNgr3LwOdIVaFoI68wI1QWIsR6RmIbB+M+WDnQpmYFEC4HEO6wzFk/kaJqwUxpw68K2szdO+TpqgrCx07uP06VdZrQnmfsekmEjp6s8rDQkKu84zFd1b5ZRgvSjDeNbTFP5vJOma5DQE0X03U0295oKJacEa2H6jiLJitWrrsEG+Wvb4OHeAUUGxLKmCQnQ4R4GpSq6HH5zhmLkCJ9CUz3SPouhUFztfRbfcnln/2nxbZm84vdm0TBio0RVi5oLdCboR6obCcEpmsTYo8pcUwKSVg/0rgVINNnsIGhPFwGuoDl9q833PD4gkJxJUY45wu9k/YZJye0TijfxQYlOaTxa91AvYlxi9F3M9VYuodoaRpHN1gzUiWEnorKwwf24BmrQFy3wZeAHvlmsCDS5IHlbJYJHWP+lVd3afl6jVckZWcSHiyA="
+
 before_install:
   # Update Docker Compose
   - sudo rm /usr/local/bin/docker-compose
@@ -68,8 +74,14 @@ jobs:
     - stage: "Prepare staging environment"
       name: "Prepare frontend image"
       script:
-        - docker build unbrake-frontend/ -t unbrake/frontend:latest-staging -f unbrake-frontend/production/Dockerfile
+        - docker build unbrake-frontend/ -t unbrake/frontend:latest-staging-tmp -f unbrake-frontend/production/Dockerfile
+        - docker login --username "${DOCKER_USERNAME}" --password "${DOCKER_PASSWORD}"
+        - docker push unbrake/frontend:latest-staging-tmp
+        - docker logout
 
-    - name: "Prepare api image"
+    - name: "Prepare API image"
       script:
-        - docker build unbrake-api/ -t unbrake/api:latest-staging -f unbrake-api/production/Dockerfile.api
+        - docker build unbrake-api/ -t unbrake/api:latest-staging-tmp -f unbrake-api/production/Dockerfile.api
+        - docker login --username "${DOCKER_USERNAME}" --password "${DOCKER_PASSWORD}"
+        - docker push unbrake/api:latest-staging-tmp
+        - docker logout
