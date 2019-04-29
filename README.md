@@ -12,14 +12,9 @@ docker-compose up --build build_mkdocs
 docker-compose up --build serve  
 ```
 
-ou
-
-```
-docker-compose up
-```
 
 ## Realizar o deploy
 
 ```
-docker-compose up --build deploy 
+docker-compose run deploy 
 ```

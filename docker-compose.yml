@@ -5,7 +5,7 @@ services:
       context: .
       dockerfile: ./Dockerfile
     volumes:
-      - ./unbrake:/unbrake
+      - ./:/docs/
     command: mkdocs build
 
   serve:
@@ -15,7 +15,7 @@ services:
     ports:
       - "8000:8000"
     volumes:
-      - ./unbrake:/unbrake
+      - ./:/docs/
     command: mkdocs serve 
   
   deploy:
@@ -23,6 +23,5 @@ services:
       context: .
       dockerfile: ./Dockerfile
     volumes:
-      - ./unbrake:/unbrake
-    command: mkdocs gh-deploy 
-
+      - ./:/docs/
+    command: mkdocs gh-deploy --force 

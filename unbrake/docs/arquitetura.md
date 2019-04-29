@@ -6,7 +6,7 @@ Este documento tem como objetivo relatar de forma técnica o software utilizando
 ___
 ### Cenários
 
-Os cenários estão escritos neste [link]({filename}cenarios.md).
+Os cenários estão escritos neste [link](cenarios.md).
 
 ___
 ### Visão Lógica
