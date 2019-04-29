@@ -50,9 +50,9 @@ services:
 
 secrets:
   api-django-secret-key:
-    file: ../unbrake-api/secrets/API_DJANGO_SECRET_KEY
+    file: secrets/API_DJANGO_SECRET_KEY
   postgres_password:
-    file: ../unbrake-api/secrets/DB_PASSWORD
+    file: secrets/DB_PASSWORD
 
 volumes:
   postgres_data:
