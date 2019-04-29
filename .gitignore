@@ -1,9 +1,6 @@
     # Created by https://www.gitignore.io/api/node,reactnative
 # Edit at https://www.gitignore.io/?templates=node,reactnative
 
-### Python ###
-*.pyc
-
 # Docker Secrets
 */secrets/*
 !*/secrets/*.enc
@@ -58,6 +55,7 @@ node_modules/
 
 # Local configuration file (sdk path, etc)
 local.properties
+**/.env*.local
 
 # End of https://www.gitignore.io/api/node,reactnative
 

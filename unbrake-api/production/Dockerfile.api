@@ -10,9 +10,10 @@ RUN set +x \
     && apk add --no-cache gcc python3-dev musl-dev postgresql-dev \
     && pip install -r /app/api/requirements.txt
 
+
 FROM python:3.7-alpine
 
-LABEL description="To be used in django at production."
+LABEL description="API in Django with GraphQL for UnBrake application"
 
 ENV PYTHONUNBUFFERED 1
 ENV DJANGO_SETTINGS_MODULE "production.settings"

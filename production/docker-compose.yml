@@ -4,17 +4,22 @@ version: '3.7'
 
 services:
   api:
-    container_name: 'unbrake-api'
-    build:
-      context: ../unbrake-api
-      dockerfile: production/Dockerfile.api
-    image: unbrake_api
+    image: 'unbrake/api:latest-staging'
     depends_on:
       - db
     restart: unless-stopped
     secrets:
       - api-django-secret-key
       - postgres_password
+
+  frontend:
+    image: 'unbrake/frontend:latest-staging'
+    volumes:
+      - ../unbrake-frontend/production/nginx.conf:/etc/nginx/nginx.conf
+      - ../logs/nginx:/var/log/nginx_frontend
+    restart: unless-stopped
+    ports:
+      - "80:80"
 
   db:
     image: 'postgres:11.2-alpine'
@@ -36,7 +41,7 @@ services:
     container_name: 'api-server'
     volumes:
       - ../unbrake-api/production/nginx.conf:/etc/nginx/nginx.conf
-      - ../logs/nginx:/var/log/nginx
+      - ../logs/nginx:/var/log/nginx_api
     ports:
       - "8000:80"
     depends_on:

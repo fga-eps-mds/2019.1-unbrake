@@ -53,6 +53,16 @@ SESSION_COOKIE_SECURE = True
 
 ALLOWED_HOSTS = ['*']  # Check later
 
+CORS_ORIGIN_ALLOW_ALL = False
+
+CORS_ORIGIN_WHITELIST = (
+    'frontend'
+)
+
+CSRF_TRUSTED_ORIGINS = (
+    'frontend'
+)
+
 LANGUAGE_CODE = 'en-us'
 
 TIME_ZONE = 'America/Sao_Paulo'
@@ -76,13 +86,17 @@ INSTALLED_APPS = [
     'graphene_django',
     'configuration',
     'calibration',
+
+    # Others
+    'corsheaders'
 ]
 
 MIDDLEWARE = [
+    'corsheaders.middleware.CorsMiddleware',
+    'django.middleware.csrf.CsrfViewMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
-    'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',

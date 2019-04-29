@@ -12,7 +12,7 @@
 # paths.
 ignore=CVS, env, venv, .env, .venv, settings.py, pytest.ini, Dockerfile,
        scripts, requirements.txt, wsgi.py, secrets, db.sqlite3, hooks, migrations,
-	   coverage.xml, htmlcov, production
+       coverage.xml, htmlcov, production
 
 # Add files or directories matching the regex patterns to the blacklist. The
 # regex matches against base names, not paths.
@@ -179,7 +179,7 @@ bad-names=foo,
           toto,
           tutu,
           tata,
-		  abobora # :'(
+          abobora # :'(
 
 # Naming style matching correct class attribute names.
 class-attribute-naming-style=any
@@ -220,9 +220,9 @@ good-names=i,
            ex,
            Run,
            _,
-		   pk,
-		   urlspatterns,
-		   id
+           pk,
+           urlspatterns,
+           id
 
 # Include a hint for the correct naming format with invalid-name.
 include-naming-hint=yes

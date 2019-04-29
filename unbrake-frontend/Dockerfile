@@ -4,7 +4,7 @@ LABEL description="To be used in react development, just to keep environments un
 
 WORKDIR /app/frontend
 
-COPY package*.json .
+COPY package*.json ./
 
 # git and bash needed for running linters
 RUN set -x \
@@ -14,13 +14,11 @@ RUN set -x \
 
 EXPOSE 3000
 
-COPY .eslintrc.json .eslintignore .prettierrc scripts/entrypoint.dev ./
+COPY .eslintrc.json .eslintignore .prettierrc scripts/entrypoint.dev .env* ./
 COPY public public
 COPY scripts scripts
 COPY src src
 COPY hooks hooks
-
-ENV REACT_APP_API_URL "http://localhost:8000"
 
 ENTRYPOINT ["/app/frontend/entrypoint.dev"]
 CMD ["start"]
