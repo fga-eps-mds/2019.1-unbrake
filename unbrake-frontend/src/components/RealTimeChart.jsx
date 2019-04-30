@@ -5,7 +5,8 @@ import "chartjs-plugin-streaming";
 import io from "socket.io-client";
 
 const indexPadding = 1;
-const yAxesOptions = () => [
+
+const yAxesConfig = () => [
   {
     scaleLabel: {
       display: true,
@@ -19,55 +20,25 @@ const yAxesOptions = () => [
   }
 ];
 
-const chartOptions = (yValue, yAxes) => {
-  return {
-    maintainAspectRatio: false,
-    title: {
-      display: false
-    },
-    legend: {
-      display: false
-    },
-    scales: {
-      xAxes: [
-        {
-          type: "realtime",
-          maxBarThickness: 3,
-          gridLines: {
-            display: true
-          },
-          realtime: {
-            duration: 20000,
-            delay: 1000,
-            refresh: 3000,
-            onRefresh: chart => {
-              chart.data.datasets[0].data.push({
-                x: Date.now(),
-                y: yValue
-              });
-            }
-          }
-        }
-      ],
-      yAxes
-    },
-    tooltips: {
-      enabled: false,
-      mode: "nearest",
-      intersect: false
-    },
-    hover: {
-      mode: "nearest",
-      intersect: false
-    }
-  };
-};
+const tooltipsConfig = () => ({
+  enabled: false,
+  mode: "nearest",
+  intersect: false
+});
+
+const datasetsConfig = () => ({
+  label: "Depth",
+  fill: false,
+  cubicInterpolationMode: "monotone",
+  backgroundColor: "#305c8a",
+  borderColor: "#305c8a"
+});
 
 class RealTimeChart extends React.Component {
   constructor(props) {
     super(props);
     this.socket = io("http://localhost:5000/test");
-    this.a = [{ uv: 1 }];
+    this.data = [{ uv: 0 }];
   }
 
   componentDidMount() {
@@ -78,27 +49,52 @@ class RealTimeChart extends React.Component {
   }
 
   render() {
-    this.socket.on("bla", data => {
-      this.a.push(data);
+    this.socket.on("temperature", newdata => {
+      this.data.push(newdata);
     });
     return (
       <Line
         data={{
           datasets: [
             {
-              label: "Depth",
-              fill: false,
-              cubicInterpolationMode: "monotone",
-              backgroundColor: "#305c8a",
-              borderColor: "#305c8a",
+              ...datasetsConfig(),
               data: []
             }
           ]
         }}
-        options={chartOptions(
-          this.a[this.a.length - indexPadding].uv,
-          yAxesOptions
-        )}
+        options={{
+          maintainAspectRatio: false,
+          title: {
+            display: false
+          },
+          legend: {
+            display: false
+          },
+          scales: {
+            xAxes: [
+              {
+                type: "realtime",
+                maxBarThickness: 3,
+                gridLines: {
+                  display: true
+                },
+                realtime: {
+                  duration: 20000,
+                  delay: 1000,
+                  refresh: 1000,
+                  onRefresh: chart => {
+                    chart.data.datasets[0].data.push({
+                      x: Date.now(),
+                      y: this.data[this.data.length - indexPadding].uv
+                    });
+                  }
+                }
+              }
+            ],
+            yAxes: yAxesConfig()
+          },
+          tooltips: tooltipsConfig()
+        }}
       />
     );
   }

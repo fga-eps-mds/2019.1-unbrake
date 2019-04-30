@@ -26,10 +26,6 @@ exports[`<RealTimeChart /> render() renders the component 1`] = `
   }
   options={
     Object {
-      "hover": Object {
-        "intersect": false,
-        "mode": "nearest",
-      },
       "legend": Object {
         "display": false,
       },
@@ -45,12 +41,24 @@ exports[`<RealTimeChart /> render() renders the component 1`] = `
               "delay": 1000,
               "duration": 20000,
               "onRefresh": [Function],
-              "refresh": 3000,
+              "refresh": 1000,
             },
             "type": "realtime",
           },
         ],
-        "yAxes": [Function],
+        "yAxes": Array [
+          Object {
+            "scaleLabel": Object {
+              "display": true,
+              "labelString": "mv",
+            },
+            "ticks": Object {
+              "max": 5,
+              "min": 1,
+              "stepSize": 0.5,
+            },
+          },
+        ],
       },
       "title": Object {
         "display": false,
