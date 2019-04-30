@@ -53,11 +53,16 @@ O arquiteto do projeto tem a função de planejar e documentar os serviços que 
     <td>Documentar todas as decisões que foram feitas antes da definição dos Design Docs</td>
   </tr>
   <tr>
+    <th colspan="2"> Release2</th>
+  </tr>
+  <tr>
     <td><br>Sprint 6</td>
     <td>Realizar Inspeção dos cenários</td>
   </tr>
   <tr>
-    <th colspan="2" >Release 2</th>
+    <td><br>Sprint 7</td>
+    <td>Separar serviço de autenticação da API</td>
+    <td>Levantar tarefas necessarias para integração com o novo serviço</td>
   </tr>
   <tr>
     <td>Sprint 9</td>
