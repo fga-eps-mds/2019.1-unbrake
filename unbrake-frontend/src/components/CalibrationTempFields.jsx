@@ -16,51 +16,16 @@ const styles = () => ({
 });
 
 class CalibrationFields extends React.Component {
-  renderField(option) {
+  renderFields(name, label) {
     const { classes } = this.props;
-    const temperature = {
-      name: `temperature_${option}`,
-      label: `Temperatura ${option}`
-    };
     return (
       <div className={classes.div}>
         <Field
           className={classes.grid}
-          name="aquisition_canal"
+          name={name}
           component={TextField}
-          label="Canal de aquisição"
-          variant="outlined"
-        />
-        <Field
-          className={classes.grid}
-          name={temperature.name}
-          component={TextField}
-          placeholder={`${temperature.label} (mV)`}
-          label={`${temperature.label} (mV)`}
-          variant="outlined"
-        />
-        <Field
-          className={classes.grid}
-          name="conversion_fator"
-          component={TextField}
-          placeholder="Fator de conversão"
-          label="Fator de conversão"
-          variant="outlined"
-        />
-        <Field
-          className={classes.grid}
-          name="offset"
-          component={TextField}
-          placeholder="Offset"
-          label="Offset"
-          variant="outlined"
-        />
-        <Field
-          className={classes.grid}
-          name={`${temperature.name}_C`}
-          component={TextField}
-          placeholder={`${temperature.label} (˚C)`}
-          label={`${temperature.label} (˚C)`}
+          label={label}
+          placeholder={label}
           variant="outlined"
         />
       </div>
@@ -69,7 +34,18 @@ class CalibrationFields extends React.Component {
 
   render() {
     const { field } = this.props;
-    return <div>{this.renderField(field)}</div>;
+    return (
+      <div>
+        {this.renderFields("acquisition_chanel", "Canal de aquisição")}
+        {this.renderFields(`temperature_${field}`, `Temperatura ${field} (mV)`)}
+        {this.renderFields("conversion_fator", "Fator de conversão")}
+        {this.renderFields("offset", "Offset")}
+        {this.renderFields(
+          `temperature_${field}_C`,
+          `Temperatura ${field} (°C)`
+        )}
+      </div>
+    );
   }
 }
 

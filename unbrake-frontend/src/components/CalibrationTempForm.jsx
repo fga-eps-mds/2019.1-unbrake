@@ -34,8 +34,8 @@ const MyForm = () => (
           flex: 1
         }}
       >
-        <CalibrationCheck checkID="FirstCheck" />
-        <CalibrationCheck checkID="SecondCheck" />
+        <CalibrationCheck checkID="1" />
+        <CalibrationCheck checkID="2" />
       </div>
     </div>
   </form>
