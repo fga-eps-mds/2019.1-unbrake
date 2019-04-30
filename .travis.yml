@@ -13,11 +13,18 @@ cache:
   directories:
     - "unbrake-frontend/node_modules"
 
+addons:
+  ssh_known_hosts:
+    - unbrake-hom.ml
+
 env:
   global:
     - DOCKER_COMPOSE_VERSION=1.23.2
+
+    # Staging things
     - DOCKER_STAGING_TMP_TAG=latest-staging-tmp
     - DOCKER_STAGING_TAG=latest-staging
+    - STAGING_HOST=unbrake-hom.ml
 
     # code climate test reporter id (it's not so secret)
     - secure: "CFCx6LcmtNOBVyFjxgW8NcrmAs3Fr7ueq4tbjg8f7LCHRodsQMxAAL8+8BbeP41YDZ34mqEwemc8QG5dXXSE8lFVAzJfUUQnYncpu1YiywwYmxP6cNWcBtu1h6sBUOfObBz2mQyJnt1yL2TKob4vaK0jtzy099Mew8aIxRzqcHL04TqxG902ITdGiraH89nIN64MKw7CQMUy65S0kRo1RJkQQDJ9s5CKVnBy3n0Vv8qJj+JqKrzJeRSOrpxElg0yOEe7hFNQkavyBbyGt++f0O1AupQxP9drCxrWRsYTUt/+WNWiZnkNXWSBqHgwrYn13ObthrmgHw5vNTA8sYnzav68kypRbuQm4b4oUaSuQWa5c6cfl0wKa7Uk5t8np78wVByK9+yy84+KL91kDYrxFVEoWe55CDDvL1G6HWP28x1cmL8GA35H+rADDdXQaxxEeDpbExTwOf7N3brNfUh416psDF9VyVqDq46wtJapuAE3Onj9rWmP+EMYxaBdVeV+2wi24/sowwqPQF+sBHWnW0pM+xmOztrptZRdMnwCuVzWt+ROVWm+/tAVn5k+Q1/KW9IXF3JF3975A14Bj+x5HxbbHAs95TOcD79qsAO0L+FMHxadgrMcEFwSPP9sTEfwagKLoX7jnXwOQq9hFwkUxGHDDH4Tj7y7OEM/JXo+JJw="
@@ -45,6 +52,9 @@ before_install:
   - openssl aes-256-cbc -K $encrypted_60c0c29d8825_key -iv $encrypted_60c0c29d8825_iv -in unbrake-api/secrets/API_DJANGO_SECRET_KEY.enc -out unbrake-api/secrets/API_DJANGO_SECRET_KEY -d
   - openssl aes-256-cbc -K $encrypted_0ee7f2b702ec_key -iv $encrypted_0ee7f2b702ec_iv -in unbrake-api/secrets/DB_PASSWORD.enc -out unbrake-api/secrets/DB_PASSWORD -d
 
+  # Deploy Key
+  - openssl aes-256-cbc -K $encrypted_e249d61d45ce_key -iv $encrypted_e249d61d45ce_iv -in production/deploy_key.enc -out production/deploy_key -d
+
 
 before_script:
   - curl -L https://codeclimate.com/downloads/test-reporter/test-reporter-latest-linux-amd64 > ./cc-test-reporter
@@ -54,7 +64,7 @@ before_script:
 
 # Aliases
 prepare_staging: &prepare_staging
-  stage: "Prepare staging environment"
+  stage: "build staging environment"
   before_script: skip
   script:
     - docker build "$BUILD_FOLDER/" -t "$DOCKER_IMAGE:${DOCKER_STAGING_TMP_TAG}" -f "$BUILD_FOLDER/production/Dockerfile"
@@ -63,7 +73,7 @@ prepare_staging: &prepare_staging
     - docker logout
 
 deploy_staging: &deploy_staging
-  stage: "Deploy staging"
+  stage: "deploy staging images"
   before_script: skip
   script:
     - docker pull "$DOCKER_IMAGE:${DOCKER_STAGING_TMP_TAG}"
@@ -74,7 +84,7 @@ deploy_staging: &deploy_staging
 
 jobs:
   include:
-    - stage: "Development checkings and tests"
+    - stage: "development checkings and tests"
       name: "General git checks"
       before_install: skip
       before_script: skip
@@ -119,3 +129,12 @@ jobs:
       name: "Deploy API"
       env:
         - DOCKER_IMAGE=unbrake/api
+    
+    - stage: "deploy to staging environment"
+      name: "Deploy to staging environment"
+      script:
+        - cp unbrake-api/secrets/* production/secrets/
+        - eval "$(ssh-agent -s)"
+        - chmod 600 production/deploy_key
+        - ssh-add production/deploy_key
+        - bash scripts/deploy "$STAGING_HOST" "${TRAVIS_BRANCH}"
