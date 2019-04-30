@@ -4,6 +4,7 @@ import { TextField } from "redux-form-material-ui";
 import Button from "@material-ui/core/Button";
 import Grid from "@material-ui/core/Grid";
 import Paper from "@material-ui/core/Paper";
+import Typography from "@material-ui/core/Typography";
 import { withStyles } from "@material-ui/core/styles";
 import PropTypes from "prop-types";
 import Cookies from "universal-cookie";
@@ -109,8 +110,10 @@ async function submit(values) {
 }
 const loginPaper = (classes, handleSubmit, submitting) => {
   return (
-    <Paper className={classes.paper}>
-      <h2 styles={{ color: "black" }}>Bem vindo!</h2>
+    <Paper className={classes.paper} elevation={10}>
+      <Typography variant="h4" color="secondary" className={classes.grid}>
+        Bem vindo!
+      </Typography>
       <form onSubmit={handleSubmit(submit.bind(this))}>
         <Grid className={classes.grid}>
           <Field
