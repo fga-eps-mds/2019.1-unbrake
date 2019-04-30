@@ -2,6 +2,7 @@ import React from "react";
 import PropTypes from "prop-types";
 import classNames from "classnames";
 import { withStyles } from "@material-ui/core/styles";
+
 import {
   Drawer,
   AppBar,
@@ -25,6 +26,7 @@ import {
   ShowChart
 } from "@material-ui/icons";
 import { BrowserRouter, Route } from "react-router-dom";
+import Auth from "../auth/Auth";
 
 import Configuration from "./Configuration";
 import Calibration from "./Calibration";
@@ -43,27 +45,27 @@ const optionsId = ["analysisId", "configurationId", "calibrationId", "testId"];
 const listMenu = (location, history) => {
   const list = ["analysis", "configuration", "calibration", "test"].map(
     (text, index) => {
-      let nome; // Fix this!!!
+      let name;
       let icon;
       switch (optionsId[index]) {
         case "analysisId":
-          nome = "Análise";
+          name = "Análise";
           icon = <ShowChart />;
           break;
         case "configurationId":
-          nome = "Configuração";
+          name = "Configuração";
           icon = <Settings />;
           break;
         case "calibrationId":
-          nome = "Calibração";
+          name = "Calibração";
           icon = <Equalizer />;
           break;
         case "testId":
-          nome = "Teste";
+          name = "Ensaio";
           icon = <Assignment />;
           break;
         default:
-          nome = "Index";
+          name = "";
           break;
       }
       return (
@@ -79,7 +81,7 @@ const listMenu = (location, history) => {
             selected={location.pathname === `/+${text}`}
           >
             <ListItemIcon>{icon}</ListItemIcon>
-            <ListItemText primary={nome} />
+            <ListItemText primary={name} />
           </ListItem>
         </React.Fragment>
       );
@@ -101,7 +103,7 @@ const ToolBar = (classes, open, handleDrawerOpen) => {
       >
         <Menu />
       </IconButton>
-      <Button style={{ textTransform: "none" }} color="inherit" href="/index">
+      <Button style={{ textTransform: "none" }} color="inherit" href="/">
         UnBrake
       </Button>
     </Toolbar>
@@ -121,10 +123,10 @@ const IconButtons = (classes, handleDrawerClose, theme) => {
 const RouteLogic = () => {
   return (
     <main style={{ flex: flexGrowValue }}>
-      <Route path="/configuration" component={() => <Configuration />} />
-      <Route path="/analysis" component={() => <Analysis />} />
-      <Route path="/calibration" component={() => <Calibration />} />
-      <Route path="/test" component={() => <Test />} />
+      <Route exact path="/configuration" component={() => <Configuration />} />
+      <Route exact path="/analysis" component={() => <Analysis />} />
+      <Route exact path="/calibration" component={() => <Calibration />} />
+      <Route exact path="/test" component={() => <Test />} />
     </main>
   );
 };
@@ -152,36 +154,38 @@ const SideBarMenu = class extends React.PureComponent {
         <Route
           render={({ location, history }) => (
             <React.Fragment>
-              <div className={classes.root}>
-                <CssBaseline />
-                <AppBar
-                  position="fixed"
-                  className={classNames(classes.appBar, {
-                    [classes.appBarShift]: open
-                  })}
-                >
-                  {ToolBar(classes, open, this.handleDrawerOpen)}
-                </AppBar>
-                <Drawer
-                  variant="permanent"
-                  className={classNames(classes.drawer, {
-                    [classes.drawerOpen]: open,
-                    [classes.drawerClose]: !open
-                  })}
-                  classes={{
-                    paper: classNames({
+              {Auth.isAuthenticated() && (
+                <div className={classes.root}>
+                  <CssBaseline />
+                  <AppBar
+                    position="fixed"
+                    className={classNames(classes.appBar, {
+                      [classes.appBarShift]: open
+                    })}
+                  >
+                    {ToolBar(classes, open, this.handleDrawerOpen)}
+                  </AppBar>
+                  <Drawer
+                    variant="permanent"
+                    className={classNames(classes.drawer, {
                       [classes.drawerOpen]: open,
                       [classes.drawerClose]: !open
-                    })
-                  }}
-                  open={open}
-                >
-                  {IconButtons(classes, this.handleDrawerClose, theme)}
-                  <Divider />
-                  <List>{listMenu(location, history)}</List>
-                </Drawer>
-                {RouteLogic()}
-              </div>
+                    })}
+                    classes={{
+                      paper: classNames({
+                        [classes.drawerOpen]: open,
+                        [classes.drawerClose]: !open
+                      })
+                    }}
+                    open={open}
+                  >
+                    {IconButtons(classes, this.handleDrawerClose, theme)}
+                    <Divider />
+                    <List>{listMenu(location, history)}</List>
+                  </Drawer>
+                  {RouteLogic()}
+                </div>
+              )}
             </React.Fragment>
           )}
         />

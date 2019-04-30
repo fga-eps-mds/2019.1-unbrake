@@ -1,3 +1,77 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`<RealTimeChart /> render() renders the component 1`] = `undefined`;
+exports[`<RealTimeChart /> render() renders the component 1`] = `
+<ChartComponent
+  data={
+    Object {
+      "datasets": Array [
+        Object {
+          "backgroundColor": "#305c8a",
+          "borderColor": "#305c8a",
+          "cubicInterpolationMode": "monotone",
+          "data": Array [],
+          "fill": false,
+          "label": "Depth",
+        },
+      ],
+    }
+  }
+  datasetKeyProvider={[Function]}
+  height={150}
+  legend={
+    Object {
+      "display": true,
+      "position": "bottom",
+    }
+  }
+  options={
+    Object {
+      "legend": Object {
+        "display": false,
+      },
+      "maintainAspectRatio": false,
+      "scales": Object {
+        "xAxes": Array [
+          Object {
+            "gridLines": Object {
+              "display": true,
+            },
+            "maxBarThickness": 3,
+            "realtime": Object {
+              "delay": 1000,
+              "duration": 20000,
+              "onRefresh": [Function],
+              "refresh": 1000,
+            },
+            "type": "realtime",
+          },
+        ],
+        "yAxes": Array [
+          Object {
+            "scaleLabel": Object {
+              "display": true,
+              "labelString": "mv",
+            },
+            "ticks": Object {
+              "max": 5,
+              "min": 1,
+              "stepSize": 0.5,
+            },
+          },
+        ],
+      },
+      "title": Object {
+        "display": false,
+      },
+      "tooltips": Object {
+        "enabled": false,
+        "intersect": false,
+        "mode": "nearest",
+      },
+    }
+  }
+  redraw={false}
+  type="line"
+  width={300}
+/>
+`;

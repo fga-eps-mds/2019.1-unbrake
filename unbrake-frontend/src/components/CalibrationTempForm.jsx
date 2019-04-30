@@ -21,9 +21,9 @@ const MyForm = () => (
           flex: 2
         }}
       >
-        <CalibrationFields field="firstField" />
+        <CalibrationFields field="1" />
 
-        <CalibrationFields field="secondField" />
+        <CalibrationFields field="2" />
       </div>
       <div
         style={{
@@ -34,8 +34,8 @@ const MyForm = () => (
           flex: 1
         }}
       >
-        <CalibrationCheck checkID="FirstCheck" />
-        <CalibrationCheck checkID="SecondCheck" />
+        <CalibrationCheck checkID="1" />
+        <CalibrationCheck checkID="2" />
       </div>
     </div>
   </form>

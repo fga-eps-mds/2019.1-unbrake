@@ -4,19 +4,17 @@ LABEL description="To be used in react development, just to keep environments un
 
 WORKDIR /app/frontend
 
-COPY package*.json .
+COPY package*.json ./
 
 # git and bash needed for running linters
 RUN set -x \
-  && apk update \
   && apk add --no-cache bash git \
   && mkdir -p .git/hooks \
-  && npm install --no-optional \
-  && rm -rf /var/cache/apk/*
+  && npm install --no-optional
 
 EXPOSE 3000
 
-COPY .eslintrc.json .eslintignore .prettierrc scripts/entrypoint.dev ./
+COPY .eslintrc.json .eslintignore .prettierrc scripts/entrypoint.dev .env* ./
 COPY public public
 COPY scripts scripts
 COPY src src
