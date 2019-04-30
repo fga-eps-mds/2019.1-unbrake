@@ -16,15 +16,20 @@ cache:
 addons:
   ssh_known_hosts:
     - unbrake-hom.ml
+    - unbrake.ml
 
 env:
   global:
     - DOCKER_COMPOSE_VERSION=1.23.2
 
     # Staging things
-    - DOCKER_STAGING_TMP_TAG="latest-staging-$TRAVIS_PULL_REQUEST_BRANCH"
+    - DOCKER_STAGING_TMP_TAG="latest-staging-tmp"
     - DOCKER_STAGING_TAG=latest-staging
     - STAGING_HOST=unbrake-hom.ml
+
+    # Production things
+    - DOCKER_PRODUCTION_TAG=latest
+    - PRODUCTION_HOST=unbrake.ml
 
     # code climate test reporter id (it's not so secret)
     - secure: "CFCx6LcmtNOBVyFjxgW8NcrmAs3Fr7ueq4tbjg8f7LCHRodsQMxAAL8+8BbeP41YDZ34mqEwemc8QG5dXXSE8lFVAzJfUUQnYncpu1YiywwYmxP6cNWcBtu1h6sBUOfObBz2mQyJnt1yL2TKob4vaK0jtzy099Mew8aIxRzqcHL04TqxG902ITdGiraH89nIN64MKw7CQMUy65S0kRo1RJkQQDJ9s5CKVnBy3n0Vv8qJj+JqKrzJeRSOrpxElg0yOEe7hFNQkavyBbyGt++f0O1AupQxP9drCxrWRsYTUt/+WNWiZnkNXWSBqHgwrYn13ObthrmgHw5vNTA8sYnzav68kypRbuQm4b4oUaSuQWa5c6cfl0wKa7Uk5t8np78wVByK9+yy84+KL91kDYrxFVEoWe55CDDvL1G6HWP28x1cmL8GA35H+rADDdXQaxxEeDpbExTwOf7N3brNfUh416psDF9VyVqDq46wtJapuAE3Onj9rWmP+EMYxaBdVeV+2wi24/sowwqPQF+sBHWnW0pM+xmOztrptZRdMnwCuVzWt+ROVWm+/tAVn5k+Q1/KW9IXF3JF3975A14Bj+x5HxbbHAs95TOcD79qsAO0L+FMHxadgrMcEFwSPP9sTEfwagKLoX7jnXwOQq9hFwkUxGHDDH4Tj7y7OEM/JXo+JJw="
@@ -63,7 +68,7 @@ before_script:
 
 
 # Aliases
-prepare_staging: &prepare_staging
+build_staging: &build_staging
   stage: "build staging environment"
   before_script: skip
   script:
@@ -74,6 +79,7 @@ prepare_staging: &prepare_staging
 
 deploy_staging: &deploy_staging
   stage: "deploy staging images"
+  if: branch = devel AND type != pull_request
   before_script: skip
   script:
     - docker pull "$DOCKER_IMAGE:${DOCKER_STAGING_TMP_TAG}"
@@ -108,27 +114,25 @@ jobs:
         - ./cc-test-reporter sum-coverage -o coverage/codeclimate.json -p 2 coverage/*.json
         - if [[ "$TRAVIS_TEST_RESULT" == 0 ]] && [ "$TRAVIS_PULL_REQUEST" != "false" ]; then ./cc-test-reporter upload-coverage -i coverage/codeclimate.json; fi
 
-    - <<: *prepare_staging
-      name: "Prepare frontend"
+    - <<: *build_staging
+      name: "Build frontend"
       env:
         - BUILD_FOLDER=unbrake-frontend
         - DOCKER_IMAGE=unbrake/frontend
 
-    - <<: *prepare_staging
-      name: "Prepare API"
+    - <<: *build_staging
+      name: "Build API"
       env:
         - BUILD_FOLDER=unbrake-api
         - DOCKER_IMAGE=unbrake/api
 
     - <<: *deploy_staging
       name: "Deploy frontend"
-      if: branch = devel
       env:
         - DOCKER_IMAGE=unbrake/frontend
 
     - <<: *deploy_staging
       name: "Deploy API"
-      if: branch = devel
       env:
         - DOCKER_IMAGE=unbrake/api
     
@@ -136,10 +140,42 @@ jobs:
       name: "Deploy to staging environment"
       if: branch = devel AND type != pull_request
       script:
+        # Copy secrets to produciton folder
         - cp unbrake-api/secrets/* production/secrets/
 
+        # Deploy key to travis environment
         - eval "$(ssh-agent -s)"
         - chmod 600 production/deploy_key
         - ssh-add production/deploy_key
 
+        # Deploy to staging environment
         - bash scripts/deploy "$STAGING_HOST" "${TRAVIS_BRANCH}"
+
+    - stage: "deploy to production environment"
+      name: "Deploy to production environment"
+      if: branch = master AND type != pull_request
+      script:
+        # Pull latest staging images
+        - docker pull "unbrake/frontend:${DOCKER_STAGING_TAG}"
+        - docker pull "unbrake/api:${DOCKER_STAGING_TAG}"
+
+        # Re-tag lastest staging images to production images
+        - docker tag "unbrake/frontend:${DOCKER_STAGING_TAG}" "unbrake/frontend:${DOCKER_PRODUCTION_TAG}" 
+        - docker tag "unbrake/api:${DOCKER_STAGING_TAG}" "unbrake/api:${DOCKER_PRODUCTION_TAG}" 
+
+        # Push images as production images
+        - echo "$DOCKER_PASSWORD" | docker login -u "${DOCKER_USERNAME}" --password-stdin
+        - docker push "unbrake/frontend:${DOCKER_PRODUCTION_TAG}" 
+        - docker push "unbrake/api:${DOCKER_PRODUCTION_TAG}" 
+        - docker logout
+
+        # Copy secrets to produciton folder
+        - cp unbrake-api/secrets/* production/secrets/
+
+        # Deploy key to travis environment
+        - eval "$(ssh-agent -s)"
+        - chmod 600 production/deploy_key
+        - ssh-add production/deploy_key
+
+        # Deploy to staging environment
+        - bash scripts/deploy "$PRODUCTION_HOST" "${TRAVIS_BRANCH}"
