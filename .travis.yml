@@ -22,7 +22,7 @@ env:
     - DOCKER_COMPOSE_VERSION=1.23.2
 
     # Staging things
-    - DOCKER_STAGING_TMP_TAG=latest-staging-tmp
+    - DOCKER_STAGING_TMP_TAG="latest-staging-$TRAVIS_PULL_REQUEST_BRANCH"
     - DOCKER_STAGING_TAG=latest-staging
     - STAGING_HOST=unbrake-hom.ml
 
@@ -122,19 +122,24 @@ jobs:
 
     - <<: *deploy_staging
       name: "Deploy frontend"
+      if: branch = devel
       env:
         - DOCKER_IMAGE=unbrake/frontend
 
     - <<: *deploy_staging
       name: "Deploy API"
+      if: branch = devel
       env:
         - DOCKER_IMAGE=unbrake/api
     
     - stage: "deploy to staging environment"
       name: "Deploy to staging environment"
+      if: branch = devel AND type != pull_request
       script:
         - cp unbrake-api/secrets/* production/secrets/
+
         - eval "$(ssh-agent -s)"
         - chmod 600 production/deploy_key
         - ssh-add production/deploy_key
+
         - bash scripts/deploy "$STAGING_HOST" "${TRAVIS_BRANCH}"
