@@ -62,6 +62,16 @@ prepare_staging: &prepare_staging
     - docker push "$DOCKER_IMAGE:${DOCKER_STAGING_TMP_TAG}"
     - docker logout
 
+deploy_staging: &deploy_staging
+  stage: "Deploy staging"
+  before_script: skip
+  script:
+    - docker pull "$DOCKER_IMAGE:${DOCKER_STAGING_TMP_TAG}"
+    - docker tag "$DOCKER_IMAGE:${DOCKER_STAGING_TMP_TAG}" "$DOCKER_IMAGE:${DOCKER_STAGING_TAG}" 
+    - echo "$DOCKER_PASSWORD" | docker login -u "${DOCKER_USERNAME}" --password-stdin
+    - docker push "$DOCKER_IMAGE:${DOCKER_STAGING_TAG}"
+    - docker logout
+
 jobs:
   include:
     - stage: "Development checkings and tests"
@@ -89,13 +99,23 @@ jobs:
         - if [[ "$TRAVIS_TEST_RESULT" == 0 ]] && [ "$TRAVIS_PULL_REQUEST" != "false" ]; then ./cc-test-reporter upload-coverage -i coverage/codeclimate.json; fi
 
     - <<: *prepare_staging
-      name: "prepare frontend"
+      name: "Prepare frontend"
       env:
         - BUILD_FOLDER=unbrake-frontend
         - DOCKER_IMAGE=unbrake/frontend
 
     - <<: *prepare_staging
-      name: "prepare API"
+      name: "Prepare API"
       env:
         - BUILD_FOLDER=unbrake-api
+        - DOCKER_IMAGE=unbrake/api
+
+    - <<: *deploy_staging
+      name: "Deploy frontend"
+      env:
+        - DOCKER_IMAGE=unbrake/frontend
+
+    - <<: *deploy_staging
+      name: "Deploy API"
+      env:
         - DOCKER_IMAGE=unbrake/api
