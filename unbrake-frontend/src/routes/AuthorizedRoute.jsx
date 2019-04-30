@@ -1,6 +1,7 @@
 import React from "react";
 import PropTypes from "prop-types";
-import { Redirect, Route } from "react-router-dom";
+import { Route } from "react-router-dom";
+import { Redirect } from "react-router";
 import Auth from "../auth/Auth";
 import NotAuthorizedRoute from "./NotAuthorizedRoute";
 
@@ -14,14 +15,7 @@ class AuthorizedRoute extends React.PureComponent {
     if (Auth.isAuthenticated()) {
       return <NotAuthorizedRoute />;
     }
-    return (
-      <Redirect
-        to={{
-          pathname: "/login",
-          state: { from: "/" }
-        }}
-      />
-    );
+    return <Redirect to="/login" />;
   }
 }
 
