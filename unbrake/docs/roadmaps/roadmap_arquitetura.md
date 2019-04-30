@@ -60,9 +60,11 @@ O arquiteto do projeto tem a função de planejar e documentar os serviços que 
     <td>Realizar Inspeção dos cenários</td>
   </tr>
   <tr>
-    <td><br>Sprint 7</td>
+    <td rowspan="2">Sprint 7</td>
     <td>Separar serviço de autenticação da API</td>
+  <tr>
     <td>Levantar tarefas necessarias para integração com o novo serviço</td>
+  </tr>
   </tr>
   <tr>
     <td>Sprint 9</td>
