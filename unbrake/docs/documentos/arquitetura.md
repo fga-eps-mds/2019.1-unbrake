@@ -3,12 +3,21 @@
 Este documento tem como objetivo relatar de forma técnica o software utilizando várias visões da arquitetura do mesmo. Este documento é conhecido na literatura como *4+1 architecture blueprints*.
 
 ___
-### Cenários
+### Histórias de Usuário
 
-Os cenários estão escritos neste [link]({filename}cenarios.md).
+Os aspectos funcionais estão levantados neste [link](../backlog.md)
 
 ___
 ### Visão Lógica
+
+#### Ensaio de Frenagem
+
+O UnBrake é um sistema que realiza suporte a testes de frenagem. O sistema se baseia em um sistema produzido e testado por acadêmicos da [Universidade de Brasília](http://www.unb.br/).
+
+Para realizar os ensaios o sistema trabalha com arquivos de configuração do ensaio e também da calibração dos sensores. Por sua vez os ensaios são compostos por *Snubs* (Um sequência de atividades feitas pelo simulador) e a repetição de cada *Snub* (realizando o resfriamento a cada intervalo) é o que é chamado de ensaio.
+
+<img src="http://drive.google.com/uc?export=view&id=1sCPWQEpLcBNL3KDG5gW8ZfsQmzK--cL6" alt="Maquina de estados do ensaio" width="600">
+
 
 #### Uma breve visão de nossa arquitetura
 
@@ -24,7 +33,7 @@ Nosso projeto está sendo modelado com uma arquitetura de microserviços que tem
 
 #### Front End
 
-O front end é composto por uma tela de log in e uma de sign in, assim como uma tela principal a qual possui um menu lateral para a navegação entre as sub-telas as quais são restringidas dentro de um fragmento e, anexado ao mesmo, será aberto as outras páginas para a configuração e templates para a calibração e configuração, assim como os gráficos de como o freio se comporta
+O front end é composto por uma tela de login e uma de signin, assim como uma tela principal a qual possui um menu lateral para a navegação entre as sub-telas as quais são restringidas dentro de um fragmento e, anexado ao mesmo, será aberto as outras páginas para a configuração e templates para a calibração e configuração, assim como os gráficos de como o freio se comporta
 
 ##### Depedencias:
 
@@ -76,21 +85,41 @@ O serviço que tem contato com o simulador tem as seguintes funcionalidades:
 
 O serviço de autenticação do usuário é responsável por receber informações de autenticação e retornar um *token* de acesso para consumo dos outros serviços.
 
-### Estados para conclusão de um ensaio
-
-<img src="http://drive.google.com/uc?export=view&id=1sCPWQEpLcBNL3KDG5gW8ZfsQmzK--cL6" alt="Maquina de estados do ensaio" width="600">
-
 ____
 ### Visão de Processo
+
+O visão de processo do software permeia vários tópicos que serão listados a seguir e após isso explicaremos mais detalhadamente cada um. Essa visão é complementar aos **Design Docs**.
+
+* **Serviço de autenticação:** Controle de acesso
+* **Acordo de transmissão simulador/front:** Garante que o requisito de velocidade da atualização do gráfico em tempo real seja cumprido
+* **Catalogo de Serviço (Consul):** garante a escalabilidade horizontal do sistema
+* **API integrada com GraphQL:** O GraphQL busca facilitar a lógica de criação das views
+
+#### Serviço de autenticação do usuário.
+
+O serviço de autenticação cuida para que somente pessoas cadastradas no sistema consigam consumir qualquer serviço do próprio (simulador, frontend, api).
+
 
 #### Acordo de transmissão entre o Simulador e o FrontEnd
 
 O acordo de transmissão acontece com o software do FrontEnd disponibilizando uma porta e um endereço de ip para a stream de dados em tempo real ser enviada. Após essa definição as informações são mandadas via API e por fim configuradas no simulador. O simulador inicia a transmissão dos dados utilizando o protocolo [MQTT](https://mqtt.org/).
 
+#### Catalogo de serviço
+
+O catalogo de serviço serve para garantir a fácil escalabilidade do sistema, além de confirir a ele a capacidade de realiza o deploy dinamicamente em vários provedores diferentes. O objetivo é criar uma interface que deve ser consultada toda vez que um serviço precisar se comunicar com outro, desta forma podemos ter vários  serviços no nosso catalogo e o mesmo direciona a requisição para qualquer nó registrado. Além disso o catalogo de serviço abstrai a rede em que os serviços estão implantados conferindo a capacidade de deploy dinâmico.
+
+#### API integrada ao GraphQL
+
+O GraphQL é um framework que diminuir as barreias entre view e model. Com essa ferramenta temos a capacidade de facilmente criar uma *REST API* complexa com vários pontos. A vantagem é que deixa a cargo das views da API lidarem somente com regras de negócio realmente complexas ou que irão interagir com outros serviços.
+
 ___
 ### Visão de desenvolvimento
 
 As interações entre os serviços estão representadas no diagrama de componente abaixo.
+
+![Diagrama de Componentes](../images/diagrama_componente.png)
+
+Todas e qualquer modificação da arquitetura deverá ser listada nos documentos de *Design Docs*. O diagrama acima representa a arquitetura final do projeto em termos de serviço e interação entre eles.
 
 ___
 
@@ -104,4 +133,4 @@ Para desenvolvimento utilizaremos os containers do [docker](https://www.docker.c
 * Broker: Para realizar a comunicação do simulador com o Front via MQTT
 * Autenticador: Serviço que realiza a autenticação dos usuários para o uso dos outros serviços.
 
-O deploy será realizado utilizando o orquestrador de containers [kubernetes](https://kubernetes.io/) neste [link]().
+O deploy da aplicação está realizado em [UnBrake](http://unbrake-hom.ml/).
