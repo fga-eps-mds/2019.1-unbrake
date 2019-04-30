@@ -2,7 +2,7 @@
 
 Essa página tem o objetivo de esclarecer o funcionamento de todo o fluxo de desenvolvimento e CI/CD da UnBrake.
 
-## Local
+## Checagem Local
 
 ### Contexto
 
@@ -54,4 +54,57 @@ também de evitar o famoso fluxo de desenvolvimento de desenvolver a funcionalid
 ### Local de implementação
 
 Os script estão implementados dentro da pasta `script` dentro da pasta de cada módulo e os hooks nas pasta `hooks` também dentro de cada módulo. Além disso há alguns detalhes em outros arquivos, como em arquivos do docker
-arquivos de configuração das ferramentas, etc.
+arquivos de configuração das ferramentas, etc. Além disso, vários arquivos de configuração tiveram que ser adequados as necessidades do projeto:
+.eslintrc.json, .prettierrc, package.json, Dockerfile, docker-compose.yml, .flake8, .pylintrc, .coveragerc e pytest.ini
+
+## Integração contínua
+
+### Contexto
+
+Mesmo com as checagens locais fortes, ainda são necessárias as checagens numa Integração Contínua. As checagens locais estão fortes mas ainda há casos em que
+um desenvolvedor ignore a verificação (os próprios git hooks dão recurso a isso) por motivo de pressa ou para compatilhar o código para pedir ajuda, por exemplo.
+Também há o caso do docker do usuário estar quebrado ou algo do tipo.
+
+### Proposta
+
+Como ferramenta de CI escolhemos o Travis porque que já é uma ferramenta popular na disciplina, além de outros fatores que estão mapeados em issues.
+
+### Implementação
+
+Na fase de checagem local foram criados scripts pra checar cada aspecto, além de alguns que agregavam outros. Com esses scripts prontos, na parte da integração
+contínua pode-se só integrá-los. Assim a mesma checagem que foi feita local também é feita na CI, porém agora em todos arquivos, e não só nos que foram 
+alterados no último commit.
+
+Além das checagens locais, no ambiente de CI também são avaliadas algumas checkagens a mais, dessa vez checagens que não são completamentamente mandatórias,
+e o Scrum Master tem liberdade para escolher se é razoavel pra o time manter aqueles erros ou não.
+
+Essas checagens são realizadas pelo CodeClimate, que avalia o código e retorna várias métricas ao analizar coisas não analizadas antes, como complexidade
+cognitivia, complexidade assintótíca e duplicação de código. Com isso é possível se ter uma noção do nível de manutenabilidade do código, um insumo
+importante para decisões de projeto.
+
+### Conclusão
+
+Então ao executar algumas checagens redundantes e outras inéditas, a Integração Contínua se torna uma importante ferramenta tanto para apontar correções
+que tem que ser feitas imediatamente no código como coletar métricas e gerar registros que vão servir de insumos para decisões de projeto posteriormente.
+
+
+### Ferramentas utilizadas
+
+| Ferramenta       | Módulo        | Objetivo |
+|:---------------: |:------------- | :------------- |
+| [Travis CI](https://travis-ci.com/) | Frontend/API | Ferramenta de CI utilizada pelo time, grátis para projetos open source |
+| [Pull reminders](https://pullreminders.com/) | Frontend/API | Estilizador de código para unificação da folha de estilo |
+| [CodeClimate](https://codeclimate.com/)| Frontend/API | Gerar git hooks a partir de scripts simples no package.json |
+| [Sonary Python (codeclimate)](https://github.com/codeclimate/sonar-python)| Frontend | Detecta erros em geral em código python |
+| [Markdownlint (codeclimate)](https://docs.codeclimate.com/docs/markdownlint)| Frontend | Linter para markdown, avalia aplicação de boas práticas em geral |
+| [Nodesecurity (codeclimate)](https://docs.codeclimate.com/docs/nodesecurity)| Frontend | Checa por erros de segurança nas dependências do node |
+| [Radon (codeclimate)](https://docs.codeclimate.com/docs/radon)| API | Avalia complexidade de código |
+| [Fixme (codeclimate)](https://docs.codeclimate.com/docs/fixme)| Frontend/API | Procura por coisas tipo FIXME no código |
+| [Git Legal (codeclimate)](https://docs.codeclimate.com/docs/git-legal)| Frontend/API | Alerta sobre possíveis erros de licença incompatíveis entre o projeto e as dependências|
+| [Duplication (codeclimate)](https://github.com/codeclimate/codeclimate-duplication)| Frontend/API | Detecta erros de duplicação no código|
+
+O (codeclimate) indica que a ferramenta foi integrada como plugin de checagem do codeclimate.
+
+### Local de implementação
+
+Não houve implementação de scripts, apenas calibração de arquivos de configuração. Principais arquivos relacionados: .travis.yml, .codeclimate.yml
