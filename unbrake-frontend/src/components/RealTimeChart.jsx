@@ -37,7 +37,7 @@ const datasetsConfig = () => ({
 class RealTimeChart extends React.Component {
   constructor(props) {
     super(props);
-    this.socket = io("http://localhost:5000/test");
+    this.socket = io("http://mock_server:5000/test");
     this.data = [{ uv: 0 }];
   }
 
