@@ -16,6 +16,8 @@ cache:
 env:
   global:
     - DOCKER_COMPOSE_VERSION=1.23.2
+    - DOCKER_STAGING_TMP_TAG=latest-staging-tmp
+    - DOCKER_STAGING_TAG=latest-staging
 
     # code climate test reporter id (it's not so secret)
     - secure: "CFCx6LcmtNOBVyFjxgW8NcrmAs3Fr7ueq4tbjg8f7LCHRodsQMxAAL8+8BbeP41YDZ34mqEwemc8QG5dXXSE8lFVAzJfUUQnYncpu1YiywwYmxP6cNWcBtu1h6sBUOfObBz2mQyJnt1yL2TKob4vaK0jtzy099Mew8aIxRzqcHL04TqxG902ITdGiraH89nIN64MKw7CQMUy65S0kRo1RJkQQDJ9s5CKVnBy3n0Vv8qJj+JqKrzJeRSOrpxElg0yOEe7hFNQkavyBbyGt++f0O1AupQxP9drCxrWRsYTUt/+WNWiZnkNXWSBqHgwrYn13ObthrmgHw5vNTA8sYnzav68kypRbuQm4b4oUaSuQWa5c6cfl0wKa7Uk5t8np78wVByK9+yy84+KL91kDYrxFVEoWe55CDDvL1G6HWP28x1cmL8GA35H+rADDdXQaxxEeDpbExTwOf7N3brNfUh416psDF9VyVqDq46wtJapuAE3Onj9rWmP+EMYxaBdVeV+2wi24/sowwqPQF+sBHWnW0pM+xmOztrptZRdMnwCuVzWt+ROVWm+/tAVn5k+Q1/KW9IXF3JF3975A14Bj+x5HxbbHAs95TOcD79qsAO0L+FMHxadgrMcEFwSPP9sTEfwagKLoX7jnXwOQq9hFwkUxGHDDH4Tj7y7OEM/JXo+JJw="
@@ -49,10 +51,23 @@ before_script:
   - chmod +x ./cc-test-reporter
   - ./cc-test-reporter before-build
 
+
+# Aliases
+prepare_staging: &prepare_staging
+  stage: "Prepare staging environment"
+  before_script: skip
+  script:
+    - docker build "$BUILD_FOLDER/" -t "$DOCKER_IMAGE:${DOCKER_STAGING_TMP_TAG}" -f "$BUILD_FOLDER/production/Dockerfile"
+    - echo "$DOCKER_PASSWORD" | docker login -u "${DOCKER_USERNAME}" --password-stdin
+    - docker push "$DOCKER_IMAGE:${DOCKER_STAGING_TMP_TAG}"
+    - docker logout
+
 jobs:
   include:
     - stage: "Development checkings and tests"
       name: "General git checks"
+      before_install: skip
+      before_script: skip
       script:
         - git diff --check || (echo 'Trailing whitespaces or conflict marks found!' && exit 1)
         - if [ -d unbrake ]; then echo 'The unbrake folder must not exist!' && (exit 1); fi
@@ -73,17 +88,14 @@ jobs:
         - ./cc-test-reporter sum-coverage -o coverage/codeclimate.json -p 2 coverage/*.json
         - if [[ "$TRAVIS_TEST_RESULT" == 0 ]] && [ "$TRAVIS_PULL_REQUEST" != "false" ]; then ./cc-test-reporter upload-coverage -i coverage/codeclimate.json; fi
 
-    - stage: "Prepare staging environment"
-      name: "Prepare frontend image"
-      script:
-        - docker build unbrake-frontend/ -t unbrake/frontend:latest-staging-tmp -f unbrake-frontend/production/Dockerfile
-        - docker login --username "${DOCKER_USERNAME}" --password "${DOCKER_PASSWORD}"
-        - docker push unbrake/frontend:latest-staging-tmp
-        - docker logout
+    - <<: *prepare_staging
+      name: "prepare frontend"
+      env:
+        - BUILD_FOLDER=unbrake-frontend
+        - DOCKER_IMAGE=unbrake/frontend
 
-    - name: "Prepare API image"
-      script:
-        - docker build unbrake-api/ -t unbrake/api:latest-staging-tmp -f unbrake-api/production/Dockerfile.api
-        - docker login --username "${DOCKER_USERNAME}" --password "${DOCKER_PASSWORD}"
-        - docker push unbrake/api:latest-staging-tmp
-        - docker logout
+    - <<: *prepare_staging
+      name: "prepare API"
+      env:
+        - BUILD_FOLDER=unbrake-api
+        - DOCKER_IMAGE=unbrake/api
