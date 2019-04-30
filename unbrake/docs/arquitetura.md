@@ -90,7 +90,7 @@ O acordo de transmissão acontece com o software do FrontEnd disponibilizando um
 ___
 ### Visão de desenvolvimento
 
-As interações entre os serviços estão representadas no diagram de componente abaixo.
+As interações entre os serviços estão representadas no diagrama de componente abaixo.
 
 ___
 
