@@ -9,6 +9,7 @@ import PropTypes from "prop-types";
 import Cookies from "universal-cookie";
 import Request from "../utils/Request";
 import { API_URL_GRAPHQL } from "../utils/Constants";
+import history from "../utils/history";
 
 const padding = 10;
 const baseUrl = API_URL_GRAPHQL;
@@ -98,9 +99,10 @@ async function submit(values) {
 
   if (parsedData.data.tokenAuth !== null) {
     cookie.set("token", parsedData.data.tokenAuth.token, {
-      path: "/",
-      httpOnly: false
+      path: "/"
+      // httpOnly: false
     });
+    history.push("/");
   } else {
     // block login
   }

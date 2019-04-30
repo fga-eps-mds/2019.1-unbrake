@@ -4,15 +4,13 @@ import { Provider } from "react-redux";
 import { createStore } from "redux";
 import reducers from "./reducer/index";
 
-import SideBarMenu from "./components/SideBarMenu";
-import Routes from "./Routes";
+import Routes from "./routes/Routes";
 
 const store = createStore(reducers);
 
 const App = () => (
   <Provider store={store}>
     <React.Fragment>
-      <SideBarMenu />
       <Routes />
     </React.Fragment>
   </Provider>
