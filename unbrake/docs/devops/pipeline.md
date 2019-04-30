@@ -4,6 +4,10 @@ Essa página tem o objetivo de esclarecer o funcionamento de todo o fluxo de des
 
 ## Checagem Local
 
+### Quando acontece?
+
+Sempre ao se tentar criar um commit ou dar um push para repositório do projeto.
+
 ### Contexto
 
 Em muitas pipelines de desenvolvimento a preocupação começa a partir do momento que o commit do desenvolvedor está no remoto, online, para a avaliação dos colegas.
@@ -53,11 +57,14 @@ também de evitar o famoso fluxo de desenvolvimento de desenvolver a funcionalid
 
 ### Local de implementação
 
-Os script estão implementados dentro da pasta `script` dentro da pasta de cada módulo e os hooks nas pasta `hooks` também dentro de cada módulo. Além disso há alguns detalhes em outros arquivos, como em arquivos do docker
-arquivos de configuração das ferramentas, etc. Além disso, vários arquivos de configuração tiveram que ser adequados as necessidades do projeto:
-.eslintrc.json, .prettierrc, package.json, Dockerfile, docker-compose.yml, .flake8, .pylintrc, .coveragerc e pytest.ini
+Os script estão implementados dentro da pasta `script` dentro da pasta de cada módulo e os hooks nas pasta `hooks` também dentro de cada módulo.
+Além disso, vários arquivos de configuração tiveram que ser adequados as necessidades do projeto: .eslintrc.json, .prettierrc, package.json, Dockerfile, docker-compose.yml, .flake8, .pylintrc, .coveragerc e pytest.ini
 
 ## Integração contínua
+
+### Quando acontece?
+
+A cada push ao repositório, é avaliado o último commit do push. Também acontece ao se criar um Pull Request e após seu aceite, na branch de destino (base).
 
 ### Contexto
 
@@ -108,3 +115,35 @@ O (codeclimate) indica que a ferramenta foi integrada como plugin de checagem do
 ### Local de implementação
 
 Não houve implementação de scripts, apenas calibração de arquivos de configuração. Principais arquivos relacionados: .travis.yml, .codeclimate.yml
+
+## Revisão de Código
+
+### Quando acontece?
+
+Antes de se aceitar um Pull Request
+
+### Contexto
+
+Esse é o único passo em que tem haver a intervenção de outro membro do time. A ideia é que nessa etapa, que acontece após muitas checagens de ferramenta.
+Seja possível identificar problemas que apenas outro desenvolvedor identificaria, como nomes sem sentido, lógica errada, uso de bibliotecas desnecessárias, etc.
+
+### Proposta
+
+Essa etapa é obrigatória ao aceite do PR, é exigido que pelo menos uma outra pessoa do time avalie seu PR, regra que também vale para os gestores. Não há merge
+sem alguém dizer que o código está ok.
+
+### Implementação
+
+Essa regra foi implementada simplismente editando-se as configurações de branch do repositório no Github.
+
+### Conclusão
+
+Essa etapa tem se mostrado de grande valor a equipe, e quase todas as vezes em que aplicada corretamente econtram-se alguns erros que não se não fossem
+corrigidos no momento se tornariam grandes problemas posteriormente.
+
+
+### Ferramentas utilizadas
+
+| Ferramenta       | Módulo        | Objetivo |
+|:---------------: |:------------- | :------------- |
+| [Github](https://github.com/) | Frontend/API | Ferramenta de versionamento de código (dentre outros) |
