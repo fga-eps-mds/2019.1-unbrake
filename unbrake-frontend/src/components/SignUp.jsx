@@ -107,8 +107,10 @@ export const submit = values => {
 };
 const signUpPaper = (classes, handleSubmit, submitting) => {
   return (
-    <Paper className={classes.paper}>
-      <h2 styles={{ color: "black" }}>Registre-se!</h2>
+    <Paper className={classes.paper} elevation={10}>
+      <Typography variant="h4" color="secondary" className={classes.grid}>
+        Registre-se
+      </Typography>
       <form onSubmit={handleSubmit(submit)}>
         <Grid className={classes.grid}>
           <Field

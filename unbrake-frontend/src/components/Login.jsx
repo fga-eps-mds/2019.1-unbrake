@@ -109,8 +109,10 @@ async function submit(values) {
 }
 const loginPaper = (classes, handleSubmit, submitting) => {
   return (
-    <Paper className={classes.paper}>
-      <h2 styles={{ color: "black" }}>Bem vindo!</h2>
+    <Paper className={classes.paper} elevation={10}>
+      <Typography variant="h1" component="h2" gutterBottom>
+        h1. Heading
+      </Typography>
       <form onSubmit={handleSubmit(submit.bind(this))}>
         <Grid className={classes.grid}>
           <Field

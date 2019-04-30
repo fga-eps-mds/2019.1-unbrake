@@ -13,6 +13,13 @@ const theme = createMuiTheme({
       light: "#3F403F",
       main: "#3F403F"
     }
+  },
+  typography: {
+    text: {
+      // Name of the rule
+      color: "white" // Some CSS
+    },
+    useNextVariants: true,
   }
 });
 
