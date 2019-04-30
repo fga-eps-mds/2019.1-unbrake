@@ -5,8 +5,6 @@ import { connect } from "react-redux";
 import PropTypes, { func } from "prop-types";
 import { changeGraphic1, changeGraphic2 } from "../actions/ConfigActions";
 
-const FIRST_CHECK_ID = "FirstCheck";
-
 class CalibrationTempCheck extends React.Component {
   constructor(props) {
     super(props);
@@ -19,39 +17,32 @@ class CalibrationTempCheck extends React.Component {
     };
   }
 
-  renderCheck() {
-    const {
-      checkID,
-      graphic1,
-      graphic2,
-      enableGraphic1,
-      enableGraphic2
-    } = this.props;
-    if (checkID === FIRST_CHECK_ID)
+  renderSingleCheckbox(field) {
+    const { graphic1, graphic2, enableGraphic1, enableGraphic2 } = this.props;
+    if (field === "1")
       return (
-        <div>
-          <FormControlLabel
-            control={
-              <Checkbox
-                checked={graphic1}
-                onChange={(event, value) => enableGraphic1(value)}
-              />
-            }
-            label="Plotar Temperatura 1"
-          />
-        </div>
+        <Checkbox
+          checked={graphic1}
+          onChange={(event, value) => enableGraphic1(value)}
+        />
       );
+
+    return (
+      <Checkbox
+        checked={graphic2}
+        onChange={(event, value) => enableGraphic2(value)}
+      />
+    );
+  }
+
+  renderCheck() {
+    const { checkID } = this.props;
 
     return (
       <div>
         <FormControlLabel
-          control={
-            <Checkbox
-              checked={graphic2}
-              onChange={(event, value) => enableGraphic2(value)}
-            />
-          }
-          label="Plotar Temperatura 2"
+          control={this.renderSingleCheckbox(checkID)}
+          label={`Plotar Temperatura ${checkID}`}
         />
       </div>
     );
