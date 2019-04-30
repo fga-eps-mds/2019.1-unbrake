@@ -17,7 +17,8 @@ class AuthorizedRoute extends React.PureComponent {
     return (
       <Redirect
         to={{
-          pathname: "/login"
+          pathname: "/login",
+          state: { from: "/" }
         }}
       />
     );
