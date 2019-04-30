@@ -4,11 +4,13 @@ import { TextField } from "redux-form-material-ui";
 import Button from "@material-ui/core/Button";
 import Grid from "@material-ui/core/Grid";
 import Paper from "@material-ui/core/Paper";
+import Typography from "@material-ui/core/Typography";
 import { withStyles } from "@material-ui/core/styles";
 import PropTypes from "prop-types";
 import Cookies from "universal-cookie";
 import Request from "../utils/Request";
 import { API_URL_GRAPHQL } from "../utils/Constants";
+import history from "../utils/history";
 
 const padding = 10;
 const baseUrl = API_URL_GRAPHQL;
@@ -98,17 +100,20 @@ async function submit(values) {
 
   if (parsedData.data.tokenAuth !== null) {
     cookie.set("token", parsedData.data.tokenAuth.token, {
-      path: "/",
-      httpOnly: false
+      path: "/"
+      // httpOnly: false
     });
+    history.push("/");
   } else {
     // block login
   }
 }
 const loginPaper = (classes, handleSubmit, submitting) => {
   return (
-    <Paper className={classes.paper}>
-      <h2 styles={{ color: "black" }}>Bem vindo!</h2>
+    <Paper className={classes.paper} elevation={10}>
+      <Typography variant="h4" color="secondary" className={classes.grid}>
+        Bem vindo!
+      </Typography>
       <form onSubmit={handleSubmit(submit.bind(this))}>
         <Grid className={classes.grid}>
           <Field

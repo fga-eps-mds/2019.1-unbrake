@@ -1,0 +1,22 @@
+#!/bin/bash
+
+# Example of use: ./scripts/deploy unbrake.ml master
+
+REMOTE_HOST="$1"
+BRANCH="$2"
+
+if [ ! -e production/secrets ]; then
+    echo -e "You don't have a scripts folder inside production folder, to copy secrets to remote!"
+    exit 1
+fi
+
+if [ $# != 2 ]; then
+    echo -e "Wrong usage! Usage example: ./scripts/deploy unbrake.ml master"
+    exit 1
+fi
+
+echo -e "Copying secrets to ${REMOTE_HOST}..."
+scp -r production/secrets root@${REMOTE_HOST}:/root/
+
+echo -e "\nDeploying ${BRANCH} branch to ${REMOTE_HOST}..."
+ssh root@${REMOTE_HOST} BRANCH=${BRANCH} bash < scripts/deploy_local.sh
