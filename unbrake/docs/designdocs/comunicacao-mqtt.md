@@ -1,7 +1,3 @@
-Title: Comunicação do gráfico em tempo real
-Date: 2018-04-06 15:59
-Category: Design Docs
-
 ### Descrição do problema
 
 Como definido nos cenários do projeto o software necessita de atualização em tempo real das informações dos sensores em um gráfico com latência de até 2 segundos. O problema é que a arquitetura de micro serviços faz com que a comunicação entre os serviços seja feita pela rede e portanto está sensivel a dinâmica da internet: alta latência, perda de pacotes, mudanças de rotas, entrega de pacotes de forma não ordenada.
