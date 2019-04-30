@@ -19,7 +19,7 @@ const theme = createMuiTheme({
       // Name of the rule
       color: "white" // Some CSS
     },
-    useNextVariants: true,
+    useNextVariants: true
   }
 });
 
