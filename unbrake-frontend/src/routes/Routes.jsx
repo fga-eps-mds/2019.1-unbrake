@@ -13,11 +13,11 @@ export default () => (
       <AuthorizedRoute
         permission="allow_any"
         exact
-        path="/"
+        path="/(configuration|calibration|analysis|test)"
         component={SideBarMenu}
       />
-      <Route path="/login" component={Login} />
-      <Route path="/signup" component={SignUp} />
+      <Route exact path="/login" component={Login} />
+      <Route exact path="/signup" component={SignUp} />
       <Route component={NotFoundRoute} />
     </Switch>
   </Router>
