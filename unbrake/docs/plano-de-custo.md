@@ -9,6 +9,11 @@
 </script>
 <script src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML" type="text/javascript"></script>
 
+## Histórico de Revisão
+
+| Data | Responsável | Versão | Mudança realizada |
+|:----:| ----------- |:------:| ----------------- |
+| **06/04/19** | [@ViniciusBernardo](https://github.com/ViniciusBernardo) | 1 | Avaliação inicial do custo do produto |
 
 ## 1. Introdução
 
@@ -90,6 +95,7 @@ O sistema ficará hospedado em um servidor Kubernetes em nuvem da DigitalOcean d
 
 A porcentagem de lucro e risco serão aplicados sobre a somatória do custo de pessoal $cp$, custo de equipamento $ce$ e custo da infraestrutura $ci$ calculados nos tópicos anteriores.
 A taxa de lucro aplicada sera de 20% ($lucro = 0.2$). Já a taxa de risco será de 45% devido aos seguintes fatores:
+
 * O sistema precisa lidar com dados em real time;
 * É necessário fazer comunicação serial com o sistema embarcado controlador do simulador de frenagem;
 * Como o simulador de frenagem é um sistema mecânico, existe o requisito implícito que o software precisa ter uma alta qualidade e nível de testes.
