@@ -52,4 +52,4 @@
 
 [@GabrielTiveron](https://github.com/GabrielTiveron) + [@medeiroslucas](https://github.com/medeiroslucas)
 
-[@tmcstiago](https://github.com/tmcstiag)
+[@tmcstiago](https://github.com/tmcstiago)

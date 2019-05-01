@@ -49,6 +49,50 @@
 |Victor|x|x|x|x|x|
 |Vinicius||x||x|x|
 
+## Retrospectiva
+
+### Pontos ruins
+
+* Falta de domínio e insegurança ao usar Reat/Redux;
+* Conciliar os trabalhos dafaculdade com o trabalho de verdade e ainda ter que produzir código de qualidade alta;
+* Membros do time de desenvolvimento com muitas brincadeiras em horas inapropriadas;
+* Utilizar componentes do Material-UI;
+* Bad cop (bot que avisa sobre erros na buldd);
+* Encontrar horários compatíveis para parar;
+* Encontrar bibliotecas necessárias;
+* Scrum Master muito exigente;
+* Issues mal planejadas pelo Scrum Master (muito grandes/complexas);
+* Foco muito grande em ajudar desenvolvedores e pouca atenção à gerência de verdade;
+* Falhas de comunicação entre gerentes;
+* Ao decidir projeto, lados de opiniões divergentes não se ouviram;
+* Aplicar níveis de qualidade de código muito altos;
+* Trabalhar considerando prof. Evando como um cliente real que tem poder de decisão nos rumos do projeto
+* Prof. Carla deixando gerentes confusos a respeito das tarefas que devem ser feitas;
+* Desenvolvedores muito dependentes dos gerentes;
+* Desenvolvedores muito afastados uns dos outros;
+* Desenvolvedores muito focados nas tarefas em si, esquecendo de ter proatividade em questões como comentar nas issues de outras pessoas, etc.;
+* Gerentes muito estressados;
+* Gerentes com mais foco nas atividades inerentes dos respectivos papéis.
+
+### Pontos bons
+
+* Qualidade do trabalho dos desenvolvedores;
+* Lucas e Tiago com bastante tempo para parear juntos;
+* Gerentes dando orientações boas;
+* Desenvolvimento de código iniciou no começo da sprint;
+* Gerentes altruístas.
+
+### Melhorias
+
+* Mudanças bruscas devem ser aplicadas com pazo maior;
+* Reunião de fechamento de sprint mais ágil e mais cedo;
+* Mudar daily de sexta para bot no Slack;
+* Desenvolvedores começarem a ter mais autonomia;
+* Preocupar-se com lanche nas reuniões mais demoradas.
+
+
+
+
 ## Quadro de conhecimentos
 
 ![conhecimento1](images/conhecimento1.png)

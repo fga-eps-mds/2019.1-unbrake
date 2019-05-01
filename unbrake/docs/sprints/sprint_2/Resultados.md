@@ -52,6 +52,27 @@
 |Victor||||x|-|
 |Vinicius|x|x||x|-|
 
+
+## Retospectiva
+
+### Pontos ruins
+
+* Mudança brusca de Django REST para GraphQL;
+* Falta d planejamento da reunião de fechamento de Sprint;
+* Comunicação dos desenvolvedores muito ruim;
+* PR demorando a ser aprovado;
+* Conciliar trabalho/matérias com entrega das issues;
+* Dificuldade em acompanhar tecnicamente muits tecnologias;
+* Desânimo da faculdade;
+* Gerentes discutindo questões particulares com desenvolvedores por perto.
+
+### Pontos bons
+
+* Gerentes ajudaram muito desenvolvedores;
+* Desenvolvedores amadurecendo bem;
+* Tacos;
+* Gerentes menos estressados.
+
 ## Quadro de conhecimentos
 
 ![conhecimento2](images/conhecimento2.png)

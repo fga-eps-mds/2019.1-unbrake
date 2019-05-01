@@ -44,6 +44,40 @@
 |Victor|||x|x|-|
 |Vinicius||x||x|-|
 
+
+## Retrospectiva
+
+### Pontos ruins
+
+* GSOC e Code Jam com datas no meio da sprint;
+* Indecisão sobre qal banco de dados escolr;
+* Issue para criar diagrama de classes confusa;
+* Muita rigidez das ferramentas de checagem de código;
+* Algumas pessoas chegando atrasadas nas dailies;
+* Comunicação;
+* Comentários nos PR's demorando a serem vistos e corrigidos;
+* Títulos dos commits/PR's ruins;
+* Master estar bastante desatualizada com a devel.
+
+### Pontos bons
+
+* Gosto em fazer a issue passada;
+* Começo de um entendimento mais profundo de como os componentes do software se comunicam/funcionam;
+* Time de desenvolvimento começar a escrever documentos;
+* Pessoas mais a vontade para parear. 
+
+### Melhorias
+
+* Planejar e tomar decisões com maior antecedência;
+* Decidir tamanho das issues de maneira melhor;
+* Criar o backlog do produto;
+* Decidir qual banco usar;
+* Configurar pull reminders.
+
+
+
+
+
 ## Quadro de conhecimentos
 
 ![conhecimento3](images/conhecimento3.png)
@@ -54,3 +88,9 @@
 
 
 ## Comentários do Scrum Master
+
+<p align="justify">
+Sprint onde desenvolvedores começaram a apresentar uma maturidade maior, ficando mais a vontade para realizar pareamentos e onde começaram a escrever os documentos também. Pela primeira vez, uma quantidade grande de issues foi de dívida técnica, justificado principalmente pelo alto grau de exigência de qualidade de código e outros critérios como ferramenta de checagem de tipo. Nessa sprint, uma issue que vale a pena ser destacada é a referente ao entendimento da linguagem Go, onde se começou a investigar/estudar como se constrói um servidor em Go.
+</p>
+
+
