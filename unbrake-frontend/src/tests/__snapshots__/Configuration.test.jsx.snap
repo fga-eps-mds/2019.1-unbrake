@@ -28,7 +28,8 @@ exports[`<Configuration /> render() renders the component 1`] = `
         <h2
           justify="left"
         >
-          Upload arquivo de Calibração
+          Upload arquivo de 
+          Calibração
         </h2>
       </WithStyles(Grid)>
       <WithStyles(Grid)
@@ -37,7 +38,7 @@ exports[`<Configuration /> render() renders the component 1`] = `
         xs={4}
       >
         <WithStyles(Input)
-          name="configuration"
+          name="calibration"
           onChange={[Function]}
           type="file"
         />
@@ -55,8 +56,11 @@ exports[`<Configuration /> render() renders the component 1`] = `
         item={true}
         xs={4}
       >
-        <h2>
-          Upload arquivo de Configuração
+        <h2
+          justify="left"
+        >
+          Upload arquivo de 
+          Configuração
         </h2>
       </WithStyles(Grid)>
       <WithStyles(Grid)

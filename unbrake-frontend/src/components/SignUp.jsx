@@ -1,6 +1,5 @@
 import React from "react";
-import { Field, reduxForm, SubmissionError } from "redux-form";
-import { TextField } from "redux-form-material-ui";
+import { reduxForm, SubmissionError } from "redux-form";
 import Button from "@material-ui/core/Button";
 import Grid from "@material-ui/core/Grid";
 import Paper from "@material-ui/core/Paper";
@@ -9,6 +8,7 @@ import { withStyles } from "@material-ui/core/styles";
 import PropTypes from "prop-types";
 import history from "../utils/history";
 import { API_URL_GRAPHQL } from "../utils/Constants";
+import FieldComponent from "./FieldComponent";
 
 const padding = 10;
 
@@ -43,21 +43,6 @@ export const validate = values => {
   });
   return errors;
 };
-
-const renderField = ({ input, label, type, meta: { touched, error } }) => (
-  <div>
-    <TextField
-      label={label}
-      placehoder={label}
-      error={error && touched}
-      type={type}
-      variant="outlined"
-      fullWidth
-      helperText={touched && error}
-      {...input}
-    />
-  </div>
-);
 
 const signUpButton = (classes, submitting) => {
   return (
@@ -113,37 +98,19 @@ const signUpPaper = (classes, handleSubmit, submitting) => {
         Registre-se
       </Typography>
       <form onSubmit={handleSubmit(submit)}>
-        <Grid className={classes.grid}>
-          <Field
-            name="username"
-            type="text"
-            component={renderField}
-            label="Usuário"
-            variant="outlined"
-            fullWidth
-            className={classes.field}
-          />
-        </Grid>
-        <Grid item xs={12} sm={12} className={classes.grid}>
-          <Field
-            name="password"
-            type="password"
-            component={renderField}
-            label="Senha"
-            variant="outlined"
-            className={classes.field}
-          />
-        </Grid>
-        <Grid item xs={12} sm={12} className={classes.grid}>
-          <Field
-            name="confirmPassword"
-            type="password"
-            component={renderField}
-            label="Confirme a Senha"
-            variant="outlined"
-            className={classes.field}
-          />
-        </Grid>
+        <FieldComponent
+          data={{ name: "username", label: "Usuario", type: "text" }}
+        />
+        <FieldComponent
+          data={{ name: "password", label: "Senha", type: "password" }}
+        />
+        <FieldComponent
+          data={{
+            name: "confirmPassword",
+            label: "Confirme a Senha",
+            type: "password"
+          }}
+        />
         {signUpButton(classes, submitting)}
       </form>
     </Paper>
@@ -166,17 +133,6 @@ class SignUp extends React.PureComponent {
     );
   }
 }
-
-renderField.propTypes = {
-  input: PropTypes.objectOf(
-    PropTypes.oneOfType([PropTypes.func, PropTypes.string])
-  ).isRequired,
-  label: PropTypes.string.isRequired,
-  type: PropTypes.string.isRequired,
-  meta: PropTypes.objectOf(
-    PropTypes.oneOfType([PropTypes.func, PropTypes.bool, PropTypes.string])
-  ).isRequired
-};
 
 SignUp.propTypes = {
   classes: PropTypes.objectOf(PropTypes.string).isRequired,

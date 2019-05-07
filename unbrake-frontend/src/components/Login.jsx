@@ -1,6 +1,5 @@
 import React from "react";
-import { Field, reduxForm } from "redux-form";
-import { TextField } from "redux-form-material-ui";
+import { reduxForm } from "redux-form";
 import Button from "@material-ui/core/Button";
 import Grid from "@material-ui/core/Grid";
 import Paper from "@material-ui/core/Paper";
@@ -11,6 +10,7 @@ import Cookies from "universal-cookie";
 import Request from "../utils/Request";
 import { API_URL_GRAPHQL } from "../utils/Constants";
 import history from "../utils/history";
+import FieldComponent from "./FieldComponent";
 
 const padding = 10;
 const baseUrl = API_URL_GRAPHQL;
@@ -45,20 +45,6 @@ const validate = values => {
   });
   return errors;
 };
-const renderField = ({ input, label, type, meta: { touched, error } }) => (
-  <div>
-    <TextField
-      label={label}
-      placehoder={label}
-      error={error && touched}
-      type={type}
-      variant="outlined"
-      fullWidth
-      helperText={touched && error}
-      {...input}
-    />
-  </div>
-);
 
 const loginButtons = (classes, submitting) => {
   return (
@@ -115,27 +101,13 @@ const loginPaper = (classes, handleSubmit, submitting) => {
         Bem vindo!
       </Typography>
       <form onSubmit={handleSubmit(submit.bind(this))}>
-        <Grid className={classes.grid}>
-          <Field
-            name="username"
-            type="text"
-            component={renderField}
-            label="Usuário"
-            variant="outlined"
-            fullWidth
-            className={classes.field}
-          />
-        </Grid>
-        <Grid item xs={12} sm={12} className={classes.grid}>
-          <Field
-            name="password"
-            type="password"
-            component={renderField}
-            label="Senha"
-            variant="outlined"
-            className={classes.field}
-          />
-        </Grid>
+        <FieldComponent
+          data={{ name: "username", label: "Usuario", type: "text" }}
+          classes={classes}
+        />
+        <FieldComponent
+          data={{ name: "password", label: "Senha", type: "password" }}
+        />
         {loginButtons(classes, submitting)}
         <div>
           <a href="./"> Esqueci minha senha</a>
@@ -161,17 +133,6 @@ class Login extends React.PureComponent {
     );
   }
 }
-
-renderField.propTypes = {
-  input: PropTypes.objectOf(
-    PropTypes.oneOfType([PropTypes.func, PropTypes.string])
-  ).isRequired,
-  label: PropTypes.string.isRequired,
-  type: PropTypes.string.isRequired,
-  meta: PropTypes.objectOf(
-    PropTypes.oneOfType([PropTypes.func, PropTypes.bool, PropTypes.string])
-  ).isRequired
-};
 
 Login.propTypes = {
   classes: PropTypes.objectOf(PropTypes.string).isRequired,
