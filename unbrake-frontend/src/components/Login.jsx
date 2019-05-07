@@ -100,7 +100,8 @@ async function submit(values) {
 
   if (parsedData.data.tokenAuth !== null) {
     cookie.set("token", parsedData.data.tokenAuth.token, {
-      path: "/"
+      path: "/",
+      maxAge: 20
       // httpOnly: false
     });
     history.push("/");
