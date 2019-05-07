@@ -194,6 +194,17 @@ const SideBarMenu = class extends React.PureComponent {
   }
 };
 
+const appBarTransition = (theme, duration) =>
+  theme.transitions.create(["width", "margin"], {
+    easing: theme.transitions.easing.sharp,
+    duration
+  });
+const drawerTransition = (theme, duration) =>
+  theme.transitions.create("width", {
+    easing: theme.transitions.easing.sharp,
+    duration
+  });
+
 SideBarMenu.propTypes = {
   classes: PropTypes.objectOf(PropTypes.string).isRequired,
   theme: PropTypes.oneOfType([
@@ -205,19 +216,13 @@ SideBarMenu.propTypes = {
 const appBar = theme => ({
   backgroundColor: "#8B0000",
   zIndex: theme.zIndex.drawer + flexGrowValue,
-  transition: theme.transitions.create(["width", "margin"], {
-    easing: theme.transitions.easing.sharp,
-    duration: theme.transitions.duration.leavingScreen
-  })
+  transition: appBarTransition(theme, theme.transitions.duration.leavingScreen)
 });
 
 const appBarShift = theme => ({
   marginLeft: drawerWidth,
   width: `calc(100% - ${drawerWidth}px)`,
-  transition: theme.transitions.create(["width", "margin"], {
-    easing: theme.transitions.easing.sharp,
-    duration: theme.transitions.duration.enteringScreen
-  })
+  transition: appBarTransition(theme, theme.transitions.duration.enteringScreen)
 });
 
 const styles = theme => ({
@@ -240,16 +245,16 @@ const styles = theme => ({
   },
   drawerOpen: {
     width: drawerWidth,
-    transition: theme.transitions.create("width", {
-      easing: theme.transitions.easing.sharp,
-      duration: theme.transitions.duration.enteringScreen
-    })
+    transition: drawerTransition(
+      theme,
+      theme.transitions.duration.enteringScreen
+    )
   },
   drawerClose: {
-    transition: theme.transitions.create("width", {
-      easing: theme.transitions.easing.sharp,
-      duration: theme.transitions.duration.leavingScreen
-    }),
+    transition: drawerTransition(
+      theme,
+      theme.transitions.duration.leavingScreen
+    ),
     overflowX: "hidden",
     width: theme.spacing.unit * drawerCloseWidth + flexGrowValue,
     [theme.breakpoints.up("sm")]: {
