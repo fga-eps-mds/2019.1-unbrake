@@ -35,30 +35,35 @@ const styles = theme => ({
   }
 });
 
-const caseNOS = 0;
-const caseUSL = 1;
-const caseUWT = 2;
+let nameField;
+let labelField;
 
-const caseTBS = 0;
-const caseLSL = 1;
-const caseLWT = 2;
-
-const rowOne = (classes, vector, handleChange) => {
-  const grids = vector.map((value, index) => {
-    let name;
-    let label;
-    switch (index) {
-      case caseNOS:
-        name = "NOS";
-        label = "Numero de Snubs";
+const rowComponents = (classes, vector, handleChange) => {
+  const grids = vector.map(value => {
+    switch (value.name) {
+      case "NOS":
+        nameField = "NOS";
+        labelField = "Numero de Snubs";
         break;
-      case caseUSL:
-        name = "USL";
-        label = "Limite Superior (km/h)";
+      case "USL":
+        nameField = "USL";
+        labelField = "Limite Superior (km/h)";
         break;
-      case caseUWT:
-        name = "UWT";
-        label = "Tempo de Espera (s)";
+      case "UWT":
+        nameField = "UWT";
+        labelField = "Tempo de Espera (s)";
+        break;
+      case "TBS":
+        nameField = "TBS";
+        labelField = "Tempo entre ciclos";
+        break;
+      case "LSL":
+        nameField = "LSL";
+        labelField = "Limite inferior (km/h)";
+        break;
+      case "LWT":
+        nameField = "LWT";
+        labelField = "Tempo de espera (s)";
         break;
       default:
         break;
@@ -66,54 +71,13 @@ const rowOne = (classes, vector, handleChange) => {
     return (
       <Grid item xs={3} className={classes.grid}>
         <Field
-          id={name}
+          id={nameField}
           component={TextField}
-          label={label}
-          value={value}
-          onChange={handleChange(name)}
+          label={labelField}
+          value={value.value}
+          onChange={handleChange(nameField)}
           type="number"
-          name={name}
-          validate={limits}
-          className={classes.textField}
-          margin="normal"
-          variant="outlined"
-        />
-      </Grid>
-    );
-  });
-  return grids;
-};
-
-const rowTwo = (classes, vector, handleChange) => {
-  const grids = vector.map((value, index) => {
-    let name;
-    let label;
-    switch (index) {
-      case caseTBS:
-        name = "TBS";
-        label = "Tempo entre ciclos";
-        break;
-      case caseLSL:
-        name = "LSL";
-        label = "Limite inferior (km/h)";
-        break;
-      case caseLWT:
-        name = "LWT";
-        label = "Tempo de espera (s)";
-        break;
-      default:
-        break;
-    }
-    return (
-      <Grid item xs={3} className={classes.grid}>
-        <Field
-          id={name}
-          component={TextField}
-          label={label}
-          value={value}
-          onChange={handleChange(name)}
-          type="number"
-          name={name}
+          name={nameField}
           validate={limits}
           className={classes.textField}
           margin="normal"
@@ -254,8 +218,16 @@ class ConfigurationForm extends React.Component {
     const { classes, handleSubmit, submitting } = this.props;
     const { configuration } = this.state;
     const { TAS, TAT, TMO, TAO, UWT, NOS, LSL, USL, TBS, LWT } = configuration;
-    const vectorOne = [NOS, USL, UWT];
-    const vectorTwo = [TBS, LSL, LWT];
+    const vectorOne = [
+      { name: "NOS", value: NOS },
+      { name: "USL", value: USL },
+      { name: "UWT", value: UWT }
+    ];
+    const vectorTwo = [
+      { name: "TBS", value: TBS },
+      { name: "LSL", value: LSL },
+      { name: "LWT", value: LWT }
+    ];
     const dictionary = {
       powerMotor: [TMO, "TMO"],
       exitAux: [TAO, "TAO"],
@@ -272,10 +244,10 @@ class ConfigurationForm extends React.Component {
         })}
       >
         <Grid container item xs={24} alignItems="center" justify="center">
-          {rowOne(classes, vectorOne, this.handleChange)}
+          {rowComponents(classes, vectorOne, this.handleChange)}
         </Grid>
         <Grid container item xs={24} alignItems="center" justify="center">
-          {rowTwo(classes, vectorTwo, this.handleChange)}
+          {rowComponents(classes, vectorTwo, this.handleChange)}
         </Grid>
         <Grid container item xs={12} alignItems="center" justify="center">
           {checkBox(classes, dictionary.powerMotor)}
