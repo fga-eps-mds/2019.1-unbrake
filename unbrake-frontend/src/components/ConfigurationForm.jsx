@@ -38,8 +38,8 @@ const styles = theme => ({
 let nameField;
 let labelField;
 
-const rowComponents = (classes, vector, handleChange) => {
-  const grids = vector.map(value => {
+const rowsFields = (classes, vector, handleChange) => {
+  const fields = vector.map(value => {
     switch (value.name) {
       case "NOS":
         nameField = "NOS";
@@ -86,12 +86,23 @@ const rowComponents = (classes, vector, handleChange) => {
       </Grid>
     );
   });
-  return grids;
+  return fields;
+};
+
+const fieldsConfigurations = (classes, vector, handleChange) => {
+  const rows = vector.map(value => {
+    return (
+      <Grid container item xs={24} alignItems="center" justify="center">
+        {rowsFields(classes, value, handleChange)}
+      </Grid>
+    );
+  });
+  return rows;
 };
 
 const checkBox = (classes, type) => {
   let label;
-  switch (type[1]) {
+  switch (type.name) {
     case "TMO":
       label = "Inibe Desligamento do Motor";
       break;
@@ -104,7 +115,9 @@ const checkBox = (classes, type) => {
   return (
     <Grid item xs={3} className={classes.gridButton} justify="center">
       <FormControlLabel
-        control={<Field component={Checkbox} name={type[1]} value={type[0]} />}
+        control={
+          <Field component={Checkbox} name={type.name} value={type.value} />
+        }
         label={label}
       />
     </Grid>
@@ -114,7 +127,12 @@ const checkBox = (classes, type) => {
 const Buttons = (classes, submitting) => {
   return (
     <Grid item xs={3} className={classes.grid} justify="right">
-      <Button color="secondary" variant="contained" disabled={submitting}>
+      <Button
+        type="submit"
+        color="secondary"
+        variant="contained"
+        disabled={submitting}
+      >
         Cadastrar
       </Button>
     </Grid>
@@ -123,7 +141,7 @@ const Buttons = (classes, submitting) => {
 
 const CommunGrid = (classes, type, handleChange) => {
   let label;
-  switch (type[1]) {
+  switch (type.name) {
     case "TAS":
       label = "Temperatura(˚C)(AUX1)";
       break;
@@ -136,19 +154,31 @@ const CommunGrid = (classes, type, handleChange) => {
   return (
     <Grid item xs={6} className={classes.grid}>
       <Field
-        id={type[1]}
+        id={type.name}
         component={TextField}
         label={label}
-        value={type[0]}
-        onChange={handleChange(type[1])}
+        value={type.value}
+        onChange={handleChange(type.name)}
         type="number"
-        name={type[1]}
+        name={type.name}
         className={classes.textField}
         margin="normal"
         variant="outlined"
       />
     </Grid>
   );
+};
+
+const otherField = (classes, vector, handleChange) => {
+  const fields = vector.map(value => {
+    return (
+      <Grid container item xs={12} alignItems="center" justify="center">
+        {checkBox(classes, value[0])}
+        {CommunGrid(classes, value[1], handleChange)}
+      </Grid>
+    );
+  });
+  return fields;
 };
 
 async function submit(values, state) {
@@ -218,22 +248,26 @@ class ConfigurationForm extends React.Component {
     const { classes, handleSubmit, submitting } = this.props;
     const { configuration } = this.state;
     const { TAS, TAT, TMO, TAO, UWT, NOS, LSL, USL, TBS, LWT } = configuration;
-    const vectorOne = [
+    const rowOne = [
       { name: "NOS", value: NOS },
       { name: "USL", value: USL },
       { name: "UWT", value: UWT }
     ];
-    const vectorTwo = [
+    const rowTwo = [
       { name: "TBS", value: TBS },
       { name: "LSL", value: LSL },
       { name: "LWT", value: LWT }
     ];
-    const dictionary = {
-      powerMotor: [TMO, "TMO"],
-      exitAux: [TAO, "TAO"],
-      temp: [TAS, "TAS"],
-      time: [TAT, "TAT"]
-    };
+    const rows = [rowOne, rowTwo];
+    const oneFields = [
+      { name: "TMO", value: TMO },
+      { name: "TAS", value: TAS }
+    ];
+    const twoFields = [
+      { name: "TAO", value: TAO },
+      { name: "TAT", value: TAT }
+    ];
+    const othersFilds = [oneFields, twoFields];
 
     return (
       <form
@@ -243,20 +277,8 @@ class ConfigurationForm extends React.Component {
           submit(values, this.state);
         })}
       >
-        <Grid container item xs={24} alignItems="center" justify="center">
-          {rowComponents(classes, vectorOne, this.handleChange)}
-        </Grid>
-        <Grid container item xs={24} alignItems="center" justify="center">
-          {rowComponents(classes, vectorTwo, this.handleChange)}
-        </Grid>
-        <Grid container item xs={12} alignItems="center" justify="center">
-          {checkBox(classes, dictionary.powerMotor)}
-          {CommunGrid(classes, dictionary.temp, this.handleChange)}
-        </Grid>
-        <Grid container item xs={12} alignItems="center" justify="center">
-          {checkBox(classes, dictionary.exitAux)}
-          {CommunGrid(classes, dictionary.time, this.handleChange)}
-        </Grid>
+        {fieldsConfigurations(classes, rows, this.handleChange)}
+        {otherField(classes, othersFilds, this.handleChange)}
         <Grid container item xs={12} alignItems="center" justify="center">
           {Buttons(classes, submitting)}
         </Grid>
