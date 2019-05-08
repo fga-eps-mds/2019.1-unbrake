@@ -22,6 +22,12 @@ def test_calibration_vibration():
         and check if the requirement is equal the saved object
     '''
 
+    response = {
+        'acquisitionTemp': 6,
+        'conversionFactor': 1.00,
+        'vibrationOffset': 1.00
+    }
+
     CalibrationVibration(
         acquisition_temp=6,
         conversion_factor=1.00,
@@ -51,14 +57,11 @@ def test_calibration_vibration():
         '{id, acquisitionTemp, conversionFactor, vibrationOffset}}')
     assert result.status_code == 200
     multiple_aux = result.json()['data']['allCalibrationVibration']
-    multiple_calibration_vibration_0 = multiple_aux[0]
     multiple_calibration_vibration_1 = multiple_aux[1]
 
-    assert multiple_calibration_vibration_0['id'] == '1'
     assert multiple_calibration_vibration_1['id'] == '2'
-    assert single_calibration_vibration['acquisitionTemp'] == 6
-    assert single_calibration_vibration['conversionFactor'] == 1.00
-    assert single_calibration_vibration['vibrationOffset'] == 1.00
+
+    assert single_calibration_vibration == response
 
 
 @pytest.mark.django_db
@@ -68,6 +71,12 @@ def test_calibration_force():
         require the saved object by graphql,
         and check if the requirement is equal the saved object
     '''
+
+    response = {
+        'acquisitionTemp': 3,
+        'conversionFactor': 1.000,
+        'forceOffset': 1.000
+    }
 
     CalibrationForce(
         acquisition_temp=3,
@@ -99,14 +108,11 @@ def test_calibration_force():
     )
     assert result.status_code == 200
     multiple_aux = result.json()['data']['allCalibrationForce']
-    multiple_calibration_force_0 = multiple_aux[0]
     multiple_calibration_force_1 = multiple_aux[1]
 
-    assert multiple_calibration_force_0['id'] == '1'
     assert multiple_calibration_force_1['id'] == '2'
-    assert single_calibration_force['acquisitionTemp'] == 3
-    assert single_calibration_force['conversionFactor'] == 1.000
-    assert single_calibration_force['forceOffset'] == 1.000
+
+    assert single_calibration_force == response
 
 
 @pytest.mark.django_db
@@ -116,6 +122,11 @@ def test_calibration_speed():
         require the saved object by graphql,
         and check if the requirement is equal the saved object
     '''
+
+    response = {
+        'acquisitionChanel': 5,
+        'tireRadius': 0.291550
+    }
 
     CalibrationSpeed(
         acquisition_chanel=5,
@@ -143,13 +154,11 @@ def test_calibration_speed():
         '{id, acquisitionChanel, tireRadius}}')
     assert result.status_code == 200
     multiple_aux = result.json()['data']['allCalibrationSpeed']
-    multiple_calibration_speed_0 = multiple_aux[0]
     multiple_calibration_speed_1 = multiple_aux[1]
 
-    assert multiple_calibration_speed_0['id'] == '1'
     assert multiple_calibration_speed_1['id'] == '2'
-    assert single_calibration_speed['acquisitionChanel'] == 5
-    assert single_calibration_speed['tireRadius'] == 0.291550
+
+    assert single_calibration_speed == response
 
 
 @pytest.mark.django_db
@@ -167,6 +176,16 @@ def test_all_calibration_speed(acquisition_chanel_0, acquisition_chanel_1,
         and check if the requirement is equal the saveds objects
     '''
 
+    response_0 = {
+        'acquisitionChanel': acquisition_chanel_0,
+        'tireRadius': tire_radius_0
+    }
+
+    response_1 = {
+        'acquisitionChanel': acquisition_chanel_1,
+        'tireRadius': tire_radius_1
+    }
+
     CalibrationSpeed(
         acquisition_chanel=acquisition_chanel_0,
         tire_radius=tire_radius_0,
@@ -180,17 +199,14 @@ def test_all_calibration_speed(acquisition_chanel_0, acquisition_chanel_1,
     client = Client()
     result = client.get(
         '/graphql?query={allCalibrationSpeed'
-        '{id, acquisitionChanel, tireRadius}}')
+        '{acquisitionChanel, tireRadius}}')
     assert result.status_code == 200
-    print(result.json())
     calibration_speed0 = result.json()['data']['allCalibrationSpeed'][0]
     calibration_speed1 = result.json()['data']['allCalibrationSpeed'][1]
 
-    assert calibration_speed0['acquisitionChanel'] == acquisition_chanel_0
-    assert calibration_speed0['tireRadius'] == tire_radius_0
+    assert calibration_speed0 == response_0
 
-    assert calibration_speed1['acquisitionChanel'] == acquisition_chanel_1
-    assert calibration_speed1['tireRadius'] == tire_radius_1
+    assert calibration_speed1 == response_1
 
 
 @pytest.mark.django_db
@@ -200,6 +216,16 @@ def test_calibration_relations():
         require the saved object by graphql,
         and check if the requirement is equal the saved object
     '''
+
+    response = {
+        'id': '1',
+        'transversalSelectionWidth': 175,
+        'heigthWidthRelation': 65,
+        'rimDiameter': 14,
+        'syncMotorRodation': 1700,
+        'sheaveMoveDiameter': 12,
+        'sheaveMotorDiameter': 30
+    }
 
     CalibrationRelations(
         transversal_selection_width=175,
@@ -225,7 +251,9 @@ def test_calibration_relations():
         '{id, transversalSelectionWidth,'
         'heigthWidthRelation, rimDiameter, syncMotorRodation,'
         'sheaveMoveDiameter, sheaveMotorDiameter}}')
+
     assert result.status_code == 200
+
     single_aux = result.json()['data']['calibrationRelations']
     single_calibration_relations = single_aux
 
@@ -241,17 +269,11 @@ def test_calibration_relations():
     assert result.status_code == 200
 
     multiple_aux = result.json()['data']['allCalibrationRelations']
-    multiple_calibration_relations_0 = multiple_aux[0]
     multiple_calibration_relations_1 = multiple_aux[1]
 
-    assert multiple_calibration_relations_0['id'] == '1'
     assert multiple_calibration_relations_1['id'] == '2'
-    assert single_calibration_relations['transversalSelectionWidth'] == 175
-    assert single_calibration_relations['heigthWidthRelation'] == 65
-    assert single_calibration_relations['rimDiameter'] == 14
-    assert single_calibration_relations['syncMotorRodation'] == 1700
-    assert single_calibration_relations['sheaveMoveDiameter'] == 12
-    assert single_calibration_relations['sheaveMotorDiameter'] == 30
+
+    assert single_calibration_relations == response
 
 
 @pytest.mark.django_db
@@ -261,6 +283,12 @@ def test_calibration_temperature():
         require the saved object by graphql,
         and check if the requirement is equal the saved object
     '''
+
+    response = {
+        'acquisitionTemp': 1,
+        'conversionFactor': 0.200,
+        'temperatureOffset': -1.2500
+    }
 
     CalibrationTemperature(
         acquisition_temp=1,
@@ -293,14 +321,11 @@ def test_calibration_temperature():
     )
     assert result.status_code == 200
     multiple_aux = result.json()['data']['allCalibrationTemperature']
-    multiple_calibration_temperature_0 = multiple_aux[0]
     multiple_calibration_temperature_1 = multiple_aux[1]
 
-    assert multiple_calibration_temperature_0['id'] == '1'
     assert multiple_calibration_temperature_1['id'] == '2'
-    assert single_calibration_temperature['acquisitionTemp'] == 1
-    assert single_calibration_temperature['conversionFactor'] == 0.200
-    assert single_calibration_temperature['temperatureOffset'] == -1.2500
+
+    assert single_calibration_temperature == response
 
 
 @pytest.mark.django_db
@@ -310,6 +335,15 @@ def test_calibration_commands():
         require the saved object by graphql,
         and check if the requirement is equal the saved object
     '''
+
+    response = {
+        'commandChanelSpeed': 7,
+        'actualSpeed': 0.000,
+        'maxSpeed': 100.000,
+        'chanelCommandPression': 8,
+        'actualPression': 0.000,
+        'maxPression': 30.000
+    }
 
     CalibrationCommand(
         command_chanel_speed=7,
@@ -346,14 +380,8 @@ def test_calibration_commands():
     assert result_multiple.status_code == 200
 
     multiple_aux = result_multiple.json()['data']['allCalibrationCommand']
-    multiple_calibration_commands_0 = multiple_aux[0]
     multiple_calibration_commands_1 = multiple_aux[1]
 
-    assert multiple_calibration_commands_0['id'] == '1'
     assert multiple_calibration_commands_1['id'] == '2'
-    assert single_calibration_commands['commandChanelSpeed'] == 7
-    assert single_calibration_commands['actualSpeed'] == 0.000
-    assert single_calibration_commands['maxSpeed'] == 100.000
-    assert single_calibration_commands['chanelCommandPression'] == 8
-    assert single_calibration_commands['actualPression'] == 0.000
-    assert single_calibration_commands['maxPression'] == 30.000
+
+    assert single_calibration_commands == response
