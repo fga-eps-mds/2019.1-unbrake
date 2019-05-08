@@ -1,18 +1,12 @@
 import React from "react";
 import Enzyme, { shallow } from "enzyme";
-import toJson from "enzyme-to-json";
 import Adapter from "enzyme-adapter-react-16";
 import Login from "../components/Login";
+import ComponentTest from "./ComponentTest.test";
 
 Enzyme.configure({ adapter: new Adapter() });
 
 describe("<Login />", () => {
-  describe("render()", () => {
-    test("renders the component", () => {
-      const wrapper = shallow(<Login />);
-      const component = wrapper.dive();
-
-      expect(toJson(component)).toMatchSnapshot();
-    });
-  });
+  const wrapper = shallow(<Login />);
+  ComponentTest(wrapper);
 });
