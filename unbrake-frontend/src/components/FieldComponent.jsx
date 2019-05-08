@@ -4,27 +4,9 @@ import Grid from "@material-ui/core/Grid";
 import { withStyles } from "@material-ui/core/styles";
 import { TextField } from "redux-form-material-ui";
 import PropTypes from "prop-types";
+import { authStyles } from "./AuthForm";
 
-const padding = 10;
-
-const styles = theme => ({
-  root: {
-    flexGrow: 1
-  },
-  paper: {
-    padding: theme.spacing.unit * padding,
-    textAlign: "center",
-    color: theme.palette.text.secondary,
-    width: "600px"
-  },
-  field: {
-    paddingTop: theme.spacing.unit * padding,
-    paddingBottom: theme.spacing.unit * padding
-  },
-  grid: {
-    padding: "5px"
-  }
-});
+const styles = authStyles;
 
 const renderField = ({ input, label, type, meta: { touched, error } }) => (
   <div>
