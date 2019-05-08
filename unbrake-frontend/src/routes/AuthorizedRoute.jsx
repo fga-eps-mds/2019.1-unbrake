@@ -4,7 +4,12 @@ import { Route } from "react-router-dom";
 import { Redirect } from "react-router";
 import { connect } from "react-redux";
 
-import { isSuperuser, isAuthenticated, hasPermission } from "../auth/Auth";
+import {
+  isSuperuser,
+  isAuthenticated,
+  hasPermission,
+  verifyToken
+} from "../auth/Auth";
 import NotAuthorizedRoute from "./NotAuthorizedRoute";
 import { verifyingAuth } from "../actions/AuthActions";
 
@@ -17,14 +22,17 @@ class AuthorizedRoute extends React.PureComponent {
       dispatch
     } = this.props;
 
-    isAuthenticated().then(value => {
+    verifyToken().then(value => {
       dispatch(verifyingAuth(value));
     });
 
-    if (isSuperuser(superuser) || hasPermission(permission)) {
+    if (
+      isSuperuser(superuser, loadingVerifyingAuth) ||
+      hasPermission(permission, loadingVerifyingAuth)
+    ) {
       return <Route {...this.props} />;
     }
-    if (loadingVerifyingAuth) {
+    if (isAuthenticated(loadingVerifyingAuth)) {
       return <NotAuthorizedRoute />;
     }
     return <Redirect to="/login" />;

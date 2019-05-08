@@ -23,7 +23,7 @@ const cookies = new Cookies();
  *}
  */
 
-async function verifyToken() {
+export async function verifyToken() {
   const url = `${API_URL_GRAPHQL}?query=mutation{verifyToken(token: "${cookies.get(
     "token"
   )}"){payload}}`;
@@ -32,42 +32,37 @@ async function verifyToken() {
   return response;
 }
 
-export async function isAuthenticated() {
-  const url = `${API_URL_GRAPHQL}?query=mutation{verifyToken(token: "${cookies.get(
-    "token"
-  )}"){payload}}`;
-  const method = "POST";
-  const response = await Request(url, method);
-
-  return (
-    cookies.get("token") !== "undefined" &&
-    cookies.get("token") !== "null" &&
-    cookies.get("token") !== undefined &&
-    cookies.get("token") !== null &&
-    response.data.verifyToken !== null
-  );
+export function isAuthenticated(response) {
+  if (response.data !== undefined && response.data !== null) {
+    return (
+      cookies.get("token") !== "undefined" &&
+      cookies.get("token") !== "null" &&
+      cookies.get("token") !== undefined &&
+      cookies.get("token") !== null &&
+      response.data.verifyToken !== null
+    );
+  }
+  return false;
 }
 
-export function hasPermission(permission) {
-  /*
-   * const response = await verifyToken();
-   * const promise = Promise.resolve(response.data.verifyToken);
-   */
-  return cookies.get("token") && permission !== null;
+export function hasPermission(permission, loadingVerifyingAuth) {
+  return loadingVerifyingAuth && permission !== null;
 }
 
-async function getAuth() {
-  return (await verifyToken()).data.verifyToken !== null;
-}
+/*
+ * export function getAuth(token) {
+ *   return (await verifyToken()).data.verifyToken !== null;
+ * }
+ */
 
-const deauthenticate = () => {
+export const deauthenticate = () => {
   return cookies.remove("token");
 };
 
-export function isSuperuser(superuser) {
-  const currentuserIsSuperuser = cookies.get("is_superuser");
+export function isSuperuser(superuser, loadingVerifyingAuth) {
+  const currentuserIsSuperuser = loadingVerifyingAuth;
   if (superuser) {
-    return currentuserIsSuperuser === "true";
+    return currentuserIsSuperuser === true;
   }
   return false;
 }
@@ -76,7 +71,7 @@ export function isSuperuser(superuser) {
 export default {
   isAuthenticated,
   hasPermission,
-  getAuth,
+  // getAuth,
   deauthenticate,
   isSuperuser,
   verifyToken
