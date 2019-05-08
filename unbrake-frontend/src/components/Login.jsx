@@ -1,39 +1,19 @@
 import React from "react";
 import { reduxForm } from "redux-form";
-import Button from "@material-ui/core/Button";
-import Grid from "@material-ui/core/Grid";
 import Paper from "@material-ui/core/Paper";
 import Typography from "@material-ui/core/Typography";
 import { withStyles } from "@material-ui/core/styles";
-import PropTypes from "prop-types";
 import Cookies from "universal-cookie";
 import Request from "../utils/Request";
 import { API_URL_GRAPHQL } from "../utils/Constants";
 import history from "../utils/history";
 import FieldComponent from "./FieldComponent";
+import { renderSubmit, propTypes, authStyles } from "./AuthForm";
 
-const padding = 10;
 const baseUrl = API_URL_GRAPHQL;
 const cookie = new Cookies();
 
-const styles = theme => ({
-  root: {
-    flexGrow: 1
-  },
-  paper: {
-    padding: theme.spacing.unit * padding,
-    textAlign: "center",
-    color: theme.palette.text.secondary,
-    width: "600px"
-  },
-  field: {
-    paddingTop: theme.spacing.unit * padding,
-    paddingBottom: theme.spacing.unit * padding
-  },
-  grid: {
-    padding: "5px"
-  }
-});
+const styles = authStyles;
 
 const validate = values => {
   const errors = {};
@@ -44,35 +24,6 @@ const validate = values => {
     }
   });
   return errors;
-};
-
-const loginButtons = (classes, submitting) => {
-  return (
-    <Grid container item xs={12} alignItems="center" justify="center">
-      <Grid item xs={3} className={classes.grid}>
-        <Button
-          color="secondary"
-          fullWidth
-          variant="contained"
-          type="submit"
-          disabled={submitting}
-        >
-          Entrar
-        </Button>
-      </Grid>
-      <Grid item xs={3} className={classes.grid}>
-        <Button
-          color="secondary"
-          variant="contained"
-          disabled={submitting}
-          href="/signUp"
-          fullWidth
-        >
-          Cadastrar
-        </Button>
-      </Grid>
-    </Grid>
-  );
 };
 
 async function submit(values) {
@@ -94,7 +45,7 @@ async function submit(values) {
     // block login
   }
 }
-const loginPaper = (classes, handleSubmit, submitting) => {
+const loginPaper = (classes, handleSubmit, logging) => {
   return (
     <Paper className={classes.paper} elevation={10}>
       <Typography variant="h4" color="secondary" className={classes.grid}>
@@ -108,7 +59,7 @@ const loginPaper = (classes, handleSubmit, submitting) => {
         <FieldComponent
           data={{ name: "password", label: "Senha", type: "password" }}
         />
-        {loginButtons(classes, submitting)}
+        {renderSubmit("Entrar", classes, logging)}
         <div>
           <a href="./"> Esqueci minha senha</a>
         </div>
@@ -121,24 +72,25 @@ class Login extends React.PureComponent {
   render() {
     const { classes, handleSubmit, submitting } = this.props;
     return (
-      <Grid
-        alignItems="center"
-        justify="center"
-        style={{ minHeight: "100vh" }}
-        container
-        spacing={16}
+      <div
+        style={{
+          position: "absolute",
+          top: 0,
+          right: 0,
+          bottom: 0,
+          left: 0,
+          alignItems: "center",
+          justifyContent: "center",
+          display: "flex"
+        }}
       >
         {loginPaper(classes, handleSubmit, submitting)}
-      </Grid>
+      </div>
     );
   }
 }
 
-Login.propTypes = {
-  classes: PropTypes.objectOf(PropTypes.string).isRequired,
-  handleSubmit: PropTypes.func.isRequired,
-  submitting: PropTypes.bool.isRequired
-};
+Login.propTypes = propTypes;
 const LoginForm = reduxForm({
   form: "login",
   validate
