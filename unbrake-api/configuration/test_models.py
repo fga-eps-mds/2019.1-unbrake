@@ -36,6 +36,18 @@ def test_config(parameters):
     temperature_aux = parameters[8]
     time_aux = parameters[9]
 
+    response = {'number': number_aux,
+                'timeBetweenCycles': time_between_cycles_aux,
+                'upperLimit': upper_limit_aux,
+                'inferiorLimit': inferior_limit_aux,
+                'upperTime': upper_time_aux,
+                'inferiorTime': inferior_time_aux,
+                'disableShutdown': disable_shutdown_aux,
+                'enableOutput': enable_output_aux,
+                'temperature': temperature_aux,
+                'time': time_aux
+                }
+
     Config(
         number=number_aux,
         time_between_cycles=time_between_cycles_aux,
@@ -57,16 +69,8 @@ def test_config(parameters):
 
     assert result.status_code == 200
     cycles_config = result.json()['data']['config']
-    assert cycles_config['number'] == number_aux
-    assert cycles_config['timeBetweenCycles'] == time_between_cycles_aux
-    assert cycles_config['upperLimit'] == upper_limit_aux
-    assert cycles_config['inferiorLimit'] == inferior_limit_aux
-    assert cycles_config['upperTime'] == upper_time_aux
-    assert cycles_config['inferiorTime'] == inferior_time_aux
-    assert cycles_config['disableShutdown'] == disable_shutdown_aux
-    assert cycles_config['enableOutput'] == enable_output_aux
-    assert cycles_config['temperature'] == temperature_aux
-    assert cycles_config['time'] == time_aux
+
+    assert cycles_config == response
 
 
 @pytest.mark.django_db

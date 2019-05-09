@@ -26,7 +26,7 @@ import {
   ShowChart
 } from "@material-ui/icons";
 import { BrowserRouter, Route } from "react-router-dom";
-import Auth from "../auth/Auth";
+import { connect } from "react-redux";
 
 import Configuration from "./Configuration";
 import Calibration from "./Calibration";
@@ -135,7 +135,9 @@ const SideBarMenu = class extends React.PureComponent {
   constructor(props) {
     super(props);
     this.state = {
-      open: false
+      open: false,
+      authenticated: false,
+      loading: true
     };
     this.handleDrawerOpen = () => {
       this.setState({ open: true });
@@ -146,7 +148,7 @@ const SideBarMenu = class extends React.PureComponent {
   }
 
   render() {
-    const { classes, theme } = this.props;
+    const { classes, theme, loadingVerifyingAuth } = this.props;
     const { open } = this.state;
 
     return (
@@ -154,7 +156,7 @@ const SideBarMenu = class extends React.PureComponent {
         <Route
           render={({ location, history }) => (
             <React.Fragment>
-              {Auth.isAuthenticated() && (
+              {loadingVerifyingAuth && (
                 <div className={classes.root}>
                   <CssBaseline />
                   <AppBar
@@ -211,7 +213,8 @@ SideBarMenu.propTypes = {
     PropTypes.func,
     PropTypes.string,
     PropTypes.object
-  ]).isRequired
+  ]).isRequired,
+  loadingVerifyingAuth: PropTypes.bool.isRequired
 };
 const appBar = theme => ({
   backgroundColor: "#8B0000",
@@ -223,6 +226,10 @@ const appBarShift = theme => ({
   marginLeft: drawerWidth,
   width: `calc(100% - ${drawerWidth}px)`,
   transition: appBarTransition(theme, theme.transitions.duration.enteringScreen)
+});
+
+const mapStateToProps = state => ({
+  loadingVerifyingAuth: state.authReducer.loadingVerifyingAuth
 });
 
 const styles = theme => ({
@@ -274,4 +281,6 @@ const styles = theme => ({
   }
 });
 
-export default withStyles(styles, { withTheme: true })(SideBarMenu);
+export default connect(mapStateToProps)(
+  withStyles(styles, { withTheme: true })(SideBarMenu)
+);
