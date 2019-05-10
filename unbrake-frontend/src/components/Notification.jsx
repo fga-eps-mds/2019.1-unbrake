@@ -78,6 +78,7 @@ class NotificationContainer extends React.Component {
   constructor(props) {
     super(props);
     this.state = { open: false, message: "", level: "" };
+    this.handleClose = this.handleClose.bind(this);
   }
 
   componentWillReceiveProps(newProps) {
