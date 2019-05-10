@@ -17,9 +17,13 @@ services:
     volumes:
       - "./nginx.frontend.conf:/etc/nginx/nginx.conf"
       - "./logs/nginx:/var/log/nginx_frontend"
+      - "./https_certificate.crt:/etc/nginx/ssl/https_certificate.crt"
     restart: unless-stopped
     ports:
       - "80:80"
+      - "443:443"
+    secrets:
+      - https_key
 
   db:
     image: 'postgres:11.2-alpine'
@@ -53,6 +57,8 @@ secrets:
     file: secrets/API_DJANGO_SECRET_KEY
   postgres_password:
     file: secrets/DB_PASSWORD
+  https_key:
+    file: secrets/HTTPS_KEY
 
 volumes:
   postgres_data:
