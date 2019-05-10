@@ -59,7 +59,7 @@ before_install:
   - openssl aes-256-cbc -K $encrypted_30c4033c2e8d_key -iv $encrypted_30c4033c2e8d_iv -in unbrake-api/secrets/HTTPS_KEY.enc -out unbrake-api/secrets/HTTPS_KEY -d
 
   # Deploy Key
-  - openssl aes-256-cbc -K $encrypted_e249d61d45ce_key -iv $encrypted_e249d61d45ce_iv -in production/deploy_key.enc -out production/deploy_key -d
+  - openssl aes-256-cbc -K $encrypted_e249d61d45ce_key -iv $encrypted_e249d61d45ce_iv -in deploy/deploy_key.enc -out deploy/deploy_key -d
 
 
 before_script:
@@ -142,15 +142,15 @@ jobs:
       if: branch = devel AND type != pull_request
       script:
         # Copy secrets to produciton folder
-        - cp unbrake-api/secrets/* production/secrets/
+        - cp unbrake-api/secrets/* deploy/secrets/
 
         # Deploy key to travis environment
         - eval "$(ssh-agent -s)"
-        - chmod 600 production/deploy_key
-        - ssh-add production/deploy_key
+        - chmod 600 deploy/deploy_key
+        - ssh-add deploy/deploy_key
 
         # Deploy to staging environment
-        - bash scripts/deploy "$STAGING_HOST" "${TRAVIS_BRANCH}"
+        - (cd deploy && bash scripts/deploy "$STAGING_HOST" staging)
 
     - stage: "deploy to production environment"
       name: "Deploy to production environment"
@@ -170,13 +170,10 @@ jobs:
         - docker push "unbrake/api:${DOCKER_PRODUCTION_TAG}" 
         - docker logout
 
-        # Copy secrets to produciton folder
-        - cp unbrake-api/secrets/* production/secrets/
-
         # Deploy key to travis environment
         - eval "$(ssh-agent -s)"
-        - chmod 600 production/deploy_key
-        - ssh-add production/deploy_key
+        - chmod 600 deploy/deploy_key
+        - ssh-add deploy/deploy_key
 
         # Deploy to staging environment
-        - bash scripts/deploy "$PRODUCTION_HOST" "${TRAVIS_BRANCH}"
+        - (cd deploy && bash scripts/deploy "$PRODUCTION_HOST" prod)
