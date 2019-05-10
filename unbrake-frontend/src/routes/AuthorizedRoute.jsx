@@ -2,17 +2,37 @@ import React from "react";
 import PropTypes from "prop-types";
 import { Route } from "react-router-dom";
 import { Redirect } from "react-router";
-import Auth from "../auth/Auth";
+import { connect } from "react-redux";
+
+import {
+  isSuperuser,
+  isAuthenticated,
+  hasPermission,
+  verifyToken
+} from "../auth/Auth";
 import NotAuthorizedRoute from "./NotAuthorizedRoute";
+import { verifyingAuth } from "../actions/AuthActions";
 
 class AuthorizedRoute extends React.PureComponent {
   render() {
-    const { superuser, permission } = this.props;
+    const {
+      superuser,
+      permission,
+      loadingVerifyingAuth,
+      dispatch
+    } = this.props;
 
-    if (Auth.isSuperuser(superuser) || Auth.hasPermission(permission)) {
+    verifyToken().then(value => {
+      dispatch(verifyingAuth(value));
+    });
+
+    if (
+      isSuperuser(superuser, loadingVerifyingAuth) ||
+      hasPermission(permission, loadingVerifyingAuth)
+    ) {
       return <Route {...this.props} />;
     }
-    if (Auth.isAuthenticated()) {
+    if (isAuthenticated(loadingVerifyingAuth)) {
       return <NotAuthorizedRoute />;
     }
     return <Redirect to="/login" />;
@@ -21,12 +41,19 @@ class AuthorizedRoute extends React.PureComponent {
 
 AuthorizedRoute.propTypes = {
   superuser: PropTypes.bool,
-  permission: PropTypes.string
+  permission: PropTypes.string,
+  loadingVerifyingAuth: PropTypes.bool,
+  dispatch: PropTypes.func.isRequired
 };
 
 AuthorizedRoute.defaultProps = {
   superuser: false,
-  permission: ""
+  permission: "",
+  loadingVerifyingAuth: false
 };
 
-export default AuthorizedRoute;
+const mapStateToProps = state => ({
+  loadingVerifyingAuth: state.authReducer.loadingVerifyingAuth
+});
+
+export default connect(mapStateToProps)(AuthorizedRoute);
