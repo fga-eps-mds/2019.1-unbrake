@@ -93,7 +93,7 @@ class Configuration extends React.Component {
         justify="center"
         style={{ minHeight: "100vh" }}
         container
-        spacing={12}
+        spacing={40}
       >
         <form>
           {this.uploadField("calibration")}

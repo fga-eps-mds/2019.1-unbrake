@@ -92,7 +92,7 @@ const rowsFields = (classes, vector, handleChange) => {
 const fieldsConfigurations = (classes, vector, handleChange) => {
   const rows = vector.map(value => {
     return (
-      <Grid container item xs={24} alignItems="center" justify="center">
+      <Grid container item xs={12} alignItems="center" justify="center">
         {rowsFields(classes, value, handleChange)}
       </Grid>
     );
@@ -113,7 +113,7 @@ const checkBox = (classes, type) => {
       break;
   }
   return (
-    <Grid item xs={3} className={classes.gridButton} justify="center">
+    <Grid container item xs={3} className={classes.gridButton} justify="center">
       <FormControlLabel
         control={
           <Field component={Checkbox} name={type.name} value={type.value} />
@@ -126,7 +126,7 @@ const checkBox = (classes, type) => {
 
 const Buttons = (classes, submitting) => {
   return (
-    <Grid item xs={3} className={classes.grid} justify="right">
+    <Grid container item xs={3} className={classes.grid}>
       <Button
         type="submit"
         color="secondary"
