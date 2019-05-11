@@ -25,11 +25,11 @@ class Configuration extends React.Component {
           LWT: "",
           NOS: "",
           PTD: "",
-          TAO: Boolean,
+          TAO: false,
           TAS: "",
           TAT: "",
           TBS: "",
-          TMO: Boolean,
+          TMO: false,
           USL: "",
           UWT: ""
         }
@@ -95,11 +95,9 @@ class Configuration extends React.Component {
         container
         spacing={40}
       >
-        <form>
-          {this.uploadField("calibration")}
-          {this.uploadField("configuration")}
-          <ConfigurationForm configuration={configuration} />
-        </form>
+        {this.uploadField("calibration")}
+        {this.uploadField("configuration")}
+        <ConfigurationForm configuration={configuration} />
       </Grid>
     );
   }

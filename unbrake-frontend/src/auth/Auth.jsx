@@ -39,7 +39,7 @@ export function isAuthenticated(response) {
       cookies.get("token") !== "null" &&
       cookies.get("token") !== undefined &&
       cookies.get("token") !== null &&
-      response.data.verifyToken !== null
+      response !== false
     );
   }
   return false;
