@@ -12,88 +12,86 @@ exports[`<Configuration /> render() renders the component 1`] = `
     }
   }
 >
-  <form>
+  <WithStyles(Grid)
+    alignItems="center"
+    container={true}
+    item={true}
+    justify="center"
+    xs={10}
+  >
     <WithStyles(Grid)
-      alignItems="center"
-      container={true}
+      className="Configuration-title-1"
       item={true}
-      justify="center"
-      xs={10}
+      xs={4}
     >
-      <WithStyles(Grid)
-        className="Configuration-title-1"
-        item={true}
-        xs={4}
+      <h2
+        justify="left"
       >
-        <h2
-          justify="left"
-        >
-          Upload arquivo de 
-          Calibração
-        </h2>
-      </WithStyles(Grid)>
-      <WithStyles(Grid)
-        className="Configuration-grid-2"
-        item={true}
-        xs={4}
-      >
-        <WithStyles(Input)
-          name="calibration"
-          onChange={[Function]}
-          type="file"
-        />
-      </WithStyles(Grid)>
+        Upload arquivo de 
+        Calibração
+      </h2>
     </WithStyles(Grid)>
     <WithStyles(Grid)
-      alignItems="center"
-      container={true}
+      className="Configuration-grid-2"
       item={true}
-      justify="center"
-      xs={10}
+      xs={4}
     >
-      <WithStyles(Grid)
-        className="Configuration-title-1"
-        item={true}
-        xs={4}
-      >
-        <h2
-          justify="left"
-        >
-          Upload arquivo de 
-          Configuração
-        </h2>
-      </WithStyles(Grid)>
-      <WithStyles(Grid)
-        className="Configuration-grid-2"
-        item={true}
-        xs={4}
-      >
-        <WithStyles(Input)
-          name="configuration"
-          onChange={[Function]}
-          type="file"
-        />
-      </WithStyles(Grid)>
+      <WithStyles(Input)
+        name="calibration"
+        onChange={[Function]}
+        type="file"
+      />
     </WithStyles(Grid)>
-    <WithStyles(ReduxForm)
-      configuration={
-        Object {
-          "CONFIG_ENSAIO": Object {
-            "LSL": "",
-            "LWT": "",
-            "NOS": "",
-            "PTD": "",
-            "TAO": [Function],
-            "TAS": "",
-            "TAT": "",
-            "TBS": "",
-            "TMO": [Function],
-            "USL": "",
-            "UWT": "",
-          },
-        }
+  </WithStyles(Grid)>
+  <WithStyles(Grid)
+    alignItems="center"
+    container={true}
+    item={true}
+    justify="center"
+    xs={10}
+  >
+    <WithStyles(Grid)
+      className="Configuration-title-1"
+      item={true}
+      xs={4}
+    >
+      <h2
+        justify="left"
+      >
+        Upload arquivo de 
+        Configuração
+      </h2>
+    </WithStyles(Grid)>
+    <WithStyles(Grid)
+      className="Configuration-grid-2"
+      item={true}
+      xs={4}
+    >
+      <WithStyles(Input)
+        name="configuration"
+        onChange={[Function]}
+        type="file"
+      />
+    </WithStyles(Grid)>
+  </WithStyles(Grid)>
+  <WithStyles(ReduxForm)
+    configuration={
+      Object {
+        "CONFIG_ENSAIO": Object {
+          "LSL": "",
+          "LWT": "",
+          "NOS": "",
+          "PTD": "",
+          "TAO": false,
+          "TAS": "",
+          "TAT": "",
+          "TBS": "",
+          "TMO": false,
+          "USL": "",
+          "UWT": "",
+        },
       }
-    />
-  </form>
+    }
+  />
 </WithStyles(Grid)>
 `;
