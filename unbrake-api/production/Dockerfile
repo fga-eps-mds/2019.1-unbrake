@@ -27,6 +27,6 @@ COPY . .
 RUN apk add --no-cache libpq \
 	&& rm -rf secrets
 
-EXPOSE 8000
+EXPOSE 8080
 
 CMD ["/app/api/production/entrypoint"]

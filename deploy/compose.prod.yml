@@ -1,0 +1,30 @@
+# docker-compose for production
+
+version: '3.7'
+
+services:
+  api:
+    secrets:
+      - api-django-secret-key
+      - postgres_password
+
+  frontend:
+    volumes:
+      - "./frontend/nginx.prod.conf:/etc/nginx/nginx.conf"
+      - "./https_certificate.crt:/etc/nginx/ssl/https_certificate.crt"
+    ports:
+      - "443:443"
+    secrets:
+      - https_key
+
+  api_server:
+    volumes:
+      - "./api/nginx.prod.conf:/etc/nginx/nginx.conf"
+      - "./logs/nginx:/var/log/nginx_api"
+
+secrets:
+  https_key:
+    file: secrets/HTTPS_KEY
+
+volumes:
+  postgres_data:

@@ -33,7 +33,7 @@
     "react-chartjs-2": "^2.7.6",
     "socket.io-client": "^2.2.0"
   },
-  "proxy": "http://localhost:8000/",
+  "proxy": "http://localhost:8080/",
   "scripts": {
     "start": "react-scripts start",
     "build": "react-scripts build",
