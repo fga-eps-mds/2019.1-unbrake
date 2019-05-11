@@ -89,8 +89,6 @@ def test_get_all_users(username1, username2, password):
         password +
         '"){user{id, username}}}')
     assert result1.status_code == 200
-    user1 = result1.json()['data']['createUser']['user']
-    assert user1['username'] == username1
 
     result2 = client.post(
         '/graphql?query=mutation{createUser(username: "' +
@@ -99,8 +97,6 @@ def test_get_all_users(username1, username2, password):
         password +
         '"){user{id, username}}}')
     assert result2.status_code == 200
-    user2 = result2.json()['data']['createUser']['user']
-    assert user2['username'] == username2
 
     all_users = client.get(
         '/graphql?query=query{users{id, username}}'

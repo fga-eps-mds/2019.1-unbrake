@@ -1,0 +1,32 @@
+#!/bin/bash
+
+# Example of use: cd deploy && ./scripts/deploy unbrake.ml prod
+
+REMOTE_HOST="$1"
+ENVIRONMENT="$2"
+
+copy_module_files(){
+    mkdir -p api frontend secrets
+
+    cp ../unbrake-api/production/* api/
+    cp ../unbrake-frontend/production/* frontend/
+
+    cp ../unbrake-api/secrets/* secrets/
+    cp ../unbrake-frontend/secrets/* secrets/
+    rm secrets/*.enc
+}
+
+if [ $# != 2 ]; then
+    echo -e "Wrong usage! Usage syntax: ./scripts/deploy [domain] [prod|staging]"
+    echo -e "Usage example: ./scripts/deploy unbrake.ml prod"
+    exit 1
+fi
+
+copy_module_files
+
+echo -e "Copying secrets to ${REMOTE_HOST}..."
+scp -r secrets api frontend root@${REMOTE_HOST}:/root/
+scp -r compose.* root@${REMOTE_HOST}:/root/
+
+echo -e "\nDeploying to ${REMOTE_HOST}..."
+ssh root@${REMOTE_HOST} ENVIRONMENT=${ENVIRONMENT} bash < scripts/deploy_remote.sh

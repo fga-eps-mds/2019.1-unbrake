@@ -25,11 +25,11 @@ class Configuration extends React.Component {
           LWT: "",
           NOS: "",
           PTD: "",
-          TAO: Boolean,
+          TAO: false,
           TAS: "",
           TAT: "",
           TBS: "",
-          TMO: Boolean,
+          TMO: false,
           USL: "",
           UWT: ""
         }
@@ -37,6 +37,30 @@ class Configuration extends React.Component {
     };
 
     this.fileUpload = this.fileUpload.bind(this);
+  }
+
+  uploadField(field) {
+    const { classes } = this.props;
+
+    let archive;
+
+    if (field === "calibration") archive = "Calibração";
+    else archive = "Configuração";
+
+    return (
+      <Grid container item xs={10} alignItems="center" justify="center">
+        <Grid item xs={4} className={classes.title}>
+          <h2 justify="left">Upload arquivo de {archive}</h2>
+        </Grid>
+        <Grid item xs={4} className={classes.grid}>
+          <Input
+            type="file"
+            name={field}
+            onChange={e => this.fileUpload(e.target.files[0], field)}
+          />
+        </Grid>
+      </Grid>
+    );
   }
 
   fileUpload(file, name) {
@@ -62,7 +86,6 @@ class Configuration extends React.Component {
 
   render() {
     const { configuration } = this.state;
-    const { classes } = this.props;
 
     return (
       <Grid
@@ -70,40 +93,11 @@ class Configuration extends React.Component {
         justify="center"
         style={{ minHeight: "100vh" }}
         container
-        spacing={12}
+        spacing={40}
       >
-        <form>
-          <Grid container item xs={10} alignItems="center" justify="center">
-            <Grid item xs={4} className={classes.title}>
-              <h2 justify="left">Upload arquivo de Calibração</h2>
-            </Grid>
-            <Grid item xs={4} className={classes.grid}>
-              <Input
-                type="file"
-                name="configuration"
-                onChange={e =>
-                  this.fileUpload(e.target.files[0], "calibration")
-                }
-              />
-            </Grid>
-          </Grid>
-          <Grid container item xs={10} alignItems="center" justify="center">
-            <Grid item xs={4} className={classes.title}>
-              <h2>Upload arquivo de Configuração</h2>
-            </Grid>
-            <Grid item xs={4} className={classes.grid}>
-              <Input
-                type="file"
-                name="configuration"
-                onChange={e =>
-                  this.fileUpload(e.target.files[0], "configuration")
-                }
-              />
-            </Grid>
-          </Grid>
-
-          <ConfigurationForm configuration={configuration} />
-        </form>
+        {this.uploadField("calibration")}
+        {this.uploadField("configuration")}
+        <ConfigurationForm configuration={configuration} />
       </Grid>
     );
   }

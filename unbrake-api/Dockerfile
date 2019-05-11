@@ -18,7 +18,7 @@ RUN set +x \
   && ln -s "$PWD/scripts/check" /usr/local/bin \
   && rm -rf secrets
 
-EXPOSE 8000
+EXPOSE 8080
 
 ENTRYPOINT ["/app/api/scripts/entrypoint.dev"]
-CMD ["runserver", "0.0.0.0:8000"]
+CMD ["runserver", "0.0.0.0:8080"]

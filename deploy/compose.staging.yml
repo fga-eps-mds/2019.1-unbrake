@@ -1,0 +1,17 @@
+# docker-compose for staging
+
+version: '3.7'
+
+services:
+  api:
+    image: 'unbrake/api:latest-staging'
+
+  frontend:
+    image: 'unbrake/frontend:latest-staging'
+    volumes:
+      - "./frontend/nginx.staging.conf:/etc/nginx/nginx.conf"
+
+  api_server:
+    volumes:
+      - "./api/nginx.staging.conf:/etc/nginx/nginx.conf"
+      - "./logs/nginx:/var/log/nginx_api"

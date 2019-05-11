@@ -1,10 +1,10 @@
-# docker-compose for production
+# base configuration docker-compose file
 
 version: '3.7'
 
 services:
   api:
-    image: 'unbrake/api:latest-staging'
+    image: 'unbrake/api:latest'
     depends_on:
       - db
     restart: unless-stopped
@@ -13,9 +13,8 @@ services:
       - postgres_password
 
   frontend:
-    image: 'unbrake/frontend:latest-staging'
+    image: 'unbrake/frontend:latest'
     volumes:
-      - "./nginx.frontend.conf:/etc/nginx/nginx.conf"
       - "./logs/nginx:/var/log/nginx_frontend"
     restart: unless-stopped
     ports:
@@ -40,10 +39,9 @@ services:
     image: 'nginx:1.15.12-alpine'
     container_name: 'api-server'
     volumes:
-      - "./nginx.api.conf:/etc/nginx/nginx.conf"
       - "./logs/nginx:/var/log/nginx_api"
     ports:
-      - "8000:80"
+      - "8080:80"
     depends_on:
       - api
     restart: unless-stopped

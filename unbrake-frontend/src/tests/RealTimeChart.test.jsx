@@ -1,21 +1,13 @@
-// react-test-render
-
 import React from "react";
 import Enzyme, { shallow } from "enzyme";
-import toJson from "enzyme-to-json";
 import Adapter from "enzyme-adapter-react-16";
 
 import RealTimeChart from "../components/RealTimeChart";
+import ComponentTest from "./ComponentTest";
 
 Enzyme.configure({ adapter: new Adapter() });
 
 describe("<RealTimeChart />", () => {
-  describe("render()", () => {
-    test("renders the component", () => {
-      const wrapper = shallow(<RealTimeChart />);
-      const component = wrapper.dive();
-
-      expect(toJson(component)).toMatchSnapshot();
-    });
-  });
+  const wrapper = shallow(<RealTimeChart />);
+  ComponentTest(wrapper);
 });
