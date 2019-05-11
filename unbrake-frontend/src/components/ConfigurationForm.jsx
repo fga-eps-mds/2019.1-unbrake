@@ -69,7 +69,7 @@ const rowsFields = (classes, vector, handleChange) => {
         break;
     }
     return (
-      <Grid item xs={3} className={classes.grid}>
+      <Grid key={value} item xs={3} className={classes.grid}>
         <Field
           id={nameField}
           component={TextField}
@@ -92,7 +92,14 @@ const rowsFields = (classes, vector, handleChange) => {
 const fieldsConfigurations = (classes, vector, handleChange) => {
   const rows = vector.map(value => {
     return (
-      <Grid container item xs={24} alignItems="center" justify="center">
+      <Grid
+        key={value}
+        container
+        item
+        xs={12}
+        alignItems="center"
+        justify="center"
+      >
         {rowsFields(classes, value, handleChange)}
       </Grid>
     );
@@ -113,7 +120,7 @@ const checkBox = (classes, type) => {
       break;
   }
   return (
-    <Grid item xs={3} className={classes.gridButton} justify="center">
+    <Grid container item xs={3} className={classes.gridButton} justify="center">
       <FormControlLabel
         control={
           <Field component={Checkbox} name={type.name} value={type.value} />
@@ -126,7 +133,7 @@ const checkBox = (classes, type) => {
 
 const Buttons = (classes, submitting) => {
   return (
-    <Grid item xs={3} className={classes.grid} justify="right">
+    <Grid container item xs={3} className={classes.grid}>
       <Button
         type="submit"
         color="secondary"
@@ -172,7 +179,14 @@ const CommunGrid = (classes, type, handleChange) => {
 const otherField = (classes, vector, handleChange) => {
   const fields = vector.map(value => {
     return (
-      <Grid container item xs={12} alignItems="center" justify="center">
+      <Grid
+        key={value}
+        container
+        item
+        xs={12}
+        alignItems="center"
+        justify="center"
+      >
         {checkBox(classes, value[0])}
         {CommunGrid(classes, value[1], handleChange)}
       </Grid>
@@ -230,7 +244,6 @@ class ConfigurationForm extends React.Component {
 
   shouldComponentUpdate(nextProps) {
     const { configuration } = this.props;
-
     if (configuration !== nextProps.configuration) {
       const rightConfig = Object.assign({}, nextProps.configuration);
       rightConfig.CONFIG_ENSAIO.TMO =
@@ -291,7 +304,7 @@ ConfigurationForm.propTypes = {
   classes: PropTypes.objectOf(PropTypes.string).isRequired,
   handleSubmit: PropTypes.func.isRequired,
   submitting: PropTypes.bool.isRequired,
-  configuration: PropTypes.string.isRequired,
+  configuration: PropTypes.oneOfType([PropTypes.object]).isRequired,
   dispatch: PropTypes.func.isRequired
 };
 
