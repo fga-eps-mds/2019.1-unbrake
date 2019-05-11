@@ -10,4 +10,4 @@ echo "db initialized!"
 ./manage.py makemigrations
 ./manage.py migrate --no-input
 
-exec gunicorn unbrake_api.wsgi:application --bind 0.0.0.0:8000
+exec gunicorn unbrake_api.wsgi:application --bind 0.0.0.0:8080

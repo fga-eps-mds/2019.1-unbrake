@@ -5,6 +5,11 @@
 */secrets/*
 !*/secrets/*.enc
 
+# Avoid replicating files at deploy folder
+deploy/api
+deploy/frontend
+deploy/secrets
+
 ### Node ###
 # Logs
 logs
