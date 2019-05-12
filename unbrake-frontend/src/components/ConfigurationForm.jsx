@@ -36,46 +36,49 @@ const styles = theme => ({
 });
 
 let nameField;
-let labelField;
 
+const fieldsLabels = {
+  NOS: "Numero de Snubs",
+  USL: "Limite Superior (km/h)",
+  UWT: "Tempo de Espera (s)",
+  TBS: "Tempo entre ciclos",
+  LSL: "Limite inferior (km/h)",
+  LWT: "Tempo de espera (s)"
+};
 const rowsFields = (classes, vector, handleChange) => {
   const fields = vector.map(value => {
     switch (value.name) {
       case "NOS":
         nameField = "NOS";
-        labelField = "Numero de Snubs";
         break;
       case "USL":
         nameField = "USL";
-        labelField = "Limite Superior (km/h)";
         break;
       case "UWT":
         nameField = "UWT";
-        labelField = "Tempo de Espera (s)";
         break;
       case "TBS":
         nameField = "TBS";
-        labelField = "Tempo entre ciclos";
         break;
       case "LSL":
         nameField = "LSL";
-        labelField = "Limite inferior (km/h)";
         break;
       case "LWT":
         nameField = "LWT";
-        labelField = "Tempo de espera (s)";
         break;
       default:
         break;
     }
     return (
-      <Grid key={value} item xs={3} className={classes.grid}>
+      <Grid key={`row${nameField}`} item xs={3} className={classes.grid}>
         <Field
           id={nameField}
           component={TextField}
-          label={labelField}
+          label={fieldsLabels[nameField]}
           value={value.value}
-          onChange={handleChange(nameField)}
+          onChange={e => {
+            handleChange(nameField, e);
+          }}
           type="number"
           name={nameField}
           validate={limits}
@@ -93,7 +96,7 @@ const fieldsConfigurations = (classes, vector, handleChange) => {
   const rows = vector.map(value => {
     return (
       <Grid
-        key={value}
+        key={`field${value[0].name}`}
         container
         item
         xs={12}
@@ -165,7 +168,9 @@ const CommunGrid = (classes, type, handleChange) => {
         component={TextField}
         label={label}
         value={type.value}
-        onChange={handleChange(type.name)}
+        onChange={e => {
+          handleChange(type.name, e);
+        }}
         type="number"
         name={type.name}
         className={classes.textField}
@@ -180,7 +185,7 @@ const otherField = (classes, vector, handleChange) => {
   const fields = vector.map(value => {
     return (
       <Grid
-        key={value}
+        key={`other${value[1].name}`}
         container
         item
         xs={12}
@@ -196,15 +201,9 @@ const otherField = (classes, vector, handleChange) => {
 };
 
 async function submit(values, state) {
-  const url = `${API_URL_GRAPHQL}?query=mutation{createConfig(number:${
-    state.NOS
-  },timeBetweenCycles:${state.TBS},upperLimit:${state.USL},inferiorLimit:${
-    state.LSL
-  },upperTime:${state.UWT},inferiorTime:${state.LWT},disableShutdown:${
-    state.TMO
-  },enableOutput:${state.TAO},temperature:${state.TAS},time:${
-    state.TAT
-  }){config{number, timeBetweenCycles,upperLimit,inferiorLimit}}}`;
+  const { configuration } = state;
+  const { TAS, TAT, TMO, TAO, UWT, NOS, LSL, USL, TBS, LWT } = configuration;
+  const url = `${API_URL_GRAPHQL}?query=mutation{createConfig(number:${NOS},timeBetweenCycles:${TBS},upperLimit:${USL},inferiorLimit:${LSL},upperTime:${UWT},inferiorTime:${LWT},disableShutdown:${TMO},enableOutput:${TAO},temperature:${TAS},time:${TAT}){config{number, timeBetweenCycles,upperLimit,inferiorLimit}}}`;
 
   const method = "POST";
 
@@ -227,19 +226,10 @@ class ConfigurationForm extends React.Component {
         TAS: "",
         TAT: "",
         TMO: false,
-        TAO: ""
+        TAO: false
       }
     };
-    this.handleChange = name => event => {
-      const configuration = {};
-      configuration[name] = event.target.value;
-      this.setState(prevState => ({
-        configuration: { ...prevState.configuration, ...configuration }
-      }));
-    };
-    this.checkHandleChange = name => event => {
-      this.setState({ configuration: { [name]: event.target.checked } });
-    };
+    this.handleChange = this.handleChange.bind(this);
   }
 
   shouldComponentUpdate(nextProps) {
@@ -248,6 +238,8 @@ class ConfigurationForm extends React.Component {
       const rightConfig = Object.assign({}, nextProps.configuration);
       rightConfig.CONFIG_ENSAIO.TMO =
         nextProps.configuration.CONFIG_ENSAIO.TMO !== "FALSE";
+      rightConfig.CONFIG_ENSAIO.TAO =
+        nextProps.configuration.CONFIG_ENSAIO.TAO !== "FALSE";
 
       const { dispatch } = this.props;
       dispatch(initialize("configuration", rightConfig.CONFIG_ENSAIO));
@@ -255,6 +247,14 @@ class ConfigurationForm extends React.Component {
       return true;
     }
     return false;
+  }
+
+  handleChange(name, event) {
+    const configuration = {};
+    configuration[name] = event.target.value;
+    this.setState(prevState => ({
+      configuration: { ...prevState.configuration, ...configuration }
+    }));
   }
 
   render() {
@@ -280,7 +280,7 @@ class ConfigurationForm extends React.Component {
       { name: "TAO", value: TAO },
       { name: "TAT", value: TAT }
     ];
-    const othersFilds = [oneFields, twoFields];
+    const othersFields = [oneFields, twoFields];
 
     return (
       <form
@@ -291,7 +291,7 @@ class ConfigurationForm extends React.Component {
         })}
       >
         {fieldsConfigurations(classes, rows, this.handleChange)}
-        {otherField(classes, othersFilds, this.handleChange)}
+        {otherField(classes, othersFields, this.handleChange)}
         <Grid container item xs={12} alignItems="center" justify="center">
           {Buttons(classes, submitting)}
         </Grid>
