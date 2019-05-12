@@ -20,7 +20,7 @@ const validate = values => {
   const requiredFields = ["username", "password"];
   requiredFields.forEach(field => {
     if (!values[field]) {
-      errors[field] = "Required";
+      errors[field] = "Campo obrigatório";
     }
   });
   return errors;

@@ -5,6 +5,7 @@ import { TextField, Checkbox } from "redux-form-material-ui";
 import { withStyles, Button, FormControlLabel, Grid } from "@material-ui/core";
 import Request from "../utils/Request";
 import { API_URL_GRAPHQL } from "../utils/Constants";
+import styles from "./ConfigurationStyles";
 
 const limits = (value, allValues) => {
   return parseInt(allValues.LSL, 10) >= parseInt(allValues.USL, 10)
@@ -12,28 +13,25 @@ const limits = (value, allValues) => {
     : undefined;
 };
 
-const styles = theme => ({
-  container: {
-    display: "flex",
-    flexWrap: "wrap"
-  },
-  textField: {
-    marginLeft: theme.spacing.unit,
-    marginRight: theme.spacing.unit
-  },
-  dense: {
-    marginTop: 16
-  },
-  menu: {
-    width: 200
-  },
-  grid: {
-    padding: "px"
-  },
-  gridButton: {
-    paddingLeft: theme.spacing.unit + theme.spacing.unit
-  }
-});
+const validate = values => {
+  const errors = {};
+  const requiredFields = [
+    "TAS",
+    "TAT",
+    "UWT",
+    "NOS",
+    "LSL",
+    "USL",
+    "TBS",
+    "LWT"
+  ];
+  requiredFields.forEach(field => {
+    if (!values[field]) {
+      errors[field] = "Campo obrigatório";
+    }
+  });
+  return errors;
+};
 
 let nameField;
 
@@ -45,6 +43,7 @@ const fieldsLabels = {
   LSL: "Limite inferior (km/h)",
   LWT: "Tempo de espera (s)"
 };
+
 const rowsFields = (classes, vector, handleChange) => {
   const fields = vector.map(value => {
     switch (value.name) {
@@ -75,13 +74,10 @@ const rowsFields = (classes, vector, handleChange) => {
           id={nameField}
           component={TextField}
           label={fieldsLabels[nameField]}
-          value={value.value}
-          onChange={e => {
-            handleChange(nameField, e);
-          }}
+          onChange={handleChange}
           type="number"
           name={nameField}
-          validate={limits}
+          validate={nameField === "USL" || nameField === "LSL" ? limits : []}
           className={classes.textField}
           margin="normal"
           variant="outlined"
@@ -168,9 +164,7 @@ const CommunGrid = (classes, type, handleChange) => {
         component={TextField}
         label={label}
         value={type.value}
-        onChange={e => {
-          handleChange(type.name, e);
-        }}
+        onChange={handleChange}
         type="number"
         name={type.name}
         className={classes.textField}
@@ -249,9 +243,10 @@ class ConfigurationForm extends React.Component {
     return false;
   }
 
-  handleChange(name, event) {
+  handleChange(event) {
     const configuration = {};
-    configuration[name] = event.target.value;
+    const { name, value } = event.target;
+    configuration[name] = value;
     this.setState(prevState => ({
       configuration: { ...prevState.configuration, ...configuration }
     }));
@@ -309,7 +304,8 @@ ConfigurationForm.propTypes = {
 };
 
 const Configuration = reduxForm({
-  form: "configuration"
+  form: "configuration",
+  validate
 })(ConfigurationForm);
 
 export default withStyles(styles)(Configuration);
