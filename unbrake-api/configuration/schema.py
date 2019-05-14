@@ -22,6 +22,7 @@ class ConfigType(DjangoObjectType):
 
 class CreateConfig(graphene.Mutation):
     # pylint: disable =  unused-argument, no-self-use, too-many-arguments
+    # pylint: disable = too-many-locals
     '''
     Class to create a new Config object on db
     '''
@@ -31,6 +32,8 @@ class CreateConfig(graphene.Mutation):
         '''
         Arguments required to create a new config
         '''
+        name = graphene.String()
+        is_default = graphene.Boolean()
         number = graphene.Int()
         time_between_cycles = graphene.Int()
         upper_limit = graphene.Int()
@@ -42,13 +45,27 @@ class CreateConfig(graphene.Mutation):
         temperature = graphene.Float()
         time = graphene.Float()
 
-    def mutate(self, info, number, time_between_cycles, upper_limit,
-               inferior_limit, upper_time, inferior_time, disable_shutdown,
-               enable_output, temperature, time):
+    def mutate(
+            self,
+            info,
+            name,
+            is_default,
+            number,
+            time_between_cycles,
+            upper_limit,
+            inferior_limit,
+            upper_time,
+            inferior_time,
+            disable_shutdown,
+            enable_output,
+            temperature,
+            time):
         '''
         Create the Config with the given parameters end add to db
         '''
         config = Config(
+            name=name,
+            is_default=is_default,
             number=number,
             time_between_cycles=time_between_cycles,
             upper_limit=upper_limit,
@@ -77,9 +94,14 @@ class Query:
     '''
         The Query list all the types created above
     '''
-    config = graphene.Field(
+
+    all_config = graphene.List(ConfigType)
+
+    config_at = graphene.Field(
         ConfigType,
         id=graphene.Int(),
+        name=graphene.String(),
+        is_default=graphene.Boolean(),
         number=graphene.Int(),
         time_between_cycles=graphene.Int(),
         upper_limit=graphene.Int(),
@@ -91,7 +113,21 @@ class Query:
         temperature=graphene.Float(),
         Time=graphene.Float())
 
-    all_config = graphene.List(ConfigType)
+    config = graphene.Field(
+        ConfigType,
+        id=graphene.Int(),
+        name=graphene.String(),
+        is_default=graphene.Boolean(),
+        number=graphene.Int(),
+        time_between_cycles=graphene.Int(),
+        upper_limit=graphene.Int(),
+        inferior_limit=graphene.Int(),
+        upper_time=graphene.Int(),
+        inferior_time=graphene.Int(),
+        disable_shutdown=graphene.Boolean(),
+        enable_output=graphene.Boolean(),
+        temperature=graphene.Float(),
+        Time=graphene.Float())
 
     def resolve_all_config(self, info, **kwargs):
         '''
@@ -99,10 +135,19 @@ class Query:
         '''
         return Config.objects.all()
 
-    def resolve_config(self, info, **kwargs):
+    def resolve_config_at(self, info, **kwargs):
         '''
-            Returning only one CyclesConfig by id
+            Returning only one Config by id
         '''
         pk = kwargs.get('id')
 
         return Config.objects.get(pk=pk)
+
+    def resolve_config(self, info, **kwargs):
+        '''
+            Return one config by name
+        '''
+        name = kwargs.get('name')
+
+        return Config.objects.get(name=name)
+
