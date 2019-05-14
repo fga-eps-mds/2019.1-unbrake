@@ -31,7 +31,7 @@ class CalibrationFields extends React.Component {
       </div>
     );
   }
-
+// colocar handleChange
   render() {
     const { field } = this.props;
     return (

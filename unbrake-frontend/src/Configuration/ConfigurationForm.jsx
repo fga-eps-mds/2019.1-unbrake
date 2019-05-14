@@ -257,7 +257,7 @@ class ConfigurationForm extends React.Component {
     const oneFields = [
       { name: "TMO", value: TMO },
       { name: "TAS", value: TAS }
-    ];
+    ];  
     const twoFields = [
       { name: "TAO", value: TAO },
       { name: "TAT", value: TAT }
