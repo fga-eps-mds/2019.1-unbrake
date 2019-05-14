@@ -111,7 +111,7 @@ class Query:
         disable_shutdown=graphene.Boolean(),
         enable_output=graphene.Boolean(),
         temperature=graphene.Float(),
-        Time=graphene.Float())
+        time=graphene.Float())
 
     config = graphene.Field(
         ConfigType,
@@ -127,7 +127,9 @@ class Query:
         disable_shutdown=graphene.Boolean(),
         enable_output=graphene.Boolean(),
         temperature=graphene.Float(),
-        Time=graphene.Float())
+        time=graphene.Float())
+
+    config_default = graphene.List(ConfigType)
 
     def resolve_all_config(self, info, **kwargs):
         '''
@@ -151,3 +153,9 @@ class Query:
 
         return Config.objects.get(name=name)
 
+    def resolve_config_default(self, info):
+        '''
+        Return a list with all the Config objects with is_default equal true
+        '''
+
+        return Config.objects.exclude(is_default=False)
