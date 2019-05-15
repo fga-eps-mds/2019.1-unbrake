@@ -4,6 +4,11 @@ import Input from "@material-ui/core/Input";
 import Grid from "@material-ui/core/Grid";
 import { withStyles } from "@material-ui/core/styles";
 import PropTypes from "prop-types";
+import OutlinedInput from "@material-ui/core/OutlinedInput";
+import InputLabel from "@material-ui/core/InputLabel";
+import MenuItem from "@material-ui/core/MenuItem";
+import FormControl from "@material-ui/core/FormControl";
+import Select from "@material-ui/core/Select";
 import ConfigurationForm from "./ConfigurationForm";
 
 const styles = () => ({
@@ -12,8 +17,39 @@ const styles = () => ({
   },
   grid: {
     padding: "5px"
+  },
+  formControl: {
+    minWidth: 200
   }
 });
+
+const selectConfiguration = (handleChange, dataBaseConfiguration, classes) => {
+  return (
+    <Grid item xs={4} className={classes.title}>
+      <FormControl variant="outlined" className={classes.formControl}>
+        <InputLabel htmlFor="outlined-age-simple">Configurações</InputLabel>
+        <Select
+          value={dataBaseConfiguration}
+          onChange={handleChange}
+          input={
+            <OutlinedInput
+              labelWidth={dataBaseConfiguration}
+              name="dataBaseConfiguration"
+              id="outlined-age-simple"
+            />
+          }
+        >
+          <MenuItem value={0}>
+            <em>None</em>
+          </MenuItem>
+          <MenuItem value={1}>Configuration 1</MenuItem>
+          <MenuItem value={2}>Configuration 2</MenuItem>
+          <MenuItem value={3}>Configuration 3</MenuItem>
+        </Select>
+      </FormControl>
+    </Grid>
+  );
+};
 
 class Configuration extends React.Component {
   constructor(props) {
@@ -33,10 +69,16 @@ class Configuration extends React.Component {
           USL: "",
           UWT: ""
         }
-      }
+      },
+      dataBaseConfiguration: 0
     };
 
+    this.handleChange = this.handleChange.bind(this);
     this.fileUpload = this.fileUpload.bind(this);
+  }
+
+  handleChange(event) {
+    this.setState({ [event.target.name]: event.target.value });
   }
 
   uploadField(field) {
@@ -85,18 +127,19 @@ class Configuration extends React.Component {
   }
 
   render() {
-    const { configuration } = this.state;
+    const { configuration, dataBaseConfiguration } = this.state;
+    const { classes } = this.props;
 
     return (
       <Grid
         alignItems="center"
         justify="center"
-        style={{ minHeight: "100vh" }}
+        style={{ minHeight: "5px" }}
         container
         spacing={40}
       >
-        {this.uploadField("calibration")}
         {this.uploadField("configuration")}
+        {selectConfiguration(this.handleChange, dataBaseConfiguration, classes)}
         <ConfigurationForm configuration={configuration} />
       </Grid>
     );

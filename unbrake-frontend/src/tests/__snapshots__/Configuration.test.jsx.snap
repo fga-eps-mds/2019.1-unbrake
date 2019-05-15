@@ -8,41 +8,10 @@ exports[`<Configuration /> render() renders the component 1`] = `
   spacing={40}
   style={
     Object {
-      "minHeight": "100vh",
+      "minHeight": "5px",
     }
   }
 >
-  <WithStyles(Grid)
-    alignItems="center"
-    container={true}
-    item={true}
-    justify="center"
-    xs={10}
-  >
-    <WithStyles(Grid)
-      className="Configuration-title-1"
-      item={true}
-      xs={4}
-    >
-      <h2
-        justify="left"
-      >
-        Upload arquivo de 
-        Calibração
-      </h2>
-    </WithStyles(Grid)>
-    <WithStyles(Grid)
-      className="Configuration-grid-2"
-      item={true}
-      xs={4}
-    >
-      <WithStyles(Input)
-        name="calibration"
-        onChange={[Function]}
-        type="file"
-      />
-    </WithStyles(Grid)>
-  </WithStyles(Grid)>
   <WithStyles(Grid)
     alignItems="center"
     container={true}
@@ -73,6 +42,56 @@ exports[`<Configuration /> render() renders the component 1`] = `
         type="file"
       />
     </WithStyles(Grid)>
+  </WithStyles(Grid)>
+  <WithStyles(Grid)
+    className="Configuration-title-1"
+    item={true}
+    xs={4}
+  >
+    <WithStyles(FormControl)
+      className="Configuration-formControl-3"
+      variant="outlined"
+    >
+      <WithStyles(WithFormControlContext(InputLabel))
+        htmlFor="outlined-age-simple"
+      >
+        Configurações
+      </WithStyles(WithFormControlContext(InputLabel))>
+      <WithStyles(WithFormControlContext(Select))
+        input={
+          <WithStyles(OutlinedInput)
+            id="outlined-age-simple"
+            labelWidth={0}
+            name="dataBaseConfiguration"
+          />
+        }
+        onChange={[Function]}
+        value={0}
+      >
+        <WithStyles(MenuItem)
+          value={0}
+        >
+          <em>
+            None
+          </em>
+        </WithStyles(MenuItem)>
+        <WithStyles(MenuItem)
+          value={1}
+        >
+          Configuration 1
+        </WithStyles(MenuItem)>
+        <WithStyles(MenuItem)
+          value={2}
+        >
+          Configuration 2
+        </WithStyles(MenuItem)>
+        <WithStyles(MenuItem)
+          value={3}
+        >
+          Configuration 3
+        </WithStyles(MenuItem)>
+      </WithStyles(WithFormControlContext(Select))>
+    </WithStyles(FormControl)>
   </WithStyles(Grid)>
   <WithStyles(ReduxForm)
     configuration={
