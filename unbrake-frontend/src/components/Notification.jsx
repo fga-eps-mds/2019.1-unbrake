@@ -1,6 +1,5 @@
 import React from "react";
 import { connect } from "react-redux";
-import { bindActionCreators } from "redux";
 import Snackbar from "@material-ui/core/Snackbar";
 import green from "@material-ui/core/colors/green";
 import amber from "@material-ui/core/colors/amber";
@@ -8,7 +7,7 @@ import { withStyles } from "@material-ui/core/styles";
 import SnackbarContent from "@material-ui/core/SnackbarContent";
 import classNames from "classnames";
 import PropTypes from "prop-types";
-import * as Actions from "../actions/AuthActions";
+import { toggleMessage } from "../actions/NotificationActions";
 
 const styles1 = theme => ({
   success: {
@@ -77,44 +76,45 @@ const MySnackbarContentWrapper = withStyles(styles1)(MySnackbarContent);
 class NotificationContainer extends React.Component {
   constructor(props) {
     super(props);
-    this.state = { open: false, message: "", level: "" };
     this.handleClose = this.handleClose.bind(this);
   }
 
-  componentWillReceiveProps(newProps) {
-    const { message, variante } = newProps.newNotification;
-    return this.setState({ open: true, message, level: variante });
-  }
+  /*
+   *componentWillReceiveProps(newProps) {
+   *  const { message, variante } = newProps.newNotification;
+   *  return this.setState({ open: true, message, level: variante });
+   *}
+   */
 
   closeNotification() {
-    this.setState({ open: false });
+    const { hideMessage } = this.props;
+    hideMessage({ condition: false });
   }
 
   handleClose(event, reason) {
+    const { hideMessage } = this.props;
     if (reason === "clickaway") {
       return;
     }
-    this.setState({ open: false });
+    hideMessage({ condition: false });
   }
 
   render() {
-    const { classes } = this.props;
-    const { open, level, message } = this.state;
+    const { classes, variante, message, condition } = this.props;
     const { handleClose } = this;
-
     return (
       <Snackbar
         anchorOrigin={{
           vertical: "bottom",
           horizontal: "right"
         }}
-        open={open}
+        open={condition}
         autoHideDuration={3000}
         onClose={handleClose}
       >
         <MySnackbarContentWrapper
           onClose={handleClose}
-          variant={level}
+          variant={variante}
           className={classes.margin}
           message={message}
         />
@@ -125,27 +125,36 @@ class NotificationContainer extends React.Component {
 
 function mapStateToProps(state) {
   return {
-    notification: state.notification
+    message: state.notificationReducer.message,
+    condition: state.notificationReducer.condition,
+    variante: state.notificationReducer.variante
   };
 }
 
 function mapDispatchToProps(dispatch) {
   return {
-    actions: bindActionCreators(Actions, dispatch)
+    hideMessage: payload => dispatch(toggleMessage(payload))
   };
 }
 
 MySnackbarContent.propTypes = {
   classes: PropTypes.objectOf(PropTypes.string).isRequired,
-  className: PropTypes.objectOf(PropTypes.string).isRequired,
   message: PropTypes.string.isRequired,
-  variant: PropTypes.string.isRequired
+  variant: PropTypes.string.isRequired,
+  className: PropTypes.string.isRequired
 };
 
 NotificationContainer.propTypes = {
-  classes: PropTypes.objectOf(PropTypes.string).isRequired
+  classes: PropTypes.objectOf(PropTypes.string).isRequired,
+  message: PropTypes.string.isRequired,
+  variante: PropTypes.string.isRequired,
+  hideMessage: PropTypes.func.isRequired,
+  condition: PropTypes.bool
 };
 
+NotificationContainer.defaultProps = {
+  condition: false
+};
 export default connect(
   mapStateToProps,
   mapDispatchToProps

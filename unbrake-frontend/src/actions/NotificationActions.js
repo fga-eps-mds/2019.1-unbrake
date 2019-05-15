@@ -1,15 +1,18 @@
-export const notification = (message, level) => {
+import { MESSAGE_USER, TOGGLE_MESSAGE } from "./Types";
+
+export const toggleMessage = payload => {
   return {
-    type: "MESSAGE_USER",
-    message,
-    variante: level
+    type: TOGGLE_MESSAGE,
+    payload
   };
 };
 
-export const messageSistem = (message, level) => {
+export const messageSistem = payload => {
   return dispatch => {
-    dispatch(notification(message, level));
-    return notification;
+    dispatch({
+      type: MESSAGE_USER,
+      payload
+    });
   };
 };
 
