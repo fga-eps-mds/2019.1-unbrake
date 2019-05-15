@@ -103,9 +103,21 @@ const ToolBar = (classes, open, handleDrawerOpen) => {
       >
         <Menu />
       </IconButton>
-      <Button style={{ textTransform: "none" }} color="inherit" href="/">
-        UnBrake
-      </Button>
+      <div
+        style={{ justifyContent: "space-between", flex: 1, display: "flex" }}
+      >
+        <Button style={{ textTransform: "none" }} color="inherit" href="/">
+          UnBrake
+        </Button>
+
+        <Button
+          style={{ textTransform: "none" }}
+          color="inherit"
+          href="/signUp"
+        >
+          Cadastrar usuário
+        </Button>
+      </div>
     </Toolbar>
   );
 };
