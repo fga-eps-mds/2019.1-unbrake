@@ -1,17 +1,26 @@
 import React from "react";
 import Enzyme, { shallow } from "enzyme";
+import { Provider } from "react-redux";
+import { createStore } from "redux";
 import toJson from "enzyme-to-json";
 import Adapter from "enzyme-adapter-react-16";
 import fetch from "jest-fetch-mock";
 import SignUp, { validate, submit } from "../components/SignUp";
 import { API_URL_GRAPHQL } from "../utils/Constants";
+import reducers from "../reducer/index";
 
 Enzyme.configure({ adapter: new Adapter() });
 
 describe("<SignUp />", () => {
   describe("render()", () => {
     test("renders the component", () => {
-      const wrapper = shallow(<SignUp />);
+      const context = React.createContext();
+      const store = createStore(reducers);
+      const wrapper = shallow(
+        <Provider context={context} store={store}>
+          <SignUp context={context} />
+        </Provider>
+      );
       const component = wrapper.dive();
 
       expect(toJson(component)).toMatchSnapshot();

@@ -85,7 +85,6 @@ const loginPaper = parameters => {
           data={{ name: "password", label: "Senha", type: "password" }}
         />
         {renderSubmit("Entrar", parameters.classes, parameters.submitting)}
-
         <div>
           <a href="./"> Esqueci minha senha</a>
         </div>
