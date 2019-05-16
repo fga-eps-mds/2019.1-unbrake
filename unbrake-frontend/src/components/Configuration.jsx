@@ -9,6 +9,7 @@ import InputLabel from "@material-ui/core/InputLabel";
 import MenuItem from "@material-ui/core/MenuItem";
 import FormControl from "@material-ui/core/FormControl";
 import Select from "@material-ui/core/Select";
+import Button from "@material-ui/core/Button";
 import ConfigurationForm from "./ConfigurationForm";
 import { API_URL_GRAPHQL } from "../utils/Constants";
 import Request from "../utils/Request";
@@ -71,7 +72,6 @@ class Configuration extends React.Component {
           LSL: "",
           LWT: "",
           NOS: "",
-          PTD: "",
           TAO: false,
           TAS: "",
           TAT: "",
@@ -85,17 +85,44 @@ class Configuration extends React.Component {
       allConfiguration: ""
     };
 
+    this.handleUpDefault = this.handleUpDefault.bind(this);
     this.handleChange = this.handleChange.bind(this);
     this.fileUpload = this.fileUpload.bind(this);
   }
 
   componentDidMount() {
-    const url = `${API_URL_GRAPHQL}?query=query{allConfig{id, name}}`;
-    const method = "POST";
+    const url = `${API_URL_GRAPHQL}?query=query{configNotDefault{id, name}}`;
+    const method = "GET";
     Request(url, method).then(json => {
-      const { data } = json.data;
-      const { allConfig } = data.allConfig;
-      this.setState({ allConfiguration: allConfig });
+      const data = json.data.configNotDefault;
+      this.setState({ allConfiguration: data });
+    });
+  }
+
+  handleUpDefault() {
+    const url = `${API_URL_GRAPHQL}?query=query{configDefault{id, name, number, time, temperature, timeBetweenCycles, upperLimit, inferiorLimit, upperTime, inferiorTime, disableShutdown, enableOutput}}`;
+
+    const method = "GET";
+
+    Request(url, method).then(response => {
+      const data = response.data.configDefault[0];
+
+      const configurationDefault = {
+        CONFIG_ENSAIO: {
+          LSL: data.inferiorLimit,
+          LWT: data.inferiorTime,
+          NOS: data.number,
+          TAO: data.enableOutput,
+          TAS: data.temperature,
+          TAT: data.time,
+          TBS: data.timeBetweenCycles,
+          TMO: data.disableShutdown,
+          USL: data.upperLimit,
+          UWT: data.upperTime
+        }
+      };
+
+      this.setState({ configuration: configurationDefault });
     });
   }
 
@@ -163,6 +190,13 @@ class Configuration extends React.Component {
 
         {selectConfiguration(this.handleChange, configStates, classes)}
         <ConfigurationForm configuration={configuration} />
+        <Button
+          onClick={this.handleUpDefault}
+          color="secondary"
+          variant="contained"
+        >
+          Padrão
+        </Button>
       </Grid>
     );
   }

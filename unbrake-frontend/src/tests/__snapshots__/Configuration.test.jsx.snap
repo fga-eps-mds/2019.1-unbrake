@@ -82,7 +82,6 @@ exports[`<Configuration /> render() renders the component 1`] = `
           "LSL": "",
           "LWT": "",
           "NOS": "",
-          "PTD": "",
           "TAO": false,
           "TAS": "",
           "TAT": "",
@@ -94,5 +93,12 @@ exports[`<Configuration /> render() renders the component 1`] = `
       }
     }
   />
+  <WithStyles(Button)
+    color="secondary"
+    onClick={[Function]}
+    variant="contained"
+  >
+    Padrão
+  </WithStyles(Button)>
 </WithStyles(Grid)>
 `;
