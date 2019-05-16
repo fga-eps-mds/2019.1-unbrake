@@ -69,27 +69,9 @@ exports[`<Configuration /> render() renders the component 1`] = `
         value={0}
       >
         <WithStyles(MenuItem)
+          key="0"
           value={0}
-        >
-          <em>
-            None
-          </em>
-        </WithStyles(MenuItem)>
-        <WithStyles(MenuItem)
-          value={1}
-        >
-          Configuration 1
-        </WithStyles(MenuItem)>
-        <WithStyles(MenuItem)
-          value={2}
-        >
-          Configuration 2
-        </WithStyles(MenuItem)>
-        <WithStyles(MenuItem)
-          value={3}
-        >
-          Configuration 3
-        </WithStyles(MenuItem)>
+        />
       </WithStyles(WithFormControlContext(Select))>
     </WithStyles(FormControl)>
   </WithStyles(Grid)>

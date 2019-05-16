@@ -5,13 +5,7 @@ import { createStore, applyMiddleware } from "redux";
 import { MuiThemeProvider, createMuiTheme } from "@material-ui/core/styles";
 import thunk from "redux-thunk";
 import reducers from "./reducer/index";
-<<<<<<< HEAD
 import Routes from "./routes/Routes";
-=======
-
-// import Routes from "./routes/Routes";
-import Configuration from "./components/Configuration";
->>>>>>> Creat Select Component
 
 const theme = createMuiTheme({
   palette: {

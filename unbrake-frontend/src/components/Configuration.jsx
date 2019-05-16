@@ -10,6 +10,8 @@ import MenuItem from "@material-ui/core/MenuItem";
 import FormControl from "@material-ui/core/FormControl";
 import Select from "@material-ui/core/Select";
 import ConfigurationForm from "./ConfigurationForm";
+import { API_URL_GRAPHQL } from "../utils/Constants";
+import Request from "../utils/Request";
 
 const styles = () => ({
   title: {
@@ -22,6 +24,54 @@ const styles = () => ({
     minWidth: 200
   }
 });
+
+let allConfig = [{ id: 0, name: "" }];
+
+async function getConfigurationsId() {
+  const url = `${API_URL_GRAPHQL}?query=query{allConfig{id, name}}`;
+
+  const method = "POST";
+
+  const response = await Request(url, method);
+
+  allConfig = [{ id: 0, name: "" }];
+
+  allConfig = allConfig.concat(response.data.allConfig);
+  /*
+   * const one = 1;
+   * const zero = 0;
+   */
+
+  // let i;
+
+  /*
+   * for (i = zero; i < response.data.allConfig.length; i += one) {
+   *   allConfig[i + one] = response.data.allConfig[i];
+   *   // console.log(allConfig[i]);
+   * }
+   */
+
+  // console.log(allConfig.length);
+
+  // return response.data.allConfig;
+}
+
+const itensSelection = () => {
+  getConfigurationsId();
+  /*
+   * console.log("ConfigurationsTest", allConfig[0]);
+   * console.log(allConfig.length);
+   */
+
+  const itens = allConfig.map(value => {
+    return (
+      <MenuItem key={value.name + value.id} value={value.id}>
+        {value.name}
+      </MenuItem>
+    );
+  });
+  return itens;
+};
 
 const selectConfiguration = (handleChange, dataBaseConfiguration, classes) => {
   return (
@@ -39,12 +89,7 @@ const selectConfiguration = (handleChange, dataBaseConfiguration, classes) => {
             />
           }
         >
-          <MenuItem value={0}>
-            <em>None</em>
-          </MenuItem>
-          <MenuItem value={1}>Configuration 1</MenuItem>
-          <MenuItem value={2}>Configuration 2</MenuItem>
-          <MenuItem value={3}>Configuration 3</MenuItem>
+          {itensSelection()}
         </Select>
       </FormControl>
     </Grid>
@@ -114,13 +159,8 @@ class Configuration extends React.Component {
     reader.onload = e => {
       const content = e.target.result;
       const fileUpload = iniparser.parseString(content);
-      if (name === "configuration") {
-        scope.setState({ configuration: fileUpload });
-        scope.setState({ configuration: fileUpload });
-      }
-      if (name === "calibration") {
-        scope.setState({ calibration: fileUpload });
-      }
+      scope.setState({ configuration: fileUpload });
+      // console.log(fileUpload);
     };
 
     reader.readAsText(file, "UTF-8");
@@ -139,6 +179,7 @@ class Configuration extends React.Component {
         spacing={40}
       >
         {this.uploadField("configuration")}
+
         {selectConfiguration(this.handleChange, dataBaseConfiguration, classes)}
         <ConfigurationForm configuration={configuration} />
       </Grid>
