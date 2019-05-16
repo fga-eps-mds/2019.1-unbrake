@@ -25,43 +25,9 @@ const styles = () => ({
   }
 });
 
-let allConfig = [{ id: 0, name: "" }];
-
-async function getConfigurationsId() {
-  const url = `${API_URL_GRAPHQL}?query=query{allConfig{id, name}}`;
-
-  const method = "POST";
-
-  const response = await Request(url, method);
-
-  allConfig = [{ id: 0, name: "" }];
-
-  allConfig = allConfig.concat(response.data.allConfig);
-  /*
-   * const one = 1;
-   * const zero = 0;
-   */
-
-  // let i;
-
-  /*
-   * for (i = zero; i < response.data.allConfig.length; i += one) {
-   *   allConfig[i + one] = response.data.allConfig[i];
-   *   // console.log(allConfig[i]);
-   * }
-   */
-
-  // console.log(allConfig.length);
-
-  // return response.data.allConfig;
-}
-
-const itensSelection = () => {
-  getConfigurationsId();
-  /*
-   * console.log("ConfigurationsTest", allConfig[0]);
-   * console.log(allConfig.length);
-   */
+const itensSelection = allConfiguration => {
+  let allConfig = [{ id: 0, name: "" }];
+  allConfig = allConfig.concat(allConfiguration);
 
   const itens = allConfig.map(value => {
     return (
@@ -73,23 +39,23 @@ const itensSelection = () => {
   return itens;
 };
 
-const selectConfiguration = (handleChange, dataBaseConfiguration, classes) => {
+const selectConfiguration = (handleChange, configStates, classes) => {
   return (
     <Grid item xs={4} className={classes.title}>
       <FormControl variant="outlined" className={classes.formControl}>
         <InputLabel htmlFor="outlined-age-simple">Configurações</InputLabel>
         <Select
-          value={dataBaseConfiguration}
+          value={configStates[0]}
           onChange={handleChange}
           input={
             <OutlinedInput
-              labelWidth={dataBaseConfiguration}
+              labelWidth={configStates[0]}
               name="dataBaseConfiguration"
               id="outlined-age-simple"
             />
           }
         >
-          {itensSelection()}
+          {itensSelection(configStates[1])}
         </Select>
       </FormControl>
     </Grid>
@@ -115,11 +81,22 @@ class Configuration extends React.Component {
           UWT: ""
         }
       },
-      dataBaseConfiguration: 0
+      dataBaseConfiguration: 0,
+      allConfiguration: ""
     };
 
     this.handleChange = this.handleChange.bind(this);
     this.fileUpload = this.fileUpload.bind(this);
+  }
+
+  componentDidMount() {
+    const url = `${API_URL_GRAPHQL}?query=query{allConfig{id, name}}`;
+    const method = "POST";
+    Request(url, method).then(json => {
+      const { data } = json.data;
+      const { allConfig } = data.allConfig;
+      this.setState({ allConfiguration: allConfig });
+    });
   }
 
   handleChange(event) {
@@ -160,15 +137,19 @@ class Configuration extends React.Component {
       const content = e.target.result;
       const fileUpload = iniparser.parseString(content);
       scope.setState({ configuration: fileUpload });
-      // console.log(fileUpload);
     };
 
     reader.readAsText(file, "UTF-8");
   }
 
   render() {
-    const { configuration, dataBaseConfiguration } = this.state;
     const { classes } = this.props;
+    const {
+      configuration,
+      dataBaseConfiguration,
+      allConfiguration
+    } = this.state;
+    const configStates = [dataBaseConfiguration, allConfiguration];
 
     return (
       <Grid
@@ -180,7 +161,7 @@ class Configuration extends React.Component {
       >
         {this.uploadField("configuration")}
 
-        {selectConfiguration(this.handleChange, dataBaseConfiguration, classes)}
+        {selectConfiguration(this.handleChange, configStates, classes)}
         <ConfigurationForm configuration={configuration} />
       </Grid>
     );

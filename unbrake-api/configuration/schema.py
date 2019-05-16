@@ -60,11 +60,7 @@ class CreateConfig(graphene.Mutation):
             temperature,
             time):
         '''
-<<<<<<< HEAD
         Create the Config with the given parameters end add to db
-=======
-        Create the config with the given parameters end add to db
->>>>>>> Create mutates to create a config default
         '''
         config = Config(
             name=name,
