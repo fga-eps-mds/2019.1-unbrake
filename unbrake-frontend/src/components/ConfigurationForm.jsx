@@ -197,12 +197,12 @@ const otherField = (classes, vector, handleChange) => {
 async function submit(values, state) {
   const { configuration } = state;
   const { TAS, TAT, TMO, TAO, UWT, NOS, LSL, USL, TBS, LWT } = configuration;
-  const url = `${API_URL_GRAPHQL}?query=mutation{createConfig(name:"teste4",number:${NOS},timeBetweenCycles:${TBS},upperLimit:${USL},inferiorLimit:${LSL},upperTime:${UWT},inferiorTime:${LWT},disableShutdown:${TMO},enableOutput:${TAO},temperature:${TAS},time:${TAT}){config{number, timeBetweenCycles,upperLimit,inferiorLimit}}}`;
 
+  const url = `${API_URL_GRAPHQL}?query=mutation{createConfig(name:"teste5",number:${NOS},timeBetweenCycles:${TBS},upperLimit:${USL},inferiorLimit:${LSL},upperTime:${UWT},inferiorTime:${LWT},disableShutdown:${TMO},enableOutput:${TAO},temperature:${TAS},time:${TAT}){config{number, timeBetweenCycles,upperLimit,inferiorLimit}}}`;
   const method = "POST";
-
   const response = await Request(url, method);
 
+  window.location.reload();
   return response;
 }
 

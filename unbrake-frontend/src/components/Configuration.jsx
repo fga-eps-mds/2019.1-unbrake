@@ -26,6 +26,9 @@ const styles = () => ({
   }
 });
 
+const query =
+  "id, name, number, time, temperature, timeBetweenCycles, upperLimit, inferiorLimit, upperTime, inferiorTime, disableShutdown, enableOutput";
+
 const itensSelection = allConfiguration => {
   let allConfig = [{ id: 0, name: "" }];
   allConfig = allConfig.concat(allConfiguration);
@@ -100,7 +103,7 @@ class Configuration extends React.Component {
   }
 
   handleUpDefault() {
-    const url = `${API_URL_GRAPHQL}?query=query{configDefault{id, name, number, time, temperature, timeBetweenCycles, upperLimit, inferiorLimit, upperTime, inferiorTime, disableShutdown, enableOutput}}`;
+    const url = `${API_URL_GRAPHQL}?query=query{configDefault{${query}}}`;
 
     const method = "GET";
 
@@ -128,6 +131,34 @@ class Configuration extends React.Component {
 
   handleChange(event) {
     this.setState({ [event.target.name]: event.target.value });
+    this.handleSelectConfig(event.target.value);
+  }
+
+  handleSelectConfig(id) {
+    const url = `${API_URL_GRAPHQL}?query=query{configAt(id:${id}){${query}}}`;
+
+    const method = "GET";
+
+    Request(url, method).then(response => {
+      const data = response.data.configAt;
+
+      const configurationDefault = {
+        CONFIG_ENSAIO: {
+          LSL: data.inferiorLimit,
+          LWT: data.inferiorTime,
+          NOS: data.number,
+          TAO: data.enableOutput,
+          TAS: data.temperature,
+          TAT: data.time,
+          TBS: data.timeBetweenCycles,
+          TMO: data.disableShutdown,
+          USL: data.upperLimit,
+          UWT: data.upperTime
+        }
+      };
+
+      this.setState({ configuration: configurationDefault });
+    });
   }
 
   uploadField(field) {
