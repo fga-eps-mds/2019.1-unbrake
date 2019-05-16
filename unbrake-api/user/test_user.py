@@ -22,6 +22,8 @@ def test_create_user(username, password):
         username +
         '", password: "' +
         password +
+        '", isSuperuser"' +
+        False +
         '"){user{id, username}}}')
     assert result.status_code == 200
     user = result.json()['data']['createUser']['user']
@@ -44,6 +46,8 @@ def test_token_auth(username, password):
         username +
         '", password: "' +
         password +
+        '", isSuperuser"' +
+        False +
         '"){user{id, username}}}')
 
     assert result.status_code == 200
@@ -53,6 +57,8 @@ def test_token_auth(username, password):
         username +
         '", password: "' +
         password +
+        '", isSuperuser"' +
+        False +
         '"){token}}')
 
     assert token.status_code == 200
@@ -87,6 +93,8 @@ def test_get_all_users(username1, username2, password):
         username1 +
         '", password: "' +
         password +
+        '", isSuperuser"' +
+        False +
         '"){user{id, username}}}')
     assert result1.status_code == 200
 
@@ -95,6 +103,8 @@ def test_get_all_users(username1, username2, password):
         username2 +
         '", password: "' +
         password +
+        '", isSuperuser"' +
+        False +
         '"){user{id, username}}}')
     assert result2.status_code == 200
 
