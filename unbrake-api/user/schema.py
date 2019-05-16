@@ -33,8 +33,9 @@ class CreateUser(graphene.Mutation):
         '''
         username = graphene.String(required=True)
         password = graphene.String(required=True)
+        is_superuser = graphene.Boolean(required=True)
 
-    def mutate(self, info, username, password):
+    def mutate(self, info, username, password, is_superuser):
         '''
         Create the user with the given parameters end add to db
         '''
@@ -60,6 +61,7 @@ class Query(graphene.ObjectType):
     GraphQL class to declare all the queries
     '''
     current_user = graphene.Field(UserType)
+    user = graphene.Field(UserType, username=graphene.String())
     users = graphene.List(UserType)
 
     def resolve_users(self, info):
@@ -73,3 +75,13 @@ class Query(graphene.ObjectType):
         Return the current user
         '''
         return info.context.user
+
+    def resolve_user(self, info, **kwargs):
+        '''
+            Returning only one User by username
+        '''
+        pk = kwargs.get('username')
+
+        if pk is not None:
+            return get_user_model().objects.get(pk=pk)
+        return None

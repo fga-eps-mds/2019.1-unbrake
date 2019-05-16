@@ -34,12 +34,21 @@ async function submit(values) {
   const method = "POST";
 
   const parsedData = await Request(url, method);
-
   if (parsedData.data.tokenAuth !== null) {
     cookie.set("token", parsedData.data.tokenAuth.token, {
       path: "/",
       maxAge: 86400
       // httpOnly: false
+    });
+    const urlRetrieveUser = `${baseUrl}?query={users{username, isSuperuser}}`;
+    const methodRetrieve = "POST";
+    const userVerification = await Request(urlRetrieveUser, methodRetrieve);
+    userVerification.data.users.map(value => {
+      if (value.username === values.username) {
+        localStorage.setItem("isSuperuser", value.isSuperuser);
+        return null;
+      }
+      return null;
     });
     history.push("/");
   } else {
