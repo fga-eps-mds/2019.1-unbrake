@@ -105,7 +105,6 @@ def test_create_config(parameters):
     temperature = parameters[8]
     time = parameters[9]
     name = parameters[10]
-    is_default = parameters[11]
 
     create = CLIENT.post(
         '/graphql?query=mutation{createConfig'
@@ -119,7 +118,6 @@ def test_create_config(parameters):
         'enableOutput: ' + str(enable_output) + ', '
         'temperature: ' + str(temperature) + ', '
         'name: "' + str(name) + '", '
-        'isDefault: ' + str(is_default) + ', '
         'time: ' + str(time) + ')'
         '{config{number, timeBetweenCycles,upperLimit,inferiorLimit,'
         'upperTime, inferiorTime, disableShutdown,'

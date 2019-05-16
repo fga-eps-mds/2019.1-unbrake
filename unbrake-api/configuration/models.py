@@ -32,3 +32,9 @@ class Config(models.Model):
         null=True,
         max_digits=10,
         decimal_places=6)
+
+    def __str__(self):
+        '''
+            Define the way the objects are shown
+        '''
+        return "Id: " + str(self.id) + " - " + "Name: " + self.name
