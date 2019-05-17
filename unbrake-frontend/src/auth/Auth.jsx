@@ -29,7 +29,7 @@ export async function verifyToken() {
   )}"){payload}}`;
   const method = "POST";
   const response = await Request(url, method);
-  return response;
+  return response.data.verifyToken.payload.username !== null;
 }
 
 export function isAuthenticated(response) {
@@ -59,9 +59,10 @@ export const deauthenticate = () => {
   return cookies.remove("token");
 };
 
-export function isSuperuser(superuser) {
+export function isSuperuser(superuser, loadingVerifyingAuth) {
+  const currentuserIsSuperuser = loadingVerifyingAuth;
   if (superuser) {
-    return true;
+    return currentuserIsSuperuser === true;
   }
   return false;
 }

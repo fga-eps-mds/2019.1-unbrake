@@ -46,6 +46,7 @@ async function submit(values) {
     userVerification.data.users.map(value => {
       if (value.username === values.username) {
         localStorage.setItem("isSuperuser", value.isSuperuser);
+        localStorage.setItem("autenticated", "true");
         return null;
       }
       return null;
