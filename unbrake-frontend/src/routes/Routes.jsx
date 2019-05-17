@@ -17,7 +17,12 @@ export default () => (
         component={SideBarMenu}
       />
       <Route exact path="/login" component={Login} />
-      <Route exact path="/signup" component={SignUp} />
+      <AuthorizedRoute
+        superuser={localStorage.getItem("isSuperuser") === "true"}
+        exact
+        path="/signup"
+        component={SignUp}
+      />
       <Route component={NotFoundRoute} />
     </Switch>
   </Router>

@@ -41,6 +41,7 @@ class CreateUser(graphene.Mutation):
         '''
         user = get_user_model()(
             username=username,
+            is_superuser=is_superuser
         )
         user.set_password(password)
         user.save()

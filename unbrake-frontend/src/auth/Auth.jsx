@@ -59,10 +59,9 @@ export const deauthenticate = () => {
   return cookies.remove("token");
 };
 
-export function isSuperuser(superuser, loadingVerifyingAuth) {
-  const currentuserIsSuperuser = loadingVerifyingAuth;
+export function isSuperuser(superuser) {
   if (superuser) {
-    return currentuserIsSuperuser === true;
+    return true;
   }
   return false;
 }
