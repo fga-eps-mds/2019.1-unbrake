@@ -50,7 +50,7 @@ export const submit = values => {
           });
         }
       } else if (parsedData.data.createUser.user !== null) {
-        history.push("/login");
+        history.push("/");
       }
     });
 };
