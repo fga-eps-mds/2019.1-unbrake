@@ -4,6 +4,7 @@ import Input from "@material-ui/core/Input";
 import Grid from "@material-ui/core/Grid";
 import { withStyles } from "@material-ui/core/styles";
 import PropTypes from "prop-types";
+import MyForm from "./CalibrationTempForm";
 
 const styles = () => ({
   title: {
@@ -18,9 +19,53 @@ class CalibrationUpload extends React.Component {
   constructor(props) {
     super(props);
     this.fileUpload = this.fileUpload.bind(this);
+    this.state = {
+      calibration: {
+        CALIBRA_TEMPERATURA: {
+          CHT1: "",
+          FCT1: "",
+          OFT1: "",
+          CHT2: "",
+          FCT2: "",
+          OFT2: ""
+        },
+
+        CALIBRA_FORCA: {
+          CHF1: "",
+          FCF1: "",
+          OFF1: "",
+          CHF2: "",
+          FCF2: "",
+          OFF2: ""
+        },
+
+        CALIBRA_VELOCIDADE: {
+          CHR1: "",
+          RAP: ""
+        },
+
+        CALIBRA_COMANDO: {
+          CHVC: "",
+          CUVC: "",
+          MAVC: "",
+          CHPC: "",
+          CUPC: "",
+          MAPC: ""
+        },
+
+        CALIBRA_RELACOES: {
+          LST: "",
+          RAL: "",
+          DIA: "",
+          RSM: "",
+          DPO: "",
+          DPM: ""
+        }
+      }
+    };
   }
 
-uploadField(field) {
+  uploadField(field) {
     const { classes } = this.props;
 
     let archive;
@@ -62,16 +107,18 @@ uploadField(field) {
   }
 
   render() {
-
+    const { calibration } = this.state;
+    console.log("up", calibration);
     return (
       <Grid
         alignItems="center"
         justify="center"
-        //style={{ minHeight: "100vh" }}
+        // style={{ minHeight: "100vh" }}
         container
-        //spacing={40}
+        // spacing={40}
       >
         {this.uploadField("calibration")}
+        <MyForm calibration={calibration} />
       </Grid>
     );
   }
