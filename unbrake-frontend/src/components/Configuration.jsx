@@ -10,9 +10,15 @@ import MenuItem from "@material-ui/core/MenuItem";
 import FormControl from "@material-ui/core/FormControl";
 import Select from "@material-ui/core/Select";
 import Button from "@material-ui/core/Button";
-import ConfigurationForm from "./ConfigurationForm";
-import { API_URL_GRAPHQL } from "../utils/Constants";
+import TextField from "@material-ui/core/TextField";
+import Dialog from "@material-ui/core/Dialog";
+import DialogActions from "@material-ui/core/DialogActions";
+import DialogContent from "@material-ui/core/DialogContent";
+import DialogContentText from "@material-ui/core/DialogContentText";
+import DialogTitle from "@material-ui/core/DialogTitle";
 import Request from "../utils/Request";
+import { API_URL_GRAPHQL } from "../utils/Constants";
+import ConfigurationForm from "./ConfigurationForm";
 
 const styles = () => ({
   title: {
@@ -28,6 +34,16 @@ const styles = () => ({
 
 const query =
   "id, name, number, time, temperature, timeBetweenCycles, upperLimit, inferiorLimit, upperTime, inferiorTime, disableShutdown, enableOutput";
+
+async function submit(configuration, name) {
+  const { TAS, TAT, TMO, TAO, UWT, NOS, LSL, USL, TBS, LWT } = configuration;
+
+  const url = `${API_URL_GRAPHQL}?query=mutation{createConfig(name:"${name}",number:${NOS},timeBetweenCycles:${TBS},upperLimit:${USL},inferiorLimit:${LSL},upperTime:${UWT},inferiorTime:${LWT},disableShutdown:${TMO},enableOutput:${TAO},temperature:${TAS},time:${TAT}){config{number, timeBetweenCycles,upperLimit,inferiorLimit}}}`;
+  const method = "POST";
+  await Request(url, method);
+
+  window.location.reload();
+}
 
 const itensSelection = allConfiguration => {
   let allConfig = [{ id: 0, name: "" }];
@@ -66,6 +82,45 @@ const selectConfiguration = (handleChange, configStates, classes) => {
   );
 };
 
+const dialogName = (handleChange, handleClose, dialogStates) => {
+  return (
+    <Dialog
+      open={dialogStates.open}
+      onClose={handleClose}
+      aria-labelledby="form-dialog-title"
+    >
+      <DialogTitle id="form-dialog-title">Nome da Configuração</DialogTitle>
+      <DialogContent>
+        <DialogContentText>
+          Insira aqui o nome que você deseja dar para este arquivo de
+          configuração
+        </DialogContentText>
+        <TextField
+          autoFocus
+          margin="dense"
+          name="name"
+          label="Nome"
+          type="text"
+          onChange={handleChange}
+          value={dialogStates.name}
+          fullWidth
+        />
+      </DialogContent>
+      <DialogActions>
+        <Button onClick={handleClose} color="primary">
+          Cancelar
+        </Button>
+        <Button
+          onClick={() => submit(dialogStates.configuration, dialogStates.name)}
+          color="primary"
+        >
+          Cadastrar
+        </Button>
+      </DialogActions>
+    </Dialog>
+  );
+};
+
 class Configuration extends React.Component {
   constructor(props) {
     super(props);
@@ -82,15 +137,20 @@ class Configuration extends React.Component {
           TMO: false,
           USL: "",
           UWT: ""
-        }
+        },
+        name: ""
       },
       dataBaseConfiguration: 0,
-      allConfiguration: ""
+      allConfiguration: "",
+      open: false
     };
 
     this.handleUpDefault = this.handleUpDefault.bind(this);
     this.handleChange = this.handleChange.bind(this);
     this.fileUpload = this.fileUpload.bind(this);
+    this.handleClickOpen = this.handleClickOpen.bind(this);
+    this.handleClose = this.handleClose.bind(this);
+    this.handleClickSave = this.handleClickSave.bind(this);
   }
 
   componentDidMount() {
@@ -100,6 +160,31 @@ class Configuration extends React.Component {
       const data = json.data.configNotDefault;
       this.setState({ allConfiguration: data });
     });
+  }
+
+  handleClickSave(state) {
+    const CONFIG_ENSAIO = state.configuration;
+    const newConfig = { CONFIG_ENSAIO };
+    this.setState({ configuration: newConfig });
+
+    /*
+     * if (newConfig.CONFIG_ENSAIO.TAO === false) {
+     *   this.state.configuration.CONFIG_ENSAIO.TAO = false;
+     * }
+     * if (newConfig.CONFIG_ENSAIO.TMO === false) {
+     *   this.state.configuration.CONFIG_ENSAIO.TMO = false;
+     * }
+     */
+
+    this.handleClickOpen();
+  }
+
+  handleClickOpen() {
+    this.setState({ open: true });
+  }
+
+  handleClose() {
+    this.setState({ open: false });
   }
 
   handleUpDefault() {
@@ -131,7 +216,9 @@ class Configuration extends React.Component {
 
   handleChange(event) {
     this.setState({ [event.target.name]: event.target.value });
-    this.handleSelectConfig(event.target.value);
+
+    if (event.target.name === "dataBaseConfiguration")
+      this.handleSelectConfig(event.target.value);
   }
 
   handleSelectConfig(id) {
@@ -205,9 +292,16 @@ class Configuration extends React.Component {
     const {
       configuration,
       dataBaseConfiguration,
-      allConfiguration
+      allConfiguration,
+      open,
+      name
     } = this.state;
     const configStates = [dataBaseConfiguration, allConfiguration];
+    const dialogStates = {
+      configuration: configuration.CONFIG_ENSAIO,
+      open,
+      name
+    };
 
     return (
       <Grid
@@ -220,7 +314,10 @@ class Configuration extends React.Component {
         {this.uploadField("configuration")}
 
         {selectConfiguration(this.handleChange, configStates, classes)}
-        <ConfigurationForm configuration={configuration} />
+        <ConfigurationForm
+          configuration={configuration}
+          handleClickSave={this.handleClickSave}
+        />
         <Button
           onClick={this.handleUpDefault}
           color="secondary"
@@ -228,6 +325,7 @@ class Configuration extends React.Component {
         >
           Padrão
         </Button>
+        {dialogName(this.handleChange, this.handleClose, dialogStates)}
       </Grid>
     );
   }

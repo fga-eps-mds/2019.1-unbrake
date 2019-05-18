@@ -3,9 +3,7 @@ import PropTypes from "prop-types";
 import { initialize, Field, reduxForm } from "redux-form";
 import { TextField, Checkbox } from "redux-form-material-ui";
 import { withStyles, Button, FormControlLabel, Grid } from "@material-ui/core";
-import Request from "../utils/Request";
-import { API_URL_GRAPHQL } from "../utils/Constants";
-import styles from "./Styles";
+import styles from "./ConfigurationStyles";
 
 const limits = (value, allValues) => {
   return parseInt(allValues.LSL, 10) >= parseInt(allValues.USL, 10)
@@ -194,18 +192,6 @@ const otherField = (classes, vector, handleChange) => {
   return fields;
 };
 
-async function submit(values, state) {
-  const { configuration } = state;
-  const { TAS, TAT, TMO, TAO, UWT, NOS, LSL, USL, TBS, LWT } = configuration;
-
-  const url = `${API_URL_GRAPHQL}?query=mutation{createConfig(name:"teste5",number:${NOS},timeBetweenCycles:${TBS},upperLimit:${USL},inferiorLimit:${LSL},upperTime:${UWT},inferiorTime:${LWT},disableShutdown:${TMO},enableOutput:${TAO},temperature:${TAS},time:${TAT}){config{number, timeBetweenCycles,upperLimit,inferiorLimit}}}`;
-  const method = "POST";
-  const response = await Request(url, method);
-
-  window.location.reload();
-  return response;
-}
-
 class ConfigurationForm extends React.Component {
   constructor(props) {
     super(props);
@@ -253,7 +239,7 @@ class ConfigurationForm extends React.Component {
   }
 
   render() {
-    const { classes, handleSubmit, submitting } = this.props;
+    const { classes, handleSubmit, submitting, handleClickSave } = this.props;
     const { configuration } = this.state;
     const { TAS, TAT, TMO, TAO, UWT, NOS, LSL, USL, TBS, LWT } = configuration;
     const rowOne = [
@@ -300,12 +286,13 @@ ConfigurationForm.propTypes = {
   handleSubmit: PropTypes.func.isRequired,
   submitting: PropTypes.bool.isRequired,
   configuration: PropTypes.oneOfType([PropTypes.object]).isRequired,
-  dispatch: PropTypes.func.isRequired
+  dispatch: PropTypes.func.isRequired,
+  handleClickSave: PropTypes.func.isRequired
 };
 
-const Configuration = reduxForm({
+const Configurationa = reduxForm({
   form: "configuration",
   validate
 })(ConfigurationForm);
 
-export default withStyles(styles)(Configuration);
+export default withStyles(styles)(Configurationa);
