@@ -18,7 +18,7 @@ describe("<SignUp />", () => {
       const store = createStore(reducers);
       const wrapper = shallow(
         <Provider context={context} store={store}>
-          <SignUp context={context} />
+          <SignUp />
         </Provider>
       );
       const component = wrapper.dive();
