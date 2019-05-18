@@ -192,7 +192,13 @@ class Configuration extends React.Component {
 
     const method = "GET";
 
+    const VAZIO = 0;
+
     Request(url, method).then(response => {
+      if (response.data.configDefault.length === VAZIO) {
+        return;
+      }
+
       const data = response.data.configDefault[0];
 
       const configurationDefault = {

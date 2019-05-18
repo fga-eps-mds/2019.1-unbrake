@@ -126,26 +126,40 @@ class CreateDefaultConfig(graphene.Mutation):
         '''
         last_default_config = Config.objects.exclude(is_default=False)
 
-        for i in last_default_config:
-            i.is_default = False
+        if not last_default_config.exists():
 
-        config = Config(
-            name=name,
-            is_default=True,
-            number=number,
-            time_between_cycles=time_between_cycles,
-            upper_limit=upper_limit,
-            inferior_limit=inferior_limit,
-            upper_time=upper_time,
-            inferior_time=inferior_time,
-            disable_shutdown=disable_shutdown,
-            enable_output=enable_output,
-            temperature=temperature,
-            time=time,
-        )
-        config.save()
+            config = Config(
+                name=name,
+                is_default=True,
+                number=number,
+                time_between_cycles=time_between_cycles,
+                upper_limit=upper_limit,
+                inferior_limit=inferior_limit,
+                upper_time=upper_time,
+                inferior_time=inferior_time,
+                disable_shutdown=disable_shutdown,
+                enable_output=enable_output,
+                temperature=temperature,
+                time=time,
+            )
+            config.save()
 
-        return CreateDefaultConfig(config=config)
+            return CreateDefaultConfig(config=config)
+
+        last_default_config[0].name = name
+        last_default_config[0].is_default = True
+        last_default_config[0].number = number
+        last_default_config[0].time_between_cycles = time_between_cycles
+        last_default_config[0].upper_limit = upper_limit
+        last_default_config[0].inferior_limit = inferior_limit
+        last_default_config[0].upper_time = upper_time
+        last_default_config[0].inferior_time = inferior_time
+        last_default_config[0].disable_shutdown = disable_shutdown
+        last_default_config[0].enable_output = enable_output
+        last_default_config[0].temperature = temperature
+        last_default_config[0].time = time
+
+        return CreateDefaultConfig(config=last_default_config[0])
 
 
 class Mutation(graphene.ObjectType):
@@ -153,6 +167,7 @@ class Mutation(graphene.ObjectType):
     GraphQL class to declare all the mutations
     '''
     create_config = CreateConfig.Field()
+    create_default_config = CreateDefaultConfig.Field()
 
 
 class Query:
