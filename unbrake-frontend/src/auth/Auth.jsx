@@ -24,6 +24,7 @@ const cookies = new Cookies();
  */
 
 export async function verifyToken() {
+  if (cookies.get("token") === undefined) return false;
   const url = `${API_URL_GRAPHQL}?query=mutation{verifyToken(token: "${cookies.get(
     "token"
   )}"){payload}}`;
