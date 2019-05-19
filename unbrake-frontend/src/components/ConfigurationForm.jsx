@@ -186,19 +186,14 @@ const Buttons = classes => {
   );
 };
 
-const verifyCheckbox = (TMO, TAO) => {
-  const dictionary = { TAO: "", TMO: "" };
-  if (TMO === "FALSE" || TMO === false) {
-    dictionary.TMO = false;
+const verifyCheckbox = variable => {
+  let bool;
+  if (variable === "FALSE" || variable === false) {
+    bool = false;
   } else {
-    dictionary.TMO = true;
+    bool = true;
   }
-  if (TAO === "FALSE" || TAO === false) {
-    dictionary.TAO = false;
-  } else {
-    dictionary.TAO = true;
-  }
-  return dictionary;
+  return bool;
 };
 
 class ConfigurationForm extends React.Component {
@@ -225,12 +220,9 @@ class ConfigurationForm extends React.Component {
     const { configuration, dispatch } = this.props;
     if (configuration !== nextProps.configuration) {
       const rightConfig = Object.assign({}, nextProps.configuration);
-      const next = verifyCheckbox(
-        nextProps.configuration.CONFIG_ENSAIO.TMO,
-        nextProps.configuration.CONFIG_ENSAIO.TAO
-      );
-      rightConfig.CONFIG_ENSAIO.TMO = next.TMO;
-      rightConfig.CONFIG_ENSAIO.TAO = next.TAO;
+      const next = nextProps.configuration.CONFIG_ENSAIO;
+      rightConfig.CONFIG_ENSAIO.TMO = verifyCheckbox(next.TMO);
+      rightConfig.CONFIG_ENSAIO.TAO = verifyCheckbox(next.TAO);
       dispatch(initialize("configuration", rightConfig.CONFIG_ENSAIO));
       this.setState({ configuration: rightConfig.CONFIG_ENSAIO });
       return true;

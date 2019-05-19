@@ -18,10 +18,19 @@ const query =
   "id, name, number, time, temperature, timeBetweenCycles, upperLimit, inferiorLimit, upperTime, inferiorTime, disableShutdown, enableOutput";
 
 export async function submit(configuration, name) {
-  const { TAS, TAT, TMO, TAO, UWT, NOS, LSL, USL, TBS, LWT } = configuration;
   if (name === "" || name === undefined) return;
 
-  const url = `${API_URL_GRAPHQL}?query=mutation{createConfig(name:"${name}",number:${NOS},timeBetweenCycles:${TBS},upperLimit:${USL},inferiorLimit:${LSL},upperTime:${UWT},inferiorTime:${LWT},disableShutdown:${TMO},enableOutput:${TAO},temperature:${TAS},time:${TAT}){config{number, timeBetweenCycles,upperLimit,inferiorLimit}}}`;
+  const url = `${API_URL_GRAPHQL}?query=mutation{createConfig(name:"${name}",number:${
+    configuration.NOS
+  },timeBetweenCycles:${configuration.TBS},upperLimit:${
+    configuration.USL
+  },inferiorLimit:${configuration.LSL},upperTime:${
+    configuration.UWT
+  },inferiorTime:${configuration.LWT},disableShutdown:${
+    configuration.TMO
+  },enableOutput:${configuration.TAO},temperature:${configuration.TAS},time:${
+    configuration.TAT
+  }){config{number, timeBetweenCycles,upperLimit,inferiorLimit}}}`;
   const method = "POST";
   await Request(url, method);
 
@@ -101,6 +110,24 @@ const dialogName = (handleChange, handleClose, dialogStates) => {
   );
 };
 
+const createConfig = data => {
+  const configurationDefault = {
+    CONFIG_ENSAIO: {
+      LSL: data.inferiorLimit,
+      LWT: data.inferiorTime,
+      NOS: data.number,
+      TAO: data.enableOutput,
+      TAS: data.temperature,
+      TAT: data.time,
+      TBS: data.timeBetweenCycles,
+      TMO: data.disableShutdown,
+      USL: data.upperLimit,
+      UWT: data.upperTime
+    }
+  };
+  return configurationDefault;
+};
+
 class Configuration extends React.Component {
   constructor(props) {
     super(props);
@@ -170,22 +197,7 @@ class Configuration extends React.Component {
       }
 
       const data = response.data.configDefault[0];
-
-      const configurationDefault = {
-        CONFIG_ENSAIO: {
-          LSL: data.inferiorLimit,
-          LWT: data.inferiorTime,
-          NOS: data.number,
-          TAO: data.enableOutput,
-          TAS: data.temperature,
-          TAT: data.time,
-          TBS: data.timeBetweenCycles,
-          TMO: data.disableShutdown,
-          USL: data.upperLimit,
-          UWT: data.upperTime
-        }
-      };
-
+      const configurationDefault = createConfig(data);
       this.setState({ configuration: configurationDefault });
     });
   }
@@ -208,21 +220,7 @@ class Configuration extends React.Component {
     Request(url, method).then(response => {
       const data = response.data.configAt;
 
-      const configurationDefault = {
-        CONFIG_ENSAIO: {
-          LSL: data.inferiorLimit,
-          LWT: data.inferiorTime,
-          NOS: data.number,
-          TAO: data.enableOutput,
-          TAS: data.temperature,
-          TAT: data.time,
-          TBS: data.timeBetweenCycles,
-          TMO: data.disableShutdown,
-          USL: data.upperLimit,
-          UWT: data.upperTime
-        }
-      };
-
+      const configurationDefault = createConfig(data);
       this.setState({ configuration: configurationDefault });
     });
   }
