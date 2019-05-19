@@ -239,9 +239,9 @@ class ConfigurationForm extends React.Component {
   }
 
   handleChange(event) {
-    const { target, name } = event;
+    const { target } = event;
     const value = target.type === "checkbox" ? target.checked : target.value;
-    const configuration = { [name]: value };
+    const configuration = { [event.target.name]: value };
     this.setState(prevState => ({
       configuration: { ...prevState.configuration, ...configuration }
     }));

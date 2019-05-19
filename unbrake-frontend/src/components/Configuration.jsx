@@ -17,7 +17,7 @@ import styles from "./ConfigurationStyles";
 const query =
   "id, name, number, time, temperature, timeBetweenCycles, upperLimit, inferiorLimit, upperTime, inferiorTime, disableShutdown, enableOutput";
 
-async function submit(configuration, name) {
+export async function submit(configuration, name) {
   const { TAS, TAT, TMO, TAO, UWT, NOS, LSL, USL, TBS, LWT } = configuration;
   if (name === "" || name === undefined) return;
 
