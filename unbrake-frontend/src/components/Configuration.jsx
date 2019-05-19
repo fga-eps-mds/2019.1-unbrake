@@ -1,17 +1,10 @@
 import React from "react";
 import iniparser from "iniparser";
-import Input from "@material-ui/core/Input";
-import Grid from "@material-ui/core/Grid";
+import { Input, Grid, Button, Dialog } from "@material-ui/core";
 import { withStyles } from "@material-ui/core/styles";
 import PropTypes from "prop-types";
-import OutlinedInput from "@material-ui/core/OutlinedInput";
-import InputLabel from "@material-ui/core/InputLabel";
 import MenuItem from "@material-ui/core/MenuItem";
-import FormControl from "@material-ui/core/FormControl";
-import Select from "@material-ui/core/Select";
-import Button from "@material-ui/core/Button";
 import TextField from "@material-ui/core/TextField";
-import Dialog from "@material-ui/core/Dialog";
 import DialogActions from "@material-ui/core/DialogActions";
 import DialogContent from "@material-ui/core/DialogContent";
 import DialogContentText from "@material-ui/core/DialogContentText";
@@ -19,18 +12,7 @@ import DialogTitle from "@material-ui/core/DialogTitle";
 import Request from "../utils/Request";
 import { API_URL_GRAPHQL } from "../utils/Constants";
 import ConfigurationForm from "./ConfigurationForm";
-
-const styles = () => ({
-  title: {
-    padding: "5px"
-  },
-  grid: {
-    padding: "5px"
-  },
-  formControl: {
-    minWidth: 200
-  }
-});
+import styles from "./ConfigurationStyles";
 
 const query =
   "id, name, number, time, temperature, timeBetweenCycles, upperLimit, inferiorLimit, upperTime, inferiorTime, disableShutdown, enableOutput";
@@ -63,22 +45,19 @@ const itensSelection = allConfiguration => {
 const selectConfiguration = (handleChange, configStates, classes) => {
   return (
     <Grid item xs={4} className={classes.title}>
-      <FormControl variant="outlined" className={classes.formControl}>
-        <InputLabel htmlFor="outlined-age-simple">Configurações</InputLabel>
-        <Select
-          value={configStates[0]}
-          onChange={handleChange}
-          input={
-            <OutlinedInput
-              labelWidth={configStates[0]}
-              name="dataBaseConfiguration"
-              id="outlined-age-simple"
-            />
-          }
-        >
-          {itensSelection(configStates[1])}
-        </Select>
-      </FormControl>
+      <TextField
+        id="outlined-select-currency"
+        select
+        label="Configurações"
+        value={configStates[0]}
+        onChange={handleChange}
+        name="dataBaseConfiguration"
+        className={classes.formControl}
+        margin="normal"
+        variant="outlined"
+      >
+        {itensSelection(configStates[1])}
+      </TextField>
     </Grid>
   );
 };
@@ -214,7 +193,6 @@ class Configuration extends React.Component {
   handleChange(event) {
     this.setState({ [event.target.name]: event.target.value });
     const invalidId = 0;
-
     if (
       event.target.name === "dataBaseConfiguration" &&
       event.target.value > invalidId
@@ -260,7 +238,7 @@ class Configuration extends React.Component {
     return (
       <Grid container item xs={10} alignItems="center" justify="center">
         <Grid item xs={4} className={classes.title}>
-          <h2 justify="left">Upload arquivo de {archive}</h2>
+          <h2>Upload arquivo de {archive}</h2>
         </Grid>
         <Grid item xs={4} className={classes.grid}>
           <Input
@@ -305,27 +283,34 @@ class Configuration extends React.Component {
     };
 
     return (
-      <Grid
-        alignItems="center"
-        justify="center"
-        style={{ minHeight: "5px" }}
-        container
-        spacing={40}
-      >
-        {this.uploadField("configuration")}
-
-        {selectConfiguration(this.handleChange, configStates, classes)}
-        <ConfigurationForm
-          configuration={configuration}
-          handleClickSave={this.handleClickSave}
-        />
-        <Button
-          onClick={this.handleUpDefault}
-          color="secondary"
-          variant="contained"
-        >
-          Padrão
-        </Button>
+      <Grid alignItems="center" container className={classes.configuration}>
+        <div>
+          <Grid container item justify="center">
+            {this.uploadField("configuration")}
+          </Grid>
+          <Grid container justify="center" item alignItems="center" xs={12}>
+            {selectConfiguration(this.handleChange, configStates, classes)}
+            <Button
+              onClick={this.handleUpDefault}
+              color="secondary"
+              variant="contained"
+            >
+              Configuração Padrão
+            </Button>
+          </Grid>
+          <Grid
+            container
+            alignItems="center"
+            xs={12}
+            item
+            className={classes.form}
+          >
+            <ConfigurationForm
+              configuration={configuration}
+              handleClickSave={this.handleClickSave}
+            />
+          </Grid>
+        </div>
         {dialogName(this.handleChange, this.handleClose, dialogStates)}
       </Grid>
     );

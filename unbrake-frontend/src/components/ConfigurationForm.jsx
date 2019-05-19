@@ -31,8 +31,6 @@ const validate = values => {
   return errors;
 };
 
-let nameField;
-
 const fieldsLabels = {
   NOS: "Numero de Snubs",
   USL: "Limite Superior (km/h)",
@@ -43,6 +41,7 @@ const fieldsLabels = {
 };
 
 const rowsFields = (classes, vector, handleChange) => {
+  let nameField;
   const fields = vector.map(value => {
     switch (value.name) {
       case "NOS":
@@ -67,19 +66,21 @@ const rowsFields = (classes, vector, handleChange) => {
         break;
     }
     return (
-      <Grid key={`row${nameField}`} item xs={3} className={classes.grid}>
-        <Field
-          id={nameField}
-          component={TextField}
-          label={fieldsLabels[nameField]}
-          onChange={handleChange}
-          type="number"
-          name={nameField}
-          validate={nameField === "USL" || nameField === "LSL" ? limits : []}
-          className={classes.textField}
-          margin="normal"
-          variant="outlined"
-        />
+      <Grid key={`row${nameField}`} container xs={3} item justify="center">
+        <div>
+          <Field
+            id={nameField}
+            component={TextField}
+            label={fieldsLabels[nameField]}
+            onChange={handleChange}
+            type="number"
+            name={nameField}
+            validate={nameField === "USL" || nameField === "LSL" ? limits : []}
+            className={classes.textField}
+            margin="normal"
+            variant="outlined"
+          />
+        </div>
       </Grid>
     );
   });
@@ -89,14 +90,7 @@ const rowsFields = (classes, vector, handleChange) => {
 const fieldsConfigurations = (classes, vector, handleChange) => {
   const rows = vector.map(value => {
     return (
-      <Grid
-        key={`field${value[0].name}`}
-        alignItems="center"
-        justify="center"
-        container
-        item
-        xs={12}
-      >
+      <Grid key={`${value[0].name}`} container xs={12} justify="center" item>
         {rowsFields(classes, value, handleChange)}
       </Grid>
     );
@@ -117,7 +111,7 @@ const checkBox = (classes, type, handleChange) => {
       break;
   }
   return (
-    <Grid container item xs={3} className={classes.gridButton} justify="center">
+    <Grid container item xs={3} style={{ paddingLeft: 20 }}>
       <FormControlLabel
         name={type.name}
         control={
@@ -129,21 +123,6 @@ const checkBox = (classes, type, handleChange) => {
         }
         label={label}
       />
-    </Grid>
-  );
-};
-
-const Buttons = (classes, submitting) => {
-  return (
-    <Grid container item xs={3} className={classes.grid}>
-      <Button
-        type="submit"
-        color="secondary"
-        variant="contained"
-        disabled={submitting}
-      >
-        Cadastrar
-      </Button>
     </Grid>
   );
 };
@@ -161,7 +140,7 @@ const CommunGrid = (classes, type, handleChange) => {
       break;
   }
   return (
-    <Grid item xs={6} className={classes.grid}>
+    <Grid item container xs={3} className={classes.grid} justify="center">
       <Field
         id={type.name}
         component={TextField}
@@ -186,15 +165,25 @@ const otherField = (classes, vector, handleChange) => {
         container
         item
         xs={12}
-        alignItems="center"
         justify="center"
       >
         {checkBox(classes, value[0], handleChange)}
         {CommunGrid(classes, value[1], handleChange)}
+        <Grid item container xs={3} />
       </Grid>
     );
   });
   return fields;
+};
+
+const Buttons = classes => {
+  return (
+    <Grid container item xs={3} className={classes.grid}>
+      <Button type="submit" color="secondary" variant="contained">
+        Cadastrar
+      </Button>
+    </Grid>
+  );
 };
 
 const verifyCheckbox = (TMO, TAO) => {
@@ -240,24 +229,6 @@ class ConfigurationForm extends React.Component {
         nextProps.configuration.CONFIG_ENSAIO.TMO,
         nextProps.configuration.CONFIG_ENSAIO.TAO
       );
-      /*
-       * if (
-       *   nextProps.configuration.CONFIG_ENSAIO.TMO === "FALSE" ||
-       *   nextProps.configuration.CONFIG_ENSAIO.TMO === false
-       * ) {
-       *   rightConfig.CONFIG_ENSAIO.TMO = false;
-       * } else {
-       *   rightConfig.CONFIG_ENSAIO.TMO = true;
-       * }
-       * if (
-       *   nextProps.configuration.CONFIG_ENSAIO.TAO === "FALSE" ||
-       *   nextProps.configuration.CONFIG_ENSAIO.TAO === false
-       * ) {
-       *   rightConfig.CONFIG_ENSAIO.TAO = false;
-       * } else {
-       *   rightConfig.CONFIG_ENSAIO.TAO = true;
-       * }
-       */
       rightConfig.CONFIG_ENSAIO.TMO = next.TMO;
       rightConfig.CONFIG_ENSAIO.TAO = next.TAO;
       dispatch(initialize("configuration", rightConfig.CONFIG_ENSAIO));
@@ -277,7 +248,7 @@ class ConfigurationForm extends React.Component {
   }
 
   render() {
-    const { classes, handleSubmit, submitting, handleClickSave } = this.props;
+    const { classes, handleSubmit, handleClickSave } = this.props;
     const { configuration } = this.state;
     const { TAS, TAT, TMO, TAO, UWT, NOS, LSL, USL, TBS, LWT } = configuration;
     const rowOne = [
@@ -304,15 +275,22 @@ class ConfigurationForm extends React.Component {
     return (
       <form
         className={classes.container}
-        autoComplete="off"
-        onSubmit={handleSubmit(values => {
-          submit(values, configuration);
+        onSubmit={handleSubmit(() => {
+          handleClickSave(this.state);
         })}
       >
         {fieldsConfigurations(classes, rows, this.handleChange)}
         {otherField(classes, othersFields, this.handleChange)}
-        <Grid container item xs={12} alignItems="center" justify="center">
-          {Buttons(classes, submitting)}
+        <Grid container xs={12} item justify="center">
+          <Grid
+            item
+            container
+            xs={6}
+            justify="center"
+            className={classes.gridButton}
+          >
+            {Buttons(classes)}
+          </Grid>
         </Grid>
       </form>
     );
@@ -322,7 +300,6 @@ class ConfigurationForm extends React.Component {
 ConfigurationForm.propTypes = {
   classes: PropTypes.objectOf(PropTypes.string).isRequired,
   handleSubmit: PropTypes.func.isRequired,
-  submitting: PropTypes.bool.isRequired,
   configuration: PropTypes.oneOfType([PropTypes.object]).isRequired,
   dispatch: PropTypes.func.isRequired,
   handleClickSave: PropTypes.func.isRequired

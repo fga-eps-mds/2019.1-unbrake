@@ -14,10 +14,23 @@ const styles = theme => ({
     width: 200
   },
   grid: {
-    padding: "px"
+    padding: "0px"
   },
   gridButton: {
-    paddingLeft: theme.spacing.unit + theme.spacing.unit
+    padding: "15px"
+  },
+  title: {
+    padding: "5px"
+  },
+  formControl: {
+    margin: theme.spacing.unit,
+    minWidth: 200
+  },
+  form: {
+    padding: "30px"
+  },
+  configuration: {
+    minHeight: "100vh"
   }
 });
 

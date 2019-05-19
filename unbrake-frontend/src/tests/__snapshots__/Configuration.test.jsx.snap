@@ -3,108 +3,115 @@
 exports[`<Configuration /> render() renders the component 1`] = `
 <WithStyles(Grid)
   alignItems="center"
+  className="Configuration-configuration-10"
   container={true}
-  justify="center"
-  spacing={40}
-  style={
-    Object {
-      "minHeight": "5px",
-    }
-  }
 >
-  <WithStyles(Grid)
-    alignItems="center"
-    container={true}
-    item={true}
-    justify="center"
-    xs={10}
-  >
+  <div>
     <WithStyles(Grid)
-      className="Configuration-title-1"
+      container={true}
       item={true}
-      xs={4}
+      justify="center"
     >
-      <h2
-        justify="left"
+      <WithStyles(Grid)
+        alignItems="center"
+        container={true}
+        item={true}
+        justify="center"
+        xs={10}
       >
-        Upload arquivo de 
-        Configuração
-      </h2>
+        <WithStyles(Grid)
+          className="Configuration-title-7"
+          item={true}
+          xs={4}
+        >
+          <h2>
+            Upload arquivo de 
+            Configuração
+          </h2>
+        </WithStyles(Grid)>
+        <WithStyles(Grid)
+          className="Configuration-grid-5"
+          item={true}
+          xs={4}
+        >
+          <WithStyles(Input)
+            name="configuration"
+            onChange={[Function]}
+            type="file"
+          />
+        </WithStyles(Grid)>
+      </WithStyles(Grid)>
     </WithStyles(Grid)>
     <WithStyles(Grid)
-      className="Configuration-grid-2"
+      alignItems="center"
+      container={true}
       item={true}
-      xs={4}
+      justify="center"
+      xs={12}
     >
-      <WithStyles(Input)
-        name="configuration"
-        onChange={[Function]}
-        type="file"
+      <WithStyles(Grid)
+        className="Configuration-title-7"
+        item={true}
+        xs={4}
+      >
+        <TextField
+          className="Configuration-formControl-8"
+          id="outlined-select-currency"
+          label="Configurações"
+          margin="normal"
+          name="dataBaseConfiguration"
+          onChange={[Function]}
+          required={false}
+          select={true}
+          value={0}
+          variant="outlined"
+        >
+          <WithStyles(MenuItem)
+            key="0"
+            value={0}
+          />
+          <WithStyles(MenuItem)
+            key="NaN"
+          />
+        </TextField>
+      </WithStyles(Grid)>
+      <WithStyles(Button)
+        color="secondary"
+        onClick={[Function]}
+        variant="contained"
+      >
+        Configuração Padrão
+      </WithStyles(Button)>
+    </WithStyles(Grid)>
+    <WithStyles(Grid)
+      alignItems="center"
+      className="Configuration-form-9"
+      container={true}
+      item={true}
+      xs={12}
+    >
+      <WithStyles(ReduxForm)
+        configuration={
+          Object {
+            "CONFIG_ENSAIO": Object {
+              "LSL": "",
+              "LWT": "",
+              "NOS": "",
+              "TAO": false,
+              "TAS": "",
+              "TAT": "",
+              "TBS": "",
+              "TMO": false,
+              "USL": "",
+              "UWT": "",
+            },
+            "name": "",
+          }
+        }
+        handleClickSave={[Function]}
       />
     </WithStyles(Grid)>
-  </WithStyles(Grid)>
-  <WithStyles(Grid)
-    className="Configuration-title-1"
-    item={true}
-    xs={4}
-  >
-    <WithStyles(FormControl)
-      className="Configuration-formControl-3"
-      variant="outlined"
-    >
-      <WithStyles(WithFormControlContext(InputLabel))
-        htmlFor="outlined-age-simple"
-      >
-        Configurações
-      </WithStyles(WithFormControlContext(InputLabel))>
-      <WithStyles(WithFormControlContext(Select))
-        input={
-          <WithStyles(OutlinedInput)
-            id="outlined-age-simple"
-            labelWidth={0}
-            name="dataBaseConfiguration"
-          />
-        }
-        onChange={[Function]}
-        value={0}
-      >
-        <WithStyles(MenuItem)
-          key="0"
-          value={0}
-        />
-        <WithStyles(MenuItem)
-          key="NaN"
-        />
-      </WithStyles(WithFormControlContext(Select))>
-    </WithStyles(FormControl)>
-  </WithStyles(Grid)>
-  <WithStyles(ReduxForm)
-    configuration={
-      Object {
-        "CONFIG_ENSAIO": Object {
-          "LSL": "",
-          "LWT": "",
-          "NOS": "",
-          "TAO": false,
-          "TAS": "",
-          "TAT": "",
-          "TBS": "",
-          "TMO": false,
-          "USL": "",
-          "UWT": "",
-        },
-        "name": "",
-      }
-    }
-    handleClickSave={[Function]}
-  />
-  <WithStyles(Button)
-    color="secondary"
-    onClick={[Function]}
-    variant="contained"
-  >
-    Padrão
-  </WithStyles(Button)>
+  </div>
   <WithStyles(Dialog)
     aria-labelledby="form-dialog-title"
     onClose={[Function]}
