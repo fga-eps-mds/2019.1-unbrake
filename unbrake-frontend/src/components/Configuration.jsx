@@ -37,6 +37,7 @@ const query =
 
 async function submit(configuration, name) {
   const { TAS, TAT, TMO, TAO, UWT, NOS, LSL, USL, TBS, LWT } = configuration;
+  if (name === "" || name === undefined) return;
 
   const url = `${API_URL_GRAPHQL}?query=mutation{createConfig(name:"${name}",number:${NOS},timeBetweenCycles:${TBS},upperLimit:${USL},inferiorLimit:${LSL},upperTime:${UWT},inferiorTime:${LWT},disableShutdown:${TMO},enableOutput:${TAO},temperature:${TAS},time:${TAT}){config{number, timeBetweenCycles,upperLimit,inferiorLimit}}}`;
   const method = "POST";
@@ -166,16 +167,6 @@ class Configuration extends React.Component {
     const CONFIG_ENSAIO = state.configuration;
     const newConfig = { CONFIG_ENSAIO };
     this.setState({ configuration: newConfig });
-
-    /*
-     * if (newConfig.CONFIG_ENSAIO.TAO === false) {
-     *   this.state.configuration.CONFIG_ENSAIO.TAO = false;
-     * }
-     * if (newConfig.CONFIG_ENSAIO.TMO === false) {
-     *   this.state.configuration.CONFIG_ENSAIO.TMO = false;
-     * }
-     */
-
     this.handleClickOpen();
   }
 
@@ -222,8 +213,12 @@ class Configuration extends React.Component {
 
   handleChange(event) {
     this.setState({ [event.target.name]: event.target.value });
+    const invalidId = 0;
 
-    if (event.target.name === "dataBaseConfiguration")
+    if (
+      event.target.name === "dataBaseConfiguration" &&
+      event.target.value > invalidId
+    )
       this.handleSelectConfig(event.target.value);
   }
 

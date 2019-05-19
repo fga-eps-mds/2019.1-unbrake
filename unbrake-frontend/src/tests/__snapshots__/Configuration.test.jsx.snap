@@ -93,8 +93,10 @@ exports[`<Configuration /> render() renders the component 1`] = `
           "USL": "",
           "UWT": "",
         },
+        "name": "",
       }
     }
+    handleClickSave={[Function]}
   />
   <WithStyles(Button)
     color="secondary"
@@ -103,5 +105,47 @@ exports[`<Configuration /> render() renders the component 1`] = `
   >
     Padrão
   </WithStyles(Button)>
+  <WithStyles(Dialog)
+    aria-labelledby="form-dialog-title"
+    onClose={[Function]}
+    open={false}
+  >
+    <WithStyles(DialogTitle)
+      id="form-dialog-title"
+    >
+      Nome da Configuração
+    </WithStyles(DialogTitle)>
+    <WithStyles(DialogContent)>
+      <WithStyles(DialogContentText)>
+        Insira aqui o nome que você deseja dar para este arquivo de configuração
+      </WithStyles(DialogContentText)>
+      <TextField
+        autoFocus={true}
+        fullWidth={true}
+        label="Nome"
+        margin="dense"
+        name="name"
+        onChange={[Function]}
+        required={false}
+        select={false}
+        type="text"
+        variant="standard"
+      />
+    </WithStyles(DialogContent)>
+    <WithStyles(DialogActions)>
+      <WithStyles(Button)
+        color="primary"
+        onClick={[Function]}
+      >
+        Cancelar
+      </WithStyles(Button)>
+      <WithStyles(Button)
+        color="primary"
+        onClick={[Function]}
+      >
+        Cadastrar
+      </WithStyles(Button)>
+    </WithStyles(DialogActions)>
+  </WithStyles(Dialog)>
 </WithStyles(Grid)>
 `;

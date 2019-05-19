@@ -104,7 +104,7 @@ const fieldsConfigurations = (classes, vector, handleChange) => {
   return rows;
 };
 
-const checkBox = (classes, type) => {
+const checkBox = (classes, type, handleChange) => {
   let label;
   switch (type.name) {
     case "TMO":
@@ -119,8 +119,13 @@ const checkBox = (classes, type) => {
   return (
     <Grid container item xs={3} className={classes.gridButton} justify="center">
       <FormControlLabel
+        name={type.name}
         control={
-          <Field component={Checkbox} name={type.name} value={type.value} />
+          <Field
+            component={Checkbox}
+            onClick={handleChange}
+            value={type.value}
+          />
         }
         label={label}
       />
@@ -184,12 +189,27 @@ const otherField = (classes, vector, handleChange) => {
         alignItems="center"
         justify="center"
       >
-        {checkBox(classes, value[0])}
+        {checkBox(classes, value[0], handleChange)}
         {CommunGrid(classes, value[1], handleChange)}
       </Grid>
     );
   });
   return fields;
+};
+
+const verifyCheckbox = (TMO, TAO) => {
+  const dictionary = { TAO: "", TMO: "" };
+  if (TMO === "FALSE" || TMO === false) {
+    dictionary.TMO = false;
+  } else {
+    dictionary.TMO = true;
+  }
+  if (TAO === "FALSE" || TAO === false) {
+    dictionary.TAO = false;
+  } else {
+    dictionary.TAO = true;
+  }
+  return dictionary;
 };
 
 class ConfigurationForm extends React.Component {
@@ -213,15 +233,33 @@ class ConfigurationForm extends React.Component {
   }
 
   shouldComponentUpdate(nextProps) {
-    const { configuration } = this.props;
+    const { configuration, dispatch } = this.props;
     if (configuration !== nextProps.configuration) {
       const rightConfig = Object.assign({}, nextProps.configuration);
-      rightConfig.CONFIG_ENSAIO.TMO =
-        nextProps.configuration.CONFIG_ENSAIO.TMO !== "FALSE";
-      rightConfig.CONFIG_ENSAIO.TAO =
-        nextProps.configuration.CONFIG_ENSAIO.TAO !== "FALSE";
-
-      const { dispatch } = this.props;
+      const next = verifyCheckbox(
+        nextProps.configuration.CONFIG_ENSAIO.TMO,
+        nextProps.configuration.CONFIG_ENSAIO.TAO
+      );
+      /*
+       * if (
+       *   nextProps.configuration.CONFIG_ENSAIO.TMO === "FALSE" ||
+       *   nextProps.configuration.CONFIG_ENSAIO.TMO === false
+       * ) {
+       *   rightConfig.CONFIG_ENSAIO.TMO = false;
+       * } else {
+       *   rightConfig.CONFIG_ENSAIO.TMO = true;
+       * }
+       * if (
+       *   nextProps.configuration.CONFIG_ENSAIO.TAO === "FALSE" ||
+       *   nextProps.configuration.CONFIG_ENSAIO.TAO === false
+       * ) {
+       *   rightConfig.CONFIG_ENSAIO.TAO = false;
+       * } else {
+       *   rightConfig.CONFIG_ENSAIO.TAO = true;
+       * }
+       */
+      rightConfig.CONFIG_ENSAIO.TMO = next.TMO;
+      rightConfig.CONFIG_ENSAIO.TAO = next.TAO;
       dispatch(initialize("configuration", rightConfig.CONFIG_ENSAIO));
       this.setState({ configuration: rightConfig.CONFIG_ENSAIO });
       return true;
@@ -230,9 +268,9 @@ class ConfigurationForm extends React.Component {
   }
 
   handleChange(event) {
-    const configuration = {};
-    const { name, value } = event.target;
-    configuration[name] = value;
+    const { target, name } = event;
+    const value = target.type === "checkbox" ? target.checked : target.value;
+    const configuration = { [name]: value };
     this.setState(prevState => ({
       configuration: { ...prevState.configuration, ...configuration }
     }));
