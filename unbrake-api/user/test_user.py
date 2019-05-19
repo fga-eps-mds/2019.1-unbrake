@@ -22,7 +22,8 @@ def test_create_user(username, password):
         username +
         '", password: "' +
         password +
-        '"){user{id, username}}}')
+        '", isSuperuser: false'
+        '){user{id, username}}}')
     assert result.status_code == 200
     user = result.json()['data']['createUser']['user']
     assert user['username'] == username
@@ -44,7 +45,8 @@ def test_token_auth(username, password):
         username +
         '", password: "' +
         password +
-        '"){user{id, username}}}')
+        '", isSuperuser: false'
+        '){user{id, username}}}')
 
     assert result.status_code == 200
 
@@ -83,11 +85,13 @@ def test_get_all_users(username1, username2, password):
     client = Client()
 
     result1 = client.post(
-        '/graphql?query=mutation{createUser(username: "' +
+        '/graphql?query=mutation{createUser(username:"' +
         username1 +
-        '", password: "' +
+        '" , password: "' +
         password +
-        '"){user{id, username}}}')
+        '", isSuperuser: false){user{id, username, isSuperuser}}}')
+    print(result1)
+
     assert result1.status_code == 200
 
     result2 = client.post(
@@ -95,7 +99,8 @@ def test_get_all_users(username1, username2, password):
         username2 +
         '", password: "' +
         password +
-        '"){user{id, username}}}')
+        '", isSuperuser: false'
+        '){user{id, username}}}')
     assert result2.status_code == 200
 
     all_users = client.get(

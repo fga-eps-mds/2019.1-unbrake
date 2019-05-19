@@ -29,7 +29,8 @@ export const submit = values => {
     `${API_URL_GRAPHQL}?query=mutation{createUser(password: "${
       values.password
     }",
-     username: "${values.username}"){user{id}}}`,
+     username: "${values.username}",
+     isSuperuser: false){user{id}}}`,
     {
       method: "POST"
     }
@@ -49,7 +50,7 @@ export const submit = values => {
           });
         }
       } else if (parsedData.data.createUser.user !== null) {
-        history.push("/login");
+        history.push("/");
       }
     });
 };
