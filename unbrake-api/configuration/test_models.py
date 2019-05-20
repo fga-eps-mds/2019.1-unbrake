@@ -14,6 +14,8 @@ CLIENT = Client()
 # First argument of param is the first parameter name and so on
 # id is like the name for the test case
 # Is possible to test only one test case with: pytest [file] -k [id]
+
+
 @pytest.mark.django_db
 @pytest.mark.parametrize(
     ("parameters"), (

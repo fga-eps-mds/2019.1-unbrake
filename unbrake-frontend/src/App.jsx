@@ -29,8 +29,7 @@ const App = () => (
   <Provider store={store}>
     <MuiThemeProvider theme={theme}>
       <React.Fragment>
-        {/* <Routes /> */}
-        <Configuration />
+        <Routes />
       </React.Fragment>
     </MuiThemeProvider>
   </Provider>
