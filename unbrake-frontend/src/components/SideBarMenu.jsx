@@ -93,7 +93,11 @@ const listMenu = (location, history) => {
 const renderSignupUser = () => {
   if (localStorage.getItem("isSuperuser") === "true") {
     return (
-      <Button style={{ textTransform: "none" }} color="inherit" href="/signUp">
+      <Button
+        style={{ textTransform: "none", marginRight: "20px" }}
+        color="inherit"
+        href="/signUp"
+      >
         Cadastrar usuário
       </Button>
     );
@@ -120,7 +124,16 @@ const ToolBar = (classes, open, handleDrawerOpen) => {
         <Button style={{ textTransform: "none" }} color="inherit" href="/">
           UnBrake
         </Button>
-        {renderSignupUser()}
+        <div>
+          {renderSignupUser()}
+          <Button
+            style={{ textTransform: "none", marginRight: "20px" }}
+            color="inherit"
+            href="/"
+          >
+            Logout
+          </Button>
+        </div>
       </div>
     </Toolbar>
   );
