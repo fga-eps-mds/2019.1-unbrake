@@ -54,20 +54,6 @@ function MySnackbarContent(props) {
           {message}
         </span>
       }
-      /*
-       *action={[
-       * <IconButton
-       * key="close"
-       * aria-label="Close"
-       * color="inherit"
-       * className={classes.close}
-       * onClick={onClose}
-       * >
-       * <CloseIcon className={classes.icon} />
-       * </IconButton>
-       * ]}
-       *{...other}
-       */
     />
   );
 }
@@ -78,13 +64,6 @@ class NotificationContainer extends React.Component {
     super(props);
     this.handleClose = this.handleClose.bind(this);
   }
-
-  /*
-   *componentWillReceiveProps(newProps) {
-   *  const { message, variante } = newProps.newNotification;
-   *  return this.setState({ open: true, message, level: variante });
-   *}
-   */
 
   closeNotification() {
     const { hideMessage } = this.props;
