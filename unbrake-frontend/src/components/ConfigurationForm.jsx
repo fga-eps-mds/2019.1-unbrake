@@ -5,7 +5,7 @@ import { TextField, Checkbox } from "redux-form-material-ui";
 import { withStyles, Button, FormControlLabel, Grid } from "@material-ui/core";
 import Request from "../utils/Request";
 import { API_URL_GRAPHQL } from "../utils/Constants";
-import styles from "./ConfigurationStyles";
+import styles from "./Styles";
 
 const limits = (value, allValues) => {
   return parseInt(allValues.LSL, 10) >= parseInt(allValues.USL, 10)

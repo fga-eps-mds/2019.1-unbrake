@@ -2,7 +2,6 @@ import React from "react";
 import PropTypes from "prop-types";
 import classNames from "classnames";
 import { withStyles } from "@material-ui/core/styles";
-import Cookies from "universal-cookie";
 
 import {
   Drawer,
@@ -28,14 +27,13 @@ import {
 } from "@material-ui/icons";
 import { BrowserRouter, Route } from "react-router-dom";
 import { connect } from "react-redux";
-import history from "../utils/history";
 
 import Configuration from "./Configuration";
 import Calibration from "./Calibration";
 import Test from "./Test";
 import Analysis from "./Analysis";
+import UserOptionsMenu from "./UserOptionsMenu";
 
-const cookie = new Cookies();
 const drawerWidth = 240;
 const drawerCloseWidth = 7;
 const themeWidth = 9;
@@ -93,28 +91,6 @@ const listMenu = (location, history) => {
   return list;
 };
 
-const renderSignupUser = () => {
-  if (localStorage.getItem("isSuperuser") === "true") {
-    return (
-      <Button
-        style={{ textTransform: "none", marginRight: "20px" }}
-        color="inherit"
-        href="/signUp"
-      >
-        Cadastrar usuário
-      </Button>
-    );
-  }
-  return null;
-};
-
-const handleLogout = () => {
-  cookie.remove("token");
-  cookie.remove("csrftoken");
-  localStorage.clear();
-  history.push("/login");
-};
-
 const ToolBar = (classes, open, handleDrawerOpen) => {
   return (
     <Toolbar disableGutters={!open}>
@@ -134,16 +110,7 @@ const ToolBar = (classes, open, handleDrawerOpen) => {
         <Button style={{ textTransform: "none" }} color="inherit" href="/">
           UnBrake
         </Button>
-        <div>
-          {renderSignupUser()}
-          <Button
-            style={{ textTransform: "none", marginRight: "20px" }}
-            color="inherit"
-            onClick={handleLogout}
-          >
-            Logout
-          </Button>
-        </div>
+        <UserOptionsMenu />
       </div>
     </Toolbar>
   );
