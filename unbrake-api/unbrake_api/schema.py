@@ -7,6 +7,7 @@ import graphql_jwt
 import user.schema
 import configuration.schema
 import calibration.schema
+import calibration.mutation
 
 # pylint: disable = too-few-public-methods
 
@@ -25,6 +26,7 @@ class Query(
 class Mutation(
         user.schema.Mutation,
         configuration.schema.Mutation,
+        calibration.mutation.Mutation,
         graphene.ObjectType,):
     '''
     This class is responsible for providing the token to user

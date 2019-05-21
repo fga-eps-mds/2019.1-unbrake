@@ -46,7 +46,7 @@ class CreateConfig(graphene.Mutation):
                inferior_limit, upper_time, inferior_time, disable_shutdown,
                enable_output, temperature, time):
         '''
-        Create the user with the given parameters end add to db
+        Create the Config with the given parameters end add to db
         '''
         config = Config(
             number=number,

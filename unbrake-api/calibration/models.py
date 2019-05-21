@@ -22,7 +22,7 @@ class CalibrationVibration(models.Model):
         conversionFactor is FCVB in the file,
         vibrationOffset is OFVB in the file.
     '''
-    acquisition_temp = models.IntegerField()
+    acquisition_chanel = models.IntegerField()
     conversion_factor = models.FloatField()
     vibration_offset = models.FloatField()
 
@@ -35,7 +35,7 @@ class CalibrationForce(models.Model):
         converionFactor is FCF int the file,
         forceOffset is OFF 1int the file.
     '''
-    acquisition_temp = models.IntegerField()
+    acquisition_chanel = models.IntegerField()
     conversion_factor = models.FloatField()
     force_offset = models.FloatField()
 
