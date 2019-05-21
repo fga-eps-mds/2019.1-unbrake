@@ -29,11 +29,11 @@ import { BrowserRouter, Route } from "react-router-dom";
 import { connect } from "react-redux";
 
 import Configuration from "./Configuration";
-import Calibration from "./Calibration";
+import Calibration from "./Calibration/Calibration";
 import Test from "./Test";
 import Analysis from "./Analysis";
 import UserOptionsMenu from "./UserOptionsMenu";
-import Vibration from "./CalibrationVibration";
+import Vibration from "./Calibration/Vibration";
 
 const drawerWidth = 240;
 const drawerCloseWidth = 7;
