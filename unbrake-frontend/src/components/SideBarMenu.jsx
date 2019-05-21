@@ -32,6 +32,7 @@ import Configuration from "./Configuration";
 import Calibration from "./Calibration";
 import Test from "./Test";
 import Analysis from "./Analysis";
+import UserOptionsMenu from "./UserOptionsMenu";
 
 const drawerWidth = 240;
 const drawerCloseWidth = 7;
@@ -90,17 +91,6 @@ const listMenu = (location, history) => {
   return list;
 };
 
-const renderSignupUser = () => {
-  if (localStorage.getItem("isSuperuser") === "true") {
-    return (
-      <Button style={{ textTransform: "none" }} color="inherit" href="/signUp">
-        Cadastrar usuário
-      </Button>
-    );
-  }
-  return null;
-};
-
 const ToolBar = (classes, open, handleDrawerOpen) => {
   return (
     <Toolbar disableGutters={!open}>
@@ -120,7 +110,7 @@ const ToolBar = (classes, open, handleDrawerOpen) => {
         <Button style={{ textTransform: "none" }} color="inherit" href="/">
           UnBrake
         </Button>
-        {renderSignupUser()}
+        <UserOptionsMenu />
       </div>
     </Toolbar>
   );
