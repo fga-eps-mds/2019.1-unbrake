@@ -35,12 +35,9 @@ export async function verifyToken() {
 
 export function isAuthenticated(response) {
   if (response.data !== undefined && response.data !== null) {
+    const stringfyCookie = JSON.stringfy(cookies.get("token"));
     return (
-      cookies.get("token") !== "undefined" &&
-      cookies.get("token") !== "null" &&
-      cookies.get("token") !== undefined &&
-      cookies.get("token") !== null &&
-      response !== false
+      stringfyCookie === "undefined" && stringfyCookie === "null" && response
     );
   }
   return false;
