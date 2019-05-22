@@ -285,19 +285,19 @@ def test_calibration_temperature():
     '''
 
     response = {
-        'acquisitionTemp': 1,
+        'acquisitionChanel': 1,
         'conversionFactor': 0.200,
         'temperatureOffset': -1.2500
     }
 
     CalibrationTemperature(
-        acquisition_temp=1,
+        acquisition_chanel=1,
         conversion_factor=0.200,
         temperature_offset=-1.2500,
     ).save()
 
     CalibrationTemperature(
-        acquisition_temp=2,
+        acquisition_chanel=2,
         conversion_factor=0.400,
         temperature_offset=-2.500,
     ).save()
@@ -305,7 +305,7 @@ def test_calibration_temperature():
     client = Client()
     result = client.get(
         '/graphql?query={calibrationTemperature(id: 1)'
-        '{acquisitionTemp, conversionFactor, temperatureOffset}}'
+        '{acquisitionChanel, conversionFactor, temperatureOffset}}'
     )
     assert result.status_code == 200
     single_aux = result.json()['data']['calibrationTemperature']
@@ -317,7 +317,7 @@ def test_calibration_temperature():
     client = Client()
     result = client.get(
         '/graphql?query={allCalibrationTemperature'
-        '{id, acquisitionTemp, conversionFactor, temperatureOffset}}'
+        '{id, acquisitionChanel, conversionFactor, temperatureOffset}}'
     )
     assert result.status_code == 200
     multiple_aux = result.json()['data']['allCalibrationTemperature']

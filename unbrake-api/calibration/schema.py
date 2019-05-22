@@ -110,7 +110,7 @@ class Query:
     calibration_vibration = graphene.Field(
         CalibrationVibrationType,
         id=graphene.ID(),
-        acquisition_temp=graphene.Int(),
+        acquisition_chanel=graphene.Int(),
         conversion_factor=graphene.Float(),
         vibrationOffset=graphene.Float()
     )
@@ -119,7 +119,7 @@ class Query:
     calibration_force = graphene.Field(
         CalibrationForceType,
         id=graphene.ID(),
-        acquisition_temp=graphene.Int(),
+        acquisition_chanel=graphene.Int(),
         conversion_factor=graphene.Float(),
         force_offset=graphene.Float()
     )
@@ -148,7 +148,7 @@ class Query:
     calibration_temperature = graphene.Field(
         CalibrationTemperatureType,
         id=graphene.ID(),
-        acquisition_temp=graphene.Int(),
+        acquisition_chanel=graphene.Int(),
         conversion_factor=graphene.Float(),
         temperature_offset=graphene.Float(),
     )
@@ -165,6 +165,13 @@ class Query:
         max_pression=graphene.Float()
     )
     all_calibration_command = graphene.List(CalibrationCommandType)
+
+    all_calibration = graphene.List(CalibrationType)
+
+    calibration = graphene.Field(
+        CalibrationType,
+        id=graphene.ID()
+    )
 
     def resolve_all_calibration_vibration(self, info, **kwargs):
         '''
@@ -260,4 +267,20 @@ class Query:
 
         if pk is not None:
             return CalibrationCommand.objects.get(pk=pk)
+        return None
+
+    def resolve_all_calibration(self, info, **kwargs):
+        '''
+            Return all calibration objects on db
+        '''
+        return Calibration.objects.all()
+
+    def resolve_calibration(self, info, **kwargs):
+        '''
+            Retunr a Calibration by id
+        '''
+        pk = kwargs.get('id')
+
+        if pk is not None:
+            return Calibration.objects.get(pk=pk)
         return None
