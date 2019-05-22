@@ -1,99 +1,16 @@
 import React from "react";
 import PropTypes from "prop-types";
-import { Field, reduxForm } from "redux-form";
-import { TextField, Checkbox } from "redux-form-material-ui";
-import { withStyles, FormControlLabel, Grid } from "@material-ui/core";
+import { reduxForm } from "redux-form";
+import { withStyles, Grid } from "@material-ui/core";
 import styles from "../Styles";
 import RealTimeChart from "../RealTimeChart";
+import { checkbox, field } from "./CalibrationComponents";
 
-const allSpace = 12;
-const halfSpace = 6;
-
-const label = name => {
-  let nameLabel = "";
-  switch (name) {
-    case "CHVB":
-      nameLabel = "Canal de aquisição";
-      break;
-    case "Vmv":
-      nameLabel = "Vibração(mv)";
-      break;
-    case "PVmv":
-      nameLabel = "Plota Vibração(mv)";
-      break;
-    case "Vg":
-      nameLabel = "Vibração(g)";
-      break;
-    case "PVg":
-      nameLabel = "Plota Vibração(g)";
-      break;
-    case "FCVB":
-      nameLabel = "Fator de conversão";
-      break;
-    case "OFVB":
-      nameLabel = "Offset";
-      break;
-    default:
-      nameLabel = "";
-      break;
-  }
-  return nameLabel;
-};
-
-const checkbox = (type, handleChange) => {
-  return (
-    <Grid alignItems="center" justify="center" container item xs={6}>
-      <FormControlLabel
-        control={
-          <Field
-            disabled={type.disable}
-            component={Checkbox}
-            onClick={handleChange}
-            name={type.name}
-            value={type.value}
-          />
-        }
-        label={label(type.name)}
-      />
-    </Grid>
-  );
-};
-
-const field = (type, style, handleChange) => {
-  const classes = style[0];
-  return (
-    <Grid
-      container
-      alignItems="center"
-      justify="center"
-      item
-      xs={style[1]}
-      className={classes.grid}
-    >
-      <Field
-        id={type.name}
-        component={TextField}
-        label={label(type.name)}
-        value={type.value}
-        onChange={handleChange}
-        disabled={type.disable}
-        type="number"
-        name={type.name}
-        className={classes.textField}
-        margin="normal"
-        variant="outlined"
-      />
-    </Grid>
-  );
-};
-
-const freeFields = (states, style, handleChange) => {
-  const newStyle = style;
-  newStyle[1] = allSpace;
+const freeFields = (states, classes, handleChange) => {
   const fields = states.map(value => {
     return (
       <Grid key={value.name} item xs={6}>
-        {field(value, newStyle, handleChange)}
+        {field(value, classes, handleChange)}
       </Grid>
     );
   });
@@ -103,25 +20,30 @@ const freeFields = (states, style, handleChange) => {
 const vibrationUnits = (states, style, handleChange) => {
   return (
     <Grid alignItems="center" container justify="center" item xs={12}>
-      {field(states[0], style, handleChange)}
-      {checkbox(states[1], handleChange)}
+      <Grid alignItems="center" justify="center" container item xs={6}>
+        {field(states[0], style, handleChange)}
+      </Grid>
+      <Grid alignItems="center" justify="center" container item xs={6}>
+        {checkbox(states[1], handleChange)}
+      </Grid>
     </Grid>
   );
 };
 
 const allFields = (states, classes, handleChange) => {
-  const style = [classes, halfSpace];
   return (
-    <Grid alignItems="center" justify="center" container item xs={allSpace}>
-      <Grid item xs={allSpace}>
-        {field(states[0], style, handleChange)}
+    <Grid alignItems="center" justify="center" container item xs={12}>
+      <Grid item xs={12}>
+        <Grid alignItems="center" justify="center" container item xs={6}>
+          {field(states[0], classes, handleChange)}
+        </Grid>
       </Grid>
 
-      {vibrationUnits(states[1], style, handleChange)}
-      {vibrationUnits(states[2], style, handleChange)}
+      {vibrationUnits(states[1], classes, handleChange)}
+      {vibrationUnits(states[2], classes, handleChange)}
 
-      <Grid alignItems="center" justify="center" container item xs={allSpace}>
-        {freeFields(states[3], style, handleChange)}
+      <Grid alignItems="center" justify="center" container item xs={12}>
+        {freeFields(states[3], classes, handleChange)}
       </Grid>
     </Grid>
   );
@@ -180,10 +102,7 @@ class Vibration extends React.Component {
           container
           style={{ minHeight: "60vh" }}
         >
-          <form
-            className={classes.container}
-            //  onSubmit={handleSubmit(values => {submit(values, this.state)})}
-          >
+          <form className={classes.container}>
             <Grid item xs />
             <Grid container item justify="center" xs={6}>
               {allFields(states, classes, this.handleChange)}
@@ -191,6 +110,7 @@ class Vibration extends React.Component {
             <Grid item xs />
           </form>
         </Grid>
+
         <Grid item container xs={9} justify="center">
           <RealTimeChart />
         </Grid>
