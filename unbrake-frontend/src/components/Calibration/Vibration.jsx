@@ -6,23 +6,30 @@ import styles from "../Styles";
 import RealTimeChart from "../RealTimeChart";
 import { checkbox, field } from "./CalibrationComponents";
 
+const renderField = (states, classes, handleChange) => {
+  return (
+    <Grid alignItems="center" justify="center" container item xs={6}>
+      {field(states, classes, handleChange)}
+    </Grid>
+  );
+};
+
 const freeFields = (states, classes, handleChange) => {
   const fields = states.map(value => {
     return (
-      <Grid key={value.name} item xs={6}>
-        {field(value, classes, handleChange)}
-      </Grid>
+      <React.Fragment>
+        {renderField(value, classes, handleChange)}
+      </React.Fragment>
     );
   });
   return fields;
 };
 
-const vibrationUnits = (states, style, handleChange) => {
+const vibrationUnits = (states, classes, handleChange) => {
   return (
     <Grid alignItems="center" container justify="center" item xs={12}>
-      <Grid alignItems="center" justify="center" container item xs={6}>
-        {field(states[0], style, handleChange)}
-      </Grid>
+      {renderField(states[0], classes, handleChange)}
+
       <Grid alignItems="center" justify="center" container item xs={6}>
         {checkbox(states[1], handleChange)}
       </Grid>
@@ -34,17 +41,13 @@ const allFields = (states, classes, handleChange) => {
   return (
     <Grid alignItems="center" justify="center" container item xs={12}>
       <Grid item xs={12}>
-        <Grid alignItems="center" justify="center" container item xs={6}>
-          {field(states[0], classes, handleChange)}
-        </Grid>
+        {renderField(states[0], classes, handleChange)}
       </Grid>
 
       {vibrationUnits(states[1], classes, handleChange)}
       {vibrationUnits(states[2], classes, handleChange)}
 
-      <Grid alignItems="center" justify="center" container item xs={12}>
-        {freeFields(states[3], classes, handleChange)}
-      </Grid>
+      {freeFields(states[3], classes, handleChange)}
     </Grid>
   );
 };
@@ -67,9 +70,9 @@ class Vibration extends React.Component {
   }
 
   handleChange(event) {
-    const { target } = event;
-    const value = target.type === "checkbox" ? target.checked : target.value;
-    const vibration = { [event.target.name]: value };
+    const { name, type, value, checked } = event;
+    const newValue = type === "checkbox" ? checked : value;
+    const vibration = { [name]: newValue };
     this.setState(prevState => ({
       vibration: { ...prevState.vibration, ...vibration }
     }));
