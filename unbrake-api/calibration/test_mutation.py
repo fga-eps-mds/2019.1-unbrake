@@ -253,9 +253,9 @@ def test_mutation_calibrate():
            'temperatureOffset, acquisitionChanel, conversionFactor,'
            'temperatureOffset}}}}')
     create_calibration = CLIENT.post(url)
-    assert create_calibration.status_code == 200
-    response = create_calibration.json()['data']['createCalibration']
-    assert response['calibration'] == RESPONSE_CALIBRATION
+    status_calibration = create_calibration.status_code == 200
+    create_calibration = create_calibration.json()['data']['createCalibration']
+    assert create_calibration['calibration'] == RESPONSE_CALIBRATION
 
     get_calibration = CLIENT.get(
         '/graphql?query=query{calibration(id:1)'
@@ -271,9 +271,9 @@ def test_mutation_calibrate():
         'calibrationtemperatureSet {acquisitionChanel, conversionFactor,'
         'temperatureOffset, acquisitionChanel, conversionFactor,'
         'temperatureOffset}}}')
-    assert get_calibration.status_code == 200
-    response_get = get_calibration.json()['data']['calibration']
-    assert response_get == RESPONSE_CALIBRATION
+    status_get_calibration = get_calibration.status_code == 200
+    get_calibration = get_calibration.json()['data']['calibration']
+    assert get_calibration == RESPONSE_CALIBRATION
 
     get_all_calibration = CLIENT.get(
         '/graphql?query=query{allCalibration'
@@ -289,6 +289,7 @@ def test_mutation_calibrate():
         'calibrationtemperatureSet {acquisitionChanel, conversionFactor,'
         'temperatureOffset, acquisitionChanel, conversionFactor,'
         'temperatureOffset}}}')
-    assert get_all_calibration.status_code == 200
-    response_all = get_all_calibration.json()['data']
-    assert response_all['allCalibration'][0] == RESPONSE_CALIBRATION
+    status_get_all = get_all_calibration.status_code == 200
+    assert status_calibration and status_get_all and status_get_calibration
+    get_all_calibration = get_all_calibration.json()['data']
+    assert get_all_calibration['allCalibration'][0] == RESPONSE_CALIBRATION

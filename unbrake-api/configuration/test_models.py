@@ -6,8 +6,8 @@ import pytest
 from django.test import Client
 from configuration.models import Config
 
-
 CLIENT = Client()
+
 
 # First argument are the parameters names
 # Second is a tuple of params
@@ -113,13 +113,13 @@ def test_create_config(parameters):
         '{config{number, timeBetweenCycles,upperLimit,inferiorLimit,'
         'upperTime, inferiorTime, disableShutdown,'
         'enableOutput, temperature, time}}}')
-    assert create.status_code == 200
+    first_sataus_code = create.status_code == 200
 
     result = CLIENT.get(
         '/graphql?query=query{config(id: 1){number, timeBetweenCycles,'
         ' upperLimit, inferiorLimit, upperTime, inferiorTime,'
         'disableShutdown, enableOutput, temperature,time}}')
-    assert result.status_code == 200
+    assert result.status_code == 200 and first_sataus_code
 
     assert create.json()['data']['createConfig'] == result.json()['data']
 
@@ -128,5 +128,5 @@ def test_create_config(parameters):
         ' upperLimit, inferiorLimit, upperTime, inferiorTime,'
         'disableShutdown, enableOutput, temperature,time}}')
     assert get_all.status_code == 200
-    response = result.json()['data']['config']
-    assert response == get_all.json()['data']['allConfig'][0]
+    result = result.json()['data']['config']
+    assert result == get_all.json()['data']['allConfig'][0]
