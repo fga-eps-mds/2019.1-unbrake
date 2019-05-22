@@ -6,6 +6,7 @@ import { NotFoundRoute, AuthorizedRoute } from "./RouteComponents";
 import Login from "../components/Login";
 import SideBarMenu from "../components/SideBarMenu";
 import SignUp from "../components/SignUp";
+import CalibrationCommand from "../components/CalibrationCommand";
 
 export default () => (
   <Router history={history}>
@@ -17,6 +18,7 @@ export default () => (
         component={SideBarMenu}
       />
       <Route exact path="/login" component={Login} />
+      <Route exact path="/command" component={CalibrationCommand} />
       <AuthorizedRoute
         superuser={localStorage.getItem("isSuperuser") === "true"}
         exact
