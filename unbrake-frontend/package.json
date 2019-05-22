@@ -31,7 +31,8 @@
     "chart.js": "^2.8.0",
     "chartjs-plugin-streaming": "^1.8.0",
     "react-chartjs-2": "^2.7.6",
-    "socket.io-client": "^2.2.0"
+    "socket.io-client": "^2.2.0",
+    "redux-thunk": "^2.3.0"
   },
   "proxy": "http://localhost:8080/",
   "scripts": {

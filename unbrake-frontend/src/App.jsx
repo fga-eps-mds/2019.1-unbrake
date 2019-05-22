@@ -1,10 +1,10 @@
 import React from "react";
 import "./App.css";
 import { Provider } from "react-redux";
-import { createStore } from "redux";
+import { createStore, applyMiddleware } from "redux";
 import { MuiThemeProvider, createMuiTheme } from "@material-ui/core/styles";
+import thunk from "redux-thunk";
 import reducers from "./reducer/index";
-
 import Routes from "./routes/Routes";
 
 const theme = createMuiTheme({
@@ -23,7 +23,7 @@ const theme = createMuiTheme({
   }
 });
 
-const store = createStore(reducers);
+const store = createStore(reducers, applyMiddleware(thunk));
 
 const App = () => (
   <Provider store={store}>
