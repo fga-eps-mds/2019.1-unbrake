@@ -105,6 +105,4 @@ class Query:
         '''
         pk = kwargs.get('id')
 
-        if pk is not None:
-            return Config.objects.get(pk=pk)
-        return None
+        return Config.objects.get(pk=pk)

@@ -256,3 +256,39 @@ def test_mutation_calibrate():
     assert create_calibration.status_code == 200
     response = create_calibration.json()['data']['createCalibration']
     assert response['calibration'] == RESPONSE_CALIBRATION
+
+    get_calibration = CLIENT.get(
+        '/graphql?query=query{calibration(id:1)'
+        '{speed {acquisitionChanel, tireRadius}, '
+        'vibration {acquisitionChanel, conversionFactor, vibrationOffset}'
+        'command {commandChanelSpeed, actualSpeed, maxSpeed,'
+        'chanelCommandPression, actualPression, maxPression},'
+        'relations {transversalSelectionWidth, heigthWidthRelation,'
+        'rimDiameter, syncMotorRodation, sheaveMoveDiameter,'
+        'sheaveMotorDiameter}, '
+        'calibrationforceSet {acquisitionChanel, conversionFactor,'
+        'forceOffset, acquisitionChanel, conversionFactor, forceOffset},'
+        'calibrationtemperatureSet {acquisitionChanel, conversionFactor,'
+        'temperatureOffset, acquisitionChanel, conversionFactor,'
+        'temperatureOffset}}}')
+    assert get_calibration.status_code == 200
+    response_get = get_calibration.json()['data']['calibration']
+    assert response_get == RESPONSE_CALIBRATION
+
+    get_all_calibration = CLIENT.get(
+        '/graphql?query=query{allCalibration'
+        '{speed {acquisitionChanel, tireRadius}, '
+        'vibration {acquisitionChanel, conversionFactor, vibrationOffset}'
+        'command {commandChanelSpeed, actualSpeed, maxSpeed,'
+        'chanelCommandPression, actualPression, maxPression},'
+        'relations {transversalSelectionWidth, heigthWidthRelation,'
+        'rimDiameter, syncMotorRodation, sheaveMoveDiameter,'
+        'sheaveMotorDiameter}, '
+        'calibrationforceSet {acquisitionChanel, conversionFactor,'
+        'forceOffset, acquisitionChanel, conversionFactor, forceOffset},'
+        'calibrationtemperatureSet {acquisitionChanel, conversionFactor,'
+        'temperatureOffset, acquisitionChanel, conversionFactor,'
+        'temperatureOffset}}}')
+    assert get_all_calibration.status_code == 200
+    response_all = get_all_calibration.json()['data']
+    assert response_all['allCalibration'][0] == RESPONSE_CALIBRATION

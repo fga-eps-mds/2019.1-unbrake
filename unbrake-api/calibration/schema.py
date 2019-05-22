@@ -185,9 +185,7 @@ class Query:
         '''
         pk = kwargs.get('id')
 
-        if pk is not None:
-            return CalibrationVibration.objects.get(pk=pk)
-        return None
+        return CalibrationVibration.objects.get(pk=pk)
 
     def resolve_all_calibration_force(self, info, **kwargs):
         '''
@@ -201,9 +199,7 @@ class Query:
         '''
         pk = kwargs.get('id')
 
-        if pk is not None:
-            return CalibrationForce.objects.get(pk=pk)
-        return None
+        return CalibrationForce.objects.get(pk=pk)
 
     def resolve_all_calibration_speed(self, info, **kwargs):
         '''
@@ -217,9 +213,7 @@ class Query:
         '''
         pk = kwargs.get('id')
 
-        if pk is not None:
-            return CalibrationSpeed.objects.get(pk=pk)
-        return None
+        return CalibrationSpeed.objects.get(pk=pk)
 
     def resolve_all_calibration_relations(self, info, **kwargs):
         '''
@@ -233,9 +227,7 @@ class Query:
         '''
         pk = kwargs.get('id')
 
-        if pk is not None:
-            return CalibrationRelations.objects.get(pk=pk)
-        return None
+        return CalibrationRelations.objects.get(pk=pk)
 
     def resolve_all_calibration_temperature(self, info, **kwargs):
         '''
@@ -249,9 +241,7 @@ class Query:
         '''
         pk = kwargs.get('id')
 
-        if pk is not None:
-            return CalibrationTemperature.objects.get(pk=pk)
-        return None
+        return CalibrationTemperature.objects.get(pk=pk)
 
     def resolve_all_calibration_command(self, info, **kwargs):
         '''
@@ -265,9 +255,7 @@ class Query:
         '''
         pk = kwargs.get('id')
 
-        if pk is not None:
-            return CalibrationCommand.objects.get(pk=pk)
-        return None
+        return CalibrationCommand.objects.get(pk=pk)
 
     def resolve_all_calibration(self, info, **kwargs):
         '''
@@ -280,7 +268,4 @@ class Query:
             Retunr a Calibration by id
         '''
         pk = kwargs.get('id')
-
-        if pk is not None:
-            return Calibration.objects.get(pk=pk)
-        return None
+        return Calibration.objects.get(pk=pk)
