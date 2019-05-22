@@ -14,7 +14,7 @@ const styles = theme => ({
     width: 200
   },
   grid: {
-    padding: "0px"
+    padding: "px"
   },
   gridButton: {
     padding: "15px"

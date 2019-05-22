@@ -12,7 +12,7 @@ import DialogTitle from "@material-ui/core/DialogTitle";
 import Request from "../utils/Request";
 import { API_URL_GRAPHQL } from "../utils/Constants";
 import ConfigurationForm from "./ConfigurationForm";
-import styles from "./ConfigurationStyles";
+import styles from "./Styles";
 
 const query =
   "id, name, number, time, temperature, timeBetweenCycles, upperLimit, inferiorLimit, upperTime, inferiorTime, disableShutdown, enableOutput";
@@ -195,7 +195,6 @@ class Configuration extends React.Component {
       if (response.data.configDefault.length === VAZIO) {
         return;
       }
-
       const data = response.data.configDefault[0];
       const configurationDefault = createConfig(data);
       this.setState({ configuration: configurationDefault });
