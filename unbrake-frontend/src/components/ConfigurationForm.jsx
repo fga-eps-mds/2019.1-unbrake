@@ -93,11 +93,11 @@ const fieldsConfigurations = (classes, vector, handleChange) => {
     return (
       <Grid
         key={`field${value[0].name}`}
+        alignItems="center"
+        justify="center"
         container
         item
         xs={12}
-        alignItems="center"
-        justify="center"
       >
         {rowsFields(classes, value, handleChange)}
       </Grid>
@@ -194,10 +194,16 @@ const otherField = (classes, vector, handleChange) => {
   return fields;
 };
 
-async function submit(values, state) {
-  const { configuration } = state;
-  const { TAS, TAT, TMO, TAO, UWT, NOS, LSL, USL, TBS, LWT } = configuration;
-  const url = `${API_URL_GRAPHQL}?query=mutation{createConfig(number:${NOS},timeBetweenCycles:${TBS},upperLimit:${USL},inferiorLimit:${LSL},upperTime:${UWT},inferiorTime:${LWT},disableShutdown:${TMO},enableOutput:${TAO},temperature:${TAS},time:${TAT}){config{number, timeBetweenCycles,upperLimit,inferiorLimit}}}`;
+async function submit(values, params) {
+  const url = `${API_URL_GRAPHQL}?query=mutation{createConfig(number:${
+    params.NOS
+  },timeBetweenCycles:${params.TBS},upperLimit:${params.USL},inferiorLimit:${
+    params.LSL
+  },upperTime:${params.UWT},inferiorTime:${params.LWT},disableShutdown:${
+    params.TMO
+  },enableOutput:${params.TAO},temperature:${params.TAS},time:${
+    params.TAT
+  }){config{number, timeBetweenCycles,upperLimit,inferiorLimit}}}`;
 
   const method = "POST";
 
@@ -282,7 +288,7 @@ class ConfigurationForm extends React.Component {
         className={classes.container}
         autoComplete="off"
         onSubmit={handleSubmit(values => {
-          submit(values, this.state);
+          submit(values, configuration);
         })}
       >
         {fieldsConfigurations(classes, rows, this.handleChange)}
