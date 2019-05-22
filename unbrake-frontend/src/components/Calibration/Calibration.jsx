@@ -1,6 +1,6 @@
 import React from "react";
-import "../App.css";
-import RealTimeChart from "./RealTimeChart";
+import "../../App.css";
+import RealTimeChart from "../RealTimeChart";
 import MyForm from "./CalibrationTempForm";
 
 const Calibration = () => (
