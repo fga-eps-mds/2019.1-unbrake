@@ -26,6 +26,11 @@ export const validate = values => {
       errors.confirmPassword = "Não confere";
     }
   });
+  if (!values.email) {
+    errors.email = "Required";
+  } else if (!/^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,4}$/i.test(values.email)) {
+    errors.email = "Email inválido";
+  }
   return errors;
 };
 
@@ -79,6 +84,9 @@ const signUpPaper = params => {
       >
         <FieldComponent
           data={{ name: "username", label: "Usuario", type: "text" }}
+        />
+        <FieldComponent
+          data={{ name: "email", label: "Email", type: "email" }}
         />
         <FieldComponent
           data={{ name: "password", label: "Senha", type: "password" }}
