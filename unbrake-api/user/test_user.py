@@ -9,7 +9,7 @@ from django.test import Client
 @pytest.mark.django_db
 @pytest.mark.parametrize(
     "username, email, password", (
-        pytest.param("usermane", "email", "password", id='create_user_test_1')
+        pytest.param("usermane", "email", "password", id='create_user_test_1'),
     )
 )
 def test_create_user(username, email, password):
@@ -22,7 +22,7 @@ def test_create_user(username, email, password):
         username +
         '", password: "' +
         password +
-        '"email: "' +
+        '", email: "' +
         email +
         '", isSuperuser: false'
         '){user{id, username}}}')
@@ -33,11 +33,11 @@ def test_create_user(username, email, password):
 
 @pytest.mark.django_db
 @pytest.mark.parametrize(
-    "username, password", (
-        pytest.param("usermane", "password", id='test_token_auth_1'),
+    "username, password, email", (
+        pytest.param("usermane", "password", "email", id='test_token_auth_1'),
     )
 )
-def test_token_auth(username, password):
+def test_token_auth(username, password, email):
     '''
     Create a user, get the token and verify it
     '''
@@ -47,6 +47,8 @@ def test_token_auth(username, password):
         username +
         '", password: "' +
         password +
+        '", email: "' +
+        email +
         '", isSuperuser: false'
         '){user{id, username}}}')
 
@@ -73,14 +75,16 @@ def test_token_auth(username, password):
 
 @pytest.mark.django_db
 @pytest.mark.parametrize(
-    "username1, username2, password",
+    "username1, username2, password, email1, email2",
     (pytest.param(
         "usermane1",
         "username2",
         "password",
+        "email1",
+        "email2",
         id='all_users_test_1'),
      ))
-def test_get_all_users(username1, username2, password):
+def test_get_all_users(username1, username2, email1, email2, password):
     '''
     Get all the users in db
     '''
@@ -91,8 +95,9 @@ def test_get_all_users(username1, username2, password):
         username1 +
         '" , password: "' +
         password +
+        '", email: "' +
+        email1 +
         '", isSuperuser: false){user{id, username, isSuperuser}}}')
-    print(result1)
 
     assert result1.status_code == 200
 
@@ -101,6 +106,8 @@ def test_get_all_users(username1, username2, password):
         username2 +
         '", password: "' +
         password +
+        '", email: "' +
+        email2 +
         '", isSuperuser: false'
         '){user{id, username}}}')
     assert result2.status_code == 200
