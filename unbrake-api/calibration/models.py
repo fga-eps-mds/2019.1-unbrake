@@ -93,7 +93,7 @@ class CalibrationCommand(models.Model):
     command_chanel_speed = models.IntegerField()
     actual_speed = models.FloatField()
     max_speed = models.FloatField()
-    command_chanel_pression = models.IntegerField()
+    chanel_command_pression = models.IntegerField()
     actual_pression = models.FloatField()
     max_pression = models.FloatField()
 
