@@ -87,21 +87,21 @@ const rowField = (states, classes, handleChange) => {
 };
 
 const allFields = (states, classes, handleChange) => {
-  const rowns = states.map(value => {
+  const fields = states.map(value => {
     return (
       <Grid
-        key={`row ${value[0].name}`}
         alignItems="center"
         justify="center"
         container
         item
         xs={12}
+        key={`fields ${value[1].name}`}
       >
         {rowField(value, classes, handleChange)}
       </Grid>
     );
   });
-  return rowns;
+  return fields;
 };
 
 const allCheckbox = (selectsControl, classes, handleChange) => {
@@ -126,38 +126,26 @@ const allCheckbox = (selectsControl, classes, handleChange) => {
 };
 
 const renderDictionary = force => {
-  const {
-    CHF1,
-    CHF2,
-    FCF1,
-    FCF2,
-    Fmv1,
-    Fmv2,
-    Fkgf1,
-    Fkgf2,
-    OFF1,
-    OFF2
-  } = force;
   const directionary = [
     [
-      { name: "CHF1", value: CHF1, disable: true },
-      { name: "CHF2", value: CHF2, disable: true }
+      { name: "CHF1", value: force.CHF1, disable: true },
+      { name: "CHF2", value: force.CHF2, disable: true }
     ],
     [
-      { name: "Fmv1", value: Fmv1, disable: true },
-      { name: "Fmv2", value: Fmv2, disable: true }
+      { name: "Fmv1", value: force.Fmv1, disable: true },
+      { name: "Fmv2", value: force.Fmv2, disable: true }
     ],
     [
-      { name: "Fkgf1", value: Fkgf1, disable: true },
-      { name: "Fkgf2", value: Fkgf2, disable: true }
+      { name: "Fkgf1", value: force.Fkgf1, disable: true },
+      { name: "Fkgf2", value: force.Fkgf2, disable: true }
     ],
     [
-      { name: "FCF1", value: FCF1, disable: false },
-      { name: "FCF2", value: FCF2, disable: false }
+      { name: "FCF1", value: force.FCF1, disable: false },
+      { name: "FCF2", value: force.FCF2, disable: false }
     ],
     [
-      { name: "OFF1", value: OFF1, disable: false },
-      { name: "OFF2", value: OFF2, disable: false }
+      { name: "OFF1", value: force.OFF1, disable: false },
+      { name: "OFF2", value: force.OFF2, disable: false }
     ]
   ];
   return directionary;
