@@ -8,11 +8,11 @@ from django.test import Client
 
 @pytest.mark.django_db
 @pytest.mark.parametrize(
-    "username, password", (
-        pytest.param("usermane", "password", id='create_user_test_1'),
+    "username, email, password", (
+        pytest.param("usermane", "email", "password", id='create_user_test_1')
     )
 )
-def test_create_user(username, password):
+def test_create_user(username, email, password):
     '''
     Test the create of a user
     '''
@@ -22,6 +22,8 @@ def test_create_user(username, password):
         username +
         '", password: "' +
         password +
+        '"email: "' +
+        email +
         '", isSuperuser: false'
         '){user{id, username}}}')
     assert result.status_code == 200
