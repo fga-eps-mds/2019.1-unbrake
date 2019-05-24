@@ -1,19 +1,14 @@
 import React from "react";
 import iniparser from "iniparser";
-import Input from "@material-ui/core/Input";
 import Grid from "@material-ui/core/Grid";
 import { withStyles } from "@material-ui/core/styles";
 import PropTypes from "prop-types";
+import Paper from "@material-ui/core/Paper";
+import IconButton from "@material-ui/core/IconButton";
+import InputBase from "@material-ui/core/InputBase";
+import CloudUploadIcon from "@material-ui/icons/CloudUpload";
+import styles from "./Styles";
 import ConfigurationForm from "./ConfigurationForm";
-
-const styles = () => ({
-  title: {
-    padding: "5px"
-  },
-  grid: {
-    padding: "5px"
-  }
-});
 
 class Configuration extends React.Component {
   constructor(props) {
@@ -33,7 +28,8 @@ class Configuration extends React.Component {
           USL: "",
           UWT: ""
         }
-      }
+      },
+      fileName: ""
     };
 
     this.fileUpload = this.fileUpload.bind(this);
@@ -41,6 +37,7 @@ class Configuration extends React.Component {
 
   uploadField(field) {
     const { classes } = this.props;
+    const { fileName } = this.state;
 
     let archive;
 
@@ -52,18 +49,35 @@ class Configuration extends React.Component {
         <Grid item xs={4} className={classes.title}>
           <h2 justify="left">Upload arquivo de {archive}</h2>
         </Grid>
+
         <Grid item xs={4} className={classes.grid}>
-          <Input
-            type="file"
-            name={field}
-            onChange={e => this.fileUpload(e.target.files[0], field)}
-          />
+          <label htmlFor="contained-button-file">
+            <input
+              id="contained-button-file"
+              type="file"
+              name={field}
+              className={classes.input}
+              onChange={e => this.fileUpload(e.target.files[0], field)}
+            />
+            <Paper className={classes.rootUploadFile}>
+              <IconButton component="span">
+                <CloudUploadIcon style={{ color: "black" }} />
+              </IconButton>
+              <InputBase
+                disabled
+                className={classes.input_file_name}
+                value={fileName}
+                placeholder="Upload do arquivo de configuração"
+              />
+            </Paper>
+          </label>
         </Grid>
       </Grid>
     );
   }
 
   fileUpload(file, name) {
+    this.setState({ fileName: file.name });
     const formData = new FormData();
     formData.append("file", name);
     const reader = new FileReader();
