@@ -3,38 +3,53 @@
 exports[`<Configuration /> render() renders the component 1`] = `
 <WithStyles(Grid)
   alignItems="center"
+  className="Configuration-configuration-10"
   container={true}
-  justify="center"
-  spacing={40}
-  style={
-    Object {
-      "minHeight": "100vh",
-    }
-  }
 >
-  <WithStyles(Grid)
-    alignItems="center"
-    container={true}
-    item={true}
-    justify="center"
-    xs={10}
-  >
+  <div>
     <WithStyles(Grid)
       className="Configuration-title-7"
+      container={true}
       item={true}
-      xs={4}
+      justify="center"
     >
-      <h2
-        justify="left"
+      <WithStyles(Grid)
+        alignItems="center"
+        container={true}
+        item={true}
+        justify="center"
+        xs={10}
       >
-        Upload arquivo de 
-        Calibração
-      </h2>
+        <WithStyles(Grid)
+          className="Configuration-title-7"
+          item={true}
+          xs={4}
+        >
+          <h2>
+            Upload arquivo de 
+            Configuração
+          </h2>
+        </WithStyles(Grid)>
+        <WithStyles(Grid)
+          className="Configuration-grid-5"
+          item={true}
+          xs={4}
+        >
+          <WithStyles(Input)
+            name="configuration"
+            onChange={[Function]}
+            type="file"
+          />
+        </WithStyles(Grid)>
+      </WithStyles(Grid)>
     </WithStyles(Grid)>
     <WithStyles(Grid)
       className="Configuration-grid-5"
+      alignItems="center"
+      container={true}
       item={true}
-      xs={4}
+      justify="center"
+      xs={12}
     >
       <label
         htmlFor="contained-button-file"
@@ -71,26 +86,68 @@ exports[`<Configuration /> render() renders the component 1`] = `
           />
         </WithStyles(Paper)>
       </label>
+      <WithStyles(Grid)
+        className="Configuration-title-7"
+        item={true}
+        xs={4}
+      >
+        <TextField
+          className="Configuration-formControl-8"
+          id="outlined-select-currency"
+          label="Configurações"
+          margin="normal"
+          name="dataBaseConfiguration"
+          onChange={[Function]}
+          required={false}
+          select={true}
+          value={0}
+          variant="outlined"
+        >
+          <WithStyles(MenuItem)
+            key="0"
+            value={0}
+          />
+          <WithStyles(MenuItem)
+            key="NaN"
+          />
+        </TextField>
+      </WithStyles(Grid)>
+      <WithStyles(Button)
+        color="secondary"
+        onClick={[Function]}
+        variant="contained"
+      >
+        Configuração Padrão
+      </WithStyles(Button)>
     </WithStyles(Grid)>
-  </WithStyles(Grid)>
-  <WithStyles(Grid)
-    alignItems="center"
-    container={true}
-    item={true}
-    justify="center"
-    xs={10}
-  >
     <WithStyles(Grid)
       className="Configuration-title-7"
+      alignItems="center"
+      className="Configuration-form-9"
+      container={true}
       item={true}
-      xs={4}
+      xs={12}
     >
-      <h2
-        justify="left"
-      >
-        Upload arquivo de 
-        Configuração
-      </h2>
+      <WithStyles(ReduxForm)
+        configuration={
+          Object {
+            "CONFIG_ENSAIO": Object {
+              "LSL": "",
+              "LWT": "",
+              "NOS": "",
+              "TAO": false,
+              "TAS": "",
+              "TAT": "",
+              "TBS": "",
+              "TMO": false,
+              "USL": "",
+              "UWT": "",
+            },
+            "name": "",
+          }
+        }
+        handleClickSave={[Function]}
+      />
     </WithStyles(Grid)>
     <WithStyles(Grid)
       className="Configuration-grid-5"
@@ -153,5 +210,48 @@ exports[`<Configuration /> render() renders the component 1`] = `
       }
     }
   />
+  </div>
+  <WithStyles(Dialog)
+    aria-labelledby="form-dialog-title"
+    onClose={[Function]}
+    open={false}
+  >
+    <WithStyles(DialogTitle)
+      id="form-dialog-title"
+    >
+      Nome da Configuração
+    </WithStyles(DialogTitle)>
+    <WithStyles(DialogContent)>
+      <WithStyles(DialogContentText)>
+        Insira aqui o nome que você deseja dar para este arquivo de configuração
+      </WithStyles(DialogContentText)>
+      <TextField
+        autoFocus={true}
+        fullWidth={true}
+        label="Nome"
+        margin="dense"
+        name="name"
+        onChange={[Function]}
+        required={false}
+        select={false}
+        type="text"
+        variant="standard"
+      />
+    </WithStyles(DialogContent)>
+    <WithStyles(DialogActions)>
+      <WithStyles(Button)
+        color="primary"
+        onClick={[Function]}
+      >
+        Cancelar
+      </WithStyles(Button)>
+      <WithStyles(Button)
+        color="primary"
+        onClick={[Function]}
+      >
+        Cadastrar
+      </WithStyles(Button)>
+    </WithStyles(DialogActions)>
+  </WithStyles(Dialog)>
 </WithStyles(Grid)>
 `;

@@ -1,12 +1,12 @@
 '''
     This is the models file of calibration app.
     The models of calibration are divided in:
-        Calibration Validation,
-        Calibration Force,
-        Calibration Speed,
-        Calibration Relations,
-        Calibration Temperature,
-        Calibration Command.
+    Calibration Validation,
+    Calibration Force,
+    Calibration Speed,
+    Calibration Relations,
+    Calibration Temperature,
+    Calibration Command.
     The classes are based on the defcalibra file
 '''
 
@@ -77,6 +77,9 @@ class Calibration(models.Model):
     '''
         This class has all the information of a calibration definition.
     '''
+
+    name = models.CharField(max_length=15, null=False, blank=False)
+    is_default = models.BooleanField(null=False, blank=False)
     vibration = models.OneToOneField(
         CalibrationVibration, on_delete=models.CASCADE)
     speed = models.OneToOneField(
