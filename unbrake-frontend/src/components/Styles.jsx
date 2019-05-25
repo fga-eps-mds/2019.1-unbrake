@@ -17,7 +17,26 @@ const styles = theme => ({
     padding: "px"
   },
   gridButton: {
-    paddingLeft: theme.spacing.unit + theme.spacing.unit
+    padding: "15px"
+  },
+  title: {
+    padding: "5px"
+  },
+  formControl: {
+    margin: theme.spacing.unit,
+    minWidth: 200
+  },
+  form: {
+    padding: "30px"
+  },
+  configuration: {
+    minHeight: "100vh"
+  },
+  checboxSize: {
+    minHeight: "80px"
+  },
+  gridGraphic: {
+    padding: "30px"
   }
 });
 
