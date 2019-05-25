@@ -84,8 +84,6 @@ class Query(graphene.ObjectType):
         '''
             Returning only one User by username
         '''
-        pk = kwargs.get('username')
+        username = kwargs.get('username')
 
-        if pk is not None:
-            return get_user_model().objects.get(pk=pk)
-        return None
+        return get_user_model().objects.get(username=username)

@@ -79,7 +79,7 @@ media
 
 # Migrations
 # Will be commited only when merging to master
-**/migrations/
+**/migrations/*
 !**/migrations/__init__.py
 
 

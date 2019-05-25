@@ -33,8 +33,35 @@ def test_create_user(username, email, password):
 
 @pytest.mark.django_db
 @pytest.mark.parametrize(
-    "username, password, email", (
-        pytest.param("usermane", "password", "email", id='test_token_auth_1'),
+    "username, password", (
+        pytest.param("username", "password", id='create_user_test_1'),
+    )
+)
+def test_get_user(username, password):
+    '''
+    Test the create of a user
+    '''
+    client = Client()
+    result = client.post(
+        '/graphql?query=mutation{createUser(username: "' +
+        username +
+        '", password: "' +
+        password +
+        '", isSuperuser: false'
+        '){user{id, username}}}')
+    assert result.status_code == 200
+
+    user = client.get(
+        '/graphql?query=query{user(username: "'
+        + username + '"){id, username}}')
+    assert user.status_code == 200
+    assert user.json()['data']['user']['username'] == username
+
+
+@pytest.mark.django_db
+@pytest.mark.parametrize(
+    "username, password", (
+        pytest.param("usermane", "password", id='test_token_auth_1'),
     )
 )
 def test_token_auth(username, password, email):
