@@ -23,19 +23,19 @@ def test_calibration_vibration():
     '''
 
     response = {
-        'acquisitionTemp': 6,
+        'acquisitionChanel': 6,
         'conversionFactor': 1.00,
         'vibrationOffset': 1.00
     }
 
     CalibrationVibration(
-        acquisition_temp=6,
+        acquisition_chanel=6,
         conversion_factor=1.00,
         vibration_offset=1.00,
     ).save()
 
     CalibrationVibration(
-        acquisition_temp=7,
+        acquisition_chanel=7,
         conversion_factor=2.00,
         vibration_offset=2.00,
     ).save()
@@ -43,7 +43,7 @@ def test_calibration_vibration():
     client = Client()
     result = client.get(
         '/graphql?query={calibrationVibration(id: 1)'
-        '{acquisitionTemp, conversionFactor, vibrationOffset}}')
+        '{acquisitionChanel, conversionFactor, vibrationOffset}}')
     assert result.status_code == 200
     single_aux = result.json()['data']['calibrationVibration']
     single_calibration_vibration = single_aux
@@ -54,7 +54,7 @@ def test_calibration_vibration():
     client = Client()
     result = client.get(
         '/graphql?query={allCalibrationVibration'
-        '{id, acquisitionTemp, conversionFactor, vibrationOffset}}')
+        '{id, acquisitionChanel, conversionFactor, vibrationOffset}}')
     assert result.status_code == 200
     multiple_aux = result.json()['data']['allCalibrationVibration']
     multiple_calibration_vibration_1 = multiple_aux[1]
@@ -73,13 +73,13 @@ def test_calibration_force():
     '''
 
     response = {
-        'acquisitionTemp': 3,
+        'acquisitionChanel': 3,
         'conversionFactor': 1.000,
         'forceOffset': 1.000
     }
 
     CalibrationForce(
-        acquisition_temp=3,
+        acquisition_chanel=3,
         conversion_factor=1.000,
         force_offset=1.000,
     ).save()
@@ -87,13 +87,13 @@ def test_calibration_force():
     client = Client()
     result = client.get(
         '/graphql?query={calibrationForce(id: 1)'
-        '{acquisitionTemp, conversionFactor, forceOffset}}'
+        '{acquisitionChanel, conversionFactor, forceOffset}}'
     )
     assert result.status_code == 200
     single_calibration_force = result.json()['data']['calibrationForce']
 
     CalibrationForce(
-        acquisition_temp=4,
+        acquisition_chanel=4,
         conversion_factor=2.000,
         force_offset=2.000,
     ).save()
@@ -104,7 +104,7 @@ def test_calibration_force():
     client = Client()
     result = client.get(
         '/graphql?query={allCalibrationForce'
-        '{id, acquisitionTemp, conversionFactor, forceOffset}}'
+        '{id, acquisitionChanel, conversionFactor, forceOffset}}'
     )
     assert result.status_code == 200
     multiple_aux = result.json()['data']['allCalibrationForce']
@@ -285,19 +285,19 @@ def test_calibration_temperature():
     '''
 
     response = {
-        'acquisitionTemp': 1,
+        'acquisitionChanel': 1,
         'conversionFactor': 0.200,
         'temperatureOffset': -1.2500
     }
 
     CalibrationTemperature(
-        acquisition_temp=1,
+        acquisition_chanel=1,
         conversion_factor=0.200,
         temperature_offset=-1.2500,
     ).save()
 
     CalibrationTemperature(
-        acquisition_temp=2,
+        acquisition_chanel=2,
         conversion_factor=0.400,
         temperature_offset=-2.500,
     ).save()
@@ -305,7 +305,7 @@ def test_calibration_temperature():
     client = Client()
     result = client.get(
         '/graphql?query={calibrationTemperature(id: 1)'
-        '{acquisitionTemp, conversionFactor, temperatureOffset}}'
+        '{acquisitionChanel, conversionFactor, temperatureOffset}}'
     )
     assert result.status_code == 200
     single_aux = result.json()['data']['calibrationTemperature']
@@ -317,7 +317,7 @@ def test_calibration_temperature():
     client = Client()
     result = client.get(
         '/graphql?query={allCalibrationTemperature'
-        '{id, acquisitionTemp, conversionFactor, temperatureOffset}}'
+        '{id, acquisitionChanel, conversionFactor, temperatureOffset}}'
     )
     assert result.status_code == 200
     multiple_aux = result.json()['data']['allCalibrationTemperature']

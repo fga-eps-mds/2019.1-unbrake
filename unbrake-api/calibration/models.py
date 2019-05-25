@@ -22,22 +22,9 @@ class CalibrationVibration(models.Model):
         conversionFactor is FCVB in the file,
         vibrationOffset is OFVB in the file.
     '''
-    acquisition_temp = models.IntegerField()
+    acquisition_chanel = models.IntegerField()
     conversion_factor = models.FloatField()
     vibration_offset = models.FloatField()
-
-
-class CalibrationForce(models.Model):
-    '''
-        This class has force calibration information.
-        This class is used twice per calibration.
-        acquisitionTemp is CNHF in the file,
-        converionFactor is FCF int the file,
-        forceOffset is OFF 1int the file.
-    '''
-    acquisition_temp = models.IntegerField()
-    conversion_factor = models.FloatField()
-    force_offset = models.FloatField()
 
 
 class CalibrationSpeed(models.Model):
@@ -68,18 +55,6 @@ class CalibrationRelations(models.Model):
     sheave_motor_diameter = models.IntegerField()
 
 
-class CalibrationTemperature(models.Model):
-    '''
-        This class has temperature calibration information.
-        This class is used twice per calibration.
-        acqusitonTemp is CTH in the file,
-        conversionFactor is FCT in the file.
-    '''
-    acquisition_temp = models.IntegerField()
-    conversion_factor = models.FloatField()
-    temperature_offset = models.FloatField()
-
-
 class CalibrationCommand(models.Model):
     '''
         This class has command calibration information.
@@ -102,14 +77,46 @@ class Calibration(models.Model):
     '''
         This class has all the information of a calibration definition.
     '''
-    calibration_vibration = models.OneToOneField(
+    vibration = models.OneToOneField(
         CalibrationVibration, on_delete=models.CASCADE)
-    calibration_force = models.ManyToManyField(CalibrationForce)
-    calibration_speed = models.OneToOneField(
+    speed = models.OneToOneField(
         CalibrationSpeed, on_delete=models.CASCADE)
-    calibration_relations = models.OneToOneField(
+    relations = models.OneToOneField(
         CalibrationRelations, on_delete=models.CASCADE)
-    calibration_temperature = models.ManyToManyField(
-        CalibrationTemperature)
-    calibration_command = models.OneToOneField(
+    command = models.OneToOneField(
         CalibrationCommand, on_delete=models.CASCADE)
+
+
+class CalibrationTemperature(models.Model):
+    '''
+        This class has temperature calibration information.
+        This class is used twice per calibration.
+        acqusitonTemp is CTH in the file,
+        conversionFactor is FCT in the file.
+    '''
+    acquisition_chanel = models.IntegerField()
+    conversion_factor = models.FloatField()
+    temperature_offset = models.FloatField()
+    calibration = models.ForeignKey(Calibration,
+                                    on_delete=models.CASCADE,
+                                    blank=True,
+                                    null=True
+                                    )
+
+
+class CalibrationForce(models.Model):
+    '''
+        This class has force calibration information.
+        This class is used twice per calibration.
+        acquisitionTemp is CNHF in the file,
+        converionFactor is FCF int the file,
+        forceOffset is OFF 1int the file.
+    '''
+    acquisition_chanel = models.IntegerField()
+    conversion_factor = models.FloatField()
+    force_offset = models.FloatField()
+    calibration = models.ForeignKey(Calibration,
+                                    on_delete=models.CASCADE,
+                                    blank=True,
+                                    null=True
+                                    )
