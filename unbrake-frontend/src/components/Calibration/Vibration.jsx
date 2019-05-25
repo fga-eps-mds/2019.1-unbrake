@@ -10,6 +10,7 @@ const renderField = (states, classes, handleChange) => {
   return (
     <Grid alignItems="center" justify="center" container item xs={6}>
       {field(states, classes, handleChange)}
+
     </Grid>
   );
 };
@@ -73,6 +74,7 @@ class Vibration extends React.Component {
     const { name, type, value, checked } = event;
     const newValue = type === "checkbox" ? checked : value;
     const vibration = { [name]: newValue };
+
     this.setState(prevState => ({
       vibration: { ...prevState.vibration, ...vibration }
     }));
