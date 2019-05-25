@@ -3,8 +3,6 @@ import PropTypes from "prop-types";
 import { initialize, Field, reduxForm } from "redux-form";
 import { TextField, Checkbox } from "redux-form-material-ui";
 import { withStyles, Button, FormControlLabel, Grid } from "@material-ui/core";
-import Request from "../utils/Request";
-import { API_URL_GRAPHQL } from "../utils/Constants";
 import styles from "./Styles";
 
 const limits = (value, allValues) => {
@@ -33,8 +31,6 @@ const validate = values => {
   return errors;
 };
 
-let nameField;
-
 const fieldsLabels = {
   NOS: "Numero de Snubs",
   USL: "Limite Superior (km/h)",
@@ -45,6 +41,7 @@ const fieldsLabels = {
 };
 
 const rowsFields = (classes, vector, handleChange) => {
+  let nameField;
   const fields = vector.map(value => {
     switch (value.name) {
       case "NOS":
@@ -69,19 +66,21 @@ const rowsFields = (classes, vector, handleChange) => {
         break;
     }
     return (
-      <Grid key={`row${nameField}`} item xs={3} className={classes.grid}>
-        <Field
-          id={nameField}
-          component={TextField}
-          label={fieldsLabels[nameField]}
-          onChange={handleChange}
-          type="number"
-          name={nameField}
-          validate={nameField === "USL" || nameField === "LSL" ? limits : []}
-          className={classes.textField}
-          margin="normal"
-          variant="outlined"
-        />
+      <Grid key={`row${nameField}`} container xs={3} item justify="center">
+        <div>
+          <Field
+            id={nameField}
+            component={TextField}
+            label={fieldsLabels[nameField]}
+            onChange={handleChange}
+            type="number"
+            name={nameField}
+            validate={nameField === "USL" || nameField === "LSL" ? limits : []}
+            className={classes.textField}
+            margin="normal"
+            variant="outlined"
+          />
+        </div>
       </Grid>
     );
   });
@@ -91,14 +90,7 @@ const rowsFields = (classes, vector, handleChange) => {
 const fieldsConfigurations = (classes, vector, handleChange) => {
   const rows = vector.map(value => {
     return (
-      <Grid
-        key={`field${value[0].name}`}
-        alignItems="center"
-        justify="center"
-        container
-        item
-        xs={12}
-      >
+      <Grid key={`${value[0].name}`} container xs={12} justify="center" item>
         {rowsFields(classes, value, handleChange)}
       </Grid>
     );
@@ -106,7 +98,7 @@ const fieldsConfigurations = (classes, vector, handleChange) => {
   return rows;
 };
 
-const checkBox = (classes, type) => {
+const checkBox = (classes, type, handleChange) => {
   let label;
   switch (type.name) {
     case "TMO":
@@ -119,28 +111,18 @@ const checkBox = (classes, type) => {
       break;
   }
   return (
-    <Grid container item xs={3} className={classes.gridButton} justify="center">
+    <Grid container item xs={3} style={{ paddingLeft: 20 }}>
       <FormControlLabel
+        name={type.name}
         control={
-          <Field component={Checkbox} name={type.name} value={type.value} />
+          <Field
+            component={Checkbox}
+            onClick={handleChange}
+            value={type.value}
+          />
         }
         label={label}
       />
-    </Grid>
-  );
-};
-
-const Buttons = (classes, submitting) => {
-  return (
-    <Grid container item xs={3} className={classes.grid}>
-      <Button
-        type="submit"
-        color="secondary"
-        variant="contained"
-        disabled={submitting}
-      >
-        Cadastrar
-      </Button>
     </Grid>
   );
 };
@@ -158,7 +140,7 @@ const CommunGrid = (classes, type, handleChange) => {
       break;
   }
   return (
-    <Grid item xs={6} className={classes.grid}>
+    <Grid item container xs={3} className={classes.grid} justify="center">
       <Field
         id={type.name}
         component={TextField}
@@ -183,34 +165,36 @@ const otherField = (classes, vector, handleChange) => {
         container
         item
         xs={12}
-        alignItems="center"
         justify="center"
       >
-        {checkBox(classes, value[0])}
+        {checkBox(classes, value[0], handleChange)}
         {CommunGrid(classes, value[1], handleChange)}
+        <Grid item container xs={3} />
       </Grid>
     );
   });
   return fields;
 };
 
-async function submit(values, params) {
-  const url = `${API_URL_GRAPHQL}?query=mutation{createConfig(number:${
-    params.NOS
-  },timeBetweenCycles:${params.TBS},upperLimit:${params.USL},inferiorLimit:${
-    params.LSL
-  },upperTime:${params.UWT},inferiorTime:${params.LWT},disableShutdown:${
-    params.TMO
-  },enableOutput:${params.TAO},temperature:${params.TAS},time:${
-    params.TAT
-  }){config{number, timeBetweenCycles,upperLimit,inferiorLimit}}}`;
+const Buttons = classes => {
+  return (
+    <Grid container item xs={3} className={classes.grid}>
+      <Button type="submit" color="secondary" variant="contained">
+        Cadastrar
+      </Button>
+    </Grid>
+  );
+};
 
-  const method = "POST";
-
-  const response = await Request(url, method);
-
-  return response;
-}
+const verifyCheckbox = variable => {
+  let bool;
+  if (variable === "FALSE" || variable === false) {
+    bool = false;
+  } else {
+    bool = true;
+  }
+  return bool;
+};
 
 class ConfigurationForm extends React.Component {
   constructor(props) {
@@ -233,15 +217,12 @@ class ConfigurationForm extends React.Component {
   }
 
   shouldComponentUpdate(nextProps) {
-    const { configuration } = this.props;
+    const { configuration, dispatch } = this.props;
     if (configuration !== nextProps.configuration) {
       const rightConfig = Object.assign({}, nextProps.configuration);
-      rightConfig.CONFIG_ENSAIO.TMO =
-        nextProps.configuration.CONFIG_ENSAIO.TMO !== "FALSE";
-      rightConfig.CONFIG_ENSAIO.TAO =
-        nextProps.configuration.CONFIG_ENSAIO.TAO !== "FALSE";
-
-      const { dispatch } = this.props;
+      const next = nextProps.configuration.CONFIG_ENSAIO;
+      rightConfig.CONFIG_ENSAIO.TMO = verifyCheckbox(next.TMO);
+      rightConfig.CONFIG_ENSAIO.TAO = verifyCheckbox(next.TAO);
       dispatch(initialize("configuration", rightConfig.CONFIG_ENSAIO));
       this.setState({ configuration: rightConfig.CONFIG_ENSAIO });
       return true;
@@ -250,16 +231,16 @@ class ConfigurationForm extends React.Component {
   }
 
   handleChange(event) {
-    const configuration = {};
-    const { name, value } = event.target;
-    configuration[name] = value;
+    const { target } = event;
+    const value = target.type === "checkbox" ? target.checked : target.value;
+    const configuration = { [event.target.name]: value };
     this.setState(prevState => ({
       configuration: { ...prevState.configuration, ...configuration }
     }));
   }
 
   render() {
-    const { classes, handleSubmit, submitting } = this.props;
+    const { classes, handleSubmit, handleClickSave } = this.props;
     const { configuration } = this.state;
     const { TAS, TAT, TMO, TAO, UWT, NOS, LSL, USL, TBS, LWT } = configuration;
     const rowOne = [
@@ -286,15 +267,22 @@ class ConfigurationForm extends React.Component {
     return (
       <form
         className={classes.container}
-        autoComplete="off"
-        onSubmit={handleSubmit(values => {
-          submit(values, configuration);
+        onSubmit={handleSubmit(() => {
+          handleClickSave(this.state);
         })}
       >
         {fieldsConfigurations(classes, rows, this.handleChange)}
         {otherField(classes, othersFields, this.handleChange)}
-        <Grid container item xs={12} alignItems="center" justify="center">
-          {Buttons(classes, submitting)}
+        <Grid container xs={12} item justify="center">
+          <Grid
+            item
+            container
+            xs={6}
+            justify="center"
+            className={classes.gridButton}
+          >
+            {Buttons(classes)}
+          </Grid>
         </Grid>
       </form>
     );
@@ -304,14 +292,14 @@ class ConfigurationForm extends React.Component {
 ConfigurationForm.propTypes = {
   classes: PropTypes.objectOf(PropTypes.string).isRequired,
   handleSubmit: PropTypes.func.isRequired,
-  submitting: PropTypes.bool.isRequired,
   configuration: PropTypes.oneOfType([PropTypes.object]).isRequired,
-  dispatch: PropTypes.func.isRequired
+  dispatch: PropTypes.func.isRequired,
+  handleClickSave: PropTypes.func.isRequired
 };
 
-const Configuration = reduxForm({
+const Configurationa = reduxForm({
   form: "configuration",
   validate
 })(ConfigurationForm);
 
-export default withStyles(styles)(Configuration);
+export default withStyles(styles)(Configurationa);

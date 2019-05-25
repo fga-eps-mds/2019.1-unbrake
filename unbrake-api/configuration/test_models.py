@@ -7,17 +7,18 @@ from django.test import Client
 from configuration.models import Config
 
 CLIENT = Client()
-
-
 # First argument are the parameters names
 # Second is a tuple of params
 # First argument of param is the first parameter name and so on
 # id is like the name for the test case
 # Is possible to test only one test case with: pytest [file] -k [id]
+
+
 @pytest.mark.django_db
 @pytest.mark.parametrize(
     ("parameters"), (
-        pytest.param([10, 20, 32, 16, 5, 5, True, False, 64, 51],
+        pytest.param([10, 20, 32, 16, 5, 5, True, False, 64, 51,
+                      'teste', False],
                      id='config_test_1'),
     )
 )
@@ -37,6 +38,8 @@ def test_config(parameters):
     enable_output_aux = parameters[7]
     temperature_aux = parameters[8]
     time_aux = parameters[9]
+    name_aux = parameters[10]
+    is_default_aux = parameters[11]
 
     response = {'number': number_aux,
                 'timeBetweenCycles': time_between_cycles_aux,
@@ -47,7 +50,9 @@ def test_config(parameters):
                 'disableShutdown': disable_shutdown_aux,
                 'enableOutput': enable_output_aux,
                 'temperature': temperature_aux,
-                'time': time_aux
+                'name': name_aux,
+                'isDefault': is_default_aux,
+                'time': time_aux,
                 }
 
     Config(
@@ -60,24 +65,26 @@ def test_config(parameters):
         disable_shutdown=disable_shutdown_aux,
         enable_output=enable_output_aux,
         temperature=temperature_aux,
+        name=name_aux,
+        is_default=is_default_aux,
         time=time_aux,
     ).save()
 
     result = CLIENT.get(
-        '/graphql?query={config(id: 1){number, timeBetweenCycles, upperLimit,'
+        '/graphql?query={configAt(id: 1){number,timeBetweenCycles,upperLimit,'
         'inferiorLimit, upperTime, inferiorTime,'
-        'disableShutdown, enableOutput, temperature,time}}')
+        'disableShutdown, enableOutput, temperature,name, isDefault,time}}')
 
     assert result.status_code == 200
-    cycles_config = result.json()['data']['config']
 
-    assert cycles_config == response
+    assert result.json()['data']['configAt'] == response
 
 
 @pytest.mark.django_db
 @pytest.mark.parametrize(
     ("parameters"), (
-        pytest.param([10, 20, 32, 16, 5, 5, 'true', 'false', 64, 51],
+        pytest.param([10, 20, 32, 16, 5, 5, 'true', 'false', 64, 51, 'teste',
+                      'false'],
                      id='create_config_test_1'),
     )
 )
@@ -97,6 +104,7 @@ def test_create_config(parameters):
     enable_output = parameters[7]
     temperature = parameters[8]
     time = parameters[9]
+    name = parameters[10]
 
     create = CLIENT.post(
         '/graphql?query=mutation{createConfig'
@@ -109,24 +117,18 @@ def test_create_config(parameters):
         'disableShutdown: ' + str(disable_shutdown) + ', '
         'enableOutput: ' + str(enable_output) + ', '
         'temperature: ' + str(temperature) + ', '
+        'name: "' + str(name) + '", '
         'time: ' + str(time) + ')'
         '{config{number, timeBetweenCycles,upperLimit,inferiorLimit,'
         'upperTime, inferiorTime, disableShutdown,'
-        'enableOutput, temperature, time}}}')
-    first_sataus_code = create.status_code == 200
+        'enableOutput, temperature,name, isDefault, time}}}')
+    assert create.status_code == 200
 
     result = CLIENT.get(
-        '/graphql?query=query{config(id: 1){number, timeBetweenCycles,'
+        '/graphql?query=query{configAt(id: 1){number, timeBetweenCycles,'
         ' upperLimit, inferiorLimit, upperTime, inferiorTime,'
-        'disableShutdown, enableOutput, temperature,time}}')
-    assert result.status_code == 200 and first_sataus_code
+        'disableShutdown, enableOutput, temperature, name, isDefault,time}}')
+    assert result.status_code == 200
 
-    assert create.json()['data']['createConfig'] == result.json()['data']
-
-    get_all = CLIENT.get(
-        '/graphql?query=query{allConfig{number, timeBetweenCycles,'
-        ' upperLimit, inferiorLimit, upperTime, inferiorTime,'
-        'disableShutdown, enableOutput, temperature,time}}')
-    assert get_all.status_code == 200
-    result = result.json()['data']['config']
-    assert result == get_all.json()['data']['allConfig'][0]
+    assert create.json()['data']['createConfig']['config'] == result.json()[
+        'data']['configAt']
