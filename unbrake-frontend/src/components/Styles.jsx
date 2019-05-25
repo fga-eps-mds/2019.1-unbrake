@@ -31,12 +31,6 @@ const styles = theme => ({
   },
   configuration: {
     minHeight: "100vh"
-  },
-  checboxSize: {
-    minHeight: "80px"
-  },
-  gridGraphic: {
-    padding: "30px"
   }
 });
 
