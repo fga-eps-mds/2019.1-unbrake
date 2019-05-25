@@ -1,67 +1,151 @@
 package main
 
 import (
-	"fmt"
-	"github.com/tarm/serial"
 	"log"
 	"os"
-	"strings"
+	"os/signal"
+	"path"
+	"runtime"
+	"sync"
+	//"strings"
 	"time"
+
+	"github.com/getlantern/systray"
+	"github.com/tarm/serial"
 )
 
 const (
-	BUFFER_SIZE        = 48
-	SIMULATOR_PORT_ENV = "SIMULATOR_PORT"
-	BAUD_RATE          = 115200
-	FREQUENCY_READING  = 10
+	BUFFER_SIZE          = 1
+	SIMULATOR_PORT_ENV   = "SIMULATOR_PORT"
+	DEFAULT_PORT         = "/dev/pts/4"
+	BAUD_RATE            = 115200
+	FREQUENCY_READING    = 10
+	LOG_FILE_PATH        = "unbrake.log"
+	APP_DATA_FOLDER_NAME = "UnBrake" // For windows
 )
 
+var wg sync.WaitGroup
+var stop_collecting_data chan bool
+var sigs chan os.Signal
+
 func main() {
-	onExit := func() {
-		log.Println("Exiting...")
-	}
-	systray.Run(onReady, onExit) // Comment me if your environment doesn't support
+	//onExit := func() {
+	//	log.Println("Exiting...")
+	//}
+	//systray.Run(onReady, onExit) // Comment me if your environment doesn't support
+
+	log_file := getLogFile()
+	defer log_file.Close()
+
+	log.Println("--------------------------------------------")
+	log.Println("Initializing application...")
+
+	sigs = make(chan os.Signal, 1)
+	signal.Notify(sigs, os.Interrupt)
+
+	wg.Add(1)
+	stop_collecting_data = make(chan bool)
+	go collectData()
+
+	wg.Wait()
+	log.Println("Application finished!")
+	log.Println("--------------------------------------------")
+}
+
+func collectData() {
+	defer wg.Done()
+
+	const reading_delay = time.Second / FREQUENCY_READING
+	simulator_port := getSimulatorPort()
+
+	log.Println("Initializing collectData routine...")
+	log.Printf("Simulator Port = %s", simulator_port)
+	log.Printf("Buffer size = %d", BUFFER_SIZE)
+	log.Printf("Baud rate = %d", BAUD_RATE)
+	log.Printf("Reading delay = %v", reading_delay)
 
 	c := &serial.Config{
-		Name: os.Getenv(SIMULATOR_PORT_ENV),
+		Name: simulator_port,
 		Baud: BAUD_RATE,
 	}
 
-	s, err := serial.OpenPort(c)
+	port, err := serial.OpenPort(c)
 
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	const reading_delay = time.Second / FREQUENCY_READING
-	fmt.Printf("Reading delay = %v\n", reading_delay)
-	fmt.Println("\nReadings:")
-
-	s.Flush()
-	for true {
-		_, err := s.Write([]byte("\""))
-		if err != nil {
-			log.Fatal(err)
+	port.Flush()
+	continue_collecting := true
+	for continue_collecting {
+		select {
+		case stop := <-stop_collecting_data:
+			if stop {
+				log.Println("Stopping collecting of data...")
+				continue_collecting = false
+			}
+		case sig := <-sigs:
+			log.Println("Signal received: ", sig)
+			log.Println("Stopping collecting the data...")
+			continue_collecting = false
+		default:
+			getData(port, "01 0d\r")
+			time.Sleep(reading_delay)
 		}
-
-		buf := make([]byte, BUFFER_SIZE)
-		_, err = s.Read(buf)
-		if err != nil {
-			log.Fatal(err)
-		}
-
-		//fmt.Printf("\t%d km/h\n", buf[0]) // For reading one byte
-		fmt.Printf("\t%s\n", strings.TrimSpace(string(buf))) // For reading one byte
-		//log.Printf("%v", strings.TrimSpace(string(buf[:n])))
-
-		time.Sleep(reading_delay)
 	}
+}
 
-	err = s.Close()
-
-	if err != nil {
+func getData(port *serial.Port, command string) []byte {
+	if _, err := port.Write([]byte(command)); err != nil {
 		log.Fatal(err)
 	}
+
+	buf := make([]byte, BUFFER_SIZE)
+	if _, err := port.Read(buf); err != nil {
+		log.Fatal(err)
+	}
+
+	log.Printf("\t%d km/h\n", buf[0]) // For reading one byte
+	//log.Printf("\t%s\n", strings.TrimSpace(string(buf)))
+	//log.Printf("%v", strings.TrimSpace(string(buf[:n])))
+
+	return buf
+}
+
+func getLogFile() *os.File {
+	log_path := ""
+	if runtime.GOOS == "windows" {
+		log_path = path.Join(os.Getenv("APPDATA"), APP_DATA_FOLDER_NAME)
+		os.MkdirAll(log_path, os.ModePerm)
+	}
+
+	log_path = path.Join(log_path, LOG_FILE_PATH)
+
+	log_file, err := os.OpenFile(log_path, os.O_SYNC|os.O_WRONLY|os.O_CREATE|os.O_APPEND, 0666)
+	if err != nil {
+		log.Fatalf("error opening file: %v", err)
+	}
+	log.SetOutput(log_file)
+
+	return log_file
+}
+
+func getSimulatorPort() string {
+	log.Println("Getting simulator port...")
+
+	simulator_port, does_exists := os.LookupEnv(SIMULATOR_PORT_ENV)
+
+	if !does_exists {
+		err := os.Setenv(SIMULATOR_PORT_ENV, DEFAULT_PORT)
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		simulator_port = os.Getenv(SIMULATOR_PORT_ENV)
+	}
+
+	log.Println("Got simulator port: ", simulator_port)
+	return simulator_port
 }
 
 func onReady() {
