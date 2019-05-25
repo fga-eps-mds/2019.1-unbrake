@@ -7,8 +7,6 @@ from django.test import Client
 from configuration.models import Config
 
 CLIENT = Client()
-
-
 # First argument are the parameters names
 # Second is a tuple of params
 # First argument of param is the first parameter name and so on
