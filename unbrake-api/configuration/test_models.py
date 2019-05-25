@@ -6,6 +6,8 @@ import pytest
 from django.test import Client
 from configuration.models import Config
 
+CLIENT = Client()
+
 
 # First argument are the parameters names
 # Second is a tuple of params
@@ -61,8 +63,7 @@ def test_config(parameters):
         time=time_aux,
     ).save()
 
-    client = Client()
-    result = client.get(
+    result = CLIENT.get(
         '/graphql?query={config(id: 1){number, timeBetweenCycles, upperLimit,'
         'inferiorLimit, upperTime, inferiorTime,'
         'disableShutdown, enableOutput, temperature,time}}')
@@ -97,8 +98,7 @@ def test_create_config(parameters):
     temperature = parameters[8]
     time = parameters[9]
 
-    client = Client()
-    create = client.post(
+    create = CLIENT.post(
         '/graphql?query=mutation{createConfig'
         '(number: ' + str(number) + ', '
         'timeBetweenCycles: ' + str(time_between_cycles) + ', '
@@ -113,12 +113,20 @@ def test_create_config(parameters):
         '{config{number, timeBetweenCycles,upperLimit,inferiorLimit,'
         'upperTime, inferiorTime, disableShutdown,'
         'enableOutput, temperature, time}}}')
-    assert create.status_code == 200
+    first_sataus_code = create.status_code == 200
 
-    result = client.get(
+    result = CLIENT.get(
         '/graphql?query=query{config(id: 1){number, timeBetweenCycles,'
         ' upperLimit, inferiorLimit, upperTime, inferiorTime,'
         'disableShutdown, enableOutput, temperature,time}}')
-    assert result.status_code == 200
+    assert result.status_code == 200 and first_sataus_code
 
     assert create.json()['data']['createConfig'] == result.json()['data']
+
+    get_all = CLIENT.get(
+        '/graphql?query=query{allConfig{number, timeBetweenCycles,'
+        ' upperLimit, inferiorLimit, upperTime, inferiorTime,'
+        'disableShutdown, enableOutput, temperature,time}}')
+    assert get_all.status_code == 200
+    result = result.json()['data']['config']
+    assert result == get_all.json()['data']['allConfig'][0]
