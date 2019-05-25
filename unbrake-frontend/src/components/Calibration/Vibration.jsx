@@ -10,7 +10,6 @@ const renderField = (states, classes, handleChange) => {
   return (
     <Grid alignItems="center" justify="center" container item xs={6}>
       {field(states, classes, handleChange)}
-
     </Grid>
   );
 };
