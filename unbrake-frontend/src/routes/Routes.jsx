@@ -14,7 +14,7 @@ export default () => (
       <AuthorizedRoute
         permission="allow_any"
         exact
-        path="/(|configuration|calibration|analysis|test|vibration)"
+        path="/(|configuration|calibration|analysis|test|vibration|force)"
         component={SideBarMenu}
       />
       <Route exact path="/login" component={Login} />
