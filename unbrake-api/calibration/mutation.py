@@ -245,6 +245,7 @@ class CreateCalibration(graphene.Mutation):
         '''
             Arguments required to create a new Calibration
         '''
+        name = graphene.String()
         id_vibration = graphene.Int()
         id_first_force = graphene.Int()
         id_second_force = graphene.Int()
@@ -257,6 +258,7 @@ class CreateCalibration(graphene.Mutation):
     def mutate(
             self,
             info,
+            name,
             id_vibration,
             id_first_force,
             id_second_force,
@@ -280,6 +282,8 @@ class CreateCalibration(graphene.Mutation):
         command = CalibrationCommand.objects.get(id=id_command)
 
         calibration = Calibration(
+            name=name,
+            is_default=False,
             vibration=vibration,
             speed=speed,
             relations=relations,

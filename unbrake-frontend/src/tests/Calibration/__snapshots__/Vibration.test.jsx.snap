@@ -9,13 +9,11 @@ exports[`<Vibration /> render() renders the component 1`] = `
       "dense": "ReduxForm-dense-3",
       "form": "ReduxForm-form-9",
       "formControl": "ReduxForm-formControl-8",
-
       "grid": "ReduxForm-grid-5",
       "gridButton": "ReduxForm-gridButton-6",
       "menu": "ReduxForm-menu-4",
       "textField": "ReduxForm-textField-2",
       "title": "ReduxForm-title-7",
-
     }
   }
   destroyOnUnmount={true}

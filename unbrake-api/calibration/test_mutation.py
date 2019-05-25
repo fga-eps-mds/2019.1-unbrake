@@ -72,6 +72,7 @@ RESPONSE_RELATIONS = {
 }
 
 RESPONSE_CALIBRATION = {
+    'name': "Teste",
     'speed': RESPONSE_SPEED,
     'vibration': RESPONSE_VIBRATION,
     'command': RESPONSE_COMMAND,
@@ -237,10 +238,10 @@ def test_mutation_calibrate():
     CLIENT.post(url)
 
     url = ('/graphql?query=mutation{createCalibration(idVibration: 1,'
-           ' idSpeed:1, idCommand: 1, idRelations: 1,'
+           'name: "Teste", idSpeed:1, idCommand: 1, idRelations: 1,'
            ' idFirstForce: 1, idSecondForce: 2, idFirstTemperature: 1,'
            'idSecondTemperature: 2){calibration'
-           '{speed {acquisitionChanel, tireRadius}, '
+           '{name, speed {acquisitionChanel, tireRadius}, '
            'vibration {acquisitionChanel, conversionFactor, vibrationOffset}'
            'command {commandChanelSpeed, actualSpeed, maxSpeed,'
            'chanelCommandPression, actualPression, maxPression},'
@@ -259,7 +260,7 @@ def test_mutation_calibrate():
 
     get_calibration = CLIENT.get(
         '/graphql?query=query{calibration(id:1)'
-        '{speed {acquisitionChanel, tireRadius}, '
+        '{name, speed {acquisitionChanel, tireRadius}, '
         'vibration {acquisitionChanel, conversionFactor, vibrationOffset}'
         'command {commandChanelSpeed, actualSpeed, maxSpeed,'
         'chanelCommandPression, actualPression, maxPression},'
@@ -277,7 +278,7 @@ def test_mutation_calibrate():
 
     get_all_calibration = CLIENT.get(
         '/graphql?query=query{allCalibration'
-        '{speed {acquisitionChanel, tireRadius}, '
+        '{name, speed {acquisitionChanel, tireRadius}, '
         'vibration {acquisitionChanel, conversionFactor, vibrationOffset}'
         'command {commandChanelSpeed, actualSpeed, maxSpeed,'
         'chanelCommandPression, actualPression, maxPression},'
