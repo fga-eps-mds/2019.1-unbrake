@@ -1,185 +1,26 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
 exports[`<Configuration /> render() renders the component 1`] = `
-<WithStyles(Grid)
-  alignItems="center"
-  className="Configuration-configuration-11"
-  container={true}
->
-  <div>
-    <WithStyles(Grid)
-      container={true}
-      item={true}
-      justify="center"
-    >
-      <WithStyles(Grid)
-        alignItems="center"
-        container={true}
-        item={true}
-        justify="center"
-        xs={10}
-      >
-        <WithStyles(Grid)
-          className="Configuration-title-5"
-          item={true}
-          xs={4}
-        >
-          <h2>
-            Upload arquivo de 
-            Configuração
-          </h2>
-        </WithStyles(Grid)>
-        <WithStyles(Grid)
-          className="Configuration-grid-3"
-          item={true}
-          xs={4}
-        >
-          <label
-            htmlFor="contained-button-file"
-          >
-            <input
-              className="Configuration-input-6"
-              id="contained-button-file"
-              name="configuration"
-              onChange={[Function]}
-              type="file"
-            />
-            <WithStyles(Paper)
-              className="Configuration-rootUploadFile-7"
-            >
-              <WithStyles(IconButton)
-                component="span"
-              >
-                <pure(CloudUploadIcon)
-                  style={
-                    Object {
-                      "color": "black",
-                    }
-                  }
-                />
-              </WithStyles(IconButton)>
-              <span
-                className="Configuration-input_file_name-8"
-                placeholder="Upload do arquivo de configuração"
-              >
-                Upload do arquivo de configuração
-              </span>
-            </WithStyles(Paper)>
-          </label>
-        </WithStyles(Grid)>
-      </WithStyles(Grid)>
-    </WithStyles(Grid)>
-    <WithStyles(Grid)
-      alignItems="center"
-      container={true}
-      item={true}
-      justify="center"
-      xs={12}
-    >
-      <WithStyles(Grid)
-        className="Configuration-title-5"
-        item={true}
-        xs={4}
-      >
-        <TextField
-          className="Configuration-formControl-9"
-          id="outlined-select-currency"
-          label="Configurações"
-          margin="normal"
-          name="dataBaseConfiguration"
-          onChange={[Function]}
-          required={false}
-          select={true}
-          value={0}
-          variant="outlined"
-        >
-          <WithStyles(MenuItem)
-            key="0"
-            value={0}
-          />
-          <WithStyles(MenuItem)
-            key="NaN"
-          />
-        </TextField>
-      </WithStyles(Grid)>
-      <WithStyles(Button)
-        color="secondary"
-        onClick={[Function]}
-        variant="contained"
-      >
-        Configuração Padrão
-      </WithStyles(Button)>
-    </WithStyles(Grid)>
-    <WithStyles(Grid)
-      alignItems="center"
-      className="Configuration-form-10"
-      container={true}
-      item={true}
-      xs={12}
-    >
-      <WithStyles(ReduxForm)
-        configuration={
-          Object {
-            "CONFIG_ENSAIO": Object {
-              "LSL": "",
-              "LWT": "",
-              "NOS": "",
-              "TAO": false,
-              "TAS": "",
-              "TAT": "",
-              "TBS": "",
-              "TMO": false,
-              "USL": "",
-              "UWT": "",
-            },
-            "name": "",
-          }
-        }
-        handleClickSave={[Function]}
-      />
-    </WithStyles(Grid)>
-  </div>
-  <WithStyles(Dialog)
-    aria-labelledby="form-dialog-title"
-    onClose={[Function]}
-    open={false}
-  >
-    <WithStyles(DialogTitle)
-      id="form-dialog-title"
-    >
-      Nome da Configuração
-    </WithStyles(DialogTitle)>
-    <WithStyles(DialogContent)>
-      <WithStyles(DialogContentText)>
-        Insira aqui o nome que você deseja dar para este arquivo de configuração
-      </WithStyles(DialogContentText)>
-      <TextField
-        autoFocus={true}
-        fullWidth={true}
-        label="Nome"
-        margin="dense"
-        name="name"
-        onChange={[Function]}
-        required={false}
-        select={false}
-        type="text"
-        variant="standard"
-      />
-    </WithStyles(DialogContent)>
-    <WithStyles(DialogActions)>
-      <WithStyles(Button)
-        color="primary"
-        onClick={[Function]}
-      >
-        Cancelar
-      </WithStyles(Button)>
-      <WithStyles(Button)
-        color="primary"
-        onClick={[Function]}
-      >
-        Cadastrar
-      </WithStyles(Button)>
-    </WithStyles(DialogActions)>
-  </WithStyles(Dialog)>
-</WithStyles(Grid)>
+<Connect(WithStyles(Configuration))
+  context={
+    Object {
+      "$$typeof": Symbol(react.context),
+      "Consumer": Object {
+        "$$typeof": Symbol(react.context),
+        "_calculateChangedBits": null,
+        "_context": [Circular],
+      },
+      "Provider": Object {
+        "$$typeof": Symbol(react.provider),
+        "_context": [Circular],
+      },
+      "_calculateChangedBits": null,
+      "_currentRenderer": null,
+      "_currentRenderer2": null,
+      "_currentValue": undefined,
+      "_currentValue2": undefined,
+      "_threadCount": 0,
+    }
+  }
+/>
 `;
