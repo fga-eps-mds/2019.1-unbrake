@@ -32,24 +32,48 @@ func main() {
 	log_file := getLogFile()
 	defer log_file.Close()
 
-	onExit := func() {
-		log.Println("Exiting...")
-	}
-	systray.Run(onReady, onExit) // Comment me if your environment doesn't support
-
 	log.Println("--------------------------------------------")
 	log.Println("Initializing application...")
 
 	sigs = make(chan os.Signal, 1)
 	signal.Notify(sigs, os.Interrupt)
 
-	wg.Add(1)
+	onExit := func() {
+		log.Println("Exiting...")
+	}
+	systray.Run(onReady, onExit) // Comment me if your environment doesn't support
+
+	log.Println("Application finished!")
+	log.Println("--------------------------------------------")
+}
+
+func onReady() {
+	systray.SetIcon(icon)
+	systray.SetTitle("UnBrake")
+	systray.SetTooltip("UnBrake")
+
+	mQuitOrig := systray.AddMenuItem("Sair", "Fechar UnBrake")
+
 	stop_collecting_data = make(chan bool)
+
+	// Wait for quitting
+	go func() {
+		select {
+		case <-mQuitOrig.ClickedCh:
+			log.Println("Quitting by button press")
+		case <-sigs:
+			log.Println("Quitting by signal")
+		}
+
+		stop_collecting_data <- true
+		systray.Quit()
+		log.Println("Finished systray")
+	}()
+
+	wg.Add(1)
 	go collectData()
 
 	wg.Wait()
-	log.Println("Application finished!")
-	log.Println("--------------------------------------------")
 }
 
 func collectData() {
@@ -146,29 +170,6 @@ func getSimulatorPort() string {
 
 	log.Println("Got simulator port: ", simulator_port)
 	return simulator_port
-}
-
-func onReady() {
-	if true {
-		systray.SetIcon(icon)
-	} else {
-		systray.SetIcon(icon)
-	}
-
-	systray.SetTitle("UnBrake")
-	systray.SetTooltip("UnBrake")
-
-	mQuitOrig := systray.AddMenuItem("Sair", "Fechar UnBrake")
-
-	// Quitting routine is treated separately
-	go func() {
-		<-mQuitOrig.ClickedCh
-
-		log.Println("Exiting systray...")
-		stop_collecting_data <- true
-		systray.Quit()
-		log.Println("Finished systray")
-	}()
 }
 
 var icon []byte = []byte{
