@@ -1,5 +1,5 @@
 import React from "react";
-import "../App.css";
+import "../../App.css";
 import { reduxForm } from "redux-form";
 import CalibrationFields from "./CalibrationTempFields";
 import CalibrationCheck from "./CalibrationTempCheck";
@@ -34,8 +34,8 @@ const MyForm = () => (
           flex: 1
         }}
       >
-        <CalibrationCheck checkID="1" />
-        <CalibrationCheck checkID="2" />
+        <CalibrationCheck graphicType="temperatura" checkID="1" />
+        <CalibrationCheck graphicType="temperatura" checkID="2" />
       </div>
     </div>
   </form>

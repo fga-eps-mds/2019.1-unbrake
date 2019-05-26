@@ -29,9 +29,12 @@ import { BrowserRouter, Route } from "react-router-dom";
 import { connect } from "react-redux";
 
 import Configuration from "./Configuration";
-import Calibration from "./Calibration";
+import Calibration from "./Calibration/Calibration";
 import Test from "./Test";
 import Analysis from "./Analysis";
+import UserOptionsMenu from "./UserOptionsMenu";
+import Vibration from "./Calibration/Vibration";
+import Force from "./Calibration/Force";
 
 const drawerWidth = 240;
 const drawerCloseWidth = 7;
@@ -103,9 +106,14 @@ const ToolBar = (classes, open, handleDrawerOpen) => {
       >
         <Menu />
       </IconButton>
-      <Button style={{ textTransform: "none" }} color="inherit" href="/">
-        UnBrake
-      </Button>
+      <div
+        style={{ justifyContent: "space-between", flex: 1, display: "flex" }}
+      >
+        <Button style={{ textTransform: "none" }} color="inherit" href="/">
+          UnBrake
+        </Button>
+        <UserOptionsMenu />
+      </div>
     </Toolbar>
   );
 };
@@ -127,6 +135,8 @@ const RouteLogic = () => {
       <Route exact path="/analysis" component={() => <Analysis />} />
       <Route exact path="/calibration" component={() => <Calibration />} />
       <Route exact path="/test" component={() => <Test />} />
+      <Route exact path="/vibration" component={() => <Vibration />} />
+      <Route exact path="/force" component={() => <Force />} />
     </main>
   );
 };

@@ -24,21 +24,21 @@ const cookies = new Cookies();
  */
 
 export async function verifyToken() {
+  if (cookies.get("token") === undefined) return false;
   const url = `${API_URL_GRAPHQL}?query=mutation{verifyToken(token: "${cookies.get(
     "token"
   )}"){payload}}`;
   const method = "POST";
   const response = await Request(url, method);
-  return response;
+  return response.data.verifyToken.payload.username !== null;
 }
 
 export function isAuthenticated(response) {
   if (response.data !== undefined && response.data !== null) {
+    const stringfyCookie = String(cookies.get("token"));
     return (
-      cookies.get("token") !== "undefined" &&
-      cookies.get("token") !== "null" &&
-      cookies.get("token") !== undefined &&
-      cookies.get("token") !== null &&
+      stringfyCookie !== "undefined" &&
+      stringfyCookie !== "null" &&
       response !== false
     );
   }

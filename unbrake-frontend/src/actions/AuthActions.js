@@ -6,5 +6,4 @@ export const verifyingAuth = value => {
     payload: value
   };
 };
-
 export default { verifyingAuth };

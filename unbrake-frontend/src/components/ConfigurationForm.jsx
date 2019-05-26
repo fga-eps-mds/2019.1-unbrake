@@ -3,8 +3,7 @@ import PropTypes from "prop-types";
 import { initialize, Field, reduxForm } from "redux-form";
 import { TextField, Checkbox } from "redux-form-material-ui";
 import { withStyles, Button, FormControlLabel, Grid } from "@material-ui/core";
-import Request from "../utils/Request";
-import { API_URL_GRAPHQL } from "../utils/Constants";
+import styles from "./Styles";
 
 const limits = (value, allValues) => {
   return parseInt(allValues.LSL, 10) >= parseInt(allValues.USL, 10)
@@ -12,77 +11,76 @@ const limits = (value, allValues) => {
     : undefined;
 };
 
-const styles = theme => ({
-  container: {
-    display: "flex",
-    flexWrap: "wrap"
-  },
-  textField: {
-    marginLeft: theme.spacing.unit,
-    marginRight: theme.spacing.unit
-  },
-  dense: {
-    marginTop: 16
-  },
-  menu: {
-    width: 200
-  },
-  grid: {
-    padding: "px"
-  },
-  gridButton: {
-    paddingLeft: theme.spacing.unit + theme.spacing.unit
-  }
-});
+const validate = values => {
+  const errors = {};
+  const requiredFields = [
+    "TAS",
+    "TAT",
+    "UWT",
+    "NOS",
+    "LSL",
+    "USL",
+    "TBS",
+    "LWT"
+  ];
+  requiredFields.forEach(field => {
+    if (!values[field]) {
+      errors[field] = "Campo obrigatório";
+    }
+  });
+  return errors;
+};
 
-let nameField;
-let labelField;
+const fieldsLabels = {
+  NOS: "Numero de Snubs",
+  USL: "Limite Superior (km/h)",
+  UWT: "Tempo de Espera (s)",
+  TBS: "Tempo entre ciclos",
+  LSL: "Limite inferior (km/h)",
+  LWT: "Tempo de espera (s)"
+};
 
 const rowsFields = (classes, vector, handleChange) => {
+  let nameField;
   const fields = vector.map(value => {
     switch (value.name) {
       case "NOS":
         nameField = "NOS";
-        labelField = "Numero de Snubs";
         break;
       case "USL":
         nameField = "USL";
-        labelField = "Limite Superior (km/h)";
         break;
       case "UWT":
         nameField = "UWT";
-        labelField = "Tempo de Espera (s)";
         break;
       case "TBS":
         nameField = "TBS";
-        labelField = "Tempo entre ciclos";
         break;
       case "LSL":
         nameField = "LSL";
-        labelField = "Limite inferior (km/h)";
         break;
       case "LWT":
         nameField = "LWT";
-        labelField = "Tempo de espera (s)";
         break;
       default:
         break;
     }
     return (
-      <Grid key={value} item xs={3} className={classes.grid}>
-        <Field
-          id={nameField}
-          component={TextField}
-          label={labelField}
-          value={value.value}
-          onChange={handleChange(nameField)}
-          type="number"
-          name={nameField}
-          validate={limits}
-          className={classes.textField}
-          margin="normal"
-          variant="outlined"
-        />
+      <Grid key={`row${nameField}`} container xs={3} item justify="center">
+        <div>
+          <Field
+            id={nameField}
+            component={TextField}
+            label={fieldsLabels[nameField]}
+            onChange={handleChange}
+            type="number"
+            name={nameField}
+            validate={nameField === "USL" || nameField === "LSL" ? limits : []}
+            className={classes.textField}
+            margin="normal"
+            variant="outlined"
+          />
+        </div>
       </Grid>
     );
   });
@@ -92,14 +90,7 @@ const rowsFields = (classes, vector, handleChange) => {
 const fieldsConfigurations = (classes, vector, handleChange) => {
   const rows = vector.map(value => {
     return (
-      <Grid
-        key={value}
-        container
-        item
-        xs={12}
-        alignItems="center"
-        justify="center"
-      >
+      <Grid key={`${value[0].name}`} container xs={12} justify="center" item>
         {rowsFields(classes, value, handleChange)}
       </Grid>
     );
@@ -107,7 +98,7 @@ const fieldsConfigurations = (classes, vector, handleChange) => {
   return rows;
 };
 
-const checkBox = (classes, type) => {
+const checkBox = (classes, type, handleChange) => {
   let label;
   switch (type.name) {
     case "TMO":
@@ -120,28 +111,18 @@ const checkBox = (classes, type) => {
       break;
   }
   return (
-    <Grid container item xs={3} className={classes.gridButton} justify="center">
+    <Grid container item xs={3} style={{ paddingLeft: 20 }}>
       <FormControlLabel
+        name={type.name}
         control={
-          <Field component={Checkbox} name={type.name} value={type.value} />
+          <Field
+            component={Checkbox}
+            onClick={handleChange}
+            value={type.value}
+          />
         }
         label={label}
       />
-    </Grid>
-  );
-};
-
-const Buttons = (classes, submitting) => {
-  return (
-    <Grid container item xs={3} className={classes.grid}>
-      <Button
-        type="submit"
-        color="secondary"
-        variant="contained"
-        disabled={submitting}
-      >
-        Cadastrar
-      </Button>
     </Grid>
   );
 };
@@ -159,13 +140,13 @@ const CommunGrid = (classes, type, handleChange) => {
       break;
   }
   return (
-    <Grid item xs={6} className={classes.grid}>
+    <Grid item container xs={3} className={classes.grid} justify="center">
       <Field
         id={type.name}
         component={TextField}
         label={label}
         value={type.value}
-        onChange={handleChange(type.name)}
+        onChange={handleChange}
         type="number"
         name={type.name}
         className={classes.textField}
@@ -180,38 +161,40 @@ const otherField = (classes, vector, handleChange) => {
   const fields = vector.map(value => {
     return (
       <Grid
-        key={value}
+        key={`other${value[1].name}`}
         container
         item
         xs={12}
-        alignItems="center"
         justify="center"
       >
-        {checkBox(classes, value[0])}
+        {checkBox(classes, value[0], handleChange)}
         {CommunGrid(classes, value[1], handleChange)}
+        <Grid item container xs={3} />
       </Grid>
     );
   });
   return fields;
 };
 
-async function submit(values, state) {
-  const url = `${API_URL_GRAPHQL}?query=mutation{createConfig(number:${
-    state.NOS
-  },timeBetweenCycles:${state.TBS},upperLimit:${state.USL},inferiorLimit:${
-    state.LSL
-  },upperTime:${state.UWT},inferiorTime:${state.LWT},disableShutdown:${
-    state.TMO
-  },enableOutput:${state.TAO},temperature:${state.TAS},time:${
-    state.TAT
-  }){config{number, timeBetweenCycles,upperLimit,inferiorLimit}}}`;
+const Buttons = classes => {
+  return (
+    <Grid container item xs={3} className={classes.grid}>
+      <Button type="submit" color="secondary" variant="contained">
+        Cadastrar
+      </Button>
+    </Grid>
+  );
+};
 
-  const method = "POST";
-
-  const response = await Request(url, method);
-
-  return response;
-}
+const verifyCheckbox = variable => {
+  let bool;
+  if (variable === "FALSE" || variable === false) {
+    bool = false;
+  } else {
+    bool = true;
+  }
+  return bool;
+};
 
 class ConfigurationForm extends React.Component {
   constructor(props) {
@@ -227,29 +210,19 @@ class ConfigurationForm extends React.Component {
         TAS: "",
         TAT: "",
         TMO: false,
-        TAO: ""
+        TAO: false
       }
     };
-    this.handleChange = name => event => {
-      const configuration = {};
-      configuration[name] = event.target.value;
-      this.setState(prevState => ({
-        configuration: { ...prevState.configuration, ...configuration }
-      }));
-    };
-    this.checkHandleChange = name => event => {
-      this.setState({ configuration: { [name]: event.target.checked } });
-    };
+    this.handleChange = this.handleChange.bind(this);
   }
 
   shouldComponentUpdate(nextProps) {
-    const { configuration } = this.props;
+    const { configuration, dispatch } = this.props;
     if (configuration !== nextProps.configuration) {
       const rightConfig = Object.assign({}, nextProps.configuration);
-      rightConfig.CONFIG_ENSAIO.TMO =
-        nextProps.configuration.CONFIG_ENSAIO.TMO !== "FALSE";
-
-      const { dispatch } = this.props;
+      const next = nextProps.configuration.CONFIG_ENSAIO;
+      rightConfig.CONFIG_ENSAIO.TMO = verifyCheckbox(next.TMO);
+      rightConfig.CONFIG_ENSAIO.TAO = verifyCheckbox(next.TAO);
       dispatch(initialize("configuration", rightConfig.CONFIG_ENSAIO));
       this.setState({ configuration: rightConfig.CONFIG_ENSAIO });
       return true;
@@ -257,8 +230,17 @@ class ConfigurationForm extends React.Component {
     return false;
   }
 
+  handleChange(event) {
+    const { target } = event;
+    const value = target.type === "checkbox" ? target.checked : target.value;
+    const configuration = { [event.target.name]: value };
+    this.setState(prevState => ({
+      configuration: { ...prevState.configuration, ...configuration }
+    }));
+  }
+
   render() {
-    const { classes, handleSubmit, submitting } = this.props;
+    const { classes, handleSubmit, handleClickSave } = this.props;
     const { configuration } = this.state;
     const { TAS, TAT, TMO, TAO, UWT, NOS, LSL, USL, TBS, LWT } = configuration;
     const rowOne = [
@@ -280,20 +262,27 @@ class ConfigurationForm extends React.Component {
       { name: "TAO", value: TAO },
       { name: "TAT", value: TAT }
     ];
-    const othersFilds = [oneFields, twoFields];
+    const othersFields = [oneFields, twoFields];
 
     return (
       <form
         className={classes.container}
-        autoComplete="off"
-        onSubmit={handleSubmit(values => {
-          submit(values, this.state);
+        onSubmit={handleSubmit(() => {
+          handleClickSave(this.state);
         })}
       >
         {fieldsConfigurations(classes, rows, this.handleChange)}
-        {otherField(classes, othersFilds, this.handleChange)}
-        <Grid container item xs={12} alignItems="center" justify="center">
-          {Buttons(classes, submitting)}
+        {otherField(classes, othersFields, this.handleChange)}
+        <Grid container xs={12} item justify="center">
+          <Grid
+            item
+            container
+            xs={6}
+            justify="center"
+            className={classes.gridButton}
+          >
+            {Buttons(classes)}
+          </Grid>
         </Grid>
       </form>
     );
@@ -303,13 +292,14 @@ class ConfigurationForm extends React.Component {
 ConfigurationForm.propTypes = {
   classes: PropTypes.objectOf(PropTypes.string).isRequired,
   handleSubmit: PropTypes.func.isRequired,
-  submitting: PropTypes.bool.isRequired,
   configuration: PropTypes.oneOfType([PropTypes.object]).isRequired,
-  dispatch: PropTypes.func.isRequired
+  dispatch: PropTypes.func.isRequired,
+  handleClickSave: PropTypes.func.isRequired
 };
 
-const Configuration = reduxForm({
-  form: "configuration"
+const Configurationa = reduxForm({
+  form: "configuration",
+  validate
 })(ConfigurationForm);
 
-export default withStyles(styles)(Configuration);
+export default withStyles(styles)(Configurationa);

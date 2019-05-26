@@ -4,24 +4,6 @@ import Grid from "@material-ui/core/Grid";
 import PropTypes from "prop-types";
 
 const renderSubmit = (label, classes, submitting) => {
-  let seccondButton = () => {};
-
-  if (label === "Entrar") {
-    seccondButton = () => (
-      <Grid item xs={3} className={classes.grid}>
-        <Button
-          color="secondary"
-          variant="contained"
-          disabled={submitting}
-          href="/signUp"
-          fullWidth
-        >
-          Cadastrar
-        </Button>
-      </Grid>
-    );
-  }
-
   return (
     <Grid container item xs={12} alignItems="center" justify="center">
       <Grid item xs={3} className={classes.grid}>
@@ -35,7 +17,6 @@ const renderSubmit = (label, classes, submitting) => {
           {label}
         </Button>
       </Grid>
-      {seccondButton()}
     </Grid>
   );
 };
