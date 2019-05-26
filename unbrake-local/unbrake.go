@@ -6,8 +6,8 @@ import (
 	"os/signal"
 	"path"
 	"runtime"
+	"strings"
 	"sync"
-	//"strings"
 	"time"
 
 	"github.com/getlantern/systray"
@@ -15,13 +15,13 @@ import (
 )
 
 const (
-	BUFFER_SIZE          = 1
-	SIMULATOR_PORT_ENV   = "SIMULATOR_PORT"
-	DEFAULT_PORT         = "/dev/ttyACM0"
-	BAUD_RATE            = 115200
-	FREQUENCY_READING    = 10
-	LOG_FILE_PATH        = "unbrake.log"
-	APP_DATA_FOLDER_NAME = "UnBrake" // For windows
+	BUFFER_SIZE             = 48
+	SIMULATOR_PORT_ENV      = "SIMULATOR_PORT"
+	DEFAULT_PORT            = "/dev/ttyACM0"
+	BAUD_RATE               = 115200
+	FREQUENCY_READING       = 10
+	LOG_FILE_PATH           = "unbrake.log"
+	APPLICATION_FOLDER_NAME = "UnBrake"
 )
 
 var wg sync.WaitGroup
@@ -54,7 +54,7 @@ func onReady() {
 
 	mQuitOrig := systray.AddMenuItem("Sair", "Fechar UnBrake")
 
-	stop_collecting_data = make(chan bool)
+	stop_collecting_data = make(chan bool, 1)
 
 	// Wait for quitting
 	go func() {
@@ -120,12 +120,15 @@ func collectData() {
 }
 
 func getData(port *serial.Port, command string) []byte {
-	if _, err := port.Write([]byte(command)); err != nil {
+	n, err := port.Write([]byte(command))
+
+	if err != nil {
 		log.Fatal(err)
 	}
 
 	buf := make([]byte, BUFFER_SIZE)
-	if _, err := port.Read(buf); err != nil {
+	n, err = port.Read(buf)
+	if err != nil {
 		log.Fatal(err)
 	}
 
@@ -137,11 +140,13 @@ func getData(port *serial.Port, command string) []byte {
 
 func getLogFile() *os.File {
 	log_path := ""
-	if runtime.GOOS == "windows" {
-		log_path = path.Join(os.Getenv("APPDATA"), APP_DATA_FOLDER_NAME)
-		os.MkdirAll(log_path, os.ModePerm)
+	if runtime.GOOS != "windows" {
+		log_path = path.Join("/var", "log", APPLICATION_FOLDER_NAME)
+	} else {
+		log_path = path.Join(os.Getenv("APPDATA"), APPLICATION_FOLDER_NAME)
 	}
 
+	os.MkdirAll(log_path, os.ModePerm)
 	log_path = path.Join(log_path, LOG_FILE_PATH)
 
 	log_file, err := os.OpenFile(log_path, os.O_SYNC|os.O_WRONLY|os.O_CREATE|os.O_APPEND, 0666)
