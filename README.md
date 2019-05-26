@@ -6,7 +6,27 @@
 [![code style: prettier](https://img.shields.io/badge/code_style-prettier-ff69b4.svg?style=flat-square)](https://github.com/prettier/prettier)
 [![pullreminders](https://pullreminders.com/badge.svg)](https://pullreminders.com?ref=badge)
 
-## Subindo a aplicação
+## Utilizando a aplicação
+
+Execute o binário (checar [releases](https://github.com/fga-eps-mds/2019.1-unbrake/releases)) e acesse
+a interface da aplicação em https://unbrake.ml ou algum servidor local.
+
+Se o binário estiver em execução será adicionado um ícone na área de notificações do seu sistema operacional, pelo qual
+é possível interagir com a aplicação.
+
+### Variáveis de ambiente
+
+Atualmente as seguintes variáveis de ambiente são relevantes para a aplicação:
+
+* **SIMULATOR_PORT**: nome/caminho da porta serial em que a placa está conectada. Ex: /dev/ttyACM0, COM1.
+
+### Logs
+
+Todo o funcionamento da aplicação é registrado em arquivos de log. No Linux eles são atualmente gravados em `/var/log/UnBrake`,
+já no Windows em `%APPDATA%/UnBrake/logs`
+
+## Desenvolvimento
+### Subindo parte Web localmente
 
 *Todos os comandos incluem o comando de build para envitar erros de iniciante
 mas não é necessário em todas as execuções
@@ -24,7 +44,7 @@ ou os serviços podem ser executados individualmente:
 sudo docker-compose up --build frontend
 ```
 
-## Executando checagens de código
+### Executando checagens de código
 
 Desde que o serviço do frontend já tenha sido construído
 (build executado pelo menos uma vez) no ambiente do usuário, algumas checagens
@@ -44,9 +64,9 @@ procedimento é abortado. Como isso é feito através de _git hooks_, é possív
 evitar as checagens utilizando-se a flag `--no-verify` nos comandos do git,
 **embora isso seja altamente desencorajado**.
 
-### Frontend
+#### Frontend
 
-#### Scripts disponíveis (frontend)
+##### Scripts disponíveis (frontend)
 
 * **check_all:** Executa todos os outros scripts de checagem em sequência,
   na checagem de testes é executado o com coverage sem html
@@ -61,7 +81,7 @@ evitar as checagens utilizando-se a flag `--no-verify` nos comandos do git,
 * **fix**: Corrige automaticamente erros de formatação possíveis de serem
   consertados pelo `eslint` e pelo `prettier`
 
-#### Execução de um script (frontend)
+##### Execução de um script (frontend)
 
 Uma das possíveis formas de se executar os scripts no
 frontend é executando o seguinte comando:
@@ -71,9 +91,9 @@ frontend é executando o seguinte comando:
 $ sudo docker-compose run --rm frontend run [nome_do_script]
 ```
 
-### API
+#### API
 
-#### Scripts disponíveis (API)
+##### Scripts disponíveis (API)
 
 * **check_all:** Todos os outros scripts de checagem são executados
   em sequência, na checagem de testes é executado o com coverage sem html
@@ -89,7 +109,7 @@ $ sudo docker-compose run --rm frontend run [nome_do_script]
 * **fix**: Corrige automaticamente erros de formatação possíveis de serem
   consertados pelo `autopep8`
 
-#### Execução de um script (API)
+##### Execução de um script (API)
 
 Uma das possíveis formas de se executar os scripts da API
   é executando o seguinte comando:
@@ -99,7 +119,7 @@ Uma das possíveis formas de se executar os scripts da API
 $ sudo docker-compose run --rm api [nome_do_script]
 ```
 
-### CodeClimate CLI
+#### CodeClimate CLI
 
 O codeclimate irá checar algumas coisas já checadas localmente e outras
 menos importantes, que só serão exigidas de serem consertadas antes do
