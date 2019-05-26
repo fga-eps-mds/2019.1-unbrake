@@ -4,23 +4,10 @@ exports[`<Vibration /> render() renders the component 1`] = `
 <Hoc
   classes={
     Object {
-      "configuration": "ReduxForm-configuration-10",
       "container": "ReduxForm-container-1",
-      "dense": "ReduxForm-dense-3",
-      "fileInput": "ReduxForm-fileInput-8",
-      "file_name": "ReduxForm-file_name-11",
-      "grid": "ReduxForm-grid-5",
-      "gridButton": "ReduxForm-gridButton-6",
-      "input": "ReduxForm-input-9",
-      "form": "ReduxForm-form-9",
-      "formControl": "ReduxForm-formControl-8",
-      "grid": "ReduxForm-grid-5",
-      "gridButton": "ReduxForm-gridButton-6",
-      "gridGraphic": "ReduxForm-gridGraphic-12",
-      "menu": "ReduxForm-menu-4",
-      "rootUploadFile": "ReduxForm-rootUploadFile-10",
+      "grid": "ReduxForm-grid-4",
+      "menu": "ReduxForm-menu-3",
       "textField": "ReduxForm-textField-2",
-      "title": "ReduxForm-title-7",
     }
   }
   destroyOnUnmount={true}

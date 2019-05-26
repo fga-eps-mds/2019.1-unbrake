@@ -2,7 +2,7 @@ import React from "react";
 import Enzyme, { shallow } from "enzyme";
 import Adapter from "enzyme-adapter-react-16";
 // import fetch from "jest-fetch-mock";
-import Configuration from "../components/Configuration";
+import Configuration from "../Configuration/Configuration";
 import ComponentTest from "./ComponentTest";
 // import { API_URL_GRAPHQL } from "../utils/Constants";
 

@@ -3,12 +3,11 @@
 exports[`<Configuration /> render() renders the component 1`] = `
 <WithStyles(Grid)
   alignItems="center"
-  className="Configuration-configuration-10"
+  className="Configuration-configuration-11"
   container={true}
 >
   <div>
     <WithStyles(Grid)
-      className="Configuration-title-7"
       container={true}
       item={true}
       justify="center"
@@ -21,7 +20,7 @@ exports[`<Configuration /> render() renders the component 1`] = `
         xs={10}
       >
         <WithStyles(Grid)
-          className="Configuration-title-7"
+          className="Configuration-title-5"
           item={true}
           xs={4}
         >
@@ -31,68 +30,59 @@ exports[`<Configuration /> render() renders the component 1`] = `
           </h2>
         </WithStyles(Grid)>
         <WithStyles(Grid)
-          className="Configuration-grid-5"
+          className="Configuration-grid-3"
           item={true}
           xs={4}
         >
-          <WithStyles(Input)
-            name="configuration"
-            onChange={[Function]}
-            type="file"
-          />
+          <label
+            htmlFor="contained-button-file"
+          >
+            <input
+              className="Configuration-input-6"
+              id="contained-button-file"
+              name="configuration"
+              onChange={[Function]}
+              type="file"
+            />
+            <WithStyles(Paper)
+              className="Configuration-rootUploadFile-7"
+            >
+              <WithStyles(IconButton)
+                component="span"
+              >
+                <pure(CloudUploadIcon)
+                  style={
+                    Object {
+                      "color": "black",
+                    }
+                  }
+                />
+              </WithStyles(IconButton)>
+              <span
+                className="Configuration-input_file_name-8"
+                placeholder="Upload do arquivo de configuração"
+              >
+                Upload do arquivo de configuração
+              </span>
+            </WithStyles(Paper)>
+          </label>
         </WithStyles(Grid)>
       </WithStyles(Grid)>
     </WithStyles(Grid)>
     <WithStyles(Grid)
-      className="Configuration-grid-5"
       alignItems="center"
       container={true}
       item={true}
       justify="center"
       xs={12}
     >
-      <label
-        htmlFor="contained-button-file"
-      >
-        <input
-          className="Configuration-input-9"
-          id="contained-button-file"
-          name="calibration"
-          onChange={[Function]}
-          type="file"
-        />
-        <WithStyles(Paper)
-          className="Configuration-rootUploadFile-10"
-        >
-          <WithStyles(IconButton)
-            component="span"
-          >
-            <pure(CloudUploadIcon)
-              style={
-                Object {
-                  "color": "black",
-                }
-              }
-            />
-          </WithStyles(IconButton)>
-          <WithStyles(WithFormControlContext(InputBase))
-            disabled={true}
-            fullWidth={false}
-            inputComponent="input"
-            multiline={false}
-            placeholder="Upload do arquivo de configuração"
-            type="text"
-            value=""
-          />
-        </WithStyles(Paper)>
-      </label>
       <WithStyles(Grid)
-        className="Configuration-title-7"
+        className="Configuration-title-5"
         item={true}
         xs={4}
       >
         <TextField
-          className="Configuration-formControl-8"
+          className="Configuration-formControl-9"
           id="outlined-select-currency"
           label="Configurações"
           margin="normal"
@@ -121,9 +111,8 @@ exports[`<Configuration /> render() renders the component 1`] = `
       </WithStyles(Button)>
     </WithStyles(Grid)>
     <WithStyles(Grid)
-      className="Configuration-title-7"
       alignItems="center"
-      className="Configuration-form-9"
+      className="Configuration-form-10"
       container={true}
       item={true}
       xs={12}
@@ -149,67 +138,6 @@ exports[`<Configuration /> render() renders the component 1`] = `
         handleClickSave={[Function]}
       />
     </WithStyles(Grid)>
-    <WithStyles(Grid)
-      className="Configuration-grid-5"
-      item={true}
-      xs={4}
-    >
-      <label
-        htmlFor="contained-button-file"
-      >
-        <input
-          className="Configuration-input-9"
-          id="contained-button-file"
-          name="configuration"
-          onChange={[Function]}
-          type="file"
-        />
-        <WithStyles(Paper)
-          className="Configuration-rootUploadFile-10"
-        >
-          <WithStyles(IconButton)
-            component="span"
-          >
-            <pure(CloudUploadIcon)
-              style={
-                Object {
-                  "color": "black",
-                }
-              }
-            />
-          </WithStyles(IconButton)>
-          <WithStyles(WithFormControlContext(InputBase))
-            disabled={true}
-            fullWidth={false}
-            inputComponent="input"
-            multiline={false}
-            placeholder="Upload do arquivo de configuração"
-            type="text"
-            value=""
-          />
-        </WithStyles(Paper)>
-      </label>
-    </WithStyles(Grid)>
-  </WithStyles(Grid)>
-  <WithStyles(ReduxForm)
-    configuration={
-      Object {
-        "CONFIG_ENSAIO": Object {
-          "LSL": "",
-          "LWT": "",
-          "NOS": "",
-          "PTD": "",
-          "TAO": false,
-          "TAS": "",
-          "TAT": "",
-          "TBS": "",
-          "TMO": false,
-          "USL": "",
-          "UWT": "",
-        },
-      }
-    }
-  />
   </div>
   <WithStyles(Dialog)
     aria-labelledby="form-dialog-title"

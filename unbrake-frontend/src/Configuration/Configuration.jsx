@@ -1,7 +1,7 @@
 import React from "react";
 import iniparser from "iniparser";
-
-import { Input, Grid, Button, Dialog } from "@material-ui/core";
+import Paper from "@material-ui/core/Paper";
+import { Grid, Button, Dialog } from "@material-ui/core";
 import { withStyles } from "@material-ui/core/styles";
 import PropTypes from "prop-types";
 import MenuItem from "@material-ui/core/MenuItem";
@@ -10,10 +10,13 @@ import DialogActions from "@material-ui/core/DialogActions";
 import DialogContent from "@material-ui/core/DialogContent";
 import DialogContentText from "@material-ui/core/DialogContentText";
 import DialogTitle from "@material-ui/core/DialogTitle";
+import IconButton from "@material-ui/core/IconButton";
+import CloudUploadIcon from "@material-ui/icons/CloudUpload";
 import Request from "../utils/Request";
 import { API_URL_GRAPHQL } from "../utils/Constants";
 import ConfigurationForm from "./ConfigurationForm";
 import styles from "./Styles";
+import { createConfig } from "./ConfigFunctions";
 
 const query =
   "id, name, number, time, temperature, timeBetweenCycles, upperLimit, inferiorLimit, upperTime, inferiorTime, disableShutdown, enableOutput";
@@ -111,24 +114,6 @@ const dialogName = (handleChange, handleClose, dialogStates) => {
   );
 };
 
-const createConfig = data => {
-  const configurationDefault = {
-    CONFIG_ENSAIO: {
-      LSL: data.inferiorLimit,
-      LWT: data.inferiorTime,
-      NOS: data.number,
-      TAO: data.enableOutput,
-      TAS: data.temperature,
-      TAT: data.time,
-      TBS: data.timeBetweenCycles,
-      TMO: data.disableShutdown,
-      USL: data.upperLimit,
-      UWT: data.upperTime
-    }
-  };
-  return configurationDefault;
-};
-
 class Configuration extends React.Component {
   constructor(props) {
     super(props);
@@ -148,7 +133,7 @@ class Configuration extends React.Component {
         },
         name: ""
       },
-      fileName: "",
+      fileName: "Upload do arquivo de configuração",
       dataBaseConfiguration: 0,
       allConfiguration: "",
       open: false
@@ -254,12 +239,12 @@ class Configuration extends React.Component {
               <IconButton component="span">
                 <CloudUploadIcon style={{ color: "black" }} />
               </IconButton>
-              <InputBase
-                disabled
+              <span
                 className={classes.input_file_name}
-                value={fileName}
                 placeholder="Upload do arquivo de configuração"
-              />
+              >
+                {fileName}
+              </span>
             </Paper>
           </label>
         </Grid>
