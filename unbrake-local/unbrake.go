@@ -17,7 +17,7 @@ import (
 const (
 	BUFFER_SIZE          = 1
 	SIMULATOR_PORT_ENV   = "SIMULATOR_PORT"
-	DEFAULT_PORT         = "/dev/pts/2"
+	DEFAULT_PORT         = "/dev/ttyACM0"
 	BAUD_RATE            = 115200
 	FREQUENCY_READING    = 10
 	LOG_FILE_PATH        = "unbrake.log"
@@ -41,7 +41,7 @@ func main() {
 	onExit := func() {
 		log.Println("Exiting...")
 	}
-	systray.Run(onReady, onExit) // Comment me if your environment doesn't support
+	systray.Run(onReady, onExit)
 
 	log.Println("Application finished!")
 	log.Println("--------------------------------------------")
@@ -60,9 +60,9 @@ func onReady() {
 	go func() {
 		select {
 		case <-mQuitOrig.ClickedCh:
-			log.Println("Quitting by button press")
+			log.Println("Quitting request by interface")
 		case <-sigs:
-			log.Println("Quitting by signal")
+			log.Println("Quitting request by signal")
 		}
 
 		stop_collecting_data <- true
@@ -113,7 +113,7 @@ func collectData() {
 			log.Println("Stopping collecting the data...")
 			continue_collecting = false
 		default:
-			getData(port, "01 0d\r")
+			getData(port, "\"")
 			time.Sleep(reading_delay)
 		}
 	}
@@ -129,9 +129,8 @@ func getData(port *serial.Port, command string) []byte {
 		log.Fatal(err)
 	}
 
-	log.Printf("\t%d km/h\n", buf[0]) // For reading one byte
-	//log.Printf("\t%s\n", strings.TrimSpace(string(buf)))
-	//log.Printf("%v", strings.TrimSpace(string(buf[:n])))
+	//log.Printf("\t%d km/h\n", buf[0]) // For reading one byte
+	log.Printf("%s", strings.TrimSpace(string(buf[:n])))
 
 	return buf
 }
@@ -149,6 +148,7 @@ func getLogFile() *os.File {
 	if err != nil {
 		log.Fatalf("error opening file: %v", err)
 	}
+	log.SetFlags(log.Ldate | log.Ltime | log.Lmicroseconds)
 	log.SetOutput(log_file)
 
 	return log_file
