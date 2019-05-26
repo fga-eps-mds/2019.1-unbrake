@@ -1,9 +1,9 @@
 import React from "react";
-import "../App.css";
+import "../../App.css";
 import { Checkbox, FormControlLabel } from "@material-ui/core";
 import { connect } from "react-redux";
 import PropTypes, { func } from "prop-types";
-import { changeGraphic1, changeGraphic2 } from "../actions/ConfigActions";
+import { changeGraphic1, changeGraphic2 } from "../../actions/ConfigActions";
 
 class CalibrationTempCheck extends React.Component {
   constructor(props) {
@@ -36,13 +36,13 @@ class CalibrationTempCheck extends React.Component {
   }
 
   renderCheck() {
-    const { checkID } = this.props;
+    const { graphicType, checkID } = this.props;
 
     return (
       <div>
         <FormControlLabel
           control={this.renderSingleCheckbox(checkID)}
-          label={`Plotar Temperatura ${checkID}`}
+          label={`Plotar ${graphicType} ${checkID}`}
         />
       </div>
     );
@@ -58,11 +58,13 @@ CalibrationTempCheck.propTypes = {
   checkID: PropTypes.string,
   graphic1: PropTypes.bool,
   graphic2: PropTypes.bool,
+  graphicType: PropTypes.string,
   enableGraphic1: func,
   enableGraphic2: func
 };
 CalibrationTempCheck.defaultProps = {
   checkID: "",
+  graphicType: "",
   graphic1: false,
   graphic2: false,
   enableGraphic1: () => {},

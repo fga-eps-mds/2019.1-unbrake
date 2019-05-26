@@ -6,6 +6,7 @@ import { NotFoundRoute, AuthorizedRoute } from "./RouteComponents";
 import Login from "../components/Login";
 import SideBarMenu from "../components/SideBarMenu";
 import SignUp from "../components/SignUp";
+import CalibrationCommand from "../components/CalibrationCommand";
 
 export default () => (
   <Router history={history}>
@@ -13,11 +14,17 @@ export default () => (
       <AuthorizedRoute
         permission="allow_any"
         exact
-        path="/(|configuration|calibration|analysis|test)"
+        path="/(|configuration|calibration|analysis|test|vibration|force)"
         component={SideBarMenu}
       />
       <Route exact path="/login" component={Login} />
-      <Route exact path="/signup" component={SignUp} />
+      <Route exact path="/command" component={CalibrationCommand} />
+      <AuthorizedRoute
+        superuser={localStorage.getItem("isSuperuser") === "true"}
+        exact
+        path="/signup"
+        component={SignUp}
+      />
       <Route component={NotFoundRoute} />
     </Switch>
   </Router>

@@ -1,99 +1,26 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
 exports[`<Configuration /> render() renders the component 1`] = `
-<WithStyles(Grid)
-  alignItems="center"
-  container={true}
-  justify="center"
-  spacing={12}
-  style={
+<Connect(WithStyles(Configuration))
+  context={
     Object {
-      "minHeight": "100vh",
+      "$$typeof": Symbol(react.context),
+      "Consumer": Object {
+        "$$typeof": Symbol(react.context),
+        "_calculateChangedBits": null,
+        "_context": [Circular],
+      },
+      "Provider": Object {
+        "$$typeof": Symbol(react.provider),
+        "_context": [Circular],
+      },
+      "_calculateChangedBits": null,
+      "_currentRenderer": null,
+      "_currentRenderer2": null,
+      "_currentValue": undefined,
+      "_currentValue2": undefined,
+      "_threadCount": 0,
     }
   }
->
-  <form>
-    <WithStyles(Grid)
-      alignItems="center"
-      container={true}
-      item={true}
-      justify="center"
-      xs={10}
-    >
-      <WithStyles(Grid)
-        className="Configuration-title-1"
-        item={true}
-        xs={4}
-      >
-        <h2
-          justify="left"
-        >
-          Upload arquivo de 
-          Calibração
-        </h2>
-      </WithStyles(Grid)>
-      <WithStyles(Grid)
-        className="Configuration-grid-2"
-        item={true}
-        xs={4}
-      >
-        <WithStyles(Input)
-          name="calibration"
-          onChange={[Function]}
-          type="file"
-        />
-      </WithStyles(Grid)>
-    </WithStyles(Grid)>
-    <WithStyles(Grid)
-      alignItems="center"
-      container={true}
-      item={true}
-      justify="center"
-      xs={10}
-    >
-      <WithStyles(Grid)
-        className="Configuration-title-1"
-        item={true}
-        xs={4}
-      >
-        <h2
-          justify="left"
-        >
-          Upload arquivo de 
-          Configuração
-        </h2>
-      </WithStyles(Grid)>
-      <WithStyles(Grid)
-        className="Configuration-grid-2"
-        item={true}
-        xs={4}
-      >
-        <WithStyles(Input)
-          name="configuration"
-          onChange={[Function]}
-          type="file"
-        />
-      </WithStyles(Grid)>
-    </WithStyles(Grid)>
-    <WithStyles(ReduxForm)
-      configuration={
-        Object {
-          "CONFIG_ENSAIO": Object {
-            "LSL": "",
-            "LWT": "",
-            "NOS": "",
-            "PTD": "",
-            "TAO": [Function],
-            "TAS": "",
-            "TAT": "",
-            "TBS": "",
-            "TMO": [Function],
-            "USL": "",
-            "UWT": "",
-          },
-        }
-      }
-    />
-  </form>
-</WithStyles(Grid)>
+/>
 `;

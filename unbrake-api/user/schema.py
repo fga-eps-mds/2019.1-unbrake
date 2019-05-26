@@ -21,7 +21,8 @@ class UserType(DjangoObjectType):
 
 
 class CreateUser(graphene.Mutation):
-    # pylint: disable =  unused-argument, no-self-use
+    # pylint: disable =  unused-argument, no-self-use, too-many-arguments
+
     '''
     Class to create a new user
     '''
@@ -32,14 +33,18 @@ class CreateUser(graphene.Mutation):
         Arguments required to create a new user
         '''
         username = graphene.String(required=True)
+        email = graphene.String(required=True)
         password = graphene.String(required=True)
+        is_superuser = graphene.Boolean(required=True)
 
-    def mutate(self, info, username, password):
+    def mutate(self, info, username, email, password, is_superuser):
         '''
         Create the user with the given parameters end add to db
         '''
         user = get_user_model()(
             username=username,
+            email=email,
+            is_superuser=is_superuser
         )
         user.set_password(password)
         user.save()
@@ -60,6 +65,7 @@ class Query(graphene.ObjectType):
     GraphQL class to declare all the queries
     '''
     current_user = graphene.Field(UserType)
+    user = graphene.Field(UserType, username=graphene.String())
     users = graphene.List(UserType)
 
     def resolve_users(self, info):
@@ -73,3 +79,11 @@ class Query(graphene.ObjectType):
         Return the current user
         '''
         return info.context.user
+
+    def resolve_user(self, info, **kwargs):
+        '''
+            Returning only one User by username
+        '''
+        username = kwargs.get('username')
+
+        return get_user_model().objects.get(username=username)
