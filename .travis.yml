@@ -115,7 +115,7 @@ jobs:
 
         # Merge coverage results and upload
         - ./cc-test-reporter sum-coverage -o coverage/codeclimate.json -p 2 coverage/*.json
-        - if [[ "$TRAVIS_TEST_RESULT" == 0 ]] && [ "$TRAVIS_PULL_REQUEST" != "false" ]; then ./cc-test-reporter upload-coverage -i coverage/codeclimate.json; fi
+        - if [[ "$TRAVIS_TEST_RESULT" == 0 ]] && [ "$TRAVIS_PULL_REQUEST" == "false" ]; then ./cc-test-reporter upload-coverage -i coverage/codeclimate.json; fi
 
     - <<: *build_staging
       name: "Build frontend"
