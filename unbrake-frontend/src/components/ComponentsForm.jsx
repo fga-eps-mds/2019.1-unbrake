@@ -43,3 +43,20 @@ export const field = (type, classes, handleChange) => {
     </Grid>
   );
 };
+
+// export const renderCheckBox = ({ name, value, type }) => (
+//   <div>
+//     <Field
+//       component={Checkbox}
+//       /*
+//        * icon={<SettingsInputComponentOutlined />}
+//        * checkedIcon={<SettingsInputComponent />}
+//        * className={classes.checbox_field}
+//        * disabled={value.disable}
+//        * onClick={handleChange}
+//        */
+//       name={name}
+//       value={value}
+//     />
+//   </div>
+// );

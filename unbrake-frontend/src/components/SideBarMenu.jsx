@@ -34,7 +34,7 @@ import Analysis from "./Analysis";
 import UserOptionsMenu from "./UserOptionsMenu";
 import Vibration from "./Calibration/Vibration";
 import Force from "./Calibration/Force";
-import AquisitionsAndCommand from "../testModule/AquisitionsAndCommand";
+import Test from "../testModule/TestComponent";
 
 const drawerWidth = 240;
 const drawerCloseWidth = 7;
@@ -134,7 +134,7 @@ const RouteLogic = () => {
       <Route exact path="/configuration" component={() => <Configuration />} />
       <Route exact path="/analysis" component={() => <Analysis />} />
       <Route exact path="/calibration" component={() => <Calibration />} />
-      <Route exact path="/test" component={() => <AquisitionsAndCommand />} />
+      <Route exact path="/test" component={() => <Test />} />
       <Route exact path="/vibration" component={() => <Vibration />} />
       <Route exact path="/force" component={() => <Force />} />
     </main>

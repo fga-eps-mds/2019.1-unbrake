@@ -3,8 +3,6 @@ import PropTypes from "prop-types";
 import { reduxForm, Field } from "redux-form";
 import { withStyles, Grid, FormControlLabel } from "@material-ui/core";
 import { Checkbox } from "redux-form-material-ui";
-import SettingsInputComponent from "@material-ui/icons/SettingsInputComponent";
-import SettingsInputComponentOutlined from "@material-ui/icons/SettingsInputComponentOutlined";
 import styles from "../components/Styles";
 import { field } from "../components/ComponentsForm";
 
@@ -61,11 +59,9 @@ const allCheckbox = (selectsControl, classes, handleChange) => {
           labelPlacement="top"
           control={
             <Field
-              component={Checkbox}
-              icon={<SettingsInputComponentOutlined />}
-              checkedIcon={<SettingsInputComponent />}
               className={classes.checbox_field}
-              // disabled={value.disable}
+              disabled={value.disable}
+              component={Checkbox}
               onClick={handleChange}
               name={value.name}
               value={value.value}
@@ -177,7 +173,7 @@ class AquisitionsAndCommand extends React.Component {
         Out1: false,
         In1: false,
         In2: false,
-        In3: false
+        In3: true
       }
     };
     this.handleChange = this.handleChange.bind(this);
