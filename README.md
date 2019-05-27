@@ -11,19 +11,88 @@
 Execute o binário (checar [releases](https://github.com/fga-eps-mds/2019.1-unbrake/releases)) e acesse
 a interface da aplicação em https://unbrake.ml ou algum servidor local.
 
-Se o binário estiver em execução será adicionado um ícone na área de notificações do seu sistema operacional, pelo qual
+Se o binário estiver em execução, será adicionado um ícone na área de notificações do seu sistema operacional, pelo qual
 é possível interagir com a aplicação.
+
+* **A aplicação não deve ser executada como root (administrador)!**
+
+Problemas com a execução? Consulte o [troubleshooting](#troubleshooting)
 
 ### Variáveis de ambiente
 
 Atualmente as seguintes variáveis de ambiente são relevantes para a aplicação:
 
-* **SIMULATOR_PORT**: nome/caminho da porta serial em que a placa está conectada. Ex: /dev/ttyACM0, COM1.
+* **SIMULATOR_PORT**: nome/caminho da porta serial em que a placa está conectada. Ex: `/dev/ttyACM0`, `COM1`.
 
 ### Logs
 
-Todo o funcionamento da aplicação é registrado em arquivos de log. No Linux eles são atualmente gravados em `/var/log/UnBrake`,
+Todo o funcionamento da aplicação é registrado em arquivos de log. No Linux eles são atualmente gravados em `~/UnBrake/logs`,
 já no Windows em `%APPDATA%/UnBrake/logs`
+
+### Troubleshooting
+
+#### Problemas com a parte local
+
+Antes de analisar as seguintes opções cheque o log para ter mais informações.
+
+<details>
+  <summary> Não tenho permissão nem de executar o binário </summary>
+  <br>
+
+  **Solução (Linux):** Provavelmente o binário está sem permissão de execução. Comando:
+  ``` sh
+  chmod +x unbrake
+  ```
+</details>
+
+<details>
+  <summary> Arquivo de log não aparece no lugar especificado </summary>
+  <br>
+
+  **Solução (Linux):** Executar sem sudo
+</details>
+
+<details>
+  <summary> Log informa que tentou abrir arquivo que não foi encontrado </summary>
+  <br>
+
+  **Solução (Linux):** Você especificou o arquivo certo que referencia a placa? Ex: `/dev/ttyACM0`
+</details>
+
+<details>
+  <summary> Minha placa não é reconhecida pelo meu Sistema Operacional </summary>
+  <br>
+
+  **Solução:** Consulte [aqui](https://www.arduino.cc/en/Guide/HomePage)
+</details>
+
+<details>
+  <summary> Log informa que não tenho permissões para abrir um arquivo </summary>
+  <br>
+
+  **Solução (Linux):**
+
+  * Verifique a qual grupo o arquivo que representa sua placa pertence
+
+  ``` sh
+  $ ls -l /dev/ttyACM0
+  crw-rw---- 1 root dialout 188, 0 5 apr 23.01 ttyACM0 # Saída
+  ```
+  Nesse exemplo o arquivo pertence ao grupo `dialout` _(No meu ambiente é `uucp` ao invés `dialout`)_
+
+  * Adicione seu usuário ao grupo encontrado
+
+  ``` sh
+  # Trocar 'dialout' pelo grupo encontrado no comando anterior!
+  sudo usermod -a $USER -G dialout
+  ```
+
+  * **Faça logout e login novamente no seu usuário para as alterações funionarem!!!** _(reiniciar também funciona)_
+
+  _**OBS:** Esses passos não precisam ser executados sempre, apenas uma vez_
+
+  Mais detalhes podem ser encontrados [aqui](https://www.arduino.cc/en/Guide/Linux)
+</details>
 
 ## Desenvolvimento
 ### Subindo parte Web localmente
