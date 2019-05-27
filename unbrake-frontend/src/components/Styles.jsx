@@ -31,6 +31,12 @@ const styles = theme => ({
   },
   configuration: {
     minHeight: "100vh"
+  },
+  checbox_control: {
+    margin: "10px"
+  },
+  checbox_field: {
+    padding: "2px"
   }
 });
 

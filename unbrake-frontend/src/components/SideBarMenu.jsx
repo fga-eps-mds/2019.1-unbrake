@@ -34,7 +34,7 @@ import Analysis from "./Analysis";
 import UserOptionsMenu from "./UserOptionsMenu";
 import Vibration from "./Calibration/Vibration";
 import Force from "./Calibration/Force";
-import AquisitionsAndCommand from "../test/AquisitionsAndCommand";
+import AquisitionsAndCommand from "../testModule/AquisitionsAndCommand";
 
 const drawerWidth = 240;
 const drawerCloseWidth = 7;
