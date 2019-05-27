@@ -141,9 +141,9 @@ func getData(port *serial.Port, command string) []byte {
 func getLogFile() *os.File {
 	log_path := ""
 	if runtime.GOOS != "windows" {
-		log_path = path.Join("/var", "log", APPLICATION_FOLDER_NAME)
+		log_path = path.Join("/home", os.Getenv("USER"), APPLICATION_FOLDER_NAME, "logs")
 	} else {
-		log_path = path.Join(os.Getenv("APPDATA"), APPLICATION_FOLDER_NAME)
+		log_path = path.Join(os.Getenv("APPDATA"), "logs", APPLICATION_FOLDER_NAME, "logs")
 	}
 
 	os.MkdirAll(log_path, os.ModePerm)
