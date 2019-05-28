@@ -11,9 +11,9 @@ import CloudUploadIcon from "@material-ui/icons/CloudUpload";
 
 import { withStyles } from "@material-ui/core/styles";
 import PropTypes from "prop-types";
-import MyForm from "./CalibrationTempForm";
 import { initialize, Field, reduxForm } from "redux-form";
 import { connect } from "react-redux";
+import MyForm from "./CalibrationTempForm";
 import { addFile } from "../actions/FileActions";
 
 const styles = () => ({
@@ -24,23 +24,21 @@ const styles = () => ({
     padding: "5px"
   },
 
-input_file_name: {
+  input_file_name: {
     marginLeft: 8,
-    flex: 1,
+    flex: 1
   },
 
-
-input: {
+  input: {
     display: "none"
   },
 
-
-rootUploadFile: {
+  rootUploadFile: {
     padding: "2px 4px",
     display: "flex",
     alignItems: "center",
     width: 400
-  },
+  }
 });
 
 class CalibrationUpload extends React.Component {
@@ -106,7 +104,7 @@ class CalibrationUpload extends React.Component {
           <h2 justify="left">Upload arquivo de {archive}</h2>
         </Grid>
         <Grid item xs={4} className={classes.grid}>
-      <label htmlFor="contained-button-file">
+          <label htmlFor="contained-button-file">
             <input
               id="contained-button-file"
               type="file"
@@ -127,7 +125,7 @@ class CalibrationUpload extends React.Component {
   }
 
   fileUpload(file, name) {
-    const {  filename, addFileName } = this.props;
+    const { filename, addFileName } = this.props;
     addFileName(file.name);
     const formData = new FormData();
     formData.append("file", name);
@@ -140,12 +138,15 @@ class CalibrationUpload extends React.Component {
       const fileUpload = iniparser.parseString(content);
 
       if (name === "calibration") {
-        console.log('----------------------')
-        console.log(fileUpload)
-        const f = {...fileUpload.CALIBRA_TEMPERATURA, ...fileUpload.CALIBRA_VIBRACAO}
+        console.log("----------------------");
+        console.log(fileUpload);
+        const f = {
+          ...fileUpload.CALIBRA_TEMPERATURA,
+          ...fileUpload.CALIBRA_VIBRACAO
+        };
         bla(initialize("calibration", f));
 
-        console.log(scope.props, "calib")
+        console.log(scope.props, "calib");
         scope.setState({ calibration: fileUpload });
       }
     };
@@ -156,9 +157,11 @@ class CalibrationUpload extends React.Component {
   render() {
     const { calibration } = this.state;
     const { filename } = this.props;
-    let file = filename
-      ? ( <span>{filename}</span>)
-      : ( <span>Escolha um arquivo...</span> );
+    const file = filename ? (
+      <span>{filename}</span>
+    ) : (
+      <span>Escolha um arquivo...</span>
+    );
 
     console.log("up", this.state);
     return (
@@ -189,8 +192,10 @@ const mapStateToProps = state => ({
 
 const Upload = reduxForm({
   form: "calibration",
-  destroyOnUnmount: false,
+  destroyOnUnmount: false
 })(CalibrationUpload);
 
-
-export default connect(mapStateToProps, mapDispatchToProps)(withStyles(styles)(Upload));
+export default connect(
+  mapStateToProps,
+  mapDispatchToProps
+)(withStyles(styles)(Upload));

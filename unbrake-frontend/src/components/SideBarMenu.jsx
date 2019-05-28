@@ -29,10 +29,11 @@ import { BrowserRouter, Route } from "react-router-dom";
 import { connect } from "react-redux";
 
 import Configuration from "../Configuration/Configuration";
-import Calibration from "./Calibration/Calibration";
+import Calibration from "../calibration/Calibration";
+import Test from "./Test";
 import Analysis from "./Analysis";
 import UserOptionsMenu from "./UserOptionsMenu";
-import Vibration from "./Calibration/Vibration";
+import Vibration from "../calibration/Vibration";
 import Force from "./Calibration/Force";
 import Command from "./Calibration/Command";
 import Test from "../testModule/TestComponent";
@@ -157,6 +158,7 @@ const SideBarMenu = class extends React.PureComponent {
       this.setState({ open: false });
     };
   }
+
   render() {
     const { classes, theme, loadingVerifyingAuth } = this.props;
     const { open } = this.state;

@@ -238,7 +238,7 @@ class ConfigurationForm extends React.Component {
 
       const { dispatch } = this.props;
       dispatch(initialize("configuration", rightConfig.CONFIG_ENSAIO));
-      console.log("conf", this.props)
+      console.log("conf", this.props);
       this.setState({ configuration: rightConfig.CONFIG_ENSAIO });
       return true;
     }

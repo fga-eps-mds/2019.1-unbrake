@@ -90,7 +90,7 @@ class Vibration extends React.Component {
         { name: "PVmv", value: PVmv, disable: false }
       ],
       [
-Arquivo selecionado -         { name: "Vg", value: Vg, disable: true },
+        { name: "Vg", value: Vg, disable: true },
         { name: "PVg", value: PVg, disable: false }
       ],
       [
@@ -129,7 +129,7 @@ Vibration.propTypes = {
 
 const VibrationForm = reduxForm({
   form: "calibration",
-  destroyOnUnmount: false,
+  destroyOnUnmount: false
 })(Vibration);
 
 export default withStyles(styles)(VibrationForm);

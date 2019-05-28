@@ -273,7 +273,7 @@ Temperature.propTypes = {
 
 const TemperatureForm = reduxForm({
   form: "calibration",
-  destroyOnUnmount: false,
+  destroyOnUnmount: false
 })(Temperature);
 
 export default withStyles(styles)(TemperatureForm);

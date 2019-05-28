@@ -1,16 +1,15 @@
 import React from "react";
 import "../App.css";
-import RealTimeChart from "../components/RealTimeChart";
-import MyForm from "./CalibrationTempForm";
-import Vibration from "./Vibration";
+import PropTypes from "prop-types";
+import { withStyles } from "@material-ui/core/styles";
+import AppBar from "@material-ui/core/AppBar";
+import Tabs from "@material-ui/core/Tabs";
+import Tab from "@material-ui/core/Tab";
+import Typography from "@material-ui/core/Typography";
 import CalibrationUpload from "./CalibrationUpload";
-import PropTypes from 'prop-types';
-import { withStyles } from '@material-ui/core/styles';
-import AppBar from '@material-ui/core/AppBar';
-import Tabs from '@material-ui/core/Tabs';
-import Tab from '@material-ui/core/Tab';
-import Typography from '@material-ui/core/Typography';
-
+import Vibration from "./Vibration";
+import MyForm from "./CalibrationTempForm";
+import RealTimeChart from "../components/RealTimeChart";
 
 const bla = () => (
   <div className="App">
@@ -18,11 +17,9 @@ const bla = () => (
       <CalibrationUpload />
     </div>
 
-    <div style={{ justifyContent: "center", display: "flex" }}>
-    </div>
+    <div style={{ justifyContent: "center", display: "flex" }} />
   </div>
 );
-
 
 function TabContainer(props) {
   return (
@@ -33,12 +30,12 @@ function TabContainer(props) {
 }
 
 TabContainer.propTypes = {
-  children: PropTypes.node.isRequired,
+  children: PropTypes.node.isRequired
 };
 
 const styles = theme => ({
   root: {
-    flexGrow: 1,
+    flexGrow: 1
   },
   appBar: {
     borderTopLeftRadius: theme.spacing.unit * 2.5,
@@ -48,20 +45,23 @@ const styles = theme => ({
     marginTop: "8%",
     marginLeft: "10%",
     width: "80%",
-    alignItems: 'center',
-    justifyContent: 'center'
+    alignItems: "center",
+    justifyContent: "center"
   }
-
 });
 
 class Calibration extends React.Component {
-  state = {
-    value: 0,
-  };
+  constructor(props) {
+    super(props);
+    this.state = {
+      value: 0
+    };
+    this.handleChange = this.handleChange.bind(this);
+  }
 
-  handleChange = (event, value) => {
-    this.setState({ value });
-  };
+  handleChange(event) {
+    this.setState({ value: event.target.value });
+  }
 
   render() {
     const { classes } = this.props;
@@ -69,7 +69,7 @@ class Calibration extends React.Component {
 
     return (
       <div className={classes.root}>
-          <AppBar color="inherit" className={classes.appBar} position="relative">
+        <AppBar color="inherit" className={classes.appBar} position="relative">
           <Tabs centered value={value} onChange={this.handleChange}>
             <Tab label="Gerais" />
             <Tab label="Temperatura" />
@@ -77,12 +77,11 @@ class Calibration extends React.Component {
           </Tabs>
         </AppBar>
         {value === 0 && bla()}
-        {value === 1 && <MyForm/ >}
+        {value === 1 && <MyForm />}
         {value === 2 && <Vibration />}
       </div>
     );
   }
 }
-
 
 export default withStyles(styles)(Calibration);
