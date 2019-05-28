@@ -150,25 +150,21 @@ class TestData extends React.Component {
     super(props);
     this.state = {
       data: {
-        TES: "10", // TES
-        TEI: "20", // TEI
-        TEC: "30", // TEC
-        SA: "40", // Snub atual
-        TS: "50", // Total de Snubs
-        DTE: "60" // Duração total do ensaio
-        // PE: "70" // Progresso do Ensaio -- valor esta sendo definido (SA/TS)*100
+        TES: "", // TES
+        TEI: "", // TEI
+        TEC: "", // TEC
+        SA: "", // Snub atual
+        TS: "", // Total de Snubs
+        DTE: "" // Duração total do ensaio
       }
     };
-    this.handleChange = this.handleChange.bind(this);
   }
 
-  handleChange(event) {
-    const { target } = event;
-    const value = target.type === "checkbox" ? target.checked : target.value;
-    const aquisition = { [event.target.name]: value };
-    this.setState(prevState => ({
-      aquisition: { ...prevState.aquisition, ...aquisition }
-    }));
+  static getDerivedStateFromProps(props, state) {
+    if (props.newData !== state.data) {
+      return { data: props.newData };
+    }
+    return null;
   }
 
   render() {
@@ -216,23 +212,18 @@ class TestData extends React.Component {
         <Grid item xs>
           {testProgress(testPro, classes)}
         </Grid>
-        {/* <Grid container item justify="center" xs={12}> */}
-        {/* <h1>Tiago Miguel</h1>
-						<LinearProgress variant="determinate" value={20} /> */}
-        {/* <LinearProgress variant="determinate" value={20} /> */}
-
-        {/* </Grid> */}
       </Grid>
     );
   }
 }
 
 TestData.propTypes = {
-  classes: PropTypes.objectOf(PropTypes.string).isRequired
+  classes: PropTypes.objectOf(PropTypes.string).isRequired,
+  newData: PropTypes.oneOfType([PropTypes.object]).isRequired
 };
 
 const TestDataForm = reduxForm({
-  form: "test"
+  form: "testData"
 })(TestData);
 
 export default withStyles(styles)(TestDataForm);

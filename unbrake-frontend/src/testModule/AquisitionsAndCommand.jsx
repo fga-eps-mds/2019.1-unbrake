@@ -1,6 +1,6 @@
 import React from "react";
 import PropTypes from "prop-types";
-import { reduxForm, Field } from "redux-form";
+import { reduxForm, Field, initialize } from "redux-form";
 import { withStyles, Grid, FormControlLabel } from "@material-ui/core";
 import { Checkbox } from "redux-form-material-ui";
 import SettingsInputComponent from "@material-ui/icons/SettingsInputComponent";
@@ -183,6 +183,17 @@ class AquisitionsAndCommand extends React.Component {
     this.handleChange = this.handleChange.bind(this);
   }
 
+  shouldComponentUpdate(nextProps) {
+    const { newAquisition, dispatch } = this.props;
+    if (newAquisition !== nextProps.newAquisition) {
+      const rightConfig = Object.assign({}, nextProps.newAquisition);
+      dispatch(initialize("testAquisition", rightConfig));
+      this.setState({ aquisition: rightConfig });
+      return true;
+    }
+    return false;
+  }
+
   handleChange(event) {
     const { target } = event;
     const value = target.type === "checkbox" ? target.checked : target.value;
@@ -209,11 +220,13 @@ class AquisitionsAndCommand extends React.Component {
 }
 
 AquisitionsAndCommand.propTypes = {
-  classes: PropTypes.objectOf(PropTypes.string).isRequired
+  classes: PropTypes.objectOf(PropTypes.string).isRequired,
+  dispatch: PropTypes.func.isRequired,
+  newAquisition: PropTypes.oneOfType([PropTypes.object]).isRequired
 };
 
 const AquisitionsAndCommandForm = reduxForm({
-  form: "test"
+  form: "testAquisition"
 })(AquisitionsAndCommand);
 
 export default withStyles(styles)(AquisitionsAndCommandForm);
