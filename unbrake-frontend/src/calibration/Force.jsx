@@ -239,7 +239,8 @@ Force.propTypes = {
 };
 
 const ForceForm = reduxForm({
-  form: "calibration"
+  form: "calibration",
+  destroyOnUnmount: false
 })(Force);
 
 export default withStyles(styles)(ForceForm);

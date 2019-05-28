@@ -8,13 +8,17 @@ import Tab from "@material-ui/core/Tab";
 import Typography from "@material-ui/core/Typography";
 import CalibrationUpload from "./CalibrationUpload";
 import Vibration from "./Vibration";
-import MyForm from "./CalibrationTempForm";
+import Force from "./Force";
+import Temperature from "./Temperature";
+import CalibrationCommand from "../components/CalibrationCommand";
 
 const TabPadding = 24;
 const borderRadius = 2.5;
 const generalConfigsOption = 0;
-const velocityOption = 1;
-const vibrationOption = 2;
+const temperatureOption = 1;
+const forceOption = 2;
+const vibrationOption = 3;
+const commandOption = 4;
 
 const GeneralConfigs = () => (
   <div className="App">
@@ -79,12 +83,16 @@ class Calibration extends React.Component {
           <Tabs centered value={value} onChange={this.handleChange}>
             <Tab label="Gerais" />
             <Tab label="Temperatura" />
+            <Tab label="Força" />
             <Tab label="Vibração" />
+            <Tab label="Comando" />
           </Tabs>
         </AppBar>
         {value === generalConfigsOption && GeneralConfigs()}
-        {value === velocityOption && <MyForm />}
+        {value === temperatureOption && <Temperature />}
+        {value === forceOption && <Force />}
         {value === vibrationOption && <Vibration />}
+        {value === commandOption && <CalibrationCommand />}
       </div>
     );
   }

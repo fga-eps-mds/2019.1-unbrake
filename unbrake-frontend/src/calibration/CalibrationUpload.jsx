@@ -91,7 +91,8 @@ class CalibrationUpload extends React.Component {
       if (name === "calibration") {
         const calibration = {
           ...fileUpload.CALIBRA_TEMPERATURA,
-          ...fileUpload.CALIBRA_VIBRACAO
+          ...fileUpload.CALIBRA_VIBRACAO,
+          ...fileUpload.CALIBRA_FORCA
         };
         dispatch(initialize("calibration", calibration));
       }
