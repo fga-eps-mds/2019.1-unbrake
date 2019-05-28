@@ -9,17 +9,17 @@ import { checkbox, field } from "./CalibrationComponents";
 const labelSecondary = name => {
   let nameLabel = "";
   switch (name) {
-    case "OFT1":
+    case "OFF1":
       nameLabel = "Offset 1";
       break;
-    case "OFT2":
+    case "OFF2":
       nameLabel = "Offset 2";
       break;
-    case "PT1":
-      nameLabel = "Plota Temperatura 1";
+    case "PFkgf1":
+      nameLabel = "Plota força 1(kgf)";
       break;
-    case "PT2":
-      nameLabel = "Plota temperatura 2";
+    case "PFkgf2":
+      nameLabel = "Plota força 2(kgf)";
       break;
     default:
       nameLabel = "";
@@ -31,28 +31,28 @@ const labelSecondary = name => {
 const label = name => {
   let nameLabel = "";
   switch (name) {
-    case "CHT1":
+    case "CHF1":
       nameLabel = "Canal de aquisição 1";
       break;
-    case "CHT2":
+    case "CHF2":
       nameLabel = "Canal de aquisição 2";
       break;
-    case "Tmv1":
-      nameLabel = "Temperatura 1 (mv)";
+    case "Fmv1":
+      nameLabel = "Força 1(mv)";
       break;
-    case "Tmv2":
-      nameLabel = "Temperatura 2 (mv)";
+    case "Fmv2":
+      nameLabel = "Força 2(mv)";
       break;
-    case "TC1":
-      nameLabel = "Temperatura 1 (°C)";
+    case "Fkgf1":
+      nameLabel = "Força 1(kgf)";
       break;
-    case "TC2":
-      nameLabel = "Temperatura 2 (°C)";
+    case "Fkgf2":
+      nameLabel = "Força 2(kgf)";
       break;
-    case "FCT1":
+    case "FCF1":
       nameLabel = "Fator de conversão 1";
       break;
-    case "FCT2":
+    case "FCF2":
       nameLabel = "Fator de conversão 1";
       break;
     default:
@@ -87,21 +87,21 @@ const rowField = (states, classes, handleChange) => {
 };
 
 const allFields = (states, classes, handleChange) => {
-  const rowns = states.map(value => {
+  const fields = states.map(value => {
     return (
       <Grid
-        key={`row ${value[0].name}`}
         alignItems="center"
         justify="center"
         container
         item
         xs={12}
+        key={`fields ${value[1].name}`}
       >
         {rowField(value, classes, handleChange)}
       </Grid>
     );
   });
-  return rowns;
+  return fields;
 };
 
 const allCheckbox = (selectsControl, classes, handleChange) => {
@@ -126,44 +126,32 @@ const allCheckbox = (selectsControl, classes, handleChange) => {
 };
 
 const renderDictionary = force => {
-  const {
-    CHF1,
-    CHF2,
-    FCF1,
-    FCF2,
-    Fmv1,
-    Fmv2,
-    Fkgf1,
-    Fkgf2,
-    OFF1,
-    OFF2
-  } = force;
   const directionary = [
     [
-      { name: "CHT1", value: CHF1, disable: true },
-      { name: "CHT2", value: CHF2, disable: true }
+      { name: "CHF1", value: force.CHF1, disable: true },
+      { name: "CHF2", value: force.CHF2, disable: true }
     ],
     [
-      { name: "Tmv1", value: Fmv1, disable: true },
-      { name: "Tmv2", value: Fmv2, disable: true }
+      { name: "Fmv1", value: force.Fmv1, disable: true },
+      { name: "Fmv2", value: force.Fmv2, disable: true }
     ],
     [
-      { name: "TC1", value: Fkgf1, disable: true },
-      { name: "TC2", value: Fkgf2, disable: true }
+      { name: "Fkgf1", value: force.Fkgf1, disable: true },
+      { name: "Fkgf2", value: force.Fkgf2, disable: true }
     ],
     [
-      { name: "FCT1", value: FCF1, disable: false },
-      { name: "FCT2", value: FCF2, disable: false }
+      { name: "FCF1", value: force.FCF1, disable: false },
+      { name: "FCF2", value: force.FCF2, disable: false }
     ],
     [
-      { name: "OFT1", value: OFF1, disable: false },
-      { name: "OFT2", value: OFF2, disable: false }
+      { name: "OFF1", value: force.OFF1, disable: false },
+      { name: "OFF2", value: force.OFF2, disable: false }
     ]
   ];
   return directionary;
 };
 
-class Temperature extends React.Component {
+class Force extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
@@ -200,8 +188,8 @@ class Temperature extends React.Component {
     const { classes } = this.props;
     const states = renderDictionary(force);
     const selectsControl = [
-      { name: "PT1", value: PFkgf1, disable: false },
-      { name: "PT2", value: PFkgf2, disable: false }
+      { name: "PFkgf1", value: PFkgf1, disable: false },
+      { name: "PFkgf2", value: PFkgf2, disable: false }
     ];
     return (
       <Grid
@@ -246,13 +234,12 @@ class Temperature extends React.Component {
   }
 }
 
-Temperature.propTypes = {
+Force.propTypes = {
   classes: PropTypes.objectOf(PropTypes.string).isRequired
 };
 
-const TemperatureForm = reduxForm({
-  form: "calibration",
-  destroyOnUnmount: false
-})(Temperature);
+const ForceForm = reduxForm({
+  form: "calibration"
+})(Force);
 
-export default withStyles(styles)(TemperatureForm);
+export default withStyles(styles)(ForceForm);

@@ -6,10 +6,43 @@ import styles from "../components/Styles";
 import RealTimeChart from "../components/RealTimeChart";
 import { checkbox, field } from "./CalibrationComponents";
 
+const label = name => {
+  let nameLabel = "";
+  switch (name) {
+    case "CHVB":
+      nameLabel = "Canal de aquisição";
+      break;
+    case "Vmv":
+      nameLabel = "Vibração(mv)";
+      break;
+    case "PVmv":
+      nameLabel = "Plota Vibração(mv)";
+      break;
+    case "Vg":
+      nameLabel = "Vibração(g)";
+      break;
+    case "PVg":
+      nameLabel = "Plota Vibração(g)";
+      break;
+    case "FCVB":
+      nameLabel = "Fator de conversão";
+      break;
+    case "OFVB":
+      nameLabel = "Offset";
+      break;
+    default:
+      nameLabel = "";
+      break;
+  }
+  return nameLabel;
+};
+
 const renderField = (states, classes, handleChange) => {
+  const type = states;
+  type.label = label(states.name);
   return (
     <Grid alignItems="center" justify="center" container item xs={6}>
-      {field(states, classes, handleChange)}
+      {field(type, classes, handleChange)}
     </Grid>
   );
 };
@@ -26,12 +59,14 @@ const freeFields = (states, classes, handleChange) => {
 };
 
 const vibrationUnits = (states, classes, handleChange) => {
+  const type = states[1];
+  type.label = label(type.name);
   return (
     <Grid alignItems="center" container justify="center" item xs={12}>
       {renderField(states[0], classes, handleChange)}
 
       <Grid alignItems="center" justify="center" container item xs={6}>
-        {checkbox(states[1], handleChange)}
+        {checkbox(type, handleChange)}
       </Grid>
     </Grid>
   );

@@ -9,9 +9,14 @@ import Typography from "@material-ui/core/Typography";
 import CalibrationUpload from "./CalibrationUpload";
 import Vibration from "./Vibration";
 import MyForm from "./CalibrationTempForm";
-import RealTimeChart from "../components/RealTimeChart";
 
-const bla = () => (
+const TabPadding = 24;
+const borderRadius = 2.5;
+const generalConfigsOption = 0;
+const velocityOption = 1;
+const vibrationOption = 2;
+
+const GeneralConfigs = () => (
   <div className="App">
     <div style={{ marginTop: "6%", marginBottom: "2%" }}>
       <CalibrationUpload />
@@ -22,9 +27,10 @@ const bla = () => (
 );
 
 function TabContainer(props) {
+  const { children } = props;
   return (
-    <Typography component="div" style={{ padding: 8 * 3 }}>
-      {props.children}
+    <Typography component="div" style={{ padding: TabPadding }}>
+      {children}
     </Typography>
   );
 }
@@ -38,10 +44,10 @@ const styles = theme => ({
     flexGrow: 1
   },
   appBar: {
-    borderTopLeftRadius: theme.spacing.unit * 2.5,
-    borderBottomLeftRadius: theme.spacing.unit * 2.5,
-    borderTopRightRadius: theme.spacing.unit * 2.5,
-    borderBottomRightRadius: theme.spacing.unit * 2.5,
+    borderTopLeftRadius: theme.spacing.unit * borderRadius,
+    borderBottomLeftRadius: theme.spacing.unit * borderRadius,
+    borderTopRightRadius: theme.spacing.unit * borderRadius,
+    borderBottomRightRadius: theme.spacing.unit * borderRadius,
     marginTop: "8%",
     marginLeft: "10%",
     width: "80%",
@@ -59,8 +65,8 @@ class Calibration extends React.Component {
     this.handleChange = this.handleChange.bind(this);
   }
 
-  handleChange(event) {
-    this.setState({ value: event.target.value });
+  handleChange(event, value) {
+    this.setState({ value });
   }
 
   render() {
@@ -76,12 +82,16 @@ class Calibration extends React.Component {
             <Tab label="Vibração" />
           </Tabs>
         </AppBar>
-        {value === 0 && bla()}
-        {value === 1 && <MyForm />}
-        {value === 2 && <Vibration />}
+        {value === generalConfigsOption && GeneralConfigs()}
+        {value === velocityOption && <MyForm />}
+        {value === vibrationOption && <Vibration />}
       </div>
     );
   }
 }
+
+Calibration.propTypes = {
+  classes: PropTypes.objectOf(PropTypes.string).isRequired
+};
 
 export default withStyles(styles)(Calibration);

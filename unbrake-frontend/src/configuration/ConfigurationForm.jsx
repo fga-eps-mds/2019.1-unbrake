@@ -228,7 +228,6 @@ class ConfigurationForm extends React.Component {
 
   shouldComponentUpdate(nextProps) {
     const { configuration } = this.props;
-    console.log(configuration);
     if (configuration !== nextProps.configuration) {
       const rightConfig = Object.assign({}, nextProps.configuration);
       rightConfig.CONFIG_ENSAIO.TMO =
@@ -238,7 +237,6 @@ class ConfigurationForm extends React.Component {
 
       const { dispatch } = this.props;
       dispatch(initialize("configuration", rightConfig.CONFIG_ENSAIO));
-      console.log("conf", this.props);
       this.setState({ configuration: rightConfig.CONFIG_ENSAIO });
       return true;
     }
