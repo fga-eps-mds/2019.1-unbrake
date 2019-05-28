@@ -142,7 +142,6 @@ const RouteLogic = () => {
     </main>
   );
 };
-
 const SideBarMenu = class extends React.PureComponent {
   constructor(props) {
     super(props);
@@ -158,11 +157,9 @@ const SideBarMenu = class extends React.PureComponent {
       this.setState({ open: false });
     };
   }
-
   render() {
     const { classes, theme, loadingVerifyingAuth } = this.props;
     const { open } = this.state;
-
     return (
       <BrowserRouter>
         <Route
@@ -207,7 +204,6 @@ const SideBarMenu = class extends React.PureComponent {
     );
   }
 };
-
 const appBarTransition = (theme, duration) =>
   theme.transitions.create(["width", "margin"], {
     easing: theme.transitions.easing.sharp,
@@ -218,7 +214,6 @@ const drawerTransition = (theme, duration) =>
     easing: theme.transitions.easing.sharp,
     duration
   });
-
 SideBarMenu.propTypes = {
   classes: PropTypes.objectOf(PropTypes.string).isRequired,
   theme: PropTypes.oneOfType([
@@ -233,17 +228,14 @@ const appBar = theme => ({
   zIndex: theme.zIndex.drawer + flexGrowValue,
   transition: appBarTransition(theme, theme.transitions.duration.leavingScreen)
 });
-
 const appBarShift = theme => ({
   marginLeft: drawerWidth,
   width: `calc(100% - ${drawerWidth}px)`,
   transition: appBarTransition(theme, theme.transitions.duration.enteringScreen)
 });
-
 const mapStateToProps = state => ({
   loadingVerifyingAuth: state.authReducer.loadingVerifyingAuth
 });
-
 const styles = theme => ({
   root: {
     display: "flex"
@@ -292,7 +284,6 @@ const styles = theme => ({
     padding: theme.spacing.unit + theme.spacing.unit + theme.spacing.unit
   }
 });
-
 export default connect(mapStateToProps)(
   withStyles(styles, { withTheme: true })(SideBarMenu)
 );

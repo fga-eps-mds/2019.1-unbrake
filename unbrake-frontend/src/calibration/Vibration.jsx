@@ -2,9 +2,9 @@ import React from "react";
 import PropTypes from "prop-types";
 import { reduxForm } from "redux-form";
 import { withStyles, Grid } from "@material-ui/core";
-import styles from "../Styles";
-import RealTimeChart from "../RealTimeChart";
-import { checkbox, field } from "../ComponentsForm";
+import styles from "../components/Styles";
+import RealTimeChart from "../components/RealTimeChart";
+import { checkbox, field } from "./CalibrationComponents";
 
 const renderField = (states, classes, handleChange) => {
   return (
@@ -90,7 +90,7 @@ class Vibration extends React.Component {
         { name: "PVmv", value: PVmv, disable: false }
       ],
       [
-        { name: "Vg", value: Vg, disable: true },
+Arquivo selecionado -         { name: "Vg", value: Vg, disable: true },
         { name: "PVg", value: PVg, disable: false }
       ],
       [
@@ -128,7 +128,8 @@ Vibration.propTypes = {
 };
 
 const VibrationForm = reduxForm({
-  form: "calibration"
+  form: "calibration",
+  destroyOnUnmount: false,
 })(Vibration);
 
 export default withStyles(styles)(VibrationForm);

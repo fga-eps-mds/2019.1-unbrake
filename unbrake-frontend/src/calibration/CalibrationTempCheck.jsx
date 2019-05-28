@@ -1,9 +1,9 @@
 import React from "react";
-import "../../App.css";
+import "../App.css";
 import { Checkbox, FormControlLabel } from "@material-ui/core";
 import { connect } from "react-redux";
 import PropTypes, { func } from "prop-types";
-import { changeGraphic1, changeGraphic2 } from "../../actions/ConfigActions";
+import { changeGraphic1, changeGraphic2 } from "../actions/ConfigActions";
 
 class CalibrationTempCheck extends React.Component {
   constructor(props) {

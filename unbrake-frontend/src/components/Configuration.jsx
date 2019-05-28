@@ -95,6 +95,7 @@ class Configuration extends React.Component {
         container
         spacing={40}
       >
+        {this.uploadField("calibration")}
         {this.uploadField("configuration")}
         <ConfigurationForm configuration={configuration} />
       </Grid>

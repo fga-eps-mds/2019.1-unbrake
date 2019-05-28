@@ -4,7 +4,7 @@ import Input from "@material-ui/core/Input";
 import Grid from "@material-ui/core/Grid";
 import { withStyles } from "@material-ui/core/styles";
 import PropTypes from "prop-types";
-import MyForm from "./CalibrationTempForm";
+import ConfigurationForm from "./ConfigurationForm";
 
 const styles = () => ({
   title: {
@@ -15,54 +15,28 @@ const styles = () => ({
   }
 });
 
-class CalibrationUpload extends React.Component {
+class Configuration extends React.Component {
   constructor(props) {
     super(props);
-    this.fileUpload = this.fileUpload.bind(this);
     this.state = {
-      calibration: {
-        CALIBRA_TEMPERATURA: {
-          CHT1: "",
-          FCT1: "",
-          OFT1: "",
-          CHT2: "",
-          FCT2: "",
-          OFT2: ""
-        },
-
-        CALIBRA_FORCA: {
-          CHF1: "",
-          FCF1: "",
-          OFF1: "",
-          CHF2: "",
-          FCF2: "",
-          OFF2: ""
-        },
-
-        CALIBRA_VELOCIDADE: {
-          CHR1: "",
-          RAP: ""
-        },
-
-        CALIBRA_COMANDO: {
-          CHVC: "",
-          CUVC: "",
-          MAVC: "",
-          CHPC: "",
-          CUPC: "",
-          MAPC: ""
-        },
-
-        CALIBRA_RELACOES: {
-          LST: "",
-          RAL: "",
-          DIA: "",
-          RSM: "",
-          DPO: "",
-          DPM: ""
+      configuration: {
+        CONFIG_ENSAIO: {
+          LSL: "",
+          LWT: "",
+          NOS: "",
+          PTD: "",
+          TAO: false,
+          TAS: "",
+          TAT: "",
+          TBS: "",
+          TMO: false,
+          USL: "",
+          UWT: ""
         }
       }
     };
+
+    this.fileUpload = this.fileUpload.bind(this);
   }
 
   uploadField(field) {
@@ -71,6 +45,7 @@ class CalibrationUpload extends React.Component {
     let archive;
 
     if (field === "calibration") archive = "Calibração";
+    else archive = "Configuração";
 
     return (
       <Grid container item xs={10} alignItems="center" justify="center">
@@ -97,7 +72,10 @@ class CalibrationUpload extends React.Component {
     reader.onload = e => {
       const content = e.target.result;
       const fileUpload = iniparser.parseString(content);
-
+      if (name === "configuration") {
+        scope.setState({ configuration: fileUpload });
+        scope.setState({ configuration: fileUpload });
+      }
       if (name === "calibration") {
         scope.setState({ calibration: fileUpload });
       }
@@ -107,25 +85,25 @@ class CalibrationUpload extends React.Component {
   }
 
   render() {
-    const { calibration } = this.state;
-    console.log("up", calibration);
+    const { configuration } = this.state;
+
     return (
       <Grid
         alignItems="center"
         justify="center"
-        // style={{ minHeight: "100vh" }}
+        style={{ minHeight: "100vh" }}
         container
-        // spacing={40}
+        spacing={40}
       >
-        {this.uploadField("calibration")}
-        <MyForm calibration={calibration} />
+        {this.uploadField("configuration")}
+        <ConfigurationForm configuration={configuration} />
       </Grid>
     );
   }
 }
 
-CalibrationUpload.propTypes = {
+Configuration.propTypes = {
   classes: PropTypes.objectOf(PropTypes.string).isRequired
 };
 
-export default withStyles(styles)(CalibrationUpload);
+export default withStyles(styles)(Configuration);
