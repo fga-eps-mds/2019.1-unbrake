@@ -35,6 +35,9 @@ const styles = theme => ({
   checbox_control: {
     margin: "10px"
   },
+  checboxSize: {
+    minHeight: "80px"
+  },
   checbox_field: {
     padding: "2px"
   }

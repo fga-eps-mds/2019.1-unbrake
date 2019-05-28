@@ -1,33 +1,25 @@
-/*
- * import React from "react";
- * import { withStyles, Grid, FormControlLabel } from "@material-ui/core";
- * import AquisitionsAndCommand from "./AquisitionsAndCommand";
- */
+import React from "react";
+import { Grid } from "@material-ui/core";
+import AquisitionsAndCommand from "./AquisitionsAndCommand";
+import TestData from "./TestData";
 
-/*
- * class Test extends React.Component {
- *   constructor(props) {
- *     super(props);
- *   }
- */
+const Test = () => {
+  return (
+    <Grid
+      container
+      xs={12}
+      item
+      // justify="center"
+      style={{ marginTop: "80px" }}
+    >
+      <Grid container item justify="center" xs={6}>
+        <AquisitionsAndCommand />
+      </Grid>
+      <Grid container item justify="center" xs={6}>
+        <TestData />
+      </Grid>
+    </Grid>
+  );
+};
 
-/*
- *   render() {
- *     return (
- *       <Grid
- *         container
- *         xs={12}
- *         item
- *         // justify="center"
- *         style={{ marginTop: "70px" }}
- *       >
- *         <Grid container item justify="center" xs={6}>
- *           <AquisitionsAndCommand />
- *         </Grid>
- *       </Grid>
- *     );
- *   }
- * }
- */
-
-// export default Test;
+export default Test;

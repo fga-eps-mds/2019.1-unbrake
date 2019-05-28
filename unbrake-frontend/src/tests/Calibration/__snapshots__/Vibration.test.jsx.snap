@@ -4,8 +4,9 @@ exports[`<Vibration /> render() renders the component 1`] = `
 <Hoc
   classes={
     Object {
+      "checboxSize": "ReduxForm-checboxSize-12",
       "checbox_control": "ReduxForm-checbox_control-11",
-      "checbox_field": "ReduxForm-checbox_field-12",
+      "checbox_field": "ReduxForm-checbox_field-13",
       "configuration": "ReduxForm-configuration-10",
       "container": "ReduxForm-container-1",
       "dense": "ReduxForm-dense-3",

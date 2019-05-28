@@ -1,179 +1,162 @@
 import React from "react";
 import PropTypes from "prop-types";
-import { reduxForm, Field } from "redux-form";
-import { withStyles, Grid, FormControlLabel } from "@material-ui/core";
-import { Checkbox } from "redux-form-material-ui";
-import styles from "../components/Styles";
-import { field } from "../components/ComponentsForm";
+import { reduxForm } from "redux-form";
+import { withStyles, Grid } from "@material-ui/core";
+import LinearProgress from "@material-ui/core/LinearProgress";
+import styles from "./Styles";
 
-const labelFields = name => {
-  let nameLabel = "";
+const percentageTransformer = 100;
+
+const label = name => {
+  let labelName;
   switch (name) {
-    case "Tc1":
-      nameLabel = "Temperatura 1 (ºC)";
+    case "SA":
+      labelName = "Snub atual";
       break;
-    case "Tc2":
-      nameLabel = "Temperatura 2(ºC)";
+    case "TS":
+      labelName = "Total de Snubs";
       break;
-    case "Fkgf1":
-      nameLabel = "Força 1 (kfg)";
+    case "DTE":
+      labelName = "Duração total do Ensaio";
       break;
-    case "Fkgf2":
-      nameLabel = "Força 2 (kfg)";
-      break;
-    case "Rrpm":
-      nameLabel = "Rotação (RPM)";
-      break;
-    case "Vkmg":
-      nameLabel = "Velocidade (km/h)";
-      break;
-    case "DPm":
-      nameLabel = "Distância percorrida (m)";
-      break;
-    case "Vc":
-      nameLabel = "Velocidade (comando)";
-      break;
-    case "Pc":
-      nameLabel = "Pressão (comando)";
+    case "PE":
+      labelName = "Progresso do ensaio";
       break;
     default:
-      nameLabel = "";
+      labelName = "";
       break;
   }
-  return nameLabel;
+  return labelName;
 };
 
-const allCheckbox = (selectsControl, classes, handleChange) => {
-  const checks = selectsControl.map(value => {
-    return (
-      <Grid
-        key={`checkbox ${value.name}`}
-        alignItems="center"
-        justify="center"
-        container
-        item
-        xs={3}
-      >
-        <FormControlLabel
-          className={classes.checbox_control}
-          labelPlacement="top"
-          control={
-            <Field
-              className={classes.checbox_field}
-              disabled={value.disable}
-              component={Checkbox}
-              onClick={handleChange}
-              name={value.name}
-              value={value.value}
-            />
-          }
-          label={value.name}
+const progress = (value, classes) => {
+  return (
+    <div>
+      <div className={classes.progress}>
+        <LinearProgress
+          className={classes.progress}
+          variant="determinate"
+          value={value}
         />
-      </Grid>
-    );
-  });
-  return checks;
+      </div>
+    </div>
+  );
 };
 
-const renderField = (states, classes, handleChange) => {
-  const type = states;
-  type.label = labelFields(states.name);
-  return <React.Fragment>{field(type, classes, handleChange)}</React.Fragment>;
+const heigthProgress = (value, classes) => {
+  return (
+    <div>
+      <div>
+        <LinearProgress
+          className={classes.progressHeight}
+          variant="determinate"
+          value={value}
+        />
+      </div>
+    </div>
+  );
 };
 
-const rowField = (states, classes, handleChange) => {
-  const fields = states.map(value => {
-    if (value.length === undefined) {
-      return (
-        <Grid
-          key={`component ${value.name}`}
-          alignItems="center"
-          justify="center"
-          container
-          item
-          xs={6}
-        >
-          {renderField(value, classes, handleChange)}
-        </Grid>
-      );
-    }
-    // checkboxs para informar os componentes conectados
+const allPower = (powerStates, classes) => {
+  const render = powerStates.map(value => {
     return (
       <Grid
-        key={`component ${value.name}`}
-        alignItems="center"
-        justify="center"
         container
         item
-        xs={6}
+        justify="center"
+        xs={4}
+        className={classes.gridAllPower}
       >
-        {allCheckbox(value, classes, handleChange)}
+        {heigthProgress(value.value, classes)}
+        <spam>{value.name}</spam>
       </Grid>
     );
   });
-  return fields;
+  return render;
 };
 
-const allFields = (states, classes, handleChange) => {
-  const fields = states.map(value => {
+const testProgress = (testPro, classes) => {
+  return (
+    <Grid
+      item
+      xs
+      container
+      direction="column"
+      justify="center"
+      alignItems="center"
+    >
+      <Grid container item justify="center" alignItems="center" xs>
+        <Grid container item justify="center" alignItems="flex-start" xs={6}>
+          <Grid container item justify="center" alignItems="flex-start" xs={12}>
+            <spam className={classes.labelProgress}>{label(testPro.name)}</spam>
+          </Grid>
+          <Grid container item justify="center" alignItems="flex-start" xs={12}>
+            {progress(testPro.value, classes)}
+          </Grid>
+        </Grid>
+      </Grid>
+    </Grid>
+  );
+};
+
+const infoSnub = (informations, classes) => {
+  const render = informations.map(value => {
     return (
-      <Grid alignItems="center" justify="center" container item xs={12}>
-        {rowField(value, classes, handleChange)}
+      <Grid container item justify="center" alignItems="flex-start" xs={6}>
+        <Grid container item justify="center" alignItems="flex-start" xs={12}>
+          <spam className={classes.labelTitle}>{label(value.name)}</spam>
+        </Grid>
+        <Grid container item justify="center" alignItems="flex-start" xs={12}>
+          <spam>{value.value}</spam>
+        </Grid>
       </Grid>
     );
   });
-  return fields;
+  return render;
 };
 
-const renderDictionary = aquisition => {
-  const directionary = [
-    [
-      { name: "Tc1", value: aquisition.Tc1, disable: true },
-      { name: "Tc2", value: aquisition.Tc2, disable: true }
-    ],
-    [
-      { name: "Fkgf1", value: aquisition.Fkgf1, disable: true },
-      { name: "Fkgf2", value: aquisition.Fkgf2, disable: true }
-    ],
-    [
-      { name: "Rrpm", value: aquisition.Rrpm, disable: true },
-      { name: "Vkmg", value: aquisition.Vkmg, disable: true }
-    ],
-    [
-      { name: "DPm", value: aquisition.DPm, disable: true },
-      { name: "Vc", value: aquisition.Vc, disable: true }
-    ],
-    [
-      { name: "Pc", value: aquisition.Pc, disable: true },
-      [
-        { name: "Out1", value: aquisition.Out1, disable: true },
-        { name: "In1", value: aquisition.In1, disable: true },
-        { name: "In2", value: aquisition.In2, disable: true },
-        { name: "In3", value: aquisition.In3, disable: true }
-      ]
-    ]
-  ];
-  return directionary;
+const testInformations = (informations, classes) => {
+  return (
+    <Grid
+      item
+      xs
+      className={classes.gridInformations}
+      container
+      direction="column"
+      justify="center"
+      alignItems="center"
+    >
+      <Grid container item justify="center" alignItems="center" xs>
+        {infoSnub(informations[0], classes)}
+      </Grid>
+      <Grid container item justify="center" alignItems="center" xs>
+        <Grid container item justify="center" alignItems="flex-start" xs={12}>
+          <Grid container item justify="center" alignItems="flex-start" xs={12}>
+            <spam className={classes.labelTitle}>
+              {label(informations[1].name)}
+            </spam>
+          </Grid>
+          <Grid container item justify="center" alignItems="flex-start" xs={12}>
+            <spam>{informations[1].value}</spam>
+          </Grid>
+        </Grid>
+      </Grid>
+    </Grid>
+  );
 };
 
-class AquisitionsAndCommand extends React.Component {
+class TestData extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
-      aquisition: {
-        Tc1: "", // Temperatura 1(ºC)
-        Tc2: "", // Temperatura 2(ºC)
-        Fkgf1: "", // Força 1 (kfg)
-        Fkgf2: "", // Força 2 (kfg)
-        Rrpm: "", // Rotação (RPM)
-        Vkmg: "", // Velocidade (km/h)
-        DPm: "", // Distância percorrida (m)
-        Vc: "", // Velocidade (comando)
-        Pc: "", // Pressão (comando)
-        Out1: false,
-        In1: false,
-        In2: false,
-        In3: true
+      data: {
+        TES: "10", // TES
+        TEI: "20", // TEI
+        TEC: "30", // TEC
+        SA: "40", // Snub atual
+        TS: "50", // Total de Snubs
+        DTE: "60" // Duração total do ensaio
+        // PE: "70" // Progresso do Ensaio -- valor esta sendo definido (SA/TS)*100
       }
     };
     this.handleChange = this.handleChange.bind(this);
@@ -189,27 +172,67 @@ class AquisitionsAndCommand extends React.Component {
   }
 
   render() {
-    const { aquisition } = this.state;
     const { classes } = this.props;
-    const states = renderDictionary(aquisition);
+    const { data } = this.state;
+    const { TES, TEI, TEC, SA, TS, DTE } = data;
+
+    const powerStates = [
+      { name: "TES", value: TES },
+      { name: "TEI", value: TEI },
+      { name: "TEC", value: TEC }
+    ];
+    const informations = [
+      [{ name: "SA", value: SA }, { name: "TS", value: TS }],
+      { name: "DTE", value: DTE }
+    ];
+    const testPro = { name: "PE", value: (SA / TS) * percentageTransformer };
+
     return (
       <Grid container xs={12} item justify="center">
-        <form className={classes.container}>
-          <Grid container item justify="center" xs={12}>
-            {allFields(states, classes, this.handleChange)}
+        <Grid
+          container
+          xs={12}
+          className={classes.gridInformations}
+          item
+          justify="center"
+        >
+          <Grid container item alignItems="flex-start" justify="center" xs={3}>
+            {/* <Grid container item alignItems="center" justify="center" xs={12} > */}
+            {allPower(powerStates, classes)}
+            {/* </Grid> */}
           </Grid>
-        </form>
+          <Grid container item alignItems="flex-start" justify="center" xs={9}>
+            <Grid
+              container
+              item
+              // alignItems="center"
+              justify="center"
+              xs={12}
+            >
+              {testInformations(informations, classes)}
+            </Grid>
+          </Grid>
+        </Grid>
+        <Grid item xs>
+          {testProgress(testPro, classes)}
+        </Grid>
+        {/* <Grid container item justify="center" xs={12}> */}
+        {/* <h1>Tiago Miguel</h1>
+						<LinearProgress variant="determinate" value={20} /> */}
+        {/* <LinearProgress variant="determinate" value={20} /> */}
+
+        {/* </Grid> */}
       </Grid>
     );
   }
 }
 
-AquisitionsAndCommand.propTypes = {
+TestData.propTypes = {
   classes: PropTypes.objectOf(PropTypes.string).isRequired
 };
 
-const AquisitionsAndCommandForm = reduxForm({
-  form: "calibration"
-})(AquisitionsAndCommand);
+const TestDataForm = reduxForm({
+  form: "test"
+})(TestData);
 
-export default withStyles(styles)(AquisitionsAndCommandForm);
+export default withStyles(styles)(TestDataForm);

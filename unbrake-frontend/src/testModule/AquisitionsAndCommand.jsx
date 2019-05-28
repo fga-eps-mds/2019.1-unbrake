@@ -5,7 +5,7 @@ import { withStyles, Grid, FormControlLabel } from "@material-ui/core";
 import { Checkbox } from "redux-form-material-ui";
 import SettingsInputComponent from "@material-ui/icons/SettingsInputComponent";
 import SettingsInputComponentOutlined from "@material-ui/icons/SettingsInputComponentOutlined";
-import styles from "../components/Styles";
+import styles from "./Styles";
 import { field } from "../components/ComponentsForm";
 
 const labelFields = name => {
@@ -213,7 +213,7 @@ AquisitionsAndCommand.propTypes = {
 };
 
 const AquisitionsAndCommandForm = reduxForm({
-  form: "calibration"
+  form: "test"
 })(AquisitionsAndCommand);
 
 export default withStyles(styles)(AquisitionsAndCommandForm);
