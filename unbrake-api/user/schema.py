@@ -21,7 +21,8 @@ class UserType(DjangoObjectType):
 
 
 class CreateUser(graphene.Mutation):
-    # pylint: disable =  unused-argument, no-self-use
+    # pylint: disable =  unused-argument, no-self-use, too-many-arguments
+
     '''
     Class to create a new user
     '''
@@ -32,15 +33,17 @@ class CreateUser(graphene.Mutation):
         Arguments required to create a new user
         '''
         username = graphene.String(required=True)
+        email = graphene.String(required=True)
         password = graphene.String(required=True)
         is_superuser = graphene.Boolean(required=True)
 
-    def mutate(self, info, username, password, is_superuser):
+    def mutate(self, info, username, email, password, is_superuser):
         '''
         Create the user with the given parameters end add to db
         '''
         user = get_user_model()(
             username=username,
+            email=email,
             is_superuser=is_superuser
         )
         user.set_password(password)

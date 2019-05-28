@@ -7,11 +7,27 @@ const styles = theme => ({
     marginLeft: theme.spacing.unit,
     marginRight: theme.spacing.unit
   },
-  menu: {
-    width: 200
-  },
   grid: {
     padding: "5px"
+  },
+  gridButton: {
+    padding: "15px"
+  },
+  title: {
+    padding: "5px"
+  },
+  input: {
+    display: "none"
+  },
+  rootUploadFile: {
+    padding: "2px 4px",
+    display: "flex",
+    alignItems: "center",
+    width: 400
+  },
+  input_file_name: {
+    marginLeft: 8,
+    flex: 1
   },
   formControl: {
     margin: theme.spacing.unit,
@@ -22,15 +38,6 @@ const styles = theme => ({
   },
   configuration: {
     minHeight: "100vh"
-  },
-  checbox_control: {
-    margin: "10px"
-  },
-  checboxSize: {
-    minHeight: "80px"
-  },
-  checbox_field: {
-    padding: "2px"
   }
 });
 

@@ -23,7 +23,8 @@ const styles = theme => ({
   appBar: {
     borderRadius: theme.spacing.unit * margin,
     alignItems: "center",
-    justifyContent: "center"
+    justifyContent: "center",
+    marginTop: "20px"
   }
 });
 

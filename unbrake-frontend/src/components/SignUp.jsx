@@ -18,22 +18,25 @@ const styles = authStyles;
 
 export const validate = values => {
   const errors = {};
-  const requiredFields = ["username", "password", "confirmPassword"];
-  requiredFields.forEach(field => {
-    if (!values[field]) {
-      errors[field] = "Obrigatório";
-    } else if (values.password !== values.confirmPassword) {
-      errors.confirmPassword = "Não confere";
-    }
-  });
+  if (values.password !== values.confirmPassword) {
+    errors.confirmPassword = "As senhas não são iguais";
+  }
   return errors;
 };
+
+export const required = value =>
+  value || typeof value === "number" ? undefined : "Obrigatório";
+
+export const validateEmail = value =>
+  value && !/^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,4}$/i.test(value)
+    ? "Endereço de email inválido"
+    : undefined;
 
 export const submit = async (sendMessage, values) => {
   return fetch(
     `${API_URL_GRAPHQL}?query=mutation{createUser(password: "${
       values.password
-    }",
+    }", email: "${values.email}"
      username: "${values.username}",
      isSuperuser: false){user{id}}}`,
     {
@@ -78,16 +81,35 @@ const signUpPaper = params => {
         onSubmit={params.handleSubmit(submit.bind(this, params.sendMessage))}
       >
         <FieldComponent
-          data={{ name: "username", label: "Usuario", type: "text" }}
+          data={{
+            name: "username",
+            label: "Usuario",
+            type: "text",
+            validate: required
+          }}
         />
         <FieldComponent
-          data={{ name: "password", label: "Senha", type: "password" }}
+          data={{
+            name: "email",
+            label: "Email",
+            type: "email",
+            validate: [required, validateEmail]
+          }}
+        />
+        <FieldComponent
+          data={{
+            name: "password",
+            label: "Senha",
+            type: "password",
+            validate: required
+          }}
         />
         <FieldComponent
           data={{
             name: "confirmPassword",
             label: "Confirme a Senha",
-            type: "password"
+            type: "password",
+            validate: required
           }}
         />
         {renderSubmit("Registrar", params.classes, params.submitting)}

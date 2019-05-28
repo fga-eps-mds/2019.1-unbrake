@@ -1,6 +1,7 @@
 import React from "react";
 import iniparser from "iniparser";
-import { Input, Grid, Button, Dialog } from "@material-ui/core";
+import Paper from "@material-ui/core/Paper";
+import { Grid, Button, Dialog } from "@material-ui/core";
 import { withStyles } from "@material-ui/core/styles";
 import PropTypes from "prop-types";
 import MenuItem from "@material-ui/core/MenuItem";
@@ -9,33 +10,16 @@ import DialogActions from "@material-ui/core/DialogActions";
 import DialogContent from "@material-ui/core/DialogContent";
 import DialogContentText from "@material-ui/core/DialogContentText";
 import DialogTitle from "@material-ui/core/DialogTitle";
+import IconButton from "@material-ui/core/IconButton";
+import CloudUploadIcon from "@material-ui/icons/CloudUpload";
+import { connect } from "react-redux";
 import Request from "../utils/Request";
 import { API_URL_GRAPHQL } from "../utils/Constants";
 import ConfigurationForm from "./ConfigurationForm";
 import styles from "./Styles";
-
-const query =
-  "id, name, number, time, temperature, timeBetweenCycles, upperLimit, inferiorLimit, upperTime, inferiorTime, disableShutdown, enableOutput";
-
-export async function submit(configuration, name) {
-  if (name === "" || name === undefined) return;
-
-  const url = `${API_URL_GRAPHQL}?query=mutation{createConfig(name:"${name}",number:${
-    configuration.NOS
-  },timeBetweenCycles:${configuration.TBS},upperLimit:${
-    configuration.USL
-  },inferiorLimit:${configuration.LSL},upperTime:${
-    configuration.UWT
-  },inferiorTime:${configuration.LWT},disableShutdown:${
-    configuration.TMO
-  },enableOutput:${configuration.TAO},temperature:${configuration.TAS},time:${
-    configuration.TAT
-  }){config{number, timeBetweenCycles,upperLimit,inferiorLimit}}}`;
-  const method = "POST";
-  await Request(url, method);
-
-  window.location.reload();
-}
+import { createConfig, query, submit } from "./ConfigFunctions";
+import NotificationContainer from "../components/Notification";
+import { messageSistem } from "../actions/NotificationActions";
 
 const itensSelection = allConfiguration => {
   let allConfig = [{ id: 0, name: "" }];
@@ -71,11 +55,11 @@ const selectConfiguration = (handleChange, configStates, classes) => {
   );
 };
 
-const dialogName = (handleChange, handleClose, dialogStates) => {
+const dialogName = (functions, sendMessage, dialogStates) => {
   return (
     <Dialog
       open={dialogStates.open}
-      onClose={handleClose}
+      onClose={functions.handleClose}
       aria-labelledby="form-dialog-title"
     >
       <DialogTitle id="form-dialog-title">Nome da Configuração</DialogTitle>
@@ -90,17 +74,19 @@ const dialogName = (handleChange, handleClose, dialogStates) => {
           name="name"
           label="Nome"
           type="text"
-          onChange={handleChange}
+          onChange={functions.handleChange}
           value={dialogStates.name}
           fullWidth
         />
       </DialogContent>
       <DialogActions>
-        <Button onClick={handleClose} color="primary">
+        <Button onClick={functions.handleClose} color="primary">
           Cancelar
         </Button>
         <Button
-          onClick={() => submit(dialogStates.configuration, dialogStates.name)}
+          onClick={() =>
+            submit(dialogStates.configuration, dialogStates.name, sendMessage)
+          }
           color="primary"
         >
           Cadastrar
@@ -110,22 +96,12 @@ const dialogName = (handleChange, handleClose, dialogStates) => {
   );
 };
 
-const createConfig = data => {
-  const configurationDefault = {
-    CONFIG_ENSAIO: {
-      LSL: data.inferiorLimit,
-      LWT: data.inferiorTime,
-      NOS: data.number,
-      TAO: data.enableOutput,
-      TAS: data.temperature,
-      TAT: data.time,
-      TBS: data.timeBetweenCycles,
-      TMO: data.disableShutdown,
-      USL: data.upperLimit,
-      UWT: data.upperTime
-    }
-  };
-  return configurationDefault;
+const defaultButton = handleUpDefault => {
+  return (
+    <Button onClick={handleUpDefault} color="secondary" variant="contained">
+      Configuração Padrão
+    </Button>
+  );
 };
 
 class Configuration extends React.Component {
@@ -147,6 +123,7 @@ class Configuration extends React.Component {
         },
         name: ""
       },
+      fileName: "Upload do arquivo de configuração",
       dataBaseConfiguration: 0,
       allConfiguration: "",
       open: false
@@ -226,6 +203,7 @@ class Configuration extends React.Component {
 
   uploadField(field) {
     const { classes } = this.props;
+    const { fileName } = this.state;
 
     let archive;
 
@@ -237,18 +215,35 @@ class Configuration extends React.Component {
         <Grid item xs={4} className={classes.title}>
           <h2>Upload arquivo de {archive}</h2>
         </Grid>
+
         <Grid item xs={4} className={classes.grid}>
-          <Input
-            type="file"
-            name={field}
-            onChange={e => this.fileUpload(e.target.files[0], field)}
-          />
+          <label htmlFor="contained-button-file">
+            <input
+              id="contained-button-file"
+              type="file"
+              name={field}
+              className={classes.input}
+              onChange={e => this.fileUpload(e.target.files[0], field)}
+            />
+            <Paper className={classes.rootUploadFile}>
+              <IconButton component="span">
+                <CloudUploadIcon style={{ color: "black" }} />
+              </IconButton>
+              <span
+                className={classes.input_file_name}
+                placeholder="Upload do arquivo de configuração"
+              >
+                {fileName}
+              </span>
+            </Paper>
+          </label>
         </Grid>
       </Grid>
     );
   }
 
   fileUpload(file, name) {
+    this.setState({ fileName: file.name });
     const formData = new FormData();
     formData.append("file", name);
     const reader = new FileReader();
@@ -264,7 +259,7 @@ class Configuration extends React.Component {
   }
 
   render() {
-    const { classes } = this.props;
+    const { classes, sendMessage } = this.props;
     const {
       configuration,
       dataBaseConfiguration,
@@ -272,6 +267,10 @@ class Configuration extends React.Component {
       open,
       name
     } = this.state;
+    const functions = {
+      handleChange: this.handleChange,
+      handleClose: this.handleClose
+    };
     const configStates = [dataBaseConfiguration, allConfiguration];
     const dialogStates = {
       configuration: configuration.CONFIG_ENSAIO,
@@ -287,13 +286,7 @@ class Configuration extends React.Component {
           </Grid>
           <Grid container justify="center" item alignItems="center" xs={12}>
             {selectConfiguration(this.handleChange, configStates, classes)}
-            <Button
-              onClick={this.handleUpDefault}
-              color="secondary"
-              variant="contained"
-            >
-              Configuração Padrão
-            </Button>
+            {defaultButton(this.handleUpDefault)}
           </Grid>
           <Grid
             container
@@ -308,14 +301,23 @@ class Configuration extends React.Component {
             />
           </Grid>
         </div>
-        {dialogName(this.handleChange, this.handleClose, dialogStates)}
+        {dialogName(functions, sendMessage, dialogStates)}
+        <NotificationContainer />
       </Grid>
     );
   }
 }
 
 Configuration.propTypes = {
-  classes: PropTypes.objectOf(PropTypes.string).isRequired
+  classes: PropTypes.objectOf(PropTypes.string).isRequired,
+  sendMessage: PropTypes.func.isRequired
 };
 
-export default withStyles(styles)(Configuration);
+const mapDispatchToProps = dispatch => ({
+  sendMessage: payload => dispatch(messageSistem(payload))
+});
+
+export default connect(
+  null,
+  mapDispatchToProps
+)(withStyles(styles)(Configuration));

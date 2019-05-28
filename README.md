@@ -6,7 +6,96 @@
 [![code style: prettier](https://img.shields.io/badge/code_style-prettier-ff69b4.svg?style=flat-square)](https://github.com/prettier/prettier)
 [![pullreminders](https://pullreminders.com/badge.svg)](https://pullreminders.com?ref=badge)
 
-## Subindo a aplicação
+## Utilizando a aplicação
+
+Execute o binário (checar [releases](https://github.com/fga-eps-mds/2019.1-unbrake/releases)) e acesse
+a interface da aplicação em https://unbrake.ml ou algum servidor local.
+
+Se o binário estiver em execução, será adicionado um ícone na área de notificações do seu sistema operacional, pelo qual
+é possível interagir com a aplicação.
+
+* **A aplicação não deve ser executada como root (administrador)!**
+
+Problemas com a execução? Consulte o [troubleshooting](#troubleshooting)
+
+### Variáveis de ambiente
+
+Atualmente as seguintes variáveis de ambiente são relevantes para a aplicação:
+
+* **SIMULATOR_PORT**: nome/caminho da porta serial em que a placa está conectada. Ex: `/dev/ttyACM0`, `COM1`.
+
+### Logs
+
+Todo o funcionamento da aplicação é registrado em arquivos de log. No Linux eles são atualmente gravados em `~/UnBrake/logs`,
+já no Windows em `%APPDATA%/UnBrake/logs`
+
+### Troubleshooting
+
+#### Problemas com a parte local
+
+Antes de analisar as seguintes opções cheque o log para ter mais informações.
+
+<details>
+  <summary> Não tenho permissão nem de executar o binário </summary>
+  <br>
+
+  **Solução (Linux):** Provavelmente o binário está sem permissão de execução. Comando:
+  ``` sh
+  chmod +x unbrake
+  ```
+</details>
+
+<details>
+  <summary> Arquivo de log não aparece no lugar especificado </summary>
+  <br>
+
+  **Solução (Linux):** Executar sem sudo
+</details>
+
+<details>
+  <summary> Log informa que tentou abrir arquivo que não foi encontrado </summary>
+  <br>
+
+  **Solução (Linux):** Você especificou o arquivo certo que referencia a placa? Ex: `/dev/ttyACM0`
+</details>
+
+<details>
+  <summary> Minha placa não é reconhecida pelo meu Sistema Operacional </summary>
+  <br>
+
+  **Solução:** Consulte [aqui](https://www.arduino.cc/en/Guide/HomePage)
+</details>
+
+<details>
+  <summary> Log informa que não tenho permissões para abrir um arquivo </summary>
+  <br>
+
+  **Solução (Linux):**
+
+  * Verifique a qual grupo o arquivo que representa sua placa pertence
+
+  ``` sh
+  $ ls -l /dev/ttyACM0
+  crw-rw---- 1 root dialout 188, 0 5 apr 23.01 ttyACM0 # Saída
+  ```
+  Nesse exemplo o arquivo pertence ao grupo `dialout` _(No meu ambiente é `uucp` ao invés `dialout`)_
+
+  * Adicione seu usuário ao grupo encontrado
+
+  ``` sh
+  # Trocar 'dialout' pelo grupo encontrado no comando anterior!
+  sudo usermod -a $USER -G dialout
+  ```
+
+  * **Faça logout e login novamente no seu usuário para as alterações funionarem!!!** _(reiniciar também funciona)_
+
+  _**OBS:** Esses passos não precisam ser executados sempre, apenas uma vez_
+
+  Mais detalhes podem ser encontrados [aqui](https://www.arduino.cc/en/Guide/Linux)
+</details>
+
+## Desenvolvimento
+### Subindo parte Web localmente
 
 *Todos os comandos incluem o comando de build para envitar erros de iniciante
 mas não é necessário em todas as execuções
@@ -24,7 +113,7 @@ ou os serviços podem ser executados individualmente:
 sudo docker-compose up --build frontend
 ```
 
-## Executando checagens de código
+### Executando checagens de código
 
 Desde que o serviço do frontend já tenha sido construído
 (build executado pelo menos uma vez) no ambiente do usuário, algumas checagens
@@ -44,9 +133,9 @@ procedimento é abortado. Como isso é feito através de _git hooks_, é possív
 evitar as checagens utilizando-se a flag `--no-verify` nos comandos do git,
 **embora isso seja altamente desencorajado**.
 
-### Frontend
+#### Frontend
 
-#### Scripts disponíveis (frontend)
+##### Scripts disponíveis (frontend)
 
 * **check_all:** Executa todos os outros scripts de checagem em sequência,
   na checagem de testes é executado o com coverage sem html
@@ -61,7 +150,7 @@ evitar as checagens utilizando-se a flag `--no-verify` nos comandos do git,
 * **fix**: Corrige automaticamente erros de formatação possíveis de serem
   consertados pelo `eslint` e pelo `prettier`
 
-#### Execução de um script (frontend)
+##### Execução de um script (frontend)
 
 Uma das possíveis formas de se executar os scripts no
 frontend é executando o seguinte comando:
@@ -71,9 +160,9 @@ frontend é executando o seguinte comando:
 $ sudo docker-compose run --rm frontend run [nome_do_script]
 ```
 
-### API
+#### API
 
-#### Scripts disponíveis (API)
+##### Scripts disponíveis (API)
 
 * **check_all:** Todos os outros scripts de checagem são executados
   em sequência, na checagem de testes é executado o com coverage sem html
@@ -89,7 +178,7 @@ $ sudo docker-compose run --rm frontend run [nome_do_script]
 * **fix**: Corrige automaticamente erros de formatação possíveis de serem
   consertados pelo `autopep8`
 
-#### Execução de um script (API)
+##### Execução de um script (API)
 
 Uma das possíveis formas de se executar os scripts da API
   é executando o seguinte comando:
@@ -99,7 +188,7 @@ Uma das possíveis formas de se executar os scripts da API
 $ sudo docker-compose run --rm api [nome_do_script]
 ```
 
-### CodeClimate CLI
+#### CodeClimate CLI
 
 O codeclimate irá checar algumas coisas já checadas localmente e outras
 menos importantes, que só serão exigidas de serem consertadas antes do

@@ -32,6 +32,7 @@ const FieldComponent = props => {
         type={data.type}
         component={renderField}
         label={data.label}
+        validate={data.validate}
         variant="outlined"
         className={classes.field}
       />
