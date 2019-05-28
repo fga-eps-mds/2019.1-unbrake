@@ -1,7 +1,9 @@
 import React from "react";
-import { Grid, Button } from "@material-ui/core";
+import { Grid } from "@material-ui/core";
+// import Button from "@material-ui/core/Button"
 import AquisitionsAndCommand from "./AquisitionsAndCommand";
 import TestData from "./TestData";
+import TabMenuComponent from "./TabMenuComponent";
 
 const percentageTransformer = 100;
 
@@ -89,13 +91,16 @@ class Test extends React.Component {
           <TestData newData={data} />
         </Grid>
         <Grid container item xs={3}>
-          <Button
+          {/* <Button
             onClick={this.handleClick}
             color="secondary"
             variant="contained"
           >
             Update
-          </Button>
+          </Button> */}
+        </Grid>
+        <Grid item container xs={12} justify="center">
+          <TabMenuComponent />
         </Grid>
       </Grid>
     );

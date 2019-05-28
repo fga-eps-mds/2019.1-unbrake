@@ -24,6 +24,9 @@ const styles = () => ({
   },
   labelProgress: {
     padding: "10px"
+  },
+  gridProgress: {
+    height: "140px"
   }
 });
 

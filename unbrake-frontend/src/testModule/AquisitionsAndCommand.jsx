@@ -65,7 +65,7 @@ const allCheckbox = (selectsControl, classes, handleChange) => {
               icon={<SettingsInputComponentOutlined />}
               checkedIcon={<SettingsInputComponent />}
               className={classes.checbox_field}
-              // disabled={value.disable}
+              disabled={value.disable}
               onClick={handleChange}
               name={value.name}
               value={value.value}
@@ -209,6 +209,7 @@ class AquisitionsAndCommand extends React.Component {
     const states = renderDictionary(aquisition);
     return (
       <Grid container xs={12} item justify="center">
+        <h3>Aquisições e comandos</h3>
         <form className={classes.container}>
           <Grid container item justify="center" xs={12}>
             {allFields(states, classes, this.handleChange)}

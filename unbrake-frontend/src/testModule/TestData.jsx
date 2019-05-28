@@ -80,13 +80,14 @@ const testProgress = (testPro, classes) => {
     <Grid
       item
       xs
+      className={classes.gridProgress}
       container
       direction="column"
       justify="center"
       alignItems="center"
     >
       <Grid container item justify="center" alignItems="center" xs>
-        <Grid container item justify="center" alignItems="flex-start" xs={6}>
+        <Grid container item justify="center" alignItems="flex-start" xs={12}>
           <Grid container item justify="center" alignItems="flex-start" xs={12}>
             <spam className={classes.labelProgress}>{label(testPro.name)}</spam>
           </Grid>
@@ -184,33 +185,30 @@ class TestData extends React.Component {
     const testPro = { name: "PE", value: (SA / TS) * percentageTransformer };
 
     return (
-      <Grid container xs={12} item justify="center">
-        <Grid
-          container
-          xs={12}
-          className={classes.gridInformations}
-          item
-          justify="center"
-        >
-          <Grid container item alignItems="flex-start" justify="center" xs={3}>
-            {/* <Grid container item alignItems="center" justify="center" xs={12} > */}
-            {allPower(powerStates, classes)}
-            {/* </Grid> */}
-          </Grid>
-          <Grid container item alignItems="flex-start" justify="center" xs={9}>
-            <Grid
-              container
-              item
-              // alignItems="center"
-              justify="center"
-              xs={12}
-            >
-              {testInformations(informations, classes)}
+      <Grid justify="center" item xs alignItems="flex-start">
+        <Grid container justify="center" alignItems="flex-start">
+          <h3 styles={{ height: "22px" }}>Dados do ensaio</h3>
+        </Grid>
+        <Grid container xs={12} item justify="center" alignItems="flex-start">
+          <Grid
+            container
+            xs={12}
+            className={classes.gridInformations}
+            item
+            justify="center"
+          >
+            <Grid container item alignItems="flex-start" xs={3}>
+              {allPower(powerStates, classes)}
+            </Grid>
+            <Grid container item alignItems="flex-start" xs={9}>
+              <Grid container item alignItems="center" justify="center" xs={12}>
+                {testInformations(informations, classes)}
+              </Grid>
             </Grid>
           </Grid>
-        </Grid>
-        <Grid item xs>
-          {testProgress(testPro, classes)}
+          <Grid container item alignItems="center" justify="center" xs={12}>
+            {testProgress(testPro, classes)}
+          </Grid>
         </Grid>
       </Grid>
     );
