@@ -39,6 +39,7 @@ export const field = (type, classes, handleChange) => {
         className={classes.textField}
         margin="normal"
         variant="outlined"
+        style={{ width: "230px" }}
       />
     </Grid>
   );

@@ -12,6 +12,9 @@ const styles = theme => ({
   },
   grid: {
     padding: "5px"
+  },
+  checboxSize: {
+    minHeight: "80px"
   }
 });
 
