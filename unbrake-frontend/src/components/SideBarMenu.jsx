@@ -30,11 +30,11 @@ import { connect } from "react-redux";
 
 import Configuration from "../Configuration/Configuration";
 import Calibration from "./Calibration/Calibration";
-import Test from "./Test";
 import Analysis from "./Analysis";
 import UserOptionsMenu from "./UserOptionsMenu";
 import Vibration from "./Calibration/Vibration";
 import Force from "./Calibration/Force";
+import Test from "../testModule/TestComponent";
 
 const drawerWidth = 240;
 const drawerCloseWidth = 7;
