@@ -19,12 +19,18 @@ class AuthorizedRoute extends React.PureComponent {
       superuser,
       permission,
       loadingVerifyingAuth,
-      changeVerifyingAuth
+      changeVerifyingAuth,
+      path
     } = this.props;
 
     verifyToken().then(value => {
       changeVerifyingAuth(value);
     });
+    if (path === "/login" && localStorage.getItem("autenticated") === "true")
+      return <Redirect to="/" />;
+
+    if (path === "/login" && localStorage.getItem("autenticated") !== "true")
+      return <Route {...this.props} />;
     if (
       isSuperuser(superuser, localStorage.getItem("autenticated") === "true") ||
       hasPermission(permission, localStorage.getItem("autenticated") === "true")
@@ -42,12 +48,14 @@ AuthorizedRoute.propTypes = {
   superuser: PropTypes.bool,
   permission: PropTypes.string,
   loadingVerifyingAuth: PropTypes.bool,
-  changeVerifyingAuth: PropTypes.func
+  changeVerifyingAuth: PropTypes.func,
+  path: PropTypes.string
 };
 
 AuthorizedRoute.defaultProps = {
   superuser: false,
-  permission: ""
+  permission: "",
+  path: ""
 };
 const mapDispatchToProps = dispatch => ({
   changeVerifyingAuth: value => dispatch(verifyingAuth(value))
