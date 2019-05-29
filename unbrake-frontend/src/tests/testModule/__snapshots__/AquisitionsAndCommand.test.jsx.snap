@@ -1,25 +1,23 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`<Vibration /> render() renders the component 1`] = `
+exports[`<AquisitionsAndCommand /> render() renders the component 1`] = `
 <Hoc
   classes={
     Object {
-      "checboxSize": "ReduxForm-checboxSize-9",
-      "checbox_control": "ReduxForm-checbox_control-8",
-      "checbox_field": "ReduxForm-checbox_field-10",
-      "configuration": "ReduxForm-configuration-7",
-      "container": "ReduxForm-container-1",
-      "form": "ReduxForm-form-6",
-      "formControl": "ReduxForm-formControl-5",
-      "grid": "ReduxForm-grid-4",
-      "menu": "ReduxForm-menu-3",
-      "textField": "ReduxForm-textField-2",
+      "checbox_field": "ReduxForm-checbox_field-1",
+      "gridAllPower": "ReduxForm-gridAllPower-4",
+      "gridInformations": "ReduxForm-gridInformations-5",
+      "gridProgress": "ReduxForm-gridProgress-8",
+      "labelProgress": "ReduxForm-labelProgress-7",
+      "labelTitle": "ReduxForm-labelTitle-6",
+      "progress": "ReduxForm-progress-3",
+      "progressHeight": "ReduxForm-progressHeight-2",
     }
   }
   destroyOnUnmount={true}
   enableReinitialize={false}
   forceUnregisterOnUnmount={false}
-  form="calibration"
+  form="testAquisition"
   forwardedRef={null}
   getFormState={[Function]}
   keepDirtyOnReinitialize={false}

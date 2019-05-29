@@ -13,18 +13,28 @@ import {
 import NotAuthorizedRoute from "./NotAuthorizedRoute";
 import { verifyingAuth } from "../actions/AuthActions";
 
+const verifyLoginPath = props => {
+  if (localStorage.getItem("autenticated") !== "true")
+    return <Route {...props} />;
+  return <Redirect to="/" />;
+};
 class AuthorizedRoute extends React.PureComponent {
   render() {
     const {
-      superuser,
       permission,
       loadingVerifyingAuth,
-      changeVerifyingAuth
+      changeVerifyingAuth,
+      superuser,
+      path
     } = this.props;
 
     verifyToken().then(value => {
       changeVerifyingAuth(value);
     });
+    if (path === "/login") {
+      return verifyLoginPath(this.props);
+    }
+
     if (
       isSuperuser(superuser, localStorage.getItem("autenticated") === "true") ||
       hasPermission(permission, localStorage.getItem("autenticated") === "true")
@@ -42,12 +52,14 @@ AuthorizedRoute.propTypes = {
   superuser: PropTypes.bool,
   permission: PropTypes.string,
   loadingVerifyingAuth: PropTypes.bool,
-  changeVerifyingAuth: PropTypes.func
+  changeVerifyingAuth: PropTypes.func,
+  path: PropTypes.string
 };
 
 AuthorizedRoute.defaultProps = {
   superuser: false,
-  permission: ""
+  permission: "",
+  path: ""
 };
 const mapDispatchToProps = dispatch => ({
   changeVerifyingAuth: value => dispatch(verifyingAuth(value))

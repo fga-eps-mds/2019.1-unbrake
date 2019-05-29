@@ -20,6 +20,13 @@ export default () => (
       <AuthorizedRoute
         superuser={localStorage.getItem("isSuperuser") === "true"}
         exact
+        path="/login"
+        component={Login}
+      />
+      <AuthorizedRoute
+        permission={null}
+        superuser={localStorage.getItem("isSuperuser") === "true"}
+        exact
         path="/signup"
         component={SignUp}
       />
