@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"log"
 	"os"
 	"os/signal"
@@ -28,9 +29,71 @@ var wg sync.WaitGroup
 var stop_collecting_data chan bool
 var sigs chan os.Signal
 
+const (
+	CoolDown            = byte(iota + '$')
+	Acelerate           //'%'
+	Brake               //'&'
+	AcelerateBrake      //'''
+	CoolDownWater       //'('
+	AcelerateWater      //')'
+	BrakeWater          //'*'
+	AcelerateBrakeWater //'+'
+)
+
+var currentToNextState = map[byte]byte{
+	Acelerate:      Brake,
+	Brake:          CoolDown,
+	CoolDown:       Acelerate,
+	AcelerateWater: BrakeWater,
+	BrakeWater:     CoolDownWater,
+	CoolDownWater:  AcelerateWater,
+}
+
+var offToOnWater = map[byte]byte{
+	Acelerate:      AcelerateWater,
+	Brake:          BrakeWater,
+	CoolDown:       CoolDownWater,
+	AcelerateWater: AcelerateWater,
+	BrakeWater:     BrakeWater,
+	CoolDownWater:  CoolDownWater,
+}
+
+var onToOffWater = map[byte]byte{
+	AcelerateWater: Acelerate,
+	BrakeWater:     Brake,
+	CoolDownWater:  CoolDown,
+	Acelerate:      Acelerate,
+	Brake:          Brake,
+	CoolDown:       CoolDown,
+}
+
+var byteToStateName = map[byte]string{
+	'$':  "CoolDown",
+	'%':  "Acelerate",
+	'&':  "Brake",
+	'\'': "AcelerateBrake",
+	'(':  "CoolDownWater",
+	')':  "AcelerateWater",
+	'*':  "BrakeWater",
+	'+':  "AcelerateBrakeWater",
+}
+
+type Snub struct {
+	state byte
+}
+
 func main() {
 	log_file := getLogFile()
 	defer log_file.Close()
+
+	snub := getSnub()
+
+	for i := 0; i < 10; i++ {
+		snub.updateState()
+		fmt.Println(byteToStateName[snub.state])
+		//snub.turnOnWater()
+		//fmt.Println(byteToStateName[snub.state])
+	}
 
 	log.Println("--------------------------------------------")
 	log.Println("Initializing application...")
@@ -45,6 +108,23 @@ func main() {
 
 	log.Println("Application finished!")
 	log.Println("--------------------------------------------")
+}
+
+func getSnub() Snub {
+	snub := Snub{state: Acelerate}
+	return snub
+}
+
+func (snub *Snub) updateState() {
+	snub.state = currentToNextState[snub.state]
+}
+
+func (snub *Snub) turnOnWater() {
+	snub.state = offToOnWater[snub.state]
+}
+
+func (snub *Snub) turnOffWater() {
+	snub.state = onToOffWater[snub.state]
 }
 
 func onReady() {
