@@ -1,0 +1,21 @@
+#!/bin/sh
+# For compiling unbrake local application via docker
+
+SELF_PATH="$(cd "$(dirname "$0")"; pwd -P)"
+
+cd "$SELF_PATH" \
+    && echo -e "Compiling to UnBrake binaries..\n" \
+    \
+    && echo -en "Compiling Linux version... " \
+    && ./run build -o /go/bin/unbrake-linux-amd64 unbrake.go \
+    && echo -e "\033[0;32mOK!\033[0m" \
+    \
+    && echo -en "Compiling Windows version... " \
+    && GOOS=windows GOARCH=amd64 ./run build -ldflags -H=windowsgui -o /go/bin/unbrake-windows-amd64.exe unbrake.go \
+    && echo -e "\033[0;32mOK!\033[0m" \
+    \
+    && sudo chown $USER:$USER bin/* &> /dev/null
+
+[ "$?" != "0" ] && echo -e "\033[0;31mFAILED!\033[0m"
+
+cd - &> /dev/null
