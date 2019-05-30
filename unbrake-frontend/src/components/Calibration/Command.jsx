@@ -4,7 +4,7 @@ import { reduxForm } from "redux-form";
 import { withStyles, Grid } from "@material-ui/core";
 import styles from "../Styles";
 import RealTimeChart from "../RealTimeChart";
-import { checkbox, field } from "./CalibrationComponents";
+import { checkbox, field } from "../ComponentsForm";
 
 const labelSecondary = name => {
   let nameLabel = "";
