@@ -80,6 +80,7 @@ var byteToStateName = map[byte]string{
 
 type Snub struct {
 	state byte
+	mux   sync.Mutex
 }
 
 func main() {
@@ -116,14 +117,20 @@ func getSnub() Snub {
 }
 
 func (snub *Snub) updateState() {
+	snub.mux.Lock()
+	defer snub.mux.Unlock()
 	snub.state = currentToNextState[snub.state]
 }
 
 func (snub *Snub) turnOnWater() {
+	snub.mux.Lock()
+	defer snub.mux.Unlock()
 	snub.state = offToOnWater[snub.state]
 }
 
 func (snub *Snub) turnOffWater() {
+	snub.mux.Lock()
+	defer snub.mux.Unlock()
 	snub.state = onToOffWater[snub.state]
 }
 
