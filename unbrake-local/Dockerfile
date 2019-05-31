@@ -10,7 +10,9 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     && rm -rf /var/lib/apt/lists/* \
     && go get -v \
         github.com/tarm/serial \
-        github.com/getlantern/systray
+        github.com/getlantern/systray \
+        \
+        golang.org/x/lint/golint
 
 WORKDIR /go/src/github.com/fga-eps-mds/2019.1-unbrake/unbrake-local
 
