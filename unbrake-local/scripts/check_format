@@ -1,0 +1,20 @@
+#!/bin/sh
+
+# Sorry about mess, gofmt doesn't return error codes
+
+SELF_PATH="$(dirname $(readlink -f "$0"))"
+. "$SELF_PATH/functions.sh"
+cd "$SELF_PATH/.."
+
+# Save tmp output on different file
+DIFF_GOFMT_TMP_FILE="/tmp/diff_gofmt"
+ENTRY="gofmt" ./scripts/run -d -s . &> $DIFF_GOFMT_TMP_FILE
+
+# Just for keep getting run_command messages
+if [ -s "$DIFF_GOFMT_TMP_FILE" ]; then
+    run_command 'cat /tmp/diff_gofmt && exit 1'
+else
+    run_command 'exit 0'
+fi
+
+rm $DIFF_GOFMT_TMP_FILE
