@@ -206,6 +206,8 @@ continua sendo executada num container.
 
 ##### Scripts disponíveis (Local)
 _Todos os comandos estão relativos a pasta `unbrake-local`_
+_Se a execução estiver demorando muito, pode ser que o container esteja sendo baixado,
+para acompanhar o progresso, é possível executar o comando `sudo docker pull unbrake/local` separadamente_
 
 * **./scripts/run**: equivalente a se chamar `go` porém é executado dentro do container
 * **./scripts/compile**: gera o binário da parte local para Windows e Linux
