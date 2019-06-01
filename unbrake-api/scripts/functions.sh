@@ -5,7 +5,7 @@ SELF_PATH="$(dirname $(readlink -f "$0"))"
 
 run_command(){
 	echo -n "Running ${0:2}..."
-	bash -c "$*" &> "$tmpOutputFile"
+	sh -c "$*" &> "$tmpOutputFile"
 
 	if [ $? = 0 ]; then
 		echo -e " \033[0;32mOK!\033[0m"
