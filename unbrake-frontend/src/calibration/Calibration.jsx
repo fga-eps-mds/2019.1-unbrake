@@ -10,7 +10,7 @@ import CalibrationUpload from "./CalibrationUpload";
 import Vibration from "./Vibration";
 import Force from "./Force";
 import Temperature from "./Temperature";
-import CalibrationCommand from "../components/CalibrationCommand";
+import CalibrationCommand from "./CalibrationCommand";
 
 const TabPadding = 24;
 const borderRadius = 2.5;

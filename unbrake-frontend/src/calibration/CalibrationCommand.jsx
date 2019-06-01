@@ -2,8 +2,8 @@ import React from "react";
 import "../App.css";
 import { Field, reduxForm } from "redux-form";
 import { TextField, withStyles } from "@material-ui/core";
-import CalibrationCheck from "../calibration/CalibrationTempCheck";
-import RealTimeChart from "./RealTimeChart";
+import CalibrationCheck from "./CalibrationTempCheck";
+import RealTimeChart from "../components/RealTimeChart";
 
 const styles = () => ({
   grid: {

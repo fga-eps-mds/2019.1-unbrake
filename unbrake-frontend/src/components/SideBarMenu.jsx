@@ -28,7 +28,7 @@ import {
 import { BrowserRouter, Route } from "react-router-dom";
 import { connect } from "react-redux";
 
-import Configuration from "../Configuration/Configuration";
+import Configuration from "../configuration/Configuration";
 import Calibration from "../calibration/Calibration";
 import Analysis from "./Analysis";
 import UserOptionsMenu from "./UserOptionsMenu";
