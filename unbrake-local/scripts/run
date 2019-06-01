@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 # For compiling unbrake local application via docker
 
 SELF_PATH="$(cd "$(dirname "$0")"; pwd -P)"

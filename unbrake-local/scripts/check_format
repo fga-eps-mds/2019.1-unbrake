@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 # Sorry about mess, gofmt doesn't return error codes
 

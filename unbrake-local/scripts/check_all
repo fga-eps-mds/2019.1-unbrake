@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 echo -e "\n=========================================================================="
 echo "Checking everything on application unbrake-local..."

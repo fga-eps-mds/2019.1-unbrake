@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 SELF_PATH="$(dirname $(readlink -f "$0"))"
 . "$SELF_PATH/functions.sh"
