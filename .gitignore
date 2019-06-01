@@ -12,6 +12,7 @@ deploy/secrets
 
 ### Go ###
 unbrake-local/bin/*
+unbrake-local/coverage.out
 
 ### Node ###
 # Logs
