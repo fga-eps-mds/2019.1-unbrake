@@ -198,18 +198,24 @@ $ sudo docker-compose run --rm api [nome_do_script]
 
 #### Local
 
-A parte local funciona diferente das outras, o comando `go` já conta com
-ferramentas de checagem e testes, não exigindo scripts adicionais para
-checagem ou execução de testes.
-
-Então abaixo estarão mapeados os principais comandos utilizados no projeto
-e alguns scripts. Mas já estarão mapeados no formato em que serão chamados.
+A parte local funciona diferente das outras, como o entrypoint `go` não é
+personálizável, optamos por deixar transparente ao desenvolvedor a
+utilização do docker. Então o usuário já executa diretamente o script
+que quer sem fazer chamadas explícitas ao docker e ação desejada
+continua sendo executada num container.
 
 ##### Scripts disponíveis (Local)
 _Todos os comandos estão relativos a pasta `unbrake-local`_
 
-* `./run`: equivalente a se chamar `go` porém é executado dentro do container
-* `./compile`: gera o binário da parte local para Windows e Linux
+* **./scripts/run**: equivalente a se chamar `go` porém é executado dentro do container
+* **./scripts/compile**: gera o binário da parte local para Windows e Linux
+* **./scripts/check_all**: executa o `check_format`, `check_lint` e `check_tests_coverage`
+* **./scripts/check_format**: checa se a formatação do código está de acordo com a comunidade
+* **./scripts/check_lint**: checa por erros gerais no código
+* **./scripts/check_tests**: checa se os testes estão passando
+* **./scripts/check_tests_coverage**: checa se os testes estão passando e da informações de cobertura
+* **./scripts/check_tests_coverage_html**: checa se os testes estão passando e gera informações de cobertura em html
+* **./scripts/fix**: corrige erros fáceis de serem automaticamente corrigidos
 
 
 #### CodeClimate CLI
