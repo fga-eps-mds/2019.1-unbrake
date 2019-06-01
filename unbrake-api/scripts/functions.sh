@@ -1,10 +1,11 @@
 #!/bin/sh
 
-source scripts/scripts_environments
+SELF_PATH="$(dirname $(readlink -f "$0"))"
+. "$SELF_PATH/scripts_environments"
 
 run_command(){
 	echo -n "Running ${0:2}..."
-	$* &> "$tmpOutputFile"
+	bash -c "$*" &> "$tmpOutputFile"
 
 	if [ $? = 0 ]; then
 		echo -e " \033[0;32mOK!\033[0m"
