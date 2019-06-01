@@ -66,7 +66,7 @@ const rowField = (states, classes, handleChange) => {
   return fields;
 };
 
-const allFields = (states, classes, handleChange) => {
+const tireFields = (states, classes, handleChange) => {
   const fields = states.map(value => {
     return (
       <Grid
@@ -83,26 +83,43 @@ const allFields = (states, classes, handleChange) => {
   });
   return fields;
 };
+const vbeltFields = (states, classes, handleChange) => {
+  const fields = states.map(value => {
+    return (
+      <Grid
+        alignItems="center"
+        justify="center"
+        container
+        item
+        xs={12}
+        key={`fields ${value[1].name}`}
+      >
+        {rowField(value, classes, handleChange)}
+      </Grid>
+    );
+  });
+  return fields;
+};
 
 const tireDictionary = relation => {
-  const directionary = [
+  const dictionary = [
     [{ name: "LST", value: relation.LST, disable: false }],
     [{ name: "RAL", value: relation.RAL, disable: false }],
     [{ name: "DIA", value: relation.DIA, disable: false }],
     [{ name: "RDP", value: relation.RDP, disable: true }]
   ];
-  return directionary;
+  return dictionary;
 };
 
 const vbeltDictionary = relation => {
   const dictionary = [
     [
-      [{ name: "RSM", value: relation.RSM, disable: false }],
-      [{ name: "DPO", value: relation.DPO, disable: false }]
+      { name: "RSM", value: relation.RSM, disable: false },
+      { name: "DPO", value: relation.DPO, disable: false }
     ],
     [
-      [{ name: "DPM", value: relation.DPM, disable: false }],
-      [{ name: "RDT", value: relation.RDT, disable: true }]
+      { name: "DPM", value: relation.DPM, disable: false },
+      { name: "RDT", value: relation.RDT, disable: true }
     ]
   ];
   return dictionary;
@@ -110,17 +127,26 @@ const vbeltDictionary = relation => {
 
 const images = () => {
   return (
-    <Grid alignment="left">
-      <Grid>
+    <Grid style={{ display: "flex", flexDirection: "column" }}>
+      <Grid style={{ display: "flex", flexDirection: "row" }}>
         <img src={completeTire} alt="CompleteTire" height="250" />
-        <img src={sideTire} alt="sideTire" height="100" />
-        <Grid alignItems="flex-start" justify="flex-end" direction="row">
+        <Grid
+          style={{
+            display: "flex",
+            flexDirection: "column",
+            justifyContent: "space-between"
+          }}
+        >
+          <img src={sideTire} alt="sideTire" height="100" />
           <img src={tire} alt="tire" height="75" />
         </Grid>
       </Grid>
-      <Grid alignItems="center">
-        <img src={VBelt} alt="VBelt" height="200" />
-      </Grid>
+      <img
+        src={VBelt}
+        alt="VBelt"
+        height="200"
+        style={{ marginTop: "100px" }}
+      />
     </Grid>
   );
 };
@@ -179,8 +205,10 @@ class Relation extends React.Component {
               xs={3}
             >
               <Grid container item alignItems="center" justify="center" xs={12}>
-                {allFields(statesTire, classes, this.handleChange)}
-                {allFields(statesVbelt[0], classes, this.handleChange)}
+                {tireFields(statesTire, classes, this.handleChange)}
+                <Grid style={{ marginTop: "100px" }}>
+                  {vbeltFields(statesVbelt, classes, this.handleChange)}
+                </Grid>
               </Grid>
             </Grid>
             <Grid item xs />
