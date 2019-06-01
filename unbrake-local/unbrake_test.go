@@ -4,7 +4,7 @@ import (
 	"testing"
 )
 
-func testUpdateState(t *testing.T) {
+func TestUpdateState(t *testing.T) {
 
 	snub := Snub{state: Acelerate}
 	snub.updateState()
@@ -27,7 +27,7 @@ func testUpdateState(t *testing.T) {
 
 }
 
-func testUpdateStateWater(t *testing.T) {
+func TestUpdateStateWater(t *testing.T) {
 
 	snub := Snub{state: AcelerateWater}
 	snub.updateState()
@@ -50,7 +50,7 @@ func testUpdateStateWater(t *testing.T) {
 
 }
 
-func testTurnOnWater(t *testing.T) {
+func TestTurnOnWater(t *testing.T) {
 
 	snub := Snub{state: Acelerate}
 	snub.turnOnWater()
@@ -75,7 +75,7 @@ func testTurnOnWater(t *testing.T) {
 
 }
 
-func testTurnAlredyOnWater(t *testing.T) {
+func TestTurnAlredyOnWater(t *testing.T) {
 
 	snub := Snub{state: AcelerateWater}
 	snub.turnOnWater()
@@ -100,7 +100,7 @@ func testTurnAlredyOnWater(t *testing.T) {
 
 }
 
-func testTurnOffWater(t *testing.T) {
+func TestTurnOffWater(t *testing.T) {
 
 	snub := Snub{state: AcelerateWater}
 	snub.turnOffWater()
@@ -125,7 +125,7 @@ func testTurnOffWater(t *testing.T) {
 
 }
 
-func testTurnAlredyOffWater(t *testing.T) {
+func TestTurnAlredyOffWater(t *testing.T) {
 
 	snub := Snub{state: Acelerate}
 	snub.turnOffWater()
