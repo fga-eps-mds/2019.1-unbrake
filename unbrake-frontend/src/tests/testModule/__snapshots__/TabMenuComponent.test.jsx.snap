@@ -1,0 +1,67 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`<TabMenuComponent /> render() renders the component 1`] = `
+<WithStyles(Grid)
+  alignItems="center"
+  className="TabMenuComponent-root-1"
+  container={true}
+  item={true}
+  justify="center"
+  xs={12}
+>
+  <WithStyles(Grid)
+    alignItems="center"
+    container={true}
+    item={true}
+    justify="center"
+    xs={11}
+  >
+    <WithStyles(AppBar)
+      className="TabMenuComponent-appBar-2"
+      color="inherit"
+      position="relative"
+    >
+      <WithStyles(Tabs)
+        centered={true}
+        onChange={[Function]}
+        value={0}
+      >
+        <WithStyles(Tab)
+          label="Configurações"
+        />
+        <WithStyles(Tab)
+          label="Temperatura"
+        />
+        <WithStyles(Tab)
+          label="Força"
+        />
+        <WithStyles(Tab)
+          label="Rotação"
+        />
+        <WithStyles(Tab)
+          label="Velocidade"
+        />
+        <WithStyles(Tab)
+          label="Distância"
+        />
+      </WithStyles(Tabs)>
+    </WithStyles(AppBar)>
+  </WithStyles(Grid)>
+  <WithStyles(Grid)
+    alignItems="center"
+    container={true}
+    item={true}
+    justify="center"
+    style={
+      Object {
+        "paddingTop": "15px",
+      }
+    }
+    xs={11}
+  >
+    <h1>
+      Formulário de Configuração
+    </h1>
+  </WithStyles(Grid)>
+</WithStyles(Grid)>
+`;

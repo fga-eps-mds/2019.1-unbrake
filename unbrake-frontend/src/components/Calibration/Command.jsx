@@ -9,17 +9,17 @@ import { checkbox, field } from "../ComponentsForm";
 const labelSecondary = name => {
   let nameLabel = "";
   switch (name) {
-    case "OFF1":
-      nameLabel = "Offset 1";
+    case "CCv":
+      nameLabel = "Canal - comando / velocidade";
       break;
-    case "OFF2":
-      nameLabel = "Offset 2";
+    case "CCp":
+      nameLabel = "Canal - comando / pressão";
       break;
-    case "PFkgf1":
-      nameLabel = "Plota força 1(kgf)";
+    case "Vkmh":
+      nameLabel = "Velocidade (km/h)";
       break;
-    case "PFkgf2":
-      nameLabel = "Plota força 2(kgf)";
+    case "Pb":
+      nameLabel = "Pressão (Bar)";
       break;
     default:
       nameLabel = "";
@@ -31,29 +31,29 @@ const labelSecondary = name => {
 const label = name => {
   let nameLabel = "";
   switch (name) {
-    case "CHF1":
-      nameLabel = "Canal de aquisição 1";
+    case "VMkmh":
+      nameLabel = "Velocidade máxima (kmh)";
       break;
-    case "CHF2":
-      nameLabel = "Canal de aquisição 2";
+    case "PMb":
+      nameLabel = "Pressão máxima (Bar)";
       break;
-    case "Fmv1":
-      nameLabel = "Força 1(mv)";
+    case "Vdc":
+      nameLabel = "Velocidade (Duty Cycle)";
       break;
-    case "Fmv2":
-      nameLabel = "Força 2(mv)";
+    case "Pdc":
+      nameLabel = "Pressão (Duty Cycle)";
       break;
-    case "Fkgf1":
-      nameLabel = "Força 1(kgf)";
+    case "VCmv":
+      nameLabel = "Velocidade comando (mV)";
       break;
-    case "Fkgf2":
-      nameLabel = "Força 2(kgf)";
+    case "PCmv":
+      nameLabel = "Pressão comando (mV)";
       break;
-    case "FCF1":
-      nameLabel = "Fator de conversão 1";
+    case "PVc":
+      nameLabel = "Plota velocidade (comando)";
       break;
-    case "FCF2":
-      nameLabel = "Fator de conversão 1";
+    case "PPc":
+      nameLabel = "Plota pressão (comando)";
       break;
     default:
       nameLabel = labelSecondary(name);
@@ -125,49 +125,49 @@ const allCheckbox = (selectsControl, classes, handleChange) => {
   return checks;
 };
 
-const renderDictionary = force => {
+const renderDictionary = command => {
   const directionary = [
     [
-      { name: "CHF1", value: force.CHF1, disable: true },
-      { name: "CHF2", value: force.CHF2, disable: true }
+      { name: "CCv", value: command.CCv, disable: true },
+      { name: "CCp", value: command.CCp, disable: true }
     ],
     [
-      { name: "Fmv1", value: force.Fmv1, disable: true },
-      { name: "Fmv2", value: force.Fmv2, disable: true }
+      { name: "Vdc", value: command.Vdc, disable: true },
+      { name: "Pdc", value: command.Pdc, disable: true }
     ],
     [
-      { name: "Fkgf1", value: force.Fkgf1, disable: true },
-      { name: "Fkgf2", value: force.Fkgf2, disable: true }
+      { name: "VCmv", value: command.VCmv, disable: true },
+      { name: "PCmv", value: command.PCmv, disable: true }
     ],
     [
-      { name: "FCF1", value: force.FCF1, disable: false },
-      { name: "FCF2", value: force.FCF2, disable: false }
+      { name: "Vkmh", value: command.Vkmh, disable: false },
+      { name: "Pb", value: command.Pb, disable: false }
     ],
     [
-      { name: "OFF1", value: force.OFF1, disable: false },
-      { name: "OFF2", value: force.OFF2, disable: false }
+      { name: "VMkmh", value: command.VMkmh, disable: false },
+      { name: "PMb", value: command.PMb, disable: false }
     ]
   ];
   return directionary;
 };
 
-class Force extends React.Component {
+class Command extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
-      force: {
-        CHF1: "", // canal de aquisição 1
-        CHF2: "", // canal de aquisição 2
-        PFkgf1: false, // plota força (kfg) 1
-        Fmv1: "", // força (mv) 1
-        Fmv2: "", // força (mv) 2
-        PFkgf2: false, // plota força (kfg) 1
-        Fkgf1: "", // força (kgf) 1
-        Fkgf2: "", // força (kgf) 2
-        FCF1: "", // fator de conversão 1
-        FCF2: "", // fator de conversão 2
-        OFF1: "", // offset de força 1
-        OFF2: "" // offset de força 2
+      command: {
+        CCv: "", // Canal - comando / velocidade
+        CCp: "", // Canal - comando / pressão
+        Vkmh: "", // Velocidade (km/h)
+        Pb: "", // Pressão (Bar)
+        VMkmh: "", // Velocidade máxima (kmh)
+        PMb: "", // Pressão máxima (Bar)
+        Vdc: "", // Velocidade (Duty Cycle)
+        Pdc: "", // Pressão (Duty Cycle)
+        VCmv: "", // Velocidade comando (mV)
+        PCmv: "", // Pressão comando (mV)
+        PVc: false, // Plota velocidade (comando)
+        PPc: false // Plota pressão (comando)
       }
     };
     this.handleChange = this.handleChange.bind(this);
@@ -176,20 +176,20 @@ class Force extends React.Component {
   handleChange(event) {
     const { target } = event;
     const value = target.type === "checkbox" ? target.checked : target.value;
-    const force = { [event.target.name]: value };
+    const command = { [event.target.name]: value };
     this.setState(prevState => ({
-      force: { ...prevState.force, ...force }
+      command: { ...prevState.command, ...command }
     }));
   }
 
   render() {
-    const { force } = this.state;
-    const { PFkgf1, PFkgf2 } = force;
     const { classes } = this.props;
-    const states = renderDictionary(force);
+    const { command } = this.state;
+    const states = renderDictionary(command);
+    const { PVc, PPc } = command;
     const selectsControl = [
-      { name: "PFkgf1", value: PFkgf1, disable: false },
-      { name: "PFkgf2", value: PFkgf2, disable: false }
+      { name: "PVc", value: PVc, disable: false },
+      { name: "PPc", value: PPc, disable: false }
     ];
     return (
       <Grid
@@ -234,12 +234,12 @@ class Force extends React.Component {
   }
 }
 
-Force.propTypes = {
+Command.propTypes = {
   classes: PropTypes.objectOf(PropTypes.string).isRequired
 };
 
-const ForceForm = reduxForm({
+const CommandForm = reduxForm({
   form: "calibration"
-})(Force);
+})(Command);
 
-export default withStyles(styles)(ForceForm);
+export default withStyles(styles)(CommandForm);

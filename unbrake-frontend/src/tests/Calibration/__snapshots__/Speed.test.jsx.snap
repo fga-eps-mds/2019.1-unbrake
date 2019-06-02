@@ -1,6 +1,6 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`<Vibration /> render() renders the component 1`] = `
+exports[`<Speed /> render() renders the component 1`] = `
 <Hoc
   classes={
     Object {
