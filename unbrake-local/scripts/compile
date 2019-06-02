@@ -21,7 +21,7 @@ cd "$SELF_PATH" \
     && GOOS=windows GOARCH=amd64 ./run build -ldflags -H=windowsgui -o "$PACKAGE_PATH/bin/$BIN_WIN_AMD64_NAME" unbrake.go \
     && echo -e "\033[0;32mOK!\033[0m" \
     \
-    && sudo chown $USER:$USER $BINARY_FOLDER/* &> /dev/null
+    && sudo chown -R $USER:$USER $BINARY_FOLDER &> /dev/null
 
 [ "$?" != "0" ] && echo -e "\033[0;31mFAILED!\033[0m"
 
