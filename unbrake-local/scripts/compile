@@ -1,0 +1,28 @@
+#!/bin/bash
+# For compiling unbrake local application via docker
+
+SELF_PATH="$(dirname $(readlink -f "$0"))"
+PACKAGE_PATH="/go/src/github.com/fga-eps-mds/2019.1-unbrake/unbrake-local"
+
+BINARY_FOLDER="$SELF_PATH/../bin"
+BIN_LINUX_AMD64_NAME="unbrake-linux-amd64.exe"
+BIN_WIN_AMD64_NAME="unbrake-windows-amd64.exe"
+
+echo $BINARY_FOLDER
+
+cd "$SELF_PATH" \
+    && echo -e "Compiling to UnBrake binaries..\n" \
+    \
+    && echo -en "Compiling Linux version... " \
+    && ./run build -o "$PACKAGE_PATH/bin/$BIN_LINUX_AMD64_NAME" unbrake.go \
+    && echo -e "\033[0;32mOK!\033[0m" \
+    \
+    && echo -en "Compiling Windows version... " \
+    && GOOS=windows GOARCH=amd64 ./run build -ldflags -H=windowsgui -o "$PACKAGE_PATH/bin/$BIN_WIN_AMD64_NAME" unbrake.go \
+    && echo -e "\033[0;32mOK!\033[0m" \
+    \
+    && sudo chown -R $USER:$USER $BINARY_FOLDER &> /dev/null
+
+[ "$?" != "0" ] && echo -e "\033[0;31mFAILED!\033[0m"
+
+cd - &> /dev/null

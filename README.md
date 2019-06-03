@@ -8,10 +8,12 @@
 
 ## Utilizando a aplicação
 
-Execute o binário (checar [releases](https://github.com/fga-eps-mds/2019.1-unbrake/releases)) e acesse
-a interface da aplicação em https://unbrake.ml ou algum servidor local.
+Execute o binário
+(checar [releases](https://github.com/fga-eps-mds/2019.1-unbrake/releases))
+e acesse a interface da aplicação em https://unbrake.ml ou algum servidor local.
 
-Se o binário estiver em execução, será adicionado um ícone na área de notificações do seu sistema operacional, pelo qual
+Se o binário estiver em execução, será adicionado um ícone na área de
+notificações do seu sistema operacional, pelo qual
 é possível interagir com a aplicação.
 
 * **A aplicação não deve ser executada como root (administrador)!**
@@ -22,11 +24,13 @@ Problemas com a execução? Consulte o [troubleshooting](#troubleshooting)
 
 Atualmente as seguintes variáveis de ambiente são relevantes para a aplicação:
 
-* **SIMULATOR_PORT**: nome/caminho da porta serial em que a placa está conectada. Ex: `/dev/ttyACM0`, `COM1`.
+* **SIMULATOR_PORT**: nome/caminho da porta serial em que a placa está conectada.
+Ex: `/dev/ttyACM0`, `COM1`.
 
 ### Logs
 
-Todo o funcionamento da aplicação é registrado em arquivos de log. No Linux eles são atualmente gravados em `~/UnBrake/logs`,
+Todo o funcionamento da aplicação é registrado em arquivos de log.
+No Linux eles são atualmente gravados em `~/UnBrake/logs`,
 já no Windows em `%APPDATA%/UnBrake/logs`
 
 ### Troubleshooting
@@ -39,7 +43,8 @@ Antes de analisar as seguintes opções cheque o log para ter mais informações
   <summary> Não tenho permissão nem de executar o binário </summary>
   <br>
 
-  **Solução (Linux):** Provavelmente o binário está sem permissão de execução. Comando:
+  **Solução (Linux):** Provavelmente o binário está sem permissão de execução.
+  Comando:
   ``` sh
   chmod +x unbrake
   ```
@@ -56,7 +61,8 @@ Antes de analisar as seguintes opções cheque o log para ter mais informações
   <summary> Log informa que tentou abrir arquivo que não foi encontrado </summary>
   <br>
 
-  **Solução (Linux):** Você especificou o arquivo certo que referencia a placa? Ex: `/dev/ttyACM0`
+  **Solução (Linux):**
+  Você especificou o arquivo certo que referencia a placa? Ex: `/dev/ttyACM0`
 </details>
 
 <details>
@@ -78,7 +84,8 @@ Antes de analisar as seguintes opções cheque o log para ter mais informações
   $ ls -l /dev/ttyACM0
   crw-rw---- 1 root dialout 188, 0 5 apr 23.01 ttyACM0 # Saída
   ```
-  Nesse exemplo o arquivo pertence ao grupo `dialout` _(No meu ambiente é `uucp` ao invés `dialout`)_
+  Nesse exemplo o arquivo pertence ao grupo `dialout`
+  _(No meu ambiente é `uucp` ao invés `dialout`)_
 
   * Adicione seu usuário ao grupo encontrado
 
@@ -87,7 +94,8 @@ Antes de analisar as seguintes opções cheque o log para ter mais informações
   sudo usermod -a $USER -G dialout
   ```
 
-  * **Faça logout e login novamente no seu usuário para as alterações funionarem!!!** _(reiniciar também funciona)_
+  * **Faça logout e login novamente no seu usuário para as alterações funionarem!!!**
+  _(reiniciar também funciona)_
 
   _**OBS:** Esses passos não precisam ser executados sempre, apenas uma vez_
 
@@ -187,6 +195,30 @@ Uma das possíveis formas de se executar os scripts da API
 # 'manage.py' é o entrypoint
 $ sudo docker-compose run --rm api [nome_do_script]
 ```
+
+#### Local
+
+A parte local funciona diferente das outras, como o entrypoint `go` não é
+personálizável, optamos por deixar transparente ao desenvolvedor a
+utilização do docker. Então o usuário já executa diretamente o script
+que quer sem fazer chamadas explícitas ao docker e ação desejada
+continua sendo executada num container.
+
+##### Scripts disponíveis (Local)
+_Todos os comandos estão relativos a pasta `unbrake-local`_
+_Se a execução estiver demorando muito, pode ser que o container esteja sendo baixado,
+para acompanhar o progresso, é possível executar o comando `sudo docker pull unbrake/local` separadamente_
+
+* **./scripts/run**: equivalente a se chamar `go` porém é executado dentro do container
+* **./scripts/compile**: gera o binário da parte local para Windows e Linux
+* **./scripts/check_all**: executa o `check_format`, `check_lint` e `check_tests_coverage`
+* **./scripts/check_format**: checa se a formatação do código está de acordo com a comunidade
+* **./scripts/check_lint**: checa por erros gerais no código
+* **./scripts/check_tests**: checa se os testes estão passando
+* **./scripts/check_tests_coverage**: checa se os testes estão passando e da informações de cobertura
+* **./scripts/check_tests_coverage_html**: checa se os testes estão passando e gera informações de cobertura em html
+* **./scripts/fix**: corrige erros fáceis de serem automaticamente corrigidos
+
 
 #### CodeClimate CLI
 
