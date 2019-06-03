@@ -1,7 +1,8 @@
 #!/bin/sh
 
-cd /app/api
-. scripts/functions.sh
+SELF_PATH="$(dirname $(readlink -f "$0"))"
+. "$SELF_PATH/functions.sh"
+cd "$SELF_PATH/.."
 
 run_command coverage run --source "." manage.py test \
 	&& coverage report \
