@@ -17,18 +17,20 @@ import (
 )
 
 const (
-	BUFFER_SIZE             = 48
-	SIMULATOR_PORT_ENV      = "SIMULATOR_PORT"
-	DEFAULT_PORT            = "/dev/ttyACM0"
-	BAUD_RATE               = 115200
-	FREQUENCY_READING       = 10
-	LOG_FILE_PATH           = "unbrake.log"
-	APPLICATION_FOLDER_NAME = "UnBrake"
-	UPPER_SPEED_LIMIT       = 150
-	INFERIOR_SPEED_LIMIT    = 150
-	TIME_SLEEP_WATER        = 3
-	TIME_COOLDOWN           = 3
-	TEMPERATURE_LIMIT       = 400
+	BufferSize            = 48
+	SimulatorPortEnv      = "SIMULATOR_PORT"
+	DefaultPort           = "/dev/ttyACM0"
+	BaudRate              = 115200
+	FrequencyReading      = 10
+	LogFilePath           = "unbrake.log"
+	ApplicationFolderName = "UnBrake"
+	UpperSpeedLimit       = 150
+	InferiorSpeedLimit    = 150
+	TimeSleepWater        = 3
+	TimeCooldown          = 3
+	TemperatureLimit      = 400
+	rightSizeOfSplit      = 11
+	delayAcelerateToBrake = 2
 )
 
 var wg sync.WaitGroup
@@ -37,7 +39,9 @@ var sigs chan os.Signal
 var temperatureCh = make(chan [2]int)
 var speedCh = make(chan int)
 var snub = getSnub()
-var porta = make(chan *serial.Port)
+var portCh = make(chan *serial.Port, 3)
+var stabilizing = false
+var throwingWater = false
 
 const (
 	CoolDown            = string(iota + '$') //'$'
@@ -94,15 +98,9 @@ type Snub struct {
 }
 
 func main() {
+
 	logFile := getLogFile()
 	defer logFile.Close()
-
-	//	for i := 0; i < 10; i++ {
-	//		snub.updateState()
-	//		fmt.Println(byteToStateName[snub.state])
-	//		//snub.turnOnWater()
-	//		//fmt.Println(byteToStateName[snub.state])
-	//	}
 
 	log.Println("--------------------------------------------")
 	log.Println("Initializing application...")
@@ -115,6 +113,13 @@ func main() {
 	}
 	systray.Run(onReady, onExit)
 
+	wg.Add(1)
+
+	go collectData()
+	go handleSnubstate()
+
+	wg.Wait()
+
 	log.Println("Application finished!")
 	log.Println("--------------------------------------------")
 }
@@ -125,54 +130,75 @@ func getSnub() Snub {
 }
 
 func (snub *Snub) updateState() {
+
+	stabilizing = true
+	log.Printf("Stabilizing...\n")
+	time.Sleep(time.Second * delayAcelerateToBrake)
+
 	snub.mux.Lock()
 	defer snub.mux.Unlock()
+	oldState := snub.state
 	snub.state = currentToNextState[snub.state]
+	log.Printf("Change state: %v ---> %v\n", byteToStateName[oldState], byteToStateName[snub.state])
+	stabilizing = false
+
 }
 
 func (snub *Snub) turnOnWater(port *serial.Port) {
 
 	snub.mux.Lock()
-	snub.state = offToOnWater[snub.state]
 
+	oldState := snub.state
+	snub.state = offToOnWater[snub.state]
+	throwingWater = true
 	_, err := port.Write([]byte(snub.state))
 	if err != nil {
 		log.Fatal(err)
 	}
+	log.Printf("Turn on water(%vs): %v ---> %v\n", TimeSleepWater, byteToStateName[oldState], byteToStateName[snub.state])
+
 	snub.mux.Unlock()
 
-	time.Sleep(time.Second * TIME_SLEEP_WATER)
+	time.Sleep(time.Second * TimeSleepWater)
 
 	snub.mux.Lock()
-	snub.state = onToOffWater[snub.state]
 
+	oldState = snub.state
+	snub.state = onToOffWater[snub.state]
 	_, err = port.Write([]byte(snub.state))
 	if err != nil {
 		log.Fatal(err)
 	}
+	throwingWater = false
+	log.Printf("Turn off water: %v ---> %v\n", byteToStateName[oldState], byteToStateName[snub.state])
+
 	snub.mux.Unlock()
 }
 
 func (snub *Snub) handleBrake(port *serial.Port) {
 	snub.mux.Lock()
-	snub.state = currentToNextState[snub.state]
 
+	oldState := snub.state
+	snub.state = currentToNextState[snub.state]
 	_, err := port.Write([]byte(snub.state))
 	if err != nil {
 		log.Fatal(err)
 	}
+	log.Printf("Change state: %v ---> %v\n", byteToStateName[oldState], byteToStateName[snub.state])
 
 	snub.mux.Unlock()
 
-	time.Sleep(time.Second * TIME_COOLDOWN)
+	time.Sleep(time.Second * TimeCooldown)
 
 	snub.mux.Lock()
-	snub.state = currentToNextState[snub.state]
 
+	oldState = snub.state
+	snub.state = currentToNextState[snub.state]
 	_, err = port.Write([]byte(snub.state))
 	if err != nil {
 		log.Fatal(err)
 	}
+	log.Printf("Change state: %v ---> %v\n", byteToStateName[oldState], byteToStateName[snub.state])
 
 	snub.mux.Unlock()
 }
@@ -210,18 +236,18 @@ func onReady() {
 func collectData() {
 	defer wg.Done()
 
-	const readingDelay = time.Second / FREQUENCY_READING
+	const readingDelay = time.Second / FrequencyReading
 	simulatorPort := getSimulatorPort()
 
-	log.Println("Initializing collectData routine...")
+	//log.Println("Initializing collectData routine...")
 	log.Printf("Simulator Port = %s", simulatorPort)
-	log.Printf("Buffer size = %d", BUFFER_SIZE)
-	log.Printf("Baud rate = %d", BAUD_RATE)
+	log.Printf("Buffer size = %d", BufferSize)
+	log.Printf("Baud rate = %d", BaudRate)
 	log.Printf("Reading delay = %v", readingDelay)
 
 	c := &serial.Config{
 		Name: simulatorPort,
-		Baud: BAUD_RATE,
+		Baud: BaudRate,
 	}
 
 	port, err := serial.OpenPort(c)
@@ -230,8 +256,8 @@ func collectData() {
 		log.Fatal(err)
 	}
 
-	porta <- port
-	close(porta)
+	portCh <- port
+	close(portCh)
 
 	port.Flush()
 	continueCollecting := true
@@ -239,12 +265,12 @@ func collectData() {
 		select {
 		case stop := <-stopCollectingData:
 			if stop {
-				log.Println("Stopping collecting of data...")
+				//log.Println("Stopping collecting of data...")
 				continueCollecting = false
 			}
 		case sig := <-sigs:
 			log.Println("Signal received: ", sig)
-			log.Println("Stopping collecting the data...")
+			//log.Println("Stopping collecting the data...")
 			continueCollecting = false
 		default:
 			getData(port, "\"")
@@ -261,18 +287,17 @@ func getData(port *serial.Port, command string) []byte {
 		log.Fatal(err)
 	}
 
-	buf := make([]byte, BUFFER_SIZE)
+	buf := make([]byte, BufferSize)
 	n, err = port.Read(buf)
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	//log.Printf("\t%d km/h\n", buf[0]) // For reading one byte
 	log.Printf("%s\n", strings.TrimSpace(string(buf[:n])))
 
 	split := strings.Split(string(buf[:n]), ",")
 
-	if len(split) > 7 {
+	if len(split) == rightSizeOfSplit {
 
 		speed, _ := strconv.Atoi(split[6])
 
@@ -289,7 +314,7 @@ func getData(port *serial.Port, command string) []byte {
 
 func handleSnubstate() {
 
-	port := <-porta
+	port := <-portCh
 
 	for {
 
@@ -297,9 +322,9 @@ func handleSnubstate() {
 
 		case speed := <-speedCh:
 
-			if snub.state == Acelerate || snub.state == AcelerateWater {
-				if speed >= UPPER_SPEED_LIMIT {
-					snub.updateState()
+			if (snub.state == Acelerate || snub.state == AcelerateWater) && !stabilizing {
+				if speed >= UpperSpeedLimit {
+					go snub.updateState()
 					_, err := port.Write([]byte(snub.state))
 					if err != nil {
 						log.Fatal(err)
@@ -308,14 +333,14 @@ func handleSnubstate() {
 			}
 
 			if snub.state == Brake || snub.state == BrakeWater {
-				if speed < INFERIOR_SPEED_LIMIT {
+				if speed < InferiorSpeedLimit {
 					go snub.handleBrake(port)
 				}
 			}
 
 		case temperature := <-temperatureCh:
 
-			if temperature[0] > TEMPERATURE_LIMIT || temperature[1] > TEMPERATURE_LIMIT {
+			if (temperature[0] > TemperatureLimit || temperature[1] > TemperatureLimit) && !throwingWater {
 				if snub.state == Acelerate || snub.state == Brake || snub.state == CoolDown {
 					go snub.turnOnWater(port)
 				}
@@ -329,13 +354,13 @@ func handleSnubstate() {
 func getLogFile() *os.File {
 	logPath := ""
 	if runtime.GOOS != "windows" {
-		logPath = path.Join("/home", os.Getenv("USER"), APPLICATION_FOLDER_NAME, "logs")
+		logPath = path.Join("/home", os.Getenv("USER"), ApplicationFolderName, "logs")
 	} else {
-		logPath = path.Join(os.Getenv("APPDATA"), "logs", APPLICATION_FOLDER_NAME, "logs")
+		logPath = path.Join(os.Getenv("APPDATA"), "logs", ApplicationFolderName, "logs")
 	}
 
 	os.MkdirAll(logPath, os.ModePerm)
-	logPath = path.Join(logPath, LOG_FILE_PATH)
+	logPath = path.Join(logPath, LogFilePath)
 
 	logFile, err := os.OpenFile(logPath, os.O_SYNC|os.O_WRONLY|os.O_CREATE|os.O_APPEND, 0666)
 	if err != nil {
@@ -350,15 +375,15 @@ func getLogFile() *os.File {
 func getSimulatorPort() string {
 	log.Println("Getting simulator port...")
 
-	simulatorPort, doesExists := os.LookupEnv(SIMULATOR_PORT_ENV)
+	simulatorPort, doesExists := os.LookupEnv(SimulatorPortEnv)
 
 	if !doesExists {
-		err := os.Setenv(SIMULATOR_PORT_ENV, DEFAULT_PORT)
+		err := os.Setenv(SimulatorPortEnv, DefaultPort)
 		if err != nil {
 			log.Fatal(err)
 		}
 
-		simulatorPort = os.Getenv(SIMULATOR_PORT_ENV)
+		simulatorPort = os.Getenv(SimulatorPortEnv)
 	}
 
 	log.Println("Got simulator port: ", simulatorPort)
