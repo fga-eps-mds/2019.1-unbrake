@@ -47,5 +47,4 @@ func TestUpdateStateWater(t *testing.T) {
 	if snub.state != AcelerateWater {
 		t.Errorf("Wrong state %v != %v", snub.state, AcelerateWater)
 	}
-
 }

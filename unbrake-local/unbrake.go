@@ -360,7 +360,7 @@ func getLogFile() *os.File {
 	if runtime.GOOS != "windows" {
 		logPath = path.Join("/home", os.Getenv("USER"), ApplicationFolderName, "logs")
 	} else {
-		logPath = path.Join(os.Getenv("APPDATA"), "logs", ApplicationFolderName, "logs")
+		log_path = path.Join(os.Getenv("APPDATA"), APPLICATION_FOLDER_NAME, "logs")
 	}
 
 	os.MkdirAll(logPath, os.ModePerm)
