@@ -24,6 +24,8 @@ env:
   global:
     - DOCKER_COMPOSE_VERSION=1.23.2
 
+    - DOCKER_DEVELOPMENT_TAG="latest-development"
+
     # Staging things
     - DOCKER_STAGING_TMP_TAG="latest-staging-tmp"
     - DOCKER_STAGING_TAG=latest-staging
@@ -70,9 +72,18 @@ before_script:
   - ./cc-test-reporter before-build
 
 
-# Aliases
+# Aliases -------------------------------------------------------
+build_staging: &build_development
+  stage: "build staging/development environments"
+  before_script: skip
+  script:
+    - docker build "$BUILD_FOLDER/" -t "$DOCKER_IMAGE:${DOCKER_DEVELOPMENT_TAG}" -f "$BUILD_FOLDER/Dockerfile"
+    - echo "$DOCKER_PASSWORD" | docker login -u "${DOCKER_USERNAME}" --password-stdin
+    - docker push "$DOCKER_IMAGE:${DOCKER_DEVELOPMENT_TAG}"
+    - docker logout
+
 build_staging: &build_staging
-  stage: "build staging environment"
+  stage: "build staging/development environments"
   before_script: skip
   script:
     - docker build "$BUILD_FOLDER/" -t "$DOCKER_IMAGE:${DOCKER_STAGING_TMP_TAG}" -f "$BUILD_FOLDER/production/Dockerfile"
@@ -90,9 +101,35 @@ deploy_staging: &deploy_staging
     - echo "$DOCKER_PASSWORD" | docker login -u "${DOCKER_USERNAME}" --password-stdin
     - docker push "$DOCKER_IMAGE:${DOCKER_STAGING_TAG}"
     - docker logout
+# --------------------------------------------------------------
 
 jobs:
   include:
+    # Build all these images images on parallel for speed
+    - <<: *build_development
+      name: "Build frontend (development)"
+      env:
+        - BUILD_FOLDER=unbrake-frontend
+        - DOCKER_IMAGE=unbrake/frontend
+
+    - <<: *build_development
+      name: "Build API (development)"
+      env:
+        - BUILD_FOLDER=unbrake-api
+        - DOCKER_IMAGE=unbrake/api
+
+    - <<: *build_staging
+      name: "Build frontend (staging)"
+      env:
+        - BUILD_FOLDER=unbrake-frontend
+        - DOCKER_IMAGE=unbrake/frontend
+
+    - <<: *build_staging
+      name: "Build API (staging)"
+      env:
+        - BUILD_FOLDER=unbrake-api
+        - DOCKER_IMAGE=unbrake/api
+
     - stage: "development checkings and tests"
       name: "General git checks"
       before_install: skip
@@ -101,11 +138,35 @@ jobs:
         - git diff --check || (echo 'Trailing whitespaces or conflict marks found!' && exit 1)
         - if [ -d unbrake ]; then echo 'The unbrake folder must not exist!' && (exit 1); fi
 
-    - name: "Static analysis, tests, collect coverage and check services"
+    - name: "Static analysis"
       script:
+        - sudo docker pull "unbrake/api:$DOCKER_DEVELOPMENT_TAG"
+        - sudo docker pull "unbrake/frontend:$DOCKER_DEVELOPMENT_TAG"
+        - sed -i -e "/\s\+build/d" -e "/\s\+context/d" -e "/\s\+dockerfile/d" docker-compose.yml
+        - sudo docker pull "unbrake/local"
+
+        - docker-compose up -d 
+
+        - docker-compose exec frontend npm run check_format
+        - docker-compose exec frontend npm run check_lint
+
+        - docker-compose exec api python manage.py check_format
+        - docker-compose exec api python manage.py check_lint
+
+        - docker-compose down -v
+
+        - (cd unbrake-local && ./scripts/check_format)
+        - (cd unbrake-local && ./scripts/check_lint)
+
+    - name: "Run tests and collect coverage"
+      script:
+        - sudo docker pull "unbrake/api:$DOCKER_DEVELOPMENT_TAG"
+        - sudo docker pull "unbrake/frontend:$DOCKER_DEVELOPMENT_TAG"
+        - sed -i -e "/\s\+build/d" -e "/\s\+context/d" -e "/\s\+dockerfile/d" docker-compose.yml
+
         - docker-compose up -d
-        - docker-compose exec frontend npm run check_all
-        - docker-compose exec api python manage.py check_all
+        - docker-compose exec frontend npm run check_tests:coverage
+        - docker-compose exec api python manage.py check_tests_coverage
         - docker-compose down -v
 
         # Collect coverage
@@ -116,18 +177,6 @@ jobs:
         # Merge coverage results and upload
         - ./cc-test-reporter sum-coverage -o coverage/codeclimate.json -p 2 coverage/*.json
         - if [[ "$TRAVIS_TEST_RESULT" == 0 ]] && [ "$TRAVIS_PULL_REQUEST" == "false" ]; then ./cc-test-reporter upload-coverage -i coverage/codeclimate.json; fi
-
-    - <<: *build_staging
-      name: "Build frontend"
-      env:
-        - BUILD_FOLDER=unbrake-frontend
-        - DOCKER_IMAGE=unbrake/frontend
-
-    - <<: *build_staging
-      name: "Build API"
-      env:
-        - BUILD_FOLDER=unbrake-api
-        - DOCKER_IMAGE=unbrake/api
 
     - <<: *deploy_staging
       name: "Deploy frontend"
