@@ -16,6 +16,8 @@ import (
 	"github.com/tarm/serial"
 )
 
+// This const's represents the base infomations to get and save the
+// informations os a test
 const (
 	BufferSize            = 48
 	SimulatorPortEnv      = "SIMULATOR_PORT"
@@ -38,11 +40,12 @@ var stopCollectingData chan bool
 var sigs chan os.Signal
 var temperatureCh = make(chan [2]int)
 var speedCh = make(chan int)
-var snub = getSnub()
+var snub = Snub{state: Acelerate}
 var portCh = make(chan *serial.Port, 3)
 var stabilizing = false
 var throwingWater = false
 
+// This const's represents the possible states of a snub
 const (
 	CoolDown            = string(iota + '$') //'$'
 	Acelerate                                //'%'
@@ -92,6 +95,7 @@ var byteToStateName = map[string]string{
 	"+":  "AcelerateBrakeWater",
 }
 
+// Snub is a cycle of aceleration, brake and cooldown
 type Snub struct {
 	state string
 	mux   sync.Mutex
@@ -109,25 +113,19 @@ func main() {
 	signal.Notify(sigs, os.Interrupt)
 
 	onExit := func() {
+		snub.state = CoolDown
 		log.Println("Exiting...")
 	}
 	systray.Run(onReady, onExit)
-
-	wg.Add(1)
-
-	go collectData()
-	go handleSnubstate()
-
-	wg.Wait()
 
 	log.Println("Application finished!")
 	log.Println("--------------------------------------------")
 }
 
-func getSnub() Snub {
-	snub := Snub{state: Acelerate}
-	return snub
-}
+//func getSnub() Snub {
+//	snub := Snub{state: Acelerate}
+//	return snub
+//}
 
 func (snub *Snub) updateState() {
 
@@ -265,12 +263,18 @@ func collectData() {
 		select {
 		case stop := <-stopCollectingData:
 			if stop {
-				//log.Println("Stopping collecting of data...")
+				_, err := port.Write([]byte(CoolDown))
+				if err != nil {
+					log.Fatal(err)
+				}
 				continueCollecting = false
 			}
 		case sig := <-sigs:
 			log.Println("Signal received: ", sig)
-			//log.Println("Stopping collecting the data...")
+			_, err := port.Write([]byte(CoolDown))
+			if err != nil {
+				log.Fatal(err)
+			}
 			continueCollecting = false
 		default:
 			getData(port, "\"")
