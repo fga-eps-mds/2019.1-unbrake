@@ -142,8 +142,8 @@ jobs:
       script:
         - sudo docker pull "unbrake/api:$DOCKER_DEVELOPMENT_TAG"
         - sudo docker pull "unbrake/frontend:$DOCKER_DEVELOPMENT_TAG"
-        - sed -i -e "/\s\+build/d" -e "/\s\+context/d" -e "/\s\+dockerfile/d" docker-compose.yml
         - sudo docker pull "unbrake/local"
+        - sed -i -e "/\s\+build/d" -e "/\s\+context/d" -e "/\s\+dockerfile/d" docker-compose.yml
 
         - docker-compose up -d 
 
@@ -162,6 +162,7 @@ jobs:
       script:
         - sudo docker pull "unbrake/api:$DOCKER_DEVELOPMENT_TAG"
         - sudo docker pull "unbrake/frontend:$DOCKER_DEVELOPMENT_TAG"
+        - sudo docker pull "unbrake/local"
         - sed -i -e "/\s\+build/d" -e "/\s\+context/d" -e "/\s\+dockerfile/d" docker-compose.yml
 
         - docker-compose up -d
@@ -169,13 +170,16 @@ jobs:
         - docker-compose exec api python manage.py check_tests_coverage
         - docker-compose down -v
 
+        - (cd unbrake-local && ./scripts/check_tests_coverage)
+
         # Collect coverage
         - mkdir coverage
         - (cd unbrake-frontend && ./../cc-test-reporter format-coverage -t lcov -o ../coverage/frontend.json -p /app/frontend src/tests/coverage/lcov.info)
         - (cd unbrake-api && ./../cc-test-reporter format-coverage -t coverage.py -o ../coverage/api.json -p /app/api)
+        - (cd unbrake-local && ./../cc-test-reporter format-coverage -t gocov -o ../coverage/local.json -p github.com/fga-eps-mds/2019.1-unbrake/unbrake-local coverage.out)
 
         # Merge coverage results and upload
-        - ./cc-test-reporter sum-coverage -o coverage/codeclimate.json -p 2 coverage/*.json
+        - ./cc-test-reporter sum-coverage -o coverage/codeclimate.json -p 3 coverage/*.json
         - if [[ "$TRAVIS_TEST_RESULT" == 0 ]] && [ "$TRAVIS_PULL_REQUEST" == "false" ]; then ./cc-test-reporter upload-coverage -i coverage/codeclimate.json; fi
 
     - <<: *deploy_staging
