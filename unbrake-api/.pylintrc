@@ -16,11 +16,11 @@ ignore=CVS, env, venv, .env, .venv, settings.py, pytest.ini, Dockerfile,
 
 # Add files or directories matching the regex patterns to the blacklist. The
 # regex matches against base names, not paths.
-# ignore-pattern=
+ignore-patterns=\d{4}.*.py
 
 # Python code to execute, usually for sys.path manipulation such as
 # pygtk.require().
-#init-hook=
+# init-hook=
 
 # Use multiple processes to speed up Pylint. Specifying 0 will auto-detect the
 # number of processors available to use.
