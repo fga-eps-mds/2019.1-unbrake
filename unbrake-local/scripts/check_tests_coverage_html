@@ -4,7 +4,7 @@ SELF_PATH="$(dirname $(readlink -f "$0"))"
 . "$SELF_PATH/functions.sh"
 cd "$SELF_PATH/.."
 
-run_command './scripts/run test -coverprofile=coverage.out' \
+run_command './scripts/run test -race -coverprofile=coverage.out' \
   && ./scripts/run tool cover -html=coverage.out -o=coverage.html \
   && [ -n "$BROWSER" ] \
   && $BROWSER coverage.html \
