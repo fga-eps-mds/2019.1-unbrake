@@ -10,7 +10,7 @@ import CalibrationUpload from "./CalibrationUpload";
 import Vibration from "./Vibration";
 import Force from "./Force";
 import Temperature from "./Temperature";
-import CalibrationCommand from "./CalibrationCommand";
+import Command from "./Command";
 
 const TabPadding = 24;
 const borderRadius = 2.5;
@@ -92,7 +92,7 @@ class Calibration extends React.Component {
         {value === temperatureOption && <Temperature />}
         {value === forceOption && <Force />}
         {value === vibrationOption && <Vibration />}
-        {value === commandOption && <CalibrationCommand />}
+        {value === commandOption && <Command />}
       </div>
     );
   }

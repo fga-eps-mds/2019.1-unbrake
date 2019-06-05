@@ -4,22 +4,19 @@ import { reduxForm } from "redux-form";
 import { withStyles, Grid } from "@material-ui/core";
 import styles from "../components/Styles";
 import RealTimeChart from "../components/RealTimeChart";
-import { checkbox, field } from "./CalibrationComponents";
+import { checkbox, field } from "../components/ComponentsForm";
 
 const labelSecondary = name => {
   let nameLabel = "";
   switch (name) {
-    case "OFT1":
-      nameLabel = "Offset 1";
+    case "Vkm":
+      nameLabel = "Velocidade (Km/h)";
       break;
-    case "OFT2":
-      nameLabel = "Offset 2";
+    case "Vms":
+      nameLabel = "Velocidade (m/s)";
       break;
-    case "PT1":
-      nameLabel = "Plota Temperatura 1";
-      break;
-    case "PT2":
-      nameLabel = "Plota temperatura 2";
+    case "DPkm":
+      nameLabel = "Distância percorrida (km)";
       break;
     default:
       nameLabel = "";
@@ -31,29 +28,29 @@ const labelSecondary = name => {
 const label = name => {
   let nameLabel = "";
   switch (name) {
-    case "CHT1":
-      nameLabel = "Canal de aquisição 1";
+    case "CHA":
+      nameLabel = "Canal de aquisição";
       break;
-    case "CHT2":
-      nameLabel = "Canal de aquisição 2";
+    case "Fhz":
+      nameLabel = "Frequência (Hz)";
       break;
-    case "Tmv1":
-      nameLabel = "Temperatura 1 (mv)";
+    case "Rrpm":
+      nameLabel = "Rotação (RPM)";
       break;
-    case "Tmv2":
-      nameLabel = "Temperatura 2 (mv)";
+    case "RPm":
+      nameLabel = "Raio do pneu (m)";
       break;
-    case "TC1":
-      nameLabel = "Temperatura 1 (°C)";
+    case "PRrpm":
+      nameLabel = "Plota rotação (rpm)";
       break;
-    case "TC2":
-      nameLabel = "Temperatura 2 (°C)";
+    case "PVkmh":
+      nameLabel = "Plota velocidade (Km/h)";
       break;
-    case "FCT1":
-      nameLabel = "Fator de conversão 1";
+    case "PDPkm":
+      nameLabel = "Plota distândia percorrida (Km)";
       break;
-    case "FCT2":
-      nameLabel = "Fator de conversão 1";
+    case "ID":
+      nameLabel = "Inicializa Distancia";
       break;
     default:
       nameLabel = labelSecondary(name);
@@ -87,21 +84,21 @@ const rowField = (states, classes, handleChange) => {
 };
 
 const allFields = (states, classes, handleChange) => {
-  const rowns = states.map(value => {
+  const fields = states.map(value => {
     return (
       <Grid
-        key={`row ${value[0].name}`}
         alignItems="center"
         justify="center"
         container
         item
         xs={12}
+        key={`fields ${value[0].name}`}
       >
         {rowField(value, classes, handleChange)}
       </Grid>
     );
   });
-  return rowns;
+  return fields;
 };
 
 const allCheckbox = (selectsControl, classes, handleChange) => {
@@ -125,61 +122,51 @@ const allCheckbox = (selectsControl, classes, handleChange) => {
   return checks;
 };
 
-const renderDictionary = force => {
-  const {
-    CHF1,
-    CHF2,
-    FCF1,
-    FCF2,
-    Fmv1,
-    Fmv2,
-    Fkgf1,
-    Fkgf2,
-    OFF1,
-    OFF2
-  } = force;
+const renderDictionary = speed => {
   const directionary = [
+    [{ name: "CHA", value: speed.CHA, disable: true }],
     [
-      { name: "CHT1", value: CHF1, disable: true },
-      { name: "CHT2", value: CHF2, disable: true }
+      { name: "Fhz", value: speed.Fhz, disable: true },
+      { name: "Vkm", value: speed.Vkm, disable: true }
     ],
     [
-      { name: "Tmv1", value: Fmv1, disable: true },
-      { name: "Tmv2", value: Fmv2, disable: true }
+      { name: "Rrpm", value: speed.Rrpm, disable: true },
+      { name: "Vms", value: speed.Vms, disable: true }
     ],
     [
-      { name: "TC1", value: Fkgf1, disable: true },
-      { name: "TC2", value: Fkgf2, disable: true }
-    ],
-    [
-      { name: "FCT1", value: FCF1, disable: false },
-      { name: "FCT2", value: FCF2, disable: false }
-    ],
-    [
-      { name: "OFT1", value: OFF1, disable: false },
-      { name: "OFT2", value: OFF2, disable: false }
+      { name: "RPm", value: speed.RPm, disable: true },
+      { name: "DPkm", value: speed.DPkm, disable: false }
     ]
   ];
   return directionary;
 };
 
-class Temperature extends React.Component {
+const checkboxes = speed => {
+  const { PRrpm, PVkmh, PDPkm, ID } = speed;
+  return [
+    { name: "PRrpm", value: PRrpm, disable: false },
+    { name: "PVkmh", value: PVkmh, disable: false },
+    { name: "PDPkm", value: PDPkm, disable: false },
+    { name: "ID", value: ID, disable: false }
+  ];
+};
+
+class Speed extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
-      force: {
-        CHF1: "", // canal de aquisição 1
-        CHF2: "", // canal de aquisição 2
-        PFkgf1: false, // plota força (kfg) 1
-        Fmv1: "", // força (mv) 1
-        Fmv2: "", // força (mv) 2
-        PFkgf2: false, // plota força (kfg) 1
-        Fkgf1: "", // força (kgf) 1
-        Fkgf2: "", // força (kgf) 2
-        FCF1: "", // fator de conversão 1
-        FCF2: "", // fator de conversão 2
-        OFF1: "", // offset de força 1
-        OFF2: "" // offset de força 2
+      speed: {
+        CHA: "", // canal de aquisição
+        Fhz: "", // frequencia
+        PRrpm: false, // plota rotação
+        Rrpm: "", // rotação
+        RPm: "", // raio pneu
+        PVkmh: false, // plota velocidade
+        Vkm: "", // velocidade km/h
+        Vms: "", // velocidade m/s
+        DPkm: "", // distância percorrida
+        PDPkm: false, // plota distância percorrida
+        ID: false // Inicializa distancia
       }
     };
     this.handleChange = this.handleChange.bind(this);
@@ -195,14 +182,10 @@ class Temperature extends React.Component {
   }
 
   render() {
-    const { force } = this.state;
-    const { PFkgf1, PFkgf2 } = force;
+    const { speed } = this.state;
     const { classes } = this.props;
-    const states = renderDictionary(force);
-    const selectsControl = [
-      { name: "PT1", value: PFkgf1, disable: false },
-      { name: "PT2", value: PFkgf2, disable: false }
-    ];
+    const states = renderDictionary(speed);
+    const selectsControl = checkboxes(speed);
     return (
       <Grid
         container
@@ -246,13 +229,12 @@ class Temperature extends React.Component {
   }
 }
 
-Temperature.propTypes = {
+Speed.propTypes = {
   classes: PropTypes.objectOf(PropTypes.string).isRequired
 };
 
-const TemperatureForm = reduxForm({
-  form: "calibration",
-  destroyOnUnmount: false
-})(Temperature);
+const SpeedForm = reduxForm({
+  form: "calibration"
+})(Speed);
 
-export default withStyles(styles)(TemperatureForm);
+export default withStyles(styles)(SpeedForm);
