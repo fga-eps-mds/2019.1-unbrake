@@ -29,10 +29,10 @@ import (
 	"github.com/tarm/serial"
 )
 
-// General parameters for calibrating execution
+// Configurations constants
 const (
 	BufferSize            = 48
-	SimulatorPortEnv      = "SIMULATOR_PORT"
+	SimulatorPortEnv      = "simulatorPort"
 	DefaultPort           = "/dev/ttyACM0"
 	BaudRate              = 115200
 	FrequencyReading      = 10
@@ -259,13 +259,14 @@ func onReady() {
 func collectData() {
 	defer wg.Done()
 
-	const readingDelay = time.Second / FrequencyReading
+	const ReadingDelay = time.Second / FrequencyReading
 	simulatorPort := getSimulatorPort()
 
+	log.Println("Initializing collectData routine...")
 	log.Printf("Simulator Port = %s", simulatorPort)
 	log.Printf("Buffer size = %d", BufferSize)
 	log.Printf("Baud rate = %d", BaudRate)
-	log.Printf("Reading delay = %v", readingDelay)
+	log.Printf("Reading delay = %v", ReadingDelay)
 
 	c := &serial.Config{
 		Name: simulatorPort,
@@ -302,7 +303,7 @@ func collectData() {
 			continueCollecting = false
 		default:
 			getData(port, "\"")
-			time.Sleep(readingDelay)
+			time.Sleep(ReadingDelay)
 		}
 	}
 }
