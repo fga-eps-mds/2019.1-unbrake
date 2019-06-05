@@ -1,3 +1,16 @@
+/*
+* Generates a self contained binary application which reads data from
+* a serial connection (was developed thinking on arduíno via USB)
+* and send it through network.
+*
+* It is also able to send commands in ascii format. We are working
+* On a application which each ascii character represents a state
+* where some things are on and others off. In our case acelerator,
+* brake, etc.
+
+* We also provide a simple GUI through systray in which users can
+* interact with the application.
+ */
 package main
 
 import (
@@ -16,8 +29,7 @@ import (
 	"github.com/tarm/serial"
 )
 
-// This const's represents the base infomations to get and save the
-// informations os a test
+// General parameters for calibrating execution
 const (
 	BufferSize            = 48
 	SimulatorPortEnv      = "SIMULATOR_PORT"
@@ -35,17 +47,23 @@ const (
 	delayAcelerateToBrake = 2
 )
 
+// Channels for controlling execution
 var wg sync.WaitGroup
-var stopCollectingData chan bool
-var sigs chan os.Signal
+var stopCollectingDataCh chan bool
+var sigsCh chan os.Signal
 var temperatureCh = make(chan [2]int)
 var speedCh = make(chan int)
-var snub = Snub{state: Acelerate}
 var portCh = make(chan *serial.Port, 3)
+
+// Flags with intermediary states
 var stabilizing = false
 var throwingWater = false
 
-// This const's represents the possible states of a snub
+// Global snub which represents state of running test
+var snub = Snub{state: Acelerate}
+
+// Possible states of a snub, value is ascii which
+// represents its state
 const (
 	CoolDown            = string(iota + '$') //'$'
 	Acelerate                                //'%'
@@ -57,6 +75,7 @@ const (
 	AcelerateBrakeWater                      //'+'
 )
 
+// Mapping current state to next state
 var currentToNextState = map[string]string{
 	Acelerate:      Brake,
 	Brake:          CoolDown,
@@ -66,6 +85,7 @@ var currentToNextState = map[string]string{
 	CoolDownWater:  AcelerateWater,
 }
 
+// Regular state to matching state but throwing water
 var offToOnWater = map[string]string{
 	Acelerate:      AcelerateWater,
 	Brake:          BrakeWater,
@@ -75,6 +95,7 @@ var offToOnWater = map[string]string{
 	CoolDownWater:  CoolDownWater,
 }
 
+// From a throwing water state to a regular state
 var onToOffWater = map[string]string{
 	AcelerateWater: Acelerate,
 	BrakeWater:     Brake,
@@ -84,6 +105,7 @@ var onToOffWater = map[string]string{
 	CoolDown:       CoolDown,
 }
 
+// Ascii character which represents state to state name
 var byteToStateName = map[string]string{
 	"$":  "CoolDown",
 	"%":  "Acelerate",
@@ -95,22 +117,22 @@ var byteToStateName = map[string]string{
 	"+":  "AcelerateBrakeWater",
 }
 
-// Snub is a cycle of aceleration, brake and cooldown
+// Snub is a cycle of aceleration, braking and cooldown,
+// multiple snubs compose a test
 type Snub struct {
 	state string
 	mux   sync.Mutex
 }
 
 func main() {
-
 	logFile := getLogFile()
 	defer logFile.Close()
 
 	log.Println("--------------------------------------------")
 	log.Println("Initializing application...")
 
-	sigs = make(chan os.Signal, 1)
-	signal.Notify(sigs, os.Interrupt)
+	sigsCh = make(chan os.Signal, 1)
+	signal.Notify(sigsCh, os.Interrupt)
 
 	onExit := func() {
 		snub.state = CoolDown
@@ -122,19 +144,16 @@ func main() {
 	log.Println("--------------------------------------------")
 }
 
-//func getSnub() Snub {
-//	snub := Snub{state: Acelerate}
-//	return snub
-//}
-
+// Will update current state to its next, respecting timing and
+// critical regions
 func (snub *Snub) updateState() {
-
 	stabilizing = true
 	log.Printf("Stabilizing...\n")
 	time.Sleep(time.Second * delayAcelerateToBrake)
 
 	snub.mux.Lock()
 	defer snub.mux.Unlock()
+
 	oldState := snub.state
 	snub.state = currentToNextState[snub.state]
 	log.Printf("Change state: %v ---> %v\n", byteToStateName[oldState], byteToStateName[snub.state])
@@ -142,8 +161,9 @@ func (snub *Snub) updateState() {
 
 }
 
+// Will change from a regular state to a state with same
+// effects but throwing water
 func (snub *Snub) turnOnWater(port *serial.Port) {
-
 	snub.mux.Lock()
 
 	oldState := snub.state
@@ -173,6 +193,8 @@ func (snub *Snub) turnOnWater(port *serial.Port) {
 	snub.mux.Unlock()
 }
 
+// Handle changing state from braking to cooldown, waiting the
+// cooldown and gettting back to acelerating
 func (snub *Snub) handleBrake(port *serial.Port) {
 	snub.mux.Lock()
 
@@ -201,6 +223,7 @@ func (snub *Snub) handleBrake(port *serial.Port) {
 	snub.mux.Unlock()
 }
 
+// Required by systray (GUI)
 func onReady() {
 	systray.SetIcon(icon)
 	systray.SetTitle("UnBrake")
@@ -208,36 +231,37 @@ func onReady() {
 
 	mQuitOrig := systray.AddMenuItem("Sair", "Fechar UnBrake")
 
-	stopCollectingData = make(chan bool, 1)
+	stopCollectingDataCh = make(chan bool, 1)
 
 	// Wait for quitting
 	go func() {
 		select {
 		case <-mQuitOrig.ClickedCh:
 			log.Println("Quitting request by interface")
-		case <-sigs:
+		case <-sigsCh:
 			log.Println("Quitting request by signal")
 		}
 
-		stopCollectingData <- true
+		stopCollectingDataCh <- true
 		systray.Quit()
 		log.Println("Finished systray")
 	}()
 
 	wg.Add(1)
 	go collectData()
-	go handleSnubstate()
+	go handleSnubState()
 
 	wg.Wait()
 }
 
+// Will collect data from serial bus and distributes it
+// to others goroutines
 func collectData() {
 	defer wg.Done()
 
 	const readingDelay = time.Second / FrequencyReading
 	simulatorPort := getSimulatorPort()
 
-	//log.Println("Initializing collectData routine...")
 	log.Printf("Simulator Port = %s", simulatorPort)
 	log.Printf("Buffer size = %d", BufferSize)
 	log.Printf("Baud rate = %d", BaudRate)
@@ -261,7 +285,7 @@ func collectData() {
 	continueCollecting := true
 	for continueCollecting {
 		select {
-		case stop := <-stopCollectingData:
+		case stop := <-stopCollectingDataCh:
 			if stop {
 				_, err := port.Write([]byte(CoolDown))
 				if err != nil {
@@ -269,7 +293,7 @@ func collectData() {
 				}
 				continueCollecting = false
 			}
-		case sig := <-sigs:
+		case sig := <-sigsCh:
 			log.Println("Signal received: ", sig)
 			_, err := port.Write([]byte(CoolDown))
 			if err != nil {
@@ -283,8 +307,9 @@ func collectData() {
 	}
 }
 
+// Will get the data from the bus and returns it as an
+// array of bytes
 func getData(port *serial.Port, command string) []byte {
-
 	n, err := port.Write([]byte(command))
 
 	if err != nil {
@@ -316,8 +341,9 @@ func getData(port *serial.Port, command string) []byte {
 	return buf
 }
 
-func handleSnubstate() {
-
+// Will manage the state of running snub, handling all state transitions,
+// synchronization, collecting needed data and writting needed commands
+func handleSnubState() {
 	port := <-portCh
 
 	for {
@@ -355,12 +381,15 @@ func handleSnubstate() {
 	}
 }
 
+// Based on current OS will create application folder
+// and log file (if not exists). Returns the log file
+// as a File object
 func getLogFile() *os.File {
 	logPath := ""
 	if runtime.GOOS != "windows" {
 		logPath = path.Join("/home", os.Getenv("USER"), ApplicationFolderName, "logs")
 	} else {
-		log_path = path.Join(os.Getenv("APPDATA"), APPLICATION_FOLDER_NAME, "logs")
+		logPath = path.Join(os.Getenv("APPDATA"), ApplicationFolderName, "logs")
 	}
 
 	os.MkdirAll(logPath, os.ModePerm)
@@ -376,6 +405,7 @@ func getLogFile() *os.File {
 	return logFile
 }
 
+// Get serial port that will be used to communicate with the physical device
 func getSimulatorPort() string {
 	log.Println("Getting simulator port...")
 
@@ -394,6 +424,7 @@ func getSimulatorPort() string {
 	return simulatorPort
 }
 
+// Icon used on systray, how the application will appear on notification area
 var icon = []byte{
 	0x00, 0x00, 0x01, 0x00, 0x01, 0x00, 0x20, 0x20, 0x00, 0x00, 0x01, 0x00,
 	0x20, 0x00, 0xa8, 0x10, 0x00, 0x00, 0x16, 0x00, 0x00, 0x00, 0x28, 0x00,
