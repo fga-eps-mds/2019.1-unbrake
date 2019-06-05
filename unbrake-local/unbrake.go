@@ -146,7 +146,7 @@ func main() {
 
 // Will update current state to its next, respecting timing and
 // critical regions
-func (snub *Snub) updateState() {
+func (snub *Snub) handleAcelerate() {
 	stabilizing = true
 	log.Printf("Stabilizing...\n")
 	time.Sleep(time.Second * delayAcelerateToBrake)
@@ -354,7 +354,7 @@ func handleSnubState() {
 
 			if (snub.state == Acelerate || snub.state == AcelerateWater) && !stabilizing {
 				if speed >= UpperSpeedLimit {
-					go snub.updateState()
+					go snub.handleAcelerate()
 					_, err := port.Write([]byte(snub.state))
 					if err != nil {
 						log.Fatal(err)
