@@ -14,23 +14,24 @@ import (
 	"github.com/tarm/serial"
 )
 
+// Configurations constants
 const (
-	BUFFER_SIZE             = 48
-	SIMULATOR_PORT_ENV      = "SIMULATOR_PORT"
-	DEFAULT_PORT            = "/dev/ttyACM0"
-	BAUD_RATE               = 115200
-	FREQUENCY_READING       = 10
-	LOG_FILE_PATH           = "unbrake.log"
-	APPLICATION_FOLDER_NAME = "UnBrake"
+	BufferSize            = 48
+	SimulatorPortEnv      = "simulatorPort"
+	DefaultPort           = "/dev/ttyACM0"
+	BaudRate              = 115200
+	FrequencyReading      = 10
+	LogFilePath           = "unbrake.log"
+	ApplicationFolderName = "UnBrake"
 )
 
 var wg sync.WaitGroup
-var stop_collecting_data chan bool
+var stopCollectingData chan bool
 var sigs chan os.Signal
 
 func main() {
-	log_file := getLogFile()
-	defer log_file.Close()
+	logFile := getLogFile()
+	defer logFile.Close()
 
 	log.Println("--------------------------------------------")
 	log.Println("Initializing application...")
@@ -54,7 +55,7 @@ func onReady() {
 
 	mQuitOrig := systray.AddMenuItem("Sair", "Fechar UnBrake")
 
-	stop_collecting_data = make(chan bool, 1)
+	stopCollectingData = make(chan bool, 1)
 
 	// Wait for quitting
 	go func() {
@@ -65,7 +66,7 @@ func onReady() {
 			log.Println("Quitting request by signal")
 		}
 
-		stop_collecting_data <- true
+		stopCollectingData <- true
 		systray.Quit()
 		log.Println("Finished systray")
 	}()
@@ -79,18 +80,18 @@ func onReady() {
 func collectData() {
 	defer wg.Done()
 
-	const reading_delay = time.Second / FREQUENCY_READING
-	simulator_port := getSimulatorPort()
+	const ReadingDelay = time.Second / FrequencyReading
+	simulatorPort := getSimulatorPort()
 
 	log.Println("Initializing collectData routine...")
-	log.Printf("Simulator Port = %s", simulator_port)
-	log.Printf("Buffer size = %d", BUFFER_SIZE)
-	log.Printf("Baud rate = %d", BAUD_RATE)
-	log.Printf("Reading delay = %v", reading_delay)
+	log.Printf("Simulator Port = %s", simulatorPort)
+	log.Printf("Buffer size = %d", BufferSize)
+	log.Printf("Baud rate = %d", BaudRate)
+	log.Printf("Reading delay = %v", ReadingDelay)
 
 	c := &serial.Config{
-		Name: simulator_port,
-		Baud: BAUD_RATE,
+		Name: simulatorPort,
+		Baud: BaudRate,
 	}
 
 	port, err := serial.OpenPort(c)
@@ -100,21 +101,21 @@ func collectData() {
 	}
 
 	port.Flush()
-	continue_collecting := true
-	for continue_collecting {
+	continueCollecting := true
+	for continueCollecting {
 		select {
-		case stop := <-stop_collecting_data:
+		case stop := <-stopCollectingData:
 			if stop {
 				log.Println("Stopping collecting of data...")
-				continue_collecting = false
+				continueCollecting = false
 			}
 		case sig := <-sigs:
 			log.Println("Signal received: ", sig)
 			log.Println("Stopping collecting the data...")
-			continue_collecting = false
+			continueCollecting = false
 		default:
 			getData(port, "\"")
-			time.Sleep(reading_delay)
+			time.Sleep(ReadingDelay)
 		}
 	}
 }
@@ -126,7 +127,7 @@ func getData(port *serial.Port, command string) []byte {
 		log.Fatal(err)
 	}
 
-	buf := make([]byte, BUFFER_SIZE)
+	buf := make([]byte, BufferSize)
 	n, err = port.Read(buf)
 	if err != nil {
 		log.Fatal(err)
@@ -139,45 +140,45 @@ func getData(port *serial.Port, command string) []byte {
 }
 
 func getLogFile() *os.File {
-	log_path := ""
+	logPath := ""
 	if runtime.GOOS != "windows" {
-		log_path = path.Join("/home", os.Getenv("USER"), APPLICATION_FOLDER_NAME, "logs")
+		logPath = path.Join("/home", os.Getenv("USER"), ApplicationFolderName, "logs")
 	} else {
-		log_path = path.Join(os.Getenv("APPDATA"), APPLICATION_FOLDER_NAME, "logs")
+		logPath = path.Join(os.Getenv("APPDATA"), ApplicationFolderName, "logs")
 	}
 
-	os.MkdirAll(log_path, os.ModePerm)
-	log_path = path.Join(log_path, LOG_FILE_PATH)
+	os.MkdirAll(logPath, os.ModePerm)
+	logPath = path.Join(logPath, LogFilePath)
 
-	log_file, err := os.OpenFile(log_path, os.O_SYNC|os.O_WRONLY|os.O_CREATE|os.O_APPEND, 0666)
+	logFile, err := os.OpenFile(logPath, os.O_SYNC|os.O_WRONLY|os.O_CREATE|os.O_APPEND, 0666)
 	if err != nil {
 		log.Fatalf("error opening file: %v", err)
 	}
 	log.SetFlags(log.Ldate | log.Ltime | log.Lmicroseconds)
-	log.SetOutput(log_file)
+	log.SetOutput(logFile)
 
-	return log_file
+	return logFile
 }
 
 func getSimulatorPort() string {
 	log.Println("Getting simulator port...")
 
-	simulator_port, does_exists := os.LookupEnv(SIMULATOR_PORT_ENV)
+	simulatorPort, doesExists := os.LookupEnv(SimulatorPortEnv)
 
-	if !does_exists {
-		err := os.Setenv(SIMULATOR_PORT_ENV, DEFAULT_PORT)
+	if !doesExists {
+		err := os.Setenv(SimulatorPortEnv, DefaultPort)
 		if err != nil {
 			log.Fatal(err)
 		}
 
-		simulator_port = os.Getenv(SIMULATOR_PORT_ENV)
+		simulatorPort = os.Getenv(SimulatorPortEnv)
 	}
 
-	log.Println("Got simulator port: ", simulator_port)
-	return simulator_port
+	log.Println("Got simulator port: ", simulatorPort)
+	return simulatorPort
 }
 
-var icon []byte = []byte{
+var icon = []byte{
 	0x00, 0x00, 0x01, 0x00, 0x01, 0x00, 0x20, 0x20, 0x00, 0x00, 0x01, 0x00,
 	0x20, 0x00, 0xa8, 0x10, 0x00, 0x00, 0x16, 0x00, 0x00, 0x00, 0x28, 0x00,
 	0x00, 0x00, 0x20, 0x00, 0x00, 0x00, 0x40, 0x00, 0x00, 0x00, 0x01, 0x00,

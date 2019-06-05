@@ -1,10 +1,37 @@
 # UnBrake
 
-[![Build Status](https://travis-ci.com/fga-eps-mds/2019.1-unbrake.svg?branch=master)](https://travis-ci.com/fga-eps-mds/2019.1-unbrake)
-[![Maintainability](https://api.codeclimate.com/v1/badges/f8957e6e7e0bdced21c9/maintainability)](https://codeclimate.com/github/fga-eps-mds/2019.1-unbrake/maintainability)
-[![Test Coverage](https://api.codeclimate.com/v1/badges/f8957e6e7e0bdced21c9/test_coverage)](https://codeclimate.com/github/fga-eps-mds/2019.1-unbrake/test_coverage)
-[![code style: prettier](https://img.shields.io/badge/code_style-prettier-ff69b4.svg?style=flat-square)](https://github.com/prettier/prettier)
-[![pullreminders](https://pullreminders.com/badge.svg)](https://pullreminders.com?ref=badge)
+<p align="center">
+  <a href="https://travis-ci.com/fga-eps-mds/2019.1-unbrake" alt="Build Status" >
+    <img src="https://travis-ci.com/fga-eps-mds/2019.1-unbrake.svg?branch=master" />
+  </a>
+  <a href="https://codeclimate.com/github/fga-eps-mds/2019.1-unbrake/maintainability" alt="Maintainability" >
+    <img src="https://api.codeclimate.com/v1/badges/f8957e6e7e0bdced21c9/maintainability" />
+  </a>
+  <a href="https://codeclimate.com/github/fga-eps-mds/2019.1-unbrake/test_coverage" alt="Test Coverage" >
+    <img src="https://api.codeclimate.com/v1/badges/f8957e6e7e0bdced21c9/test_coverage" />
+  </a>
+  <a href="https://goreportcard.com/report/github.com/fga-eps-mds/2019.1-unbrake" alt="Go Report Card" >
+    <img src="https://goreportcard.com/badge/github.com/fga-eps-mds/2019.1-unbrake" />
+  </a>
+  <a href="https://bestpractices.coreinfrastructure.org/projects/2874" alt="CII Best Practices" >
+    <img src="https://bestpractices.coreinfrastructure.org/projects/2874/badge" />
+  </a>
+</p>
+
+<p align="center">
+  <a href="https://github.com/fga-eps-mds/2019.1-unbrake/releases" alt="GitHub release" >
+    <img src="https://img.shields.io/github/release-pre/fga-eps-mds/2019.1-unbrake.svg?label=pre-release" />
+  </a>
+  <a href="https://github.com/fga-eps-mds/2019.1-unbrake/releases" alt="GitHub release" >
+    <img src="https://img.shields.io/github/release/fga-eps-mds/2019.1-unbrake.svg" />
+  </a>
+  <a href="https://godoc.org/github.com/fga-eps-mds/2019.1-unbrake/unbrake-local">
+    <img src="https://godoc.org/github.com/fga-eps-mds/2019.1-unbrake/unbrake-local?status.svg" alt="GoDoc">
+  </a>
+  <a href="https://pullreminders.com?ref=badge" alt="pullreminders" >
+    <img src="https://pullreminders.com/badge.svg" />
+  </a>
+</p>
 
 ## Utilizando a aplicação
 
@@ -151,9 +178,9 @@ evitar as checagens utilizando-se a flag `--no-verify` nos comandos do git,
 * **check_format**: Checa por erros de formatação apontados pelo `prettier`
 * **check_tests**: Checa se todos os testes estão passando sem warnings ou
   mensagens de console utilizando o `jest`
-* **check_tests_coverage**: Executa o que o check_tests faz, mas também
+* **check_tests:coverage**: Executa o que o check_tests faz, mas também
   gera arquivos de coverage para análise
-* **check_tests_coverage_html**:  Executa o que o check_tests faz, mas gera
+* **check_tests:coverage:html**:  Executa o que o check_tests faz, mas gera
   o relatório em HTML sobre as estatísticas de testes
 * **fix**: Corrige automaticamente erros de formatação possíveis de serem
   consertados pelo `eslint` e pelo `prettier`
@@ -179,9 +206,9 @@ $ sudo docker-compose run --rm frontend run [nome_do_script]
 * **check_format**: Checa por erros de formatação apontados pelo `flake8`
   ou falta de execução do `autopep8`
 * **check_tests**: Checa se todos os testes estão passando, utilizando o `pytest`
-* **check_tests:coverage**: Executa o que o check_tests faz, mas também gera
+* **check_tests_coverage**: Executa o que o check_tests faz, mas também gera
   arquivos de coverage para análise
-* **check_tests:coverage:html**:  Executa o que o check_tests faz, mas gera o
+* **check_tests_coverage_html**:  Executa o que o check_tests faz, mas gera o
   relatório em HTML sobre as estatísticas de testes
 * **fix**: Corrige automaticamente erros de formatação possíveis de serem
   consertados pelo `autopep8`

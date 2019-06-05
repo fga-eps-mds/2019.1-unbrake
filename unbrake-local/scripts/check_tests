@@ -4,4 +4,4 @@ SELF_PATH="$(dirname $(readlink -f "$0"))"
 . "$SELF_PATH/functions.sh"
 cd "$SELF_PATH/.."
 
-run_command ./scripts/run test -v
+run_command ./scripts/run test -race -v
