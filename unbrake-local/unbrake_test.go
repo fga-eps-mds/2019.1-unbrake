@@ -4,25 +4,20 @@ import (
 	"testing"
 )
 
-func TestUpdateState(t *testing.T) {
+func TestHandleAcelerate(t *testing.T) {
 
 	snub := Snub{state: Acelerate}
-	snub.state = currentToNextState[snub.state]
+	snub.handleAcelerate()
 
 	if snub.state != Brake {
-		t.Errorf("Wrong state %v != %v", snub.state, Brake)
+		t.Errorf("Wrong state %v != %v\n", snub.state, Brake)
 	}
 
-	snub.state = currentToNextState[snub.state]
+	snub.state = AcelerateWater
+	snub.handleAcelerate()
 
-	if snub.state != CoolDown {
-		t.Errorf("Wrong state %v != %v", snub.state, CoolDown)
-	}
-
-	snub.state = currentToNextState[snub.state]
-
-	if snub.state != Acelerate {
-		t.Errorf("Wrong state %v != %v", snub.state, Acelerate)
+	if snub.state != BrakeWater {
+		t.Errorf("Wrong state %v != %v\n", snub.state, BrakeWater)
 	}
 
 }
