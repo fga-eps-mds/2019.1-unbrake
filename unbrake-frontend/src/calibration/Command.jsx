@@ -239,7 +239,8 @@ Command.propTypes = {
 };
 
 const CommandForm = reduxForm({
-  form: "calibration"
+  form: "calibration",
+  destroyOnUnmount: false
 })(Command);
 
 export default withStyles(styles)(CommandForm);

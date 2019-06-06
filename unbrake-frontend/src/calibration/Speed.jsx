@@ -234,7 +234,8 @@ Speed.propTypes = {
 };
 
 const SpeedForm = reduxForm({
-  form: "calibration"
+  form: "calibration",
+  destroyOnUnmount: false
 })(Speed);
 
 export default withStyles(styles)(SpeedForm);
