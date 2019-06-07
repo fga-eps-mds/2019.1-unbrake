@@ -68,6 +68,9 @@ before_install:
   # Decrypt local module secrets
   - openssl aes-256-cbc -K $encrypted_82207c1313f0_key -iv $encrypted_82207c1313f0_iv -in unbrake-local/secrets/MQTT_KEY.enc -out unbrake-local/secrets/MQTT_KEY -d
 
+  # MQTT environment variables
+  - openssl aes-256-cbc -K $encrypted_10db6ee4c8ef_key -iv $encrypted_10db6ee4c8ef_iv -in deploy/.env_mqtt.enc -out deploy/.env_mqtt -d
+
 
 before_script:
   - curl -L https://codeclimate.com/downloads/test-reporter/test-reporter-latest-linux-amd64 > ./cc-test-reporter
