@@ -1,8 +1,7 @@
 import React from "react";
 import { Line } from "react-chartjs-2";
-
+import * as emitter from "emitter-io";
 import "chartjs-plugin-streaming";
-import io from "socket.io-client";
 
 const indexPadding = 1;
 
@@ -13,9 +12,9 @@ const yAxesConfig = () => [
       labelString: "mv"
     },
     ticks: {
-      max: 5,
+      max: 500,
       min: 1,
-      stepSize: 0.5
+      stepSize: 50
     }
   }
 ];
@@ -37,21 +36,26 @@ const datasetsConfig = () => ({
 class RealTimeChart extends React.Component {
   constructor(props) {
     super(props);
-    this.socket = io("http://mock_server:5000/test");
+    this.client = emitter.connect({
+      host: "host",
+      port: 8080,
+      secure: false
+    });
+    this.client.subscribe({
+      key: "key",
+      channel: "unbrake"
+    });
     this.data = [{ uv: 0 }];
   }
 
   componentDidMount() {
-    /*
-     *setInterval(() => this.forceUpdate(), 1000);
-     *this.socket.on('connect', function(){console.log("oi")});
-     */
+    const scope = this;
+    this.client.on("message", msg => {
+      scope.data.push({ uv: parseInt(msg.asString(), 10) });
+    });
   }
 
   render() {
-    this.socket.on("temperature", newdata => {
-      this.data.push(newdata);
-    });
     return (
       <Line
         data={{
@@ -81,7 +85,7 @@ class RealTimeChart extends React.Component {
                 realtime: {
                   duration: 20000,
                   delay: 1000,
-                  refresh: 1000,
+                  refresh: 500,
                   onRefresh: chart => {
                     chart.data.datasets[0].data.push({
                       x: Date.now(),
