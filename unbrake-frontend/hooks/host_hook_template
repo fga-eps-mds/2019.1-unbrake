@@ -10,8 +10,8 @@
 gitFolder="$(git rev-parse --show-toplevel)"
 gitFolderContainer="/app/"
 
-imageNameFrontend="unbrake_frontend_development"
-imageNameApi="unbrake_api_development"
+imageNameFrontend="unbrake/frontend:latest-development"
+imageNameApi="unbrake/api:latest-development"
 
 frontendFolder="$gitFolder/unbrake-frontend"
 apiFolder="$gitFolder/unbrake-api"
