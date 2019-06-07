@@ -14,6 +14,7 @@
 package main
 
 import (
+	"io/ioutil"
 	"log"
 	"os"
 	"os/signal"
@@ -24,6 +25,7 @@ import (
 	"sync"
 	"time"
 
+	emitter "github.com/emitter-io/go/v2"
 	"github.com/getlantern/systray"
 	"github.com/tarm/serial"
 )
@@ -49,6 +51,15 @@ const (
 	temperatureLimit      = 400
 	rightSizeOfSplit      = 11
 	delayAcelerateToBrake = 2
+)
+
+// MQTT constants
+const (
+	mqttHostEnv       = "MQTT_HOST"
+	mqttDefaultHost   = "unbrake.ml"
+	mqttDefaultPort   = "1883"
+	mqttPortEnv       = "MQTT_PORT"
+	mqttChannelPrefix = "unbrake/galpao"
 )
 
 // Channels for controlling execution
@@ -351,10 +362,41 @@ func getData(port *serial.Port, command string) []byte {
 		firstTemperature, _ := strconv.Atoi(split[temperature1Idx])
 		secondTemperature, _ := strconv.Atoi(split[temperature2Idx])
 
+		// TODO: put this into a function
+		// Create the client and connect to the broker
+		log.Println("Connecting to MQTT broker...")
+		c, _ := emitter.Connect(getMqttHost(), func(_ *emitter.Client, msg emitter.Message) {
+			log.Printf("Sent message: '%s' topic: '%s'\n", msg.Payload(), msg.Topic())
+		})
+		key, err := ioutil.ReadFile("secrets/MQTT_KEY")
+		if err != nil {
+			log.Fatal(err)
+		}
+		channel, data := mqttChannelPrefix+"/temperature/sensor1", split[temperature1Idx]
+		log.Println("Sending data to MQTT broker...")
+		c.Publish(string(key), channel, data)
+
 		temperatureCh <- [2]int{firstTemperature, secondTemperature}
 	}
 
 	return buf
+}
+
+// Get complete host name with port of the MQTT broker
+func getMqttHost() string {
+	host, doesExists := os.LookupEnv(mqttHostEnv)
+
+	if !doesExists {
+		host = mqttDefaultHost
+	}
+
+	port, doesExists := os.LookupEnv(mqttPortEnv)
+
+	if !doesExists {
+		port = mqttDefaultPort
+	}
+
+	return "tcp://" + host + ":" + port
 }
 
 // Will manage the state of running snub, handling all state transitions,
