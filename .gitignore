@@ -9,6 +9,7 @@
 deploy/api
 deploy/frontend
 deploy/secrets
+deploy/.env_mqtt
 
 ### Go ###
 unbrake-local/bin/*
