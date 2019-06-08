@@ -25,9 +25,17 @@ export async function submit(configuration, name, sendMessage) {
     configuration.TAT
   }){config{number, timeBetweenCycles,upperLimit,inferiorLimit}}}`;
   const method = "POST";
-  await Request(url, method);
-
-  window.location.reload();
+  Request(url, method).then(() => {
+    sendMessage({
+      message: "Arquivo cadastrado com sucesso",
+      variante: "success",
+      condition: true
+    });
+  });
+  const waitTime = 3000;
+  setTimeout(() => {
+    window.location.reload();
+  }, waitTime);
 }
 
 export const createConfig = data => {
