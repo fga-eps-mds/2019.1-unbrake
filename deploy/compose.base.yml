@@ -3,6 +3,18 @@
 version: '3.7'
 
 services:
+  proxy:
+    image: 'nginx:1.15.12-alpine'
+    container_name: 'proxy'
+    volumes:
+      - "./logs/nginx_proxy:/var/log/nginx"
+    ports:
+      - "80:80"
+    depends_on:
+      - api_server
+      - frontend
+    restart: unless-stopped
+
   api:
     image: 'unbrake/api:latest'
     depends_on:
@@ -15,10 +27,8 @@ services:
   frontend:
     image: 'unbrake/frontend:latest'
     volumes:
-      - "./logs/nginx:/var/log/nginx_frontend"
+      - "./logs/nginx_frontend:/var/log/nginx"
     restart: unless-stopped
-    ports:
-      - "80:80"
 
   db:
     image: 'postgres:11.2-alpine'
@@ -39,9 +49,7 @@ services:
     image: 'nginx:1.15.12-alpine'
     container_name: 'api-server'
     volumes:
-      - "./logs/nginx:/var/log/nginx_api"
-    ports:
-      - "8080:80"
+      - "./logs/nginx_api:/var/log/nginx"
     depends_on:
       - api
     restart: unless-stopped
@@ -50,7 +58,7 @@ services:
     container_name: 'mqtt'
     image: 'emitter/server'
     ports:
-      - "1883:8080"
+      - "8080:8080"
     env_file:
       - .env_mqtt
     restart: unless-stopped
