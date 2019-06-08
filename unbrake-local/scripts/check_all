@@ -1,0 +1,13 @@
+#!/bin/bash
+
+echo -e "\n=========================================================================="
+echo "Checking everything on application unbrake-local..."
+echo -e "==========================================================================\n"
+
+cd scripts
+
+for checker in check_format check_lint check_tests_coverage; do
+	./$checker || exit 1
+done
+
+echo -e "\n\033[0;32mCool! All checks succeeded!\033[0m"

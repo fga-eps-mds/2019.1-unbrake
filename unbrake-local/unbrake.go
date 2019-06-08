@@ -1,11 +1,26 @@
+/*
+* Generates a self contained binary application which reads data from
+* a serial connection (was developed thinking on arduíno via USB)
+* and send it through network.
+*
+* It is also able to send commands in ascii format. We are working
+* On a application which each ascii character represents a state
+* where some things are on and others off. In our case acelerator,
+* brake, etc.
+
+* We also provide a simple GUI through systray in which users can
+* interact with the application.
+ */
 package main
 
 import (
+	//"fmt"
 	"log"
 	"os"
 	"os/signal"
 	"path"
 	"runtime"
+	"strconv"
 	"strings"
 	"sync"
 	"time"
@@ -14,31 +29,113 @@ import (
 	"github.com/tarm/serial"
 )
 
+// Configurations constants
 const (
-	BUFFER_SIZE             = 48
-	SIMULATOR_PORT_ENV      = "SIMULATOR_PORT"
-	DEFAULT_PORT            = "/dev/ttyACM0"
-	BAUD_RATE               = 115200
-	FREQUENCY_READING       = 10
-	LOG_FILE_PATH           = "unbrake.log"
-	APPLICATION_FOLDER_NAME = "UnBrake"
+	BufferSize            = 48
+	SimulatorPortEnv      = "simulatorPort"
+	DefaultPort           = "/dev/ttyACM0"
+	BaudRate              = 115200
+	FrequencyReading      = 10
+	LogFilePath           = "unbrake.log"
+	ApplicationFolderName = "UnBrake"
+	UpperSpeedLimit       = 150
+	InferiorSpeedLimit    = 150
+	TimeSleepWater        = 3
+	TimeCooldown          = 3
+	TemperatureLimit      = 400
+	rightSizeOfSplit      = 11
+	delayAcelerateToBrake = 2
 )
 
+// Channels for controlling execution
 var wg sync.WaitGroup
-var stop_collecting_data chan bool
-var sigs chan os.Signal
+var stopCollectingDataCh chan bool
+var sigsCh chan os.Signal
+var temperatureCh = make(chan [2]int)
+var speedCh = make(chan int)
+var portCh = make(chan *serial.Port, 3)
+
+// Flags with intermediary states
+var stabilizing = false
+var throwingWater = false
+
+// Global snub which represents state of running test
+var snub = Snub{state: Acelerate}
+
+// Possible states of a snub, value is ascii which
+// represents its state
+const (
+	CoolDown            = string(iota + '$') //'$'
+	Acelerate                                //'%'
+	Brake                                    //'&'
+	AcelerateBrake                           //'''
+	CoolDownWater                            //'('
+	AcelerateWater                           //')'
+	BrakeWater                               //'*'
+	AcelerateBrakeWater                      //'+'
+)
+
+// Mapping current state to next state
+var currentToNextState = map[string]string{
+	Acelerate:      Brake,
+	Brake:          CoolDown,
+	CoolDown:       Acelerate,
+	AcelerateWater: BrakeWater,
+	BrakeWater:     CoolDownWater,
+	CoolDownWater:  AcelerateWater,
+}
+
+// Regular state to matching state but throwing water
+var offToOnWater = map[string]string{
+	Acelerate:      AcelerateWater,
+	Brake:          BrakeWater,
+	CoolDown:       CoolDownWater,
+	AcelerateWater: AcelerateWater,
+	BrakeWater:     BrakeWater,
+	CoolDownWater:  CoolDownWater,
+}
+
+// From a throwing water state to a regular state
+var onToOffWater = map[string]string{
+	AcelerateWater: Acelerate,
+	BrakeWater:     Brake,
+	CoolDownWater:  CoolDown,
+	Acelerate:      Acelerate,
+	Brake:          Brake,
+	CoolDown:       CoolDown,
+}
+
+// Ascii character which represents state to state name
+var byteToStateName = map[string]string{
+	"$":  "CoolDown",
+	"%":  "Acelerate",
+	"&":  "Brake",
+	"\"": "AcelerateBrake",
+	"(":  "CoolDownWater",
+	")":  "AcelerateWater",
+	"*":  "BrakeWater",
+	"+":  "AcelerateBrakeWater",
+}
+
+// Snub is a cycle of aceleration, braking and cooldown,
+// multiple snubs compose a test
+type Snub struct {
+	state string
+	mux   sync.Mutex
+}
 
 func main() {
-	log_file := getLogFile()
-	defer log_file.Close()
+	logFile := getLogFile()
+	defer logFile.Close()
 
 	log.Println("--------------------------------------------")
 	log.Println("Initializing application...")
 
-	sigs = make(chan os.Signal, 1)
-	signal.Notify(sigs, os.Interrupt)
+	sigsCh = make(chan os.Signal, 1)
+	signal.Notify(sigsCh, os.Interrupt)
 
 	onExit := func() {
+		snub.state = CoolDown
 		log.Println("Exiting...")
 	}
 	systray.Run(onReady, onExit)
@@ -47,6 +144,86 @@ func main() {
 	log.Println("--------------------------------------------")
 }
 
+// Will update current state to its next, respecting timing and
+// critical regions
+func (snub *Snub) handleAcelerate() {
+	stabilizing = true
+	log.Printf("Stabilizing...\n")
+	time.Sleep(time.Second * delayAcelerateToBrake)
+
+	snub.mux.Lock()
+	defer snub.mux.Unlock()
+
+	oldState := snub.state
+	snub.state = currentToNextState[snub.state]
+	log.Printf("Change state: %v ---> %v\n", byteToStateName[oldState], byteToStateName[snub.state])
+	stabilizing = false
+
+}
+
+// Will change from a regular state to a state with same
+// effects but throwing water
+func (snub *Snub) turnOnWater(port *serial.Port) {
+	snub.mux.Lock()
+
+	oldState := snub.state
+	snub.state = offToOnWater[snub.state]
+	throwingWater = true
+	_, err := port.Write([]byte(snub.state))
+	if err != nil {
+		log.Fatal(err)
+	}
+	log.Printf("Turn on water(%vs): %v ---> %v\n", TimeSleepWater, byteToStateName[oldState], byteToStateName[snub.state])
+
+	snub.mux.Unlock()
+
+	time.Sleep(time.Second * TimeSleepWater)
+
+	snub.mux.Lock()
+
+	oldState = snub.state
+	snub.state = onToOffWater[snub.state]
+	_, err = port.Write([]byte(snub.state))
+	if err != nil {
+		log.Fatal(err)
+	}
+	throwingWater = false
+	log.Printf("Turn off water: %v ---> %v\n", byteToStateName[oldState], byteToStateName[snub.state])
+
+	snub.mux.Unlock()
+}
+
+// Handle changing state from braking to cooldown, waiting the
+// cooldown and gettting back to acelerating
+func (snub *Snub) handleBrake(port *serial.Port) {
+	snub.mux.Lock()
+
+	oldState := snub.state
+	snub.state = currentToNextState[snub.state]
+	_, err := port.Write([]byte(snub.state))
+	if err != nil {
+		log.Fatal(err)
+	}
+	log.Printf("Change state: %v ---> %v\n", byteToStateName[oldState], byteToStateName[snub.state])
+
+	snub.mux.Unlock()
+
+	time.Sleep(time.Second * TimeCooldown)
+
+	snub.mux.Lock()
+
+	oldState = snub.state
+	snub.state = currentToNextState[snub.state]
+	_, err = port.Write([]byte(snub.state))
+	if err != nil {
+		log.Fatal(err)
+	}
+	log.Printf("Change state: %v ---> %v\n", byteToStateName[oldState], byteToStateName[snub.state])
+
+	snub.mux.Unlock()
+}
+
+// Required by systray (GUI)
 func onReady() {
 	systray.SetIcon(icon)
 	systray.SetTitle("UnBrake")
@@ -54,43 +231,46 @@ func onReady() {
 
 	mQuitOrig := systray.AddMenuItem("Sair", "Fechar UnBrake")
 
-	stop_collecting_data = make(chan bool, 1)
+	stopCollectingDataCh = make(chan bool, 1)
 
 	// Wait for quitting
 	go func() {
 		select {
 		case <-mQuitOrig.ClickedCh:
 			log.Println("Quitting request by interface")
-		case <-sigs:
+		case <-sigsCh:
 			log.Println("Quitting request by signal")
 		}
 
-		stop_collecting_data <- true
+		stopCollectingDataCh <- true
 		systray.Quit()
 		log.Println("Finished systray")
 	}()
 
 	wg.Add(1)
 	go collectData()
+	go handleSnubState()
 
 	wg.Wait()
 }
 
+// Will collect data from serial bus and distributes it
+// to others goroutines
 func collectData() {
 	defer wg.Done()
 
-	const reading_delay = time.Second / FREQUENCY_READING
-	simulator_port := getSimulatorPort()
+	const ReadingDelay = time.Second / FrequencyReading
+	simulatorPort := getSimulatorPort()
 
 	log.Println("Initializing collectData routine...")
-	log.Printf("Simulator Port = %s", simulator_port)
-	log.Printf("Buffer size = %d", BUFFER_SIZE)
-	log.Printf("Baud rate = %d", BAUD_RATE)
-	log.Printf("Reading delay = %v", reading_delay)
+	log.Printf("Simulator Port = %s", simulatorPort)
+	log.Printf("Buffer size = %d", BufferSize)
+	log.Printf("Baud rate = %d", BaudRate)
+	log.Printf("Reading delay = %v", ReadingDelay)
 
 	c := &serial.Config{
-		Name: simulator_port,
-		Baud: BAUD_RATE,
+		Name: simulatorPort,
+		Baud: BaudRate,
 	}
 
 	port, err := serial.OpenPort(c)
@@ -99,26 +279,37 @@ func collectData() {
 		log.Fatal(err)
 	}
 
+	portCh <- port
+	close(portCh)
+
 	port.Flush()
-	continue_collecting := true
-	for continue_collecting {
+	continueCollecting := true
+	for continueCollecting {
 		select {
-		case stop := <-stop_collecting_data:
+		case stop := <-stopCollectingDataCh:
 			if stop {
-				log.Println("Stopping collecting of data...")
-				continue_collecting = false
+				_, err := port.Write([]byte(CoolDown))
+				if err != nil {
+					log.Fatal(err)
+				}
+				continueCollecting = false
 			}
-		case sig := <-sigs:
+		case sig := <-sigsCh:
 			log.Println("Signal received: ", sig)
-			log.Println("Stopping collecting the data...")
-			continue_collecting = false
+			_, err := port.Write([]byte(CoolDown))
+			if err != nil {
+				log.Fatal(err)
+			}
+			continueCollecting = false
 		default:
 			getData(port, "\"")
-			time.Sleep(reading_delay)
+			time.Sleep(ReadingDelay)
 		}
 	}
 }
 
+// Will get the data from the bus and returns it as an
+// array of bytes
 func getData(port *serial.Port, command string) []byte {
 	n, err := port.Write([]byte(command))
 
@@ -126,58 +317,116 @@ func getData(port *serial.Port, command string) []byte {
 		log.Fatal(err)
 	}
 
-	buf := make([]byte, BUFFER_SIZE)
+	buf := make([]byte, BufferSize)
 	n, err = port.Read(buf)
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	//log.Printf("\t%d km/h\n", buf[0]) // For reading one byte
-	log.Printf("%s", strings.TrimSpace(string(buf[:n])))
+	log.Printf("%s\n", strings.TrimSpace(string(buf[:n])))
+
+	split := strings.Split(string(buf[:n]), ",")
+
+	if len(split) == rightSizeOfSplit {
+
+		speed, _ := strconv.Atoi(split[6])
+
+		speedCh <- speed
+
+		firstTemperature, _ := strconv.Atoi(split[1])
+		secondTemperature, _ := strconv.Atoi(split[2])
+
+		temperatureCh <- [2]int{firstTemperature, secondTemperature}
+	}
 
 	return buf
 }
 
+// Will manage the state of running snub, handling all state transitions,
+// synchronization, collecting needed data and writting needed commands
+func handleSnubState() {
+	port := <-portCh
+
+	for {
+
+		select {
+
+		case speed := <-speedCh:
+
+			if (snub.state == Acelerate || snub.state == AcelerateWater) && !stabilizing {
+				if speed >= UpperSpeedLimit {
+					go snub.handleAcelerate()
+					_, err := port.Write([]byte(snub.state))
+					if err != nil {
+						log.Fatal(err)
+					}
+				}
+			}
+
+			if snub.state == Brake || snub.state == BrakeWater {
+				if speed < InferiorSpeedLimit {
+					go snub.handleBrake(port)
+				}
+			}
+
+		case temperature := <-temperatureCh:
+
+			if (temperature[0] > TemperatureLimit || temperature[1] > TemperatureLimit) && !throwingWater {
+				if snub.state == Acelerate || snub.state == Brake || snub.state == CoolDown {
+					go snub.turnOnWater(port)
+				}
+			}
+
+		default:
+		}
+	}
+}
+
+// Based on current OS will create application folder
+// and log file (if not exists). Returns the log file
+// as a File object
 func getLogFile() *os.File {
-	log_path := ""
+	logPath := ""
 	if runtime.GOOS != "windows" {
-		log_path = path.Join("/home", os.Getenv("USER"), APPLICATION_FOLDER_NAME, "logs")
+		logPath = path.Join("/home", os.Getenv("USER"), ApplicationFolderName, "logs")
 	} else {
-		log_path = path.Join(os.Getenv("APPDATA"), "logs", APPLICATION_FOLDER_NAME, "logs")
+		logPath = path.Join(os.Getenv("APPDATA"), ApplicationFolderName, "logs")
 	}
 
-	os.MkdirAll(log_path, os.ModePerm)
-	log_path = path.Join(log_path, LOG_FILE_PATH)
+	os.MkdirAll(logPath, os.ModePerm)
+	logPath = path.Join(logPath, LogFilePath)
 
-	log_file, err := os.OpenFile(log_path, os.O_SYNC|os.O_WRONLY|os.O_CREATE|os.O_APPEND, 0666)
+	logFile, err := os.OpenFile(logPath, os.O_SYNC|os.O_WRONLY|os.O_CREATE|os.O_APPEND, 0666)
 	if err != nil {
 		log.Fatalf("error opening file: %v", err)
 	}
 	log.SetFlags(log.Ldate | log.Ltime | log.Lmicroseconds)
-	log.SetOutput(log_file)
+	log.SetOutput(logFile)
 
-	return log_file
+	return logFile
 }
 
+// Get serial port that will be used to communicate with the physical device
 func getSimulatorPort() string {
 	log.Println("Getting simulator port...")
 
-	simulator_port, does_exists := os.LookupEnv(SIMULATOR_PORT_ENV)
+	simulatorPort, doesExists := os.LookupEnv(SimulatorPortEnv)
 
-	if !does_exists {
-		err := os.Setenv(SIMULATOR_PORT_ENV, DEFAULT_PORT)
+	if !doesExists {
+		err := os.Setenv(SimulatorPortEnv, DefaultPort)
 		if err != nil {
 			log.Fatal(err)
 		}
 
-		simulator_port = os.Getenv(SIMULATOR_PORT_ENV)
+		simulatorPort = os.Getenv(SimulatorPortEnv)
 	}
 
-	log.Println("Got simulator port: ", simulator_port)
-	return simulator_port
+	log.Println("Got simulator port: ", simulatorPort)
+	return simulatorPort
 }
 
-var icon []byte = []byte{
+// Icon used on systray, how the application will appear on notification area
+var icon = []byte{
 	0x00, 0x00, 0x01, 0x00, 0x01, 0x00, 0x20, 0x20, 0x00, 0x00, 0x01, 0x00,
 	0x20, 0x00, 0xa8, 0x10, 0x00, 0x00, 0x16, 0x00, 0x00, 0x00, 0x28, 0x00,
 	0x00, 0x00, 0x20, 0x00, 0x00, 0x00, 0x40, 0x00, 0x00, 0x00, 0x01, 0x00,

@@ -1,7 +1,8 @@
-#!/bin/sh
+#!/bin/bash
 
 SELF_PATH="$(dirname $(readlink -f "$0"))"
 . "$SELF_PATH/functions.sh"
 cd "$SELF_PATH/.."
 
-run_command python manage.py test
+ENTRY="gofmt" ./scripts/run -w -s .
+echo 'Files fixed!'

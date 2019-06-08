@@ -5,10 +5,10 @@ version: '3.7'
 services:
   frontend:
     container_name: 'unbrake-frontend-development'
+    image: 'unbrake/frontend:latest-development'
     build:
       context: ./unbrake-frontend
       dockerfile: Dockerfile
-    image: unbrake_frontend_development
     volumes:
       - "./unbrake-frontend/src:/app/frontend/src"
       - "./unbrake-frontend/scripts:/app/frontend/scripts"
@@ -18,10 +18,10 @@ services:
 
   api:
     container_name: 'unbrake-api-development'
+    image: 'unbrake/api:latest-development'
     build:
       context: ./unbrake-api
       dockerfile: Dockerfile
-    image: unbrake_api_development
     volumes:
       - "./unbrake-api:/app/api"
       - "./.git:/app/.git" # Needed for git hooks

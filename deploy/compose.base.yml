@@ -46,11 +46,22 @@ services:
       - api
     restart: unless-stopped
 
+  mqtt:
+    container_name: 'mqtt'
+    image: 'emitter/server'
+    ports:
+      - "1883:8080"
+    env_file:
+      - .env_mqtt
+    restart: unless-stopped
+
 secrets:
   api-django-secret-key:
     file: secrets/API_DJANGO_SECRET_KEY
   postgres_password:
     file: secrets/DB_PASSWORD
+  emitter-license:
+    file: secrets/EMITTER_LICENSE
 
 volumes:
   postgres_data:
