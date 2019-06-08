@@ -66,9 +66,13 @@ const (
 var wg sync.WaitGroup
 var stopCollectingDataCh chan bool
 var sigsCh chan os.Signal
-var temperatureCh = make(chan [2]int)
-var speedCh = make(chan int)
 var portCh = make(chan *serial.Port, 3)
+var frequencyCh = make(chan int)
+var temperatureCh = make(chan [2]int)
+var brakingForceCh = make(chan [2]int)
+var vibrationCh = make(chan int)
+var speedCh = make(chan int)
+var pressureCh = make(chan int)
 
 // Flags with intermediary states
 var stabilizing = false
@@ -264,6 +268,7 @@ func onReady() {
 
 	wg.Add(1)
 	go collectData()
+	go publishAll()
 	go handleSnubState()
 
 	wg.Wait()
@@ -355,20 +360,73 @@ func getData(port *serial.Port, command string) []byte {
 			pressureIdx
 		)
 
-		publishData(split[temperature1Idx], "/temperature/sensor1")
+		frequency, _ := strconv.Atoi(split[frequencyIdx])
+		frequencyCh <- frequency
+
+		firstTemperature, _ := strconv.Atoi(split[temperature1Idx])
+		secondTemperature, _ := strconv.Atoi(split[temperature2Idx])
+		temperatureCh <- [2]int{firstTemperature, secondTemperature}
+
+		firstBrakingForce, _ := strconv.Atoi(split[temperature1Idx])
+		secondBrakingForce, _ := strconv.Atoi(split[temperature2Idx])
+		brakingForceCh <- [2]int{firstBrakingForce, secondBrakingForce}
+
+		vibration, _ := strconv.Atoi(split[vibrationIdx])
+		vibrationCh <- vibration
 
 		speed, _ := strconv.Atoi(split[speedIdx])
 		speedCh <- speed
 
-		firstTemperature, _ := strconv.Atoi(split[temperature1Idx])
-		secondTemperature, _ := strconv.Atoi(split[temperature2Idx])
-
-		temperatureCh <- [2]int{firstTemperature, secondTemperature}
+		pressure, _ := strconv.Atoi(split[pressureIdx])
+		pressureCh <- pressure
 	}
 
 	return buf
 }
 
+func publishAll() {
+	go func() {
+		for {
+			publishData(strconv.Itoa(<-frequencyCh), "/frequency")
+		}
+	}()
+
+	go func() {
+		for {
+			temperatureData := <-temperatureCh
+			publishData(strconv.Itoa(temperatureData[0]), "/temperature/sensor1")
+			publishData(strconv.Itoa(temperatureData[1]), "/temperature/sensor2")
+		}
+	}()
+
+	go func() {
+		for {
+			brakingForceData := <-brakingForceCh
+			publishData(strconv.Itoa(brakingForceData[0]), "/brakingForce/sensor1")
+			publishData(strconv.Itoa(brakingForceData[1]), "/brakingForce/sensor2")
+		}
+	}()
+
+	go func() {
+		for {
+			publishData(strconv.Itoa(<-vibrationCh), "/vibration")
+		}
+	}()
+
+	go func() {
+		for {
+			publishData(strconv.Itoa(<-speedCh), "/speed")
+		}
+	}()
+
+	go func() {
+		for {
+			publishData(strconv.Itoa(<-pressureCh), "/pressure")
+		}
+	}()
+}
+
+// Publish data to MQTT broker
 func publishData(data string, subChannel string) {
 	key, doesExists := os.LookupEnv(mqttKeyEnv)
 	if !doesExists {
@@ -377,12 +435,10 @@ func publishData(data string, subChannel string) {
 
 	channel, data := mqttChannelPrefix+subChannel, data
 
-	log.Println("Connecting to MQTT broker...")
 	client, _ := emitter.Connect(getMqttHost(), func(_ *emitter.Client, msg emitter.Message) {
 		log.Printf("Sent message: '%s' topic: '%s'\n", msg.Payload(), msg.Topic())
 	})
 
-	log.Println("Sending data to MQTT broker...")
 	client.Publish(key, channel, data)
 }
 
