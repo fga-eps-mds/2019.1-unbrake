@@ -14,7 +14,6 @@
 package main
 
 import (
-	"io/ioutil"
 	"log"
 	"os"
 	"os/signal"
@@ -57,9 +56,10 @@ const (
 const (
 	mqttHostEnv       = "MQTT_HOST"
 	mqttDefaultHost   = "unbrake.ml"
-	mqttDefaultPort   = "1883"
+	mqttDefaultPort   = "8080"
 	mqttPortEnv       = "MQTT_PORT"
 	mqttChannelPrefix = "unbrake/galpao"
+	mqttKeyEnv        = "MQTT_KEY"
 )
 
 // Channels for controlling execution
@@ -355,26 +355,13 @@ func getData(port *serial.Port, command string) []byte {
 			pressureIdx
 		)
 
-		speed, _ := strconv.Atoi(split[speedIdx])
+		publishData(split[temperature1Idx], "/temperature/sensor1")
 
+		speed, _ := strconv.Atoi(split[speedIdx])
 		speedCh <- speed
 
 		firstTemperature, _ := strconv.Atoi(split[temperature1Idx])
 		secondTemperature, _ := strconv.Atoi(split[temperature2Idx])
-
-		// TODO: put this into a function
-		// Create the client and connect to the broker
-		log.Println("Connecting to MQTT broker...")
-		c, _ := emitter.Connect(getMqttHost(), func(_ *emitter.Client, msg emitter.Message) {
-			log.Printf("Sent message: '%s' topic: '%s'\n", msg.Payload(), msg.Topic())
-		})
-		key, err := ioutil.ReadFile("secrets/MQTT_KEY")
-		if err != nil {
-			log.Fatal(err)
-		}
-		channel, data := mqttChannelPrefix+"/temperature/sensor1", split[temperature1Idx]
-		log.Println("Sending data to MQTT broker...")
-		c.Publish(string(key), channel, data)
 
 		temperatureCh <- [2]int{firstTemperature, secondTemperature}
 	}
@@ -382,16 +369,31 @@ func getData(port *serial.Port, command string) []byte {
 	return buf
 }
 
+func publishData(data string, subChannel string) {
+	key, doesExists := os.LookupEnv(mqttKeyEnv)
+	if !doesExists {
+		log.Fatal("MQTT key not set!!!")
+	}
+
+	channel, data := mqttChannelPrefix+subChannel, data
+
+	log.Println("Connecting to MQTT broker...")
+	client, _ := emitter.Connect(getMqttHost(), func(_ *emitter.Client, msg emitter.Message) {
+		log.Printf("Sent message: '%s' topic: '%s'\n", msg.Payload(), msg.Topic())
+	})
+
+	log.Println("Sending data to MQTT broker...")
+	client.Publish(key, channel, data)
+}
+
 // Get complete host name with port of the MQTT broker
 func getMqttHost() string {
 	host, doesExists := os.LookupEnv(mqttHostEnv)
-
 	if !doesExists {
 		host = mqttDefaultHost
 	}
 
 	port, doesExists := os.LookupEnv(mqttPortEnv)
-
 	if !doesExists {
 		port = mqttDefaultPort
 	}
