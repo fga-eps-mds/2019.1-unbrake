@@ -128,8 +128,8 @@ const allCheckbox = (selectsControl, classes, handleChange) => {
 const renderDictionary = command => {
   const directionary = [
     [
-      { name: "CCv", value: command.CCv, disable: true },
-      { name: "CCp", value: command.CCp, disable: true }
+      { name: "CHVC", value: command.CCv, disable: true },
+      { name: "CHPC", value: command.CCp, disable: true }
     ],
     [
       { name: "Vdc", value: command.Vdc, disable: true },
@@ -140,12 +140,12 @@ const renderDictionary = command => {
       { name: "PCmv", value: command.PCmv, disable: true }
     ],
     [
-      { name: "Vkmh", value: command.Vkmh, disable: false },
-      { name: "Pb", value: command.Pb, disable: false }
+      { name: "CUVC", value: command.Vkmh, disable: false },
+      { name: "CUPC", value: command.Pb, disable: false }
     ],
     [
-      { name: "VMkmh", value: command.VMkmh, disable: false },
-      { name: "PMb", value: command.PMb, disable: false }
+      { name: "MAVC", value: command.VMkmh, disable: false },
+      { name: "MAPC", value: command.PMb, disable: false }
     ]
   ];
   return directionary;

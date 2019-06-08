@@ -18,9 +18,9 @@ const borderRadius = 2.5;
 const generalConfigsOption = 0;
 const temperatureOption = 1;
 const forceOption = 2;
-const vibrationOption = 3;
-const commandOption = 4;
-const speedOption = 5;
+const speedOption = 3;
+const vibrationOption = 4;
+const commandOption = 5;
 
 const GeneralConfigs = () => (
   <div className="App">
@@ -86,17 +86,17 @@ class Calibration extends React.Component {
             <Tab label="Gerais" />
             <Tab label="Temperatura" />
             <Tab label="Força" />
+            <Tab label="Velocidade" />
             <Tab label="Vibração" />
             <Tab label="Comando" />
-            <Tab label="Velocidade" />
           </Tabs>
         </AppBar>
         {value === generalConfigsOption && GeneralConfigs()}
         {value === temperatureOption && <Temperature />}
         {value === forceOption && <Force />}
+        {value === speedOption && <Speed />}
         {value === vibrationOption && <Vibration />}
         {value === commandOption && <Command />}
-        {value === speedOption && <Speed />}
       </div>
     );
   }

@@ -124,7 +124,7 @@ const allCheckbox = (selectsControl, classes, handleChange) => {
 
 const renderDictionary = speed => {
   const directionary = [
-    [{ name: "CHA", value: speed.CHA, disable: true }],
+    [{ name: "CHR1", value: speed.CHA, disable: true }],
     [
       { name: "Fhz", value: speed.Fhz, disable: true },
       { name: "Vkm", value: speed.Vkm, disable: true }
@@ -134,8 +134,8 @@ const renderDictionary = speed => {
       { name: "Vms", value: speed.Vms, disable: true }
     ],
     [
-      { name: "RPm", value: speed.RPm, disable: true },
-      { name: "DPkm", value: speed.DPkm, disable: false }
+      { name: "RAP", value: speed.RPm, disable: false },
+      { name: "DPkm", value: speed.DPkm, disable: true }
     ]
   ];
   return directionary;
