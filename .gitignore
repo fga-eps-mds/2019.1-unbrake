@@ -1,6 +1,9 @@
 # Created by https://www.gitignore.io/api/node,reactnative
 # Edit at https://www.gitignore.io/?templates=node,reactnative
 
+# Vim
+*.sw[po]
+
 # Docker Secrets
 */secrets/*
 !*/secrets/*.enc
@@ -12,7 +15,10 @@ deploy/secrets
 deploy/.env_mqtt
 
 ### Go ###
+*.exe
 unbrake-local/bin/*
+unbrake-local/unbrake
+unbrake-local/unbrake.exe
 unbrake-local/coverage.*
 
 ### Node ###
