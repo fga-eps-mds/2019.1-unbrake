@@ -3,6 +3,9 @@
 version: '3.7'
 
 services:
+  proxy:
+    volumes:
+      - "./nginx.proxy.prod.conf:/etc/nginx/nginx.conf"
   api:
     secrets:
       - api-django-secret-key
@@ -12,15 +15,12 @@ services:
     volumes:
       - "./frontend/nginx.prod.conf:/etc/nginx/nginx.conf"
       - "./https_certificate.crt:/etc/nginx/ssl/https_certificate.crt"
-    ports:
-      - "443:443"
     secrets:
       - https_key
 
   api_server:
     volumes:
       - "./api/nginx.prod.conf:/etc/nginx/nginx.conf"
-      - "./logs/nginx:/var/log/nginx_api"
 
 secrets:
   https_key:
