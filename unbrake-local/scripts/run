@@ -1,0 +1,18 @@
+#!/bin/bash
+# For compiling unbrake local application via docker
+
+SELF_PATH="$(dirname $(readlink -f "$0"))"
+PACKAGE_PATH="/go/src/github.com/fga-eps-mds/2019.1-unbrake/unbrake-local"
+
+[ -z "$ENTRY" ] && ENTRY="/usr/local/go/bin/go"
+
+sudo docker run \
+    --rm \
+    --entrypoint "${ENTRY}" \
+    -it \
+    -e GOOS="$GOOS" \
+    -e GOARCH="$GOARCH" \
+    -v "$SELF_PATH/..":"$PACKAGE_PATH" \
+    -v "$SELF_PATH/../bin":"$PACKAGE_PATH/bin" \
+    unbrake/local \
+    $*

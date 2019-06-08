@@ -6,7 +6,7 @@ import { FormControlLabel, Grid } from "@material-ui/core";
 // type = {name:"", value:"", label: "", disable:false}
 export const checkbox = (type, handleChange) => {
   return (
-    <Grid item xs={12} container alignItems="center" justify="center">
+    <Grid item xs={12} container alignItems="center" justify="flex-start">
       <FormControlLabel
         control={
           <Field

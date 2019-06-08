@@ -1,7 +1,9 @@
 #!/bin/sh
 
-cd /app/api
-. scripts/functions.sh
+SELF_PATH="$(dirname $(readlink -f "$0"))"
+. "$SELF_PATH/functions.sh"
+cd "$SELF_PATH/.."
 
-run_command flake8 . \
-  && autopep8 -a -a -r --diff --exit-code .
+run_command \
+  "flake8 . \
+  && autopep8 -a -a -r --diff --exit-code ."

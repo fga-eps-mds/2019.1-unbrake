@@ -1,6 +1,5 @@
 #!/bin/sh
 
-imageName="unbrake_backend_development"  # compose project name + service name
 tmpFile="/tmp/unbrake_hook_log"
 
 get_staged_files() {
