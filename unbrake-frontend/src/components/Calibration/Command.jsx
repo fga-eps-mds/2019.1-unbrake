@@ -9,14 +9,17 @@ import { checkbox, field } from "../ComponentsForm";
 const labelSecondary = name => {
   let nameLabel = "";
   switch (name) {
-    case "Vkm":
-      nameLabel = "Velocidade (Km/h)";
+    case "CCv":
+      nameLabel = "Canal - comando / velocidade";
       break;
-    case "Vms":
-      nameLabel = "Velocidade (m/s)";
+    case "CCp":
+      nameLabel = "Canal - comando / pressão";
       break;
-    case "DPkm":
-      nameLabel = "Distância percorrida (km)";
+    case "Vkmh":
+      nameLabel = "Velocidade (km/h)";
+      break;
+    case "Pb":
+      nameLabel = "Pressão (Bar)";
       break;
     default:
       nameLabel = "";
@@ -28,29 +31,29 @@ const labelSecondary = name => {
 const label = name => {
   let nameLabel = "";
   switch (name) {
-    case "CHA":
-      nameLabel = "Canal de aquisição";
+    case "VMkmh":
+      nameLabel = "Velocidade máxima (kmh)";
       break;
-    case "Fhz":
-      nameLabel = "Frequência (Hz)";
+    case "PMb":
+      nameLabel = "Pressão máxima (Bar)";
       break;
-    case "Rrpm":
-      nameLabel = "Rotação (RPM)";
+    case "Vdc":
+      nameLabel = "Velocidade (Duty Cycle)";
       break;
-    case "RPm":
-      nameLabel = "Raio do pneu (m)";
+    case "Pdc":
+      nameLabel = "Pressão (Duty Cycle)";
       break;
-    case "PRrpm":
-      nameLabel = "Plota rotação (rpm)";
+    case "VCmv":
+      nameLabel = "Velocidade comando (mV)";
       break;
-    case "PVkmh":
-      nameLabel = "Plota velocidade (Km/h)";
+    case "PCmv":
+      nameLabel = "Pressão comando (mV)";
       break;
-    case "PDPkm":
-      nameLabel = "Plota distândia percorrida (Km)";
+    case "PVc":
+      nameLabel = "Plota velocidade (comando)";
       break;
-    case "ID":
-      nameLabel = "Inicializa Distancia";
+    case "PPc":
+      nameLabel = "Plota pressão (comando)";
       break;
     default:
       nameLabel = labelSecondary(name);
@@ -92,7 +95,7 @@ const allFields = (states, classes, handleChange) => {
         container
         item
         xs={12}
-        key={`fields ${value[0].name}`}
+        key={`fields ${value[1].name}`}
       >
         {rowField(value, classes, handleChange)}
       </Grid>
@@ -122,51 +125,49 @@ const allCheckbox = (selectsControl, classes, handleChange) => {
   return checks;
 };
 
-const renderDictionary = speed => {
+const renderDictionary = command => {
   const directionary = [
-    [{ name: "CHA", value: speed.CHA, disable: true }],
     [
-      { name: "Fhz", value: speed.Fhz, disable: true },
-      { name: "Vkm", value: speed.Vkm, disable: true }
+      { name: "CCv", value: command.CCv, disable: true },
+      { name: "CCp", value: command.CCp, disable: true }
     ],
     [
-      { name: "Rrpm", value: speed.Rrpm, disable: true },
-      { name: "Vms", value: speed.Vms, disable: true }
+      { name: "Vdc", value: command.Vdc, disable: true },
+      { name: "Pdc", value: command.Pdc, disable: true }
     ],
     [
-      { name: "RPm", value: speed.RPm, disable: true },
-      { name: "DPkm", value: speed.DPkm, disable: false }
+      { name: "VCmv", value: command.VCmv, disable: true },
+      { name: "PCmv", value: command.PCmv, disable: true }
+    ],
+    [
+      { name: "Vkmh", value: command.Vkmh, disable: false },
+      { name: "Pb", value: command.Pb, disable: false }
+    ],
+    [
+      { name: "VMkmh", value: command.VMkmh, disable: false },
+      { name: "PMb", value: command.PMb, disable: false }
     ]
   ];
   return directionary;
 };
 
-const checkboxes = speed => {
-  const { PRrpm, PVkmh, PDPkm, ID } = speed;
-  return [
-    { name: "PRrpm", value: PRrpm, disable: false },
-    { name: "PVkmh", value: PVkmh, disable: false },
-    { name: "PDPkm", value: PDPkm, disable: false },
-    { name: "ID", value: ID, disable: false }
-  ];
-};
-
-class Speed extends React.Component {
+class Command extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
-      speed: {
-        CHA: "", // canal de aquisição
-        Fhz: "", // frequencia
-        PRrpm: false, // plota rotação
-        Rrpm: "", // rotação
-        RPm: "", // raio pneu
-        PVkmh: false, // plota velocidade
-        Vkm: "", // velocidade km/h
-        Vms: "", // velocidade m/s
-        DPkm: "", // distância percorrida
-        PDPkm: false, // plota distância percorrida
-        ID: false // Inicializa distancia
+      command: {
+        CCv: "", // Canal - comando / velocidade
+        CCp: "", // Canal - comando / pressão
+        Vkmh: "", // Velocidade (km/h)
+        Pb: "", // Pressão (Bar)
+        VMkmh: "", // Velocidade máxima (kmh)
+        PMb: "", // Pressão máxima (Bar)
+        Vdc: "", // Velocidade (Duty Cycle)
+        Pdc: "", // Pressão (Duty Cycle)
+        VCmv: "", // Velocidade comando (mV)
+        PCmv: "", // Pressão comando (mV)
+        PVc: false, // Plota velocidade (comando)
+        PPc: false // Plota pressão (comando)
       }
     };
     this.handleChange = this.handleChange.bind(this);
@@ -175,17 +176,21 @@ class Speed extends React.Component {
   handleChange(event) {
     const { target } = event;
     const value = target.type === "checkbox" ? target.checked : target.value;
-    const force = { [event.target.name]: value };
+    const command = { [event.target.name]: value };
     this.setState(prevState => ({
-      force: { ...prevState.force, ...force }
+      command: { ...prevState.command, ...command }
     }));
   }
 
   render() {
-    const { speed } = this.state;
     const { classes } = this.props;
-    const states = renderDictionary(speed);
-    const selectsControl = checkboxes(speed);
+    const { command } = this.state;
+    const states = renderDictionary(command);
+    const { PVc, PPc } = command;
+    const selectsControl = [
+      { name: "PVc", value: PVc, disable: false },
+      { name: "PPc", value: PPc, disable: false }
+    ];
     return (
       <Grid
         container
@@ -229,12 +234,12 @@ class Speed extends React.Component {
   }
 }
 
-Speed.propTypes = {
+Command.propTypes = {
   classes: PropTypes.objectOf(PropTypes.string).isRequired
 };
 
-const SpeedForm = reduxForm({
+const CommandForm = reduxForm({
   form: "calibration"
-})(Speed);
+})(Command);
 
-export default withStyles(styles)(SpeedForm);
+export default withStyles(styles)(CommandForm);

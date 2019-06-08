@@ -25,16 +25,18 @@ import {
   Settings,
   ShowChart
 } from "@material-ui/icons";
-import { BrowserRouter, Route } from "react-router-dom";
+import { Router, Route } from "react-router-dom";
 import { connect } from "react-redux";
-
+import history from "../utils/history";
 import Configuration from "../Configuration/Configuration";
 import Calibration from "./Calibration/Calibration";
-import Test from "./Test";
 import Analysis from "./Analysis";
 import UserOptionsMenu from "./UserOptionsMenu";
 import Vibration from "./Calibration/Vibration";
 import Force from "./Calibration/Force";
+import Command from "./Calibration/Command";
+import Test from "../testModule/TestComponent";
+import ResetPassword from "./ResetPassword";
 
 const drawerWidth = 240;
 const drawerCloseWidth = 7;
@@ -45,7 +47,7 @@ const menuButtonRight = 36;
 const flexShrinkValue = 0;
 const optionsId = ["analysisId", "configurationId", "calibrationId", "testId"];
 
-const listMenu = (location, history) => {
+const listMenu = (location, histor) => {
   const list = ["analysis", "configuration", "calibration", "test"].map(
     (text, index) => {
       let name;
@@ -78,7 +80,7 @@ const listMenu = (location, history) => {
             onClick={() => {
               const to = `/${text}`;
               if (location.pathname !== to) {
-                history.push(to);
+                histor.push(to);
               }
             }}
             selected={location.pathname === `/+${text}`}
@@ -137,6 +139,8 @@ const RouteLogic = () => {
       <Route exact path="/test" component={() => <Test />} />
       <Route exact path="/vibration" component={() => <Vibration />} />
       <Route exact path="/force" component={() => <Force />} />
+      <Route exact path="/command" component={() => <Command />} />
+      <Route exact path="/reset-password" component={() => <ResetPassword />} />
     </main>
   );
 };
@@ -162,9 +166,9 @@ const SideBarMenu = class extends React.PureComponent {
     const { open } = this.state;
 
     return (
-      <BrowserRouter>
+      <Router history={history}>
         <Route
-          render={({ location, history }) => (
+          render={({ location }) => (
             <React.Fragment>
               {loadingVerifyingAuth && (
                 <div className={classes.root}>
@@ -201,7 +205,7 @@ const SideBarMenu = class extends React.PureComponent {
             </React.Fragment>
           )}
         />
-      </BrowserRouter>
+      </Router>
     );
   }
 };
