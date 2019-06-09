@@ -129,7 +129,7 @@ Antes de analisar as seguintes opções cheque o log para ter mais informações
   Mais detalhes podem ser encontrados [aqui](https://www.arduino.cc/en/Guide/Linux)
 </details>
 
-## Desenvolvimento
+## Guia de Desenvolvimento
 ### Subindo parte Web localmente
 
 *Todos os comandos incluem o comando de build para envitar erros de iniciante
@@ -262,3 +262,29 @@ Nesse caso foi usado o comando `analyze`, a lista completa de comandos
 pode ser encontrada [aqui](https://github.com/codeclimate/codeclimate#commands),
 ou então executando o serviço disponível no docker-compose sem passar nenhum
 comando em específico.
+
+### Scripts úteis
+
+Existem alguns scripts úteis para realizar debug e/ou auxiliar no desenvolvimento na pasta `utils` na raiz do projeto.
+
+**Não esquecer de instalar as dependências necessárias para o script que irá utilizar**
+
+#### Scripts disponíveis (utils)
+
+##### get_mqtt_data
+
+Obtém todos os dados enviados em subchannels de unbrake/galpao/
+
+**Exemplo de uso:**
+``` sh
+MQTT_KEY='minhakeyquetempermissãodefazeroqestoutentando' MQTT_HOST='unbrake-hom.ml' python3 get_mqtt_data.py
+```
+
+##### get_mqtt_data
+
+Envia dados aleatórios simulando dados de todos os principais sensores abrangidos pela aplicação
+
+**Exemplo de uso:**
+``` sh
+MQTT_KEY='minhakeyquetempermissãodefazeroqestoutentando' MQTT_HOST='unbrake.ml' python3 send_mqtt_mock_data.py
+```
