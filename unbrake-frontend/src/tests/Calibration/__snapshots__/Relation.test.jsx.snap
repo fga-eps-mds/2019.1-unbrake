@@ -1,0 +1,37 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`<Relation /> render() renders the component 1`] = `
+<Hoc
+  classes={
+    Object {
+      "checboxSize": "ReduxForm-checboxSize-9",
+      "checbox_control": "ReduxForm-checbox_control-8",
+      "checbox_field": "ReduxForm-checbox_field-10",
+      "configuration": "ReduxForm-configuration-7",
+      "container": "ReduxForm-container-1",
+      "form": "ReduxForm-form-6",
+      "formControl": "ReduxForm-formControl-5",
+      "grid": "ReduxForm-grid-4",
+      "menu": "ReduxForm-menu-3",
+      "textField": "ReduxForm-textField-2",
+    }
+  }
+  destroyOnUnmount={true}
+  enableReinitialize={false}
+  forceUnregisterOnUnmount={false}
+  form="calibration"
+  forwardedRef={null}
+  getFormState={[Function]}
+  keepDirtyOnReinitialize={false}
+  persistentSubmitErrors={false}
+  pure={true}
+  shouldAsyncValidate={[Function]}
+  shouldError={[Function]}
+  shouldValidate={[Function]}
+  shouldWarn={[Function]}
+  submitAsSideEffect={false}
+  touchOnBlur={true}
+  touchOnChange={false}
+  updateUnregisteredFields={false}
+/>
+`;
