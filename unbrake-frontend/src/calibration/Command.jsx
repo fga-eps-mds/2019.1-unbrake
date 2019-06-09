@@ -2,9 +2,9 @@ import React from "react";
 import PropTypes from "prop-types";
 import { reduxForm } from "redux-form";
 import { withStyles, Grid } from "@material-ui/core";
-import styles from "../Styles";
-import RealTimeChart from "../RealTimeChart";
-import { checkbox, field } from "../ComponentsForm";
+import styles from "../components/Styles";
+import RealTimeChart from "../components/RealTimeChart";
+import { checkbox, field } from "../components/ComponentsForm";
 
 const labelSecondary = name => {
   let nameLabel = "";
@@ -128,8 +128,8 @@ const allCheckbox = (selectsControl, classes, handleChange) => {
 const renderDictionary = command => {
   const directionary = [
     [
-      { name: "CCv", value: command.CCv, disable: true },
-      { name: "CCp", value: command.CCp, disable: true }
+      { name: "CHVC", value: command.CCv, disable: true },
+      { name: "CHPC", value: command.CCp, disable: true }
     ],
     [
       { name: "Vdc", value: command.Vdc, disable: true },
@@ -140,12 +140,12 @@ const renderDictionary = command => {
       { name: "PCmv", value: command.PCmv, disable: true }
     ],
     [
-      { name: "Vkmh", value: command.Vkmh, disable: false },
-      { name: "Pb", value: command.Pb, disable: false }
+      { name: "CUVC", value: command.Vkmh, disable: false },
+      { name: "CUPC", value: command.Pb, disable: false }
     ],
     [
-      { name: "VMkmh", value: command.VMkmh, disable: false },
-      { name: "PMb", value: command.PMb, disable: false }
+      { name: "MAVC", value: command.VMkmh, disable: false },
+      { name: "MAPC", value: command.PMb, disable: false }
     ]
   ];
   return directionary;
@@ -239,7 +239,8 @@ Command.propTypes = {
 };
 
 const CommandForm = reduxForm({
-  form: "calibration"
+  form: "calibration",
+  destroyOnUnmount: false
 })(Command);
 
 export default withStyles(styles)(CommandForm);
