@@ -1,7 +1,7 @@
 import React from "react";
 import Enzyme, { shallow } from "enzyme";
 import Adapter from "enzyme-adapter-react-16";
-import Force from "../../components/Calibration/Force";
+import Force from "../../calibration/Force";
 import ComponentTest from "../ComponentTest";
 
 Enzyme.configure({ adapter: new Adapter() });

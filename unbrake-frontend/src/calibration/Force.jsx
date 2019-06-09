@@ -2,21 +2,24 @@ import React from "react";
 import PropTypes from "prop-types";
 import { reduxForm } from "redux-form";
 import { withStyles, Grid } from "@material-ui/core";
-import styles from "../Styles";
-import RealTimeChart from "../RealTimeChart";
-import { checkbox, field } from "../ComponentsForm";
+import styles from "../components/Styles";
+import RealTimeChart from "../components/RealTimeChart";
+import { checkbox, field } from "../components/ComponentsForm";
 
 const labelSecondary = name => {
   let nameLabel = "";
   switch (name) {
-    case "Vkm":
-      nameLabel = "Velocidade (Km/h)";
+    case "OFF1":
+      nameLabel = "Offset 1";
       break;
-    case "Vms":
-      nameLabel = "Velocidade (m/s)";
+    case "OFF2":
+      nameLabel = "Offset 2";
       break;
-    case "DPkm":
-      nameLabel = "Distância percorrida (km)";
+    case "PFkgf1":
+      nameLabel = "Plota força 1(kgf)";
+      break;
+    case "PFkgf2":
+      nameLabel = "Plota força 2(kgf)";
       break;
     default:
       nameLabel = "";
@@ -28,29 +31,29 @@ const labelSecondary = name => {
 const label = name => {
   let nameLabel = "";
   switch (name) {
-    case "CHA":
-      nameLabel = "Canal de aquisição";
+    case "CHF1":
+      nameLabel = "Canal de aquisição 1";
       break;
-    case "Fhz":
-      nameLabel = "Frequência (Hz)";
+    case "CHF2":
+      nameLabel = "Canal de aquisição 2";
       break;
-    case "Rrpm":
-      nameLabel = "Rotação (RPM)";
+    case "Fmv1":
+      nameLabel = "Força 1(mv)";
       break;
-    case "RPm":
-      nameLabel = "Raio do pneu (m)";
+    case "Fmv2":
+      nameLabel = "Força 2(mv)";
       break;
-    case "PRrpm":
-      nameLabel = "Plota rotação (rpm)";
+    case "Fkgf1":
+      nameLabel = "Força 1(kgf)";
       break;
-    case "PVkmh":
-      nameLabel = "Plota velocidade (Km/h)";
+    case "Fkgf2":
+      nameLabel = "Força 2(kgf)";
       break;
-    case "PDPkm":
-      nameLabel = "Plota distândia percorrida (Km)";
+    case "FCF1":
+      nameLabel = "Fator de conversão 1";
       break;
-    case "ID":
-      nameLabel = "Inicializa Distancia";
+    case "FCF2":
+      nameLabel = "Fator de conversão 1";
       break;
     default:
       nameLabel = labelSecondary(name);
@@ -92,7 +95,7 @@ const allFields = (states, classes, handleChange) => {
         container
         item
         xs={12}
-        key={`fields ${value[0].name}`}
+        key={`fields ${value[1].name}`}
       >
         {rowField(value, classes, handleChange)}
       </Grid>
@@ -122,51 +125,49 @@ const allCheckbox = (selectsControl, classes, handleChange) => {
   return checks;
 };
 
-const renderDictionary = speed => {
+const renderDictionary = force => {
   const directionary = [
-    [{ name: "CHA", value: speed.CHA, disable: true }],
     [
-      { name: "Fhz", value: speed.Fhz, disable: true },
-      { name: "Vkm", value: speed.Vkm, disable: true }
+      { name: "CHF1", value: force.CHF1, disable: true },
+      { name: "CHF2", value: force.CHF2, disable: true }
     ],
     [
-      { name: "Rrpm", value: speed.Rrpm, disable: true },
-      { name: "Vms", value: speed.Vms, disable: true }
+      { name: "Fmv1", value: force.Fmv1, disable: true },
+      { name: "Fmv2", value: force.Fmv2, disable: true }
     ],
     [
-      { name: "RPm", value: speed.RPm, disable: true },
-      { name: "DPkm", value: speed.DPkm, disable: false }
+      { name: "Fkgf1", value: force.Fkgf1, disable: true },
+      { name: "Fkgf2", value: force.Fkgf2, disable: true }
+    ],
+    [
+      { name: "FCF1", value: force.FCF1, disable: false },
+      { name: "FCF2", value: force.FCF2, disable: false }
+    ],
+    [
+      { name: "OFF1", value: force.OFF1, disable: false },
+      { name: "OFF2", value: force.OFF2, disable: false }
     ]
   ];
   return directionary;
 };
 
-const checkboxes = speed => {
-  const { PRrpm, PVkmh, PDPkm, ID } = speed;
-  return [
-    { name: "PRrpm", value: PRrpm, disable: false },
-    { name: "PVkmh", value: PVkmh, disable: false },
-    { name: "PDPkm", value: PDPkm, disable: false },
-    { name: "ID", value: ID, disable: false }
-  ];
-};
-
-class Speed extends React.Component {
+class Force extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
-      speed: {
-        CHA: "", // canal de aquisição
-        Fhz: "", // frequencia
-        PRrpm: false, // plota rotação
-        Rrpm: "", // rotação
-        RPm: "", // raio pneu
-        PVkmh: false, // plota velocidade
-        Vkm: "", // velocidade km/h
-        Vms: "", // velocidade m/s
-        DPkm: "", // distância percorrida
-        PDPkm: false, // plota distância percorrida
-        ID: false // Inicializa distancia
+      force: {
+        CHF1: "", // canal de aquisição 1
+        CHF2: "", // canal de aquisição 2
+        PFkgf1: false, // plota força (kfg) 1
+        Fmv1: "", // força (mv) 1
+        Fmv2: "", // força (mv) 2
+        PFkgf2: false, // plota força (kfg) 1
+        Fkgf1: "", // força (kgf) 1
+        Fkgf2: "", // força (kgf) 2
+        FCF1: "", // fator de conversão 1
+        FCF2: "", // fator de conversão 2
+        OFF1: "", // offset de força 1
+        OFF2: "" // offset de força 2
       }
     };
     this.handleChange = this.handleChange.bind(this);
@@ -182,10 +183,14 @@ class Speed extends React.Component {
   }
 
   render() {
-    const { speed } = this.state;
+    const { force } = this.state;
+    const { PFkgf1, PFkgf2 } = force;
     const { classes } = this.props;
-    const states = renderDictionary(speed);
-    const selectsControl = checkboxes(speed);
+    const states = renderDictionary(force);
+    const selectsControl = [
+      { name: "PFkgf1", value: PFkgf1, disable: false },
+      { name: "PFkgf2", value: PFkgf2, disable: false }
+    ];
     return (
       <Grid
         container
@@ -229,12 +234,13 @@ class Speed extends React.Component {
   }
 }
 
-Speed.propTypes = {
+Force.propTypes = {
   classes: PropTypes.objectOf(PropTypes.string).isRequired
 };
 
-const SpeedForm = reduxForm({
-  form: "calibration"
-})(Speed);
+const ForceForm = reduxForm({
+  form: "calibration",
+  destroyOnUnmount: false
+})(Force);
 
-export default withStyles(styles)(SpeedForm);
+export default withStyles(styles)(ForceForm);

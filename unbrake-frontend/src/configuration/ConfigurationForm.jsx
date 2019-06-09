@@ -218,6 +218,7 @@ class ConfigurationForm extends React.Component {
 
   shouldComponentUpdate(nextProps) {
     const { configuration, dispatch } = this.props;
+
     if (configuration !== nextProps.configuration) {
       const rightConfig = Object.assign({}, nextProps.configuration);
       const next = nextProps.configuration.CONFIG_ENSAIO;
