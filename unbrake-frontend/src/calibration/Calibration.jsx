@@ -1,10 +1,12 @@
 import React from "react";
+import { connect } from "react-redux";
 import "../App.css";
 import PropTypes from "prop-types";
 import { withStyles } from "@material-ui/core/styles";
 import AppBar from "@material-ui/core/AppBar";
 import Tabs from "@material-ui/core/Tabs";
 import Tab from "@material-ui/core/Tab";
+import Button from "@material-ui/core/Button";
 import Typography from "@material-ui/core/Typography";
 import CalibrationUpload from "./CalibrationUpload";
 import Vibration from "./Vibration";
@@ -62,6 +64,22 @@ const styles = theme => ({
   }
 });
 
+const validateCalibration = calibration => {
+  if (Object.values(calibration).length) {
+    return Object.values(calibration).every(x => x !== "");
+  }
+  return false;
+};
+
+/*
+ *const getEmptyFields = (calibration) => {
+ *  if(Object.values(calibration).length){
+ *    return Object.keys(calibration).every(k => (calibration[k] === "" ? k:null))
+ *  }
+ *  return []
+ *}
+ */
+
 class Calibration extends React.Component {
   constructor(props) {
     super(props);
@@ -69,10 +87,22 @@ class Calibration extends React.Component {
       value: 0
     };
     this.handleChange = this.handleChange.bind(this);
+    this.handleSubmit = this.handleSubmit.bind(this);
   }
 
   handleChange(event, value) {
     this.setState({ value });
+  }
+
+  handleSubmit() {
+    const { calibration } = this.props;
+    const { calibrationValues } = calibration.values;
+    validateCalibration(calibrationValues);
+    /*
+     * Se estiver correto, submete a calibração e exibe a notificação verde
+     * Case contrário, mostra a notificação mostrando os campos que estão
+     * vazios
+     */
   }
 
   render() {
@@ -80,30 +110,48 @@ class Calibration extends React.Component {
     const { value } = this.state;
 
     return (
-      <div className={classes.root}>
-        <AppBar color="inherit" className={classes.appBar} position="relative">
-          <Tabs centered value={value} onChange={this.handleChange}>
-            <Tab label="Gerais" />
-            <Tab label="Temperatura" />
-            <Tab label="Força" />
-            <Tab label="Velocidade" />
-            <Tab label="Vibração" />
-            <Tab label="Comando" />
-          </Tabs>
-        </AppBar>
-        {value === generalConfigsOption && GeneralConfigs()}
-        {value === temperatureOption && <Temperature />}
-        {value === forceOption && <Force />}
-        {value === speedOption && <Speed />}
-        {value === vibrationOption && <Vibration />}
-        {value === commandOption && <Command />}
+      <div>
+        <div className={classes.root}>
+          <AppBar
+            color="inherit"
+            className={classes.appBar}
+            position="relative"
+          >
+            <Tabs centered value={value} onChange={this.handleChange}>
+              <Tab label="Gerais" />
+              <Tab label="Temperatura" />
+              <Tab label="Força" />
+              <Tab label="Velocidade" />
+              <Tab label="Vibração" />
+              <Tab label="Comando" />
+            </Tabs>
+            <Button onClick={this.handleSubmit}>Cadastrar</Button>
+          </AppBar>
+          {value === generalConfigsOption && GeneralConfigs()}
+          {value === temperatureOption && <Temperature />}
+          {value === forceOption && <Force />}
+          {value === speedOption && <Speed />}
+          {value === vibrationOption && <Vibration />}
+          {value === commandOption && <Command />}
+        </div>
       </div>
     );
   }
 }
 
-Calibration.propTypes = {
-  classes: PropTypes.objectOf(PropTypes.string).isRequired
+function mapStateToProps(state) {
+  return {
+    calibration: state.form.calibration
+  };
+}
+
+Calibration.defaultProps = {
+  calibration: { values: {} }
 };
 
-export default withStyles(styles)(Calibration);
+Calibration.propTypes = {
+  classes: PropTypes.objectOf(PropTypes.string).isRequired,
+  calibration: PropTypes.objectOf(PropTypes.string)
+};
+
+export default connect(mapStateToProps)(withStyles(styles)(Calibration));
