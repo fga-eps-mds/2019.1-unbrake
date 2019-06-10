@@ -37,7 +37,7 @@ const styles = theme => ({
     padding: "30px"
   },
   configuration: {
-    minHeight: "100vh"
+    marginTop: "80px"
   }
 });
 
