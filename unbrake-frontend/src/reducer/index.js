@@ -11,7 +11,7 @@ const reducers = combineReducers({
   configReducer: ConfigReducer,
   authReducer: AuthReducer,
   notificationReducer: NotificationReducer,
-  redirect: RedirectReducer
+  redirect: RedirectReducer,
   fileReducer: FileReducer
 });
 
