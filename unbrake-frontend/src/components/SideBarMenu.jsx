@@ -28,16 +28,12 @@ import {
 import { Router, Route } from "react-router-dom";
 import { connect } from "react-redux";
 import history from "../utils/history";
-import Configuration from "../Configuration/Configuration";
-import Calibration from "./Calibration/Calibration";
+import Configuration from "../configuration/Configuration";
+import Calibration from "../calibration/Calibration";
 import Analysis from "./Analysis";
 import UserOptionsMenu from "./UserOptionsMenu";
-import Vibration from "./Calibration/Vibration";
-import Force from "./Calibration/Force";
-import Command from "./Calibration/Command";
 import Test from "../testModule/TestComponent";
 import ResetPassword from "./ResetPassword";
-
 
 const drawerWidth = 240;
 const drawerCloseWidth = 7;
@@ -138,14 +134,10 @@ const RouteLogic = () => {
       <Route exact path="/analysis" component={() => <Analysis />} />
       <Route exact path="/calibration" component={() => <Calibration />} />
       <Route exact path="/test" component={() => <Test />} />
-      <Route exact path="/vibration" component={() => <Vibration />} />
-      <Route exact path="/force" component={() => <Force />} />
-      <Route exact path="/command" component={() => <Command />} />
       <Route exact path="/reset-password" component={() => <ResetPassword />} />
     </main>
   );
 };
-
 const SideBarMenu = class extends React.PureComponent {
   constructor(props) {
     super(props);
@@ -165,7 +157,6 @@ const SideBarMenu = class extends React.PureComponent {
   render() {
     const { classes, theme, loadingVerifyingAuth } = this.props;
     const { open } = this.state;
-
     return (
       <Router history={history}>
         <Route
@@ -210,7 +201,6 @@ const SideBarMenu = class extends React.PureComponent {
     );
   }
 };
-
 const appBarTransition = (theme, duration) =>
   theme.transitions.create(["width", "margin"], {
     easing: theme.transitions.easing.sharp,
@@ -221,7 +211,6 @@ const drawerTransition = (theme, duration) =>
     easing: theme.transitions.easing.sharp,
     duration
   });
-
 SideBarMenu.propTypes = {
   classes: PropTypes.objectOf(PropTypes.string).isRequired,
   theme: PropTypes.oneOfType([
@@ -236,17 +225,14 @@ const appBar = theme => ({
   zIndex: theme.zIndex.drawer + flexGrowValue,
   transition: appBarTransition(theme, theme.transitions.duration.leavingScreen)
 });
-
 const appBarShift = theme => ({
   marginLeft: drawerWidth,
   width: `calc(100% - ${drawerWidth}px)`,
   transition: appBarTransition(theme, theme.transitions.duration.enteringScreen)
 });
-
 const mapStateToProps = state => ({
   loadingVerifyingAuth: state.authReducer.loadingVerifyingAuth
 });
-
 const styles = theme => ({
   root: {
     display: "flex"
@@ -295,7 +281,6 @@ const styles = theme => ({
     padding: theme.spacing.unit + theme.spacing.unit + theme.spacing.unit
   }
 });
-
 export default connect(mapStateToProps)(
   withStyles(styles, { withTheme: true })(SideBarMenu)
 );

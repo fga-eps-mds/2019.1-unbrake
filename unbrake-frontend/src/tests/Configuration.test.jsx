@@ -3,7 +3,7 @@ import Enzyme, { shallow } from "enzyme";
 import Adapter from "enzyme-adapter-react-16";
 import { createStore } from "redux";
 import { Provider } from "react-redux";
-import Configuration from "../Configuration/Configuration";
+import Configuration from "../configuration/Configuration";
 import ComponentTest from "./ComponentTest";
 import reducers from "../reducer/index";
 
