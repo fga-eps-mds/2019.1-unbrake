@@ -5,6 +5,7 @@ import { createStore, applyMiddleware } from "redux";
 import { MuiThemeProvider, createMuiTheme } from "@material-ui/core/styles";
 import thunk from "redux-thunk";
 import reducers from "./reducer/index";
+import NotificationContainer from "./components/Notification";
 import Routes from "./routes/Routes";
 
 const theme = createMuiTheme({
@@ -30,6 +31,7 @@ const App = () => (
     <MuiThemeProvider theme={theme}>
       <React.Fragment>
         <Routes />
+        <NotificationContainer />
       </React.Fragment>
     </MuiThemeProvider>
   </Provider>
