@@ -14,7 +14,6 @@
 package main
 
 import (
-	//"fmt"
 	"log"
 	"os"
 	"os/signal"
@@ -25,96 +24,116 @@ import (
 	"sync"
 	"time"
 
+	emitter "github.com/emitter-io/go/v2"
 	"github.com/getlantern/systray"
 	"github.com/tarm/serial"
 )
 
-// Configurations constants
+// General application constants
 const (
-	BufferSize            = 48
-	SimulatorPortEnv      = "simulatorPort"
-	DefaultPort           = "/dev/ttyACM0"
-	BaudRate              = 115200
-	FrequencyReading      = 10
-	LogFilePath           = "unbrake.log"
-	ApplicationFolderName = "UnBrake"
-	UpperSpeedLimit       = 150
-	InferiorSpeedLimit    = 150
-	TimeSleepWater        = 3
-	TimeCooldown          = 3
-	TemperatureLimit      = 400
+	logFilePath           = "unbrake.log"
+	applicationFolderName = "UnBrake"
+)
+
+// Serial constants
+const (
+	bufferSize       = 48
+	simulatorPortEnv = "SIMULATOR_PORT"
+	defaultPort      = "/dev/ttyACM0"
+	baudRate         = 115200
+	frequencyReading = 10
+
+	upperSpeedLimit       = 150
+	lowerSpeedLimit       = 150
+	timeSleepWater        = 3
+	timeCooldown          = 3
+	temperatureLimit      = 400
 	rightSizeOfSplit      = 11
 	delayAcelerateToBrake = 2
+)
+
+// MQTT constants
+const (
+	mqttHostEnv       = "MQTT_HOST"
+	mqttDefaultHost   = "unbrake.ml"
+	mqttDefaultPort   = "8080"
+	mqttPortEnv       = "MQTT_PORT"
+	mqttChannelPrefix = "unbrake/galpao"
+	mqttKeyEnv        = "MQTT_KEY"
 )
 
 // Channels for controlling execution
 var wg sync.WaitGroup
 var stopCollectingDataCh chan bool
 var sigsCh chan os.Signal
-var temperatureCh = make(chan [2]int)
-var speedCh = make(chan int)
 var portCh = make(chan *serial.Port, 3)
+var frequencyCh = make(chan int)
+var temperatureCh = make(chan [2]int)
+var brakingForceCh = make(chan [2]int)
+var vibrationCh = make(chan int)
+var speedCh = make(chan int)
+var pressureCh = make(chan int)
 
 // Flags with intermediary states
 var stabilizing = false
 var throwingWater = false
 
 // Global snub which represents state of running test
-var snub = Snub{state: Acelerate}
+var snub = Snub{state: acelerate}
 
 // Possible states of a snub, value is ascii which
 // represents its state
 const (
-	CoolDown            = string(iota + '$') //'$'
-	Acelerate                                //'%'
-	Brake                                    //'&'
-	AcelerateBrake                           //'''
-	CoolDownWater                            //'('
-	AcelerateWater                           //')'
-	BrakeWater                               //'*'
-	AcelerateBrakeWater                      //'+'
+	cooldown            = string(iota + '$') //'$'
+	acelerate                                //'%'
+	brake                                    //'&'
+	acelerateBrake                           //'''
+	cooldownWater                            //'('
+	acelerateWater                           //')'
+	brakeWater                               //'*'
+	acelerateBrakeWater                      //'+'
 )
 
 // Mapping current state to next state
 var currentToNextState = map[string]string{
-	Acelerate:      Brake,
-	Brake:          CoolDown,
-	CoolDown:       Acelerate,
-	AcelerateWater: BrakeWater,
-	BrakeWater:     CoolDownWater,
-	CoolDownWater:  AcelerateWater,
+	acelerate:      brake,
+	brake:          cooldown,
+	cooldown:       acelerate,
+	acelerateWater: brakeWater,
+	brakeWater:     cooldownWater,
+	cooldownWater:  acelerateWater,
 }
 
 // Regular state to matching state but throwing water
 var offToOnWater = map[string]string{
-	Acelerate:      AcelerateWater,
-	Brake:          BrakeWater,
-	CoolDown:       CoolDownWater,
-	AcelerateWater: AcelerateWater,
-	BrakeWater:     BrakeWater,
-	CoolDownWater:  CoolDownWater,
+	acelerate:      acelerateWater,
+	brake:          brakeWater,
+	cooldown:       cooldownWater,
+	acelerateWater: acelerateWater,
+	brakeWater:     brakeWater,
+	cooldownWater:  cooldownWater,
 }
 
 // From a throwing water state to a regular state
 var onToOffWater = map[string]string{
-	AcelerateWater: Acelerate,
-	BrakeWater:     Brake,
-	CoolDownWater:  CoolDown,
-	Acelerate:      Acelerate,
-	Brake:          Brake,
-	CoolDown:       CoolDown,
+	acelerateWater: acelerate,
+	brakeWater:     brake,
+	cooldownWater:  cooldown,
+	acelerate:      acelerate,
+	brake:          brake,
+	cooldown:       cooldown,
 }
 
 // Ascii character which represents state to state name
 var byteToStateName = map[string]string{
-	"$":  "CoolDown",
-	"%":  "Acelerate",
-	"&":  "Brake",
-	"\"": "AcelerateBrake",
-	"(":  "CoolDownWater",
-	")":  "AcelerateWater",
-	"*":  "BrakeWater",
-	"+":  "AcelerateBrakeWater",
+	"$":  "cooldown",
+	"%":  "acelerate",
+	"&":  "brake",
+	"\"": "acelerateBrake",
+	"(":  "cooldownWater",
+	")":  "acelerateWater",
+	"*":  "brakeWater",
+	"+":  "acelerateBrakeWater",
 }
 
 // Snub is a cycle of aceleration, braking and cooldown,
@@ -135,7 +154,7 @@ func main() {
 	signal.Notify(sigsCh, os.Interrupt)
 
 	onExit := func() {
-		snub.state = CoolDown
+		snub.state = cooldown
 		log.Println("Exiting...")
 	}
 	systray.Run(onReady, onExit)
@@ -173,11 +192,11 @@ func (snub *Snub) turnOnWater(port *serial.Port) {
 	if err != nil {
 		log.Fatal(err)
 	}
-	log.Printf("Turn on water(%vs): %v ---> %v\n", TimeSleepWater, byteToStateName[oldState], byteToStateName[snub.state])
+	log.Printf("Turn on water(%vs): %v ---> %v\n", timeSleepWater, byteToStateName[oldState], byteToStateName[snub.state])
 
 	snub.mux.Unlock()
 
-	time.Sleep(time.Second * TimeSleepWater)
+	time.Sleep(time.Second * timeSleepWater)
 
 	snub.mux.Lock()
 
@@ -208,7 +227,7 @@ func (snub *Snub) handleBrake(port *serial.Port) {
 
 	snub.mux.Unlock()
 
-	time.Sleep(time.Second * TimeCooldown)
+	time.Sleep(time.Second * timeCooldown)
 
 	snub.mux.Lock()
 
@@ -249,6 +268,7 @@ func onReady() {
 
 	wg.Add(1)
 	go collectData()
+	go publishAll()
 	go handleSnubState()
 
 	wg.Wait()
@@ -259,18 +279,18 @@ func onReady() {
 func collectData() {
 	defer wg.Done()
 
-	const ReadingDelay = time.Second / FrequencyReading
+	const ReadingDelay = time.Second / frequencyReading
 	simulatorPort := getSimulatorPort()
 
 	log.Println("Initializing collectData routine...")
 	log.Printf("Simulator Port = %s", simulatorPort)
-	log.Printf("Buffer size = %d", BufferSize)
-	log.Printf("Baud rate = %d", BaudRate)
+	log.Printf("Buffer size = %d", bufferSize)
+	log.Printf("Baud rate = %d", baudRate)
 	log.Printf("Reading delay = %v", ReadingDelay)
 
 	c := &serial.Config{
 		Name: simulatorPort,
-		Baud: BaudRate,
+		Baud: baudRate,
 	}
 
 	port, err := serial.OpenPort(c)
@@ -288,7 +308,7 @@ func collectData() {
 		select {
 		case stop := <-stopCollectingDataCh:
 			if stop {
-				_, err := port.Write([]byte(CoolDown))
+				_, err := port.Write([]byte(cooldown))
 				if err != nil {
 					log.Fatal(err)
 				}
@@ -296,7 +316,7 @@ func collectData() {
 			}
 		case sig := <-sigsCh:
 			log.Println("Signal received: ", sig)
-			_, err := port.Write([]byte(CoolDown))
+			_, err := port.Write([]byte(cooldown))
 			if err != nil {
 				log.Fatal(err)
 			}
@@ -317,7 +337,7 @@ func getData(port *serial.Port, command string) []byte {
 		log.Fatal(err)
 	}
 
-	buf := make([]byte, BufferSize)
+	buf := make([]byte, bufferSize)
 	n, err = port.Read(buf)
 	if err != nil {
 		log.Fatal(err)
@@ -329,17 +349,112 @@ func getData(port *serial.Port, command string) []byte {
 
 	if len(split) == rightSizeOfSplit {
 
-		speed, _ := strconv.Atoi(split[6])
+		const (
+			frequencyIdx = iota
+			temperature1Idx
+			temperature2Idx
+			brakingForce1Idx
+			brakingForce2Idx
+			vibrationIdx
+			speedIdx // In duty cycle
+			pressureIdx
+		)
 
+		frequency, _ := strconv.Atoi(split[frequencyIdx])
+		frequencyCh <- frequency
+
+		firstTemperature, _ := strconv.Atoi(split[temperature1Idx])
+		secondTemperature, _ := strconv.Atoi(split[temperature2Idx])
+		temperatureCh <- [2]int{firstTemperature, secondTemperature}
+
+		firstBrakingForce, _ := strconv.Atoi(split[temperature1Idx])
+		secondBrakingForce, _ := strconv.Atoi(split[temperature2Idx])
+		brakingForceCh <- [2]int{firstBrakingForce, secondBrakingForce}
+
+		vibration, _ := strconv.Atoi(split[vibrationIdx])
+		vibrationCh <- vibration
+
+		speed, _ := strconv.Atoi(split[speedIdx])
 		speedCh <- speed
 
-		firstTemperature, _ := strconv.Atoi(split[1])
-		secondTemperature, _ := strconv.Atoi(split[2])
-
-		temperatureCh <- [2]int{firstTemperature, secondTemperature}
+		pressure, _ := strconv.Atoi(split[pressureIdx])
+		pressureCh <- pressure
 	}
 
 	return buf
+}
+
+func publishAll() {
+	go func() {
+		for {
+			publishData(strconv.Itoa(<-frequencyCh), "/frequency")
+		}
+	}()
+
+	go func() {
+		for {
+			temperatureData := <-temperatureCh
+			publishData(strconv.Itoa(temperatureData[0]), "/temperature/sensor1")
+			publishData(strconv.Itoa(temperatureData[1]), "/temperature/sensor2")
+		}
+	}()
+
+	go func() {
+		for {
+			brakingForceData := <-brakingForceCh
+			publishData(strconv.Itoa(brakingForceData[0]), "/brakingForce/sensor1")
+			publishData(strconv.Itoa(brakingForceData[1]), "/brakingForce/sensor2")
+		}
+	}()
+
+	go func() {
+		for {
+			publishData(strconv.Itoa(<-vibrationCh), "/vibration")
+		}
+	}()
+
+	go func() {
+		for {
+			publishData(strconv.Itoa(<-speedCh), "/speed")
+		}
+	}()
+
+	go func() {
+		for {
+			publishData(strconv.Itoa(<-pressureCh), "/pressure")
+		}
+	}()
+}
+
+// Publish data to MQTT broker
+func publishData(data string, subChannel string) {
+	key, doesExists := os.LookupEnv(mqttKeyEnv)
+	if !doesExists {
+		log.Fatal("MQTT key not set!!!")
+	}
+
+	channel, data := mqttChannelPrefix+subChannel, data
+
+	client, _ := emitter.Connect(getMqttHost(), func(_ *emitter.Client, msg emitter.Message) {
+		log.Printf("Sent message: '%s' topic: '%s'\n", msg.Payload(), msg.Topic())
+	})
+
+	client.Publish(key, channel, data)
+}
+
+// Get complete host name with port of the MQTT broker
+func getMqttHost() string {
+	host, doesExists := os.LookupEnv(mqttHostEnv)
+	if !doesExists {
+		host = mqttDefaultHost
+	}
+
+	port, doesExists := os.LookupEnv(mqttPortEnv)
+	if !doesExists {
+		port = mqttDefaultPort
+	}
+
+	return "tcp://" + host + ":" + port
 }
 
 // Will manage the state of running snub, handling all state transitions,
@@ -353,8 +468,8 @@ func handleSnubState() {
 
 		case speed := <-speedCh:
 
-			if (snub.state == Acelerate || snub.state == AcelerateWater) && !stabilizing {
-				if speed >= UpperSpeedLimit {
+			if (snub.state == acelerate || snub.state == acelerateWater) && !stabilizing {
+				if speed >= upperSpeedLimit {
 					go snub.handleAcelerate()
 					_, err := port.Write([]byte(snub.state))
 					if err != nil {
@@ -363,16 +478,16 @@ func handleSnubState() {
 				}
 			}
 
-			if snub.state == Brake || snub.state == BrakeWater {
-				if speed < InferiorSpeedLimit {
+			if snub.state == brake || snub.state == brakeWater {
+				if speed < lowerSpeedLimit {
 					go snub.handleBrake(port)
 				}
 			}
 
 		case temperature := <-temperatureCh:
 
-			if (temperature[0] > TemperatureLimit || temperature[1] > TemperatureLimit) && !throwingWater {
-				if snub.state == Acelerate || snub.state == Brake || snub.state == CoolDown {
+			if (temperature[0] > temperatureLimit || temperature[1] > temperatureLimit) && !throwingWater {
+				if snub.state == acelerate || snub.state == brake || snub.state == cooldown {
 					go snub.turnOnWater(port)
 				}
 			}
@@ -388,13 +503,13 @@ func handleSnubState() {
 func getLogFile() *os.File {
 	logPath := ""
 	if runtime.GOOS != "windows" {
-		logPath = path.Join("/home", os.Getenv("USER"), ApplicationFolderName, "logs")
+		logPath = path.Join("/home", os.Getenv("USER"), applicationFolderName, "logs")
 	} else {
-		logPath = path.Join(os.Getenv("APPDATA"), ApplicationFolderName, "logs")
+		logPath = path.Join(os.Getenv("APPDATA"), applicationFolderName, "logs")
 	}
 
 	os.MkdirAll(logPath, os.ModePerm)
-	logPath = path.Join(logPath, LogFilePath)
+	logPath = path.Join(logPath, logFilePath)
 
 	logFile, err := os.OpenFile(logPath, os.O_SYNC|os.O_WRONLY|os.O_CREATE|os.O_APPEND, 0666)
 	if err != nil {
@@ -410,15 +525,10 @@ func getLogFile() *os.File {
 func getSimulatorPort() string {
 	log.Println("Getting simulator port...")
 
-	simulatorPort, doesExists := os.LookupEnv(SimulatorPortEnv)
+	simulatorPort, doesExists := os.LookupEnv(simulatorPortEnv)
 
 	if !doesExists {
-		err := os.Setenv(SimulatorPortEnv, DefaultPort)
-		if err != nil {
-			log.Fatal(err)
-		}
-
-		simulatorPort = os.Getenv(SimulatorPortEnv)
+		simulatorPort = defaultPort
 	}
 
 	log.Println("Got simulator port: ", simulatorPort)

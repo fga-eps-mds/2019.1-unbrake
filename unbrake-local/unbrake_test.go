@@ -6,40 +6,40 @@ import (
 
 func TestHandleAcelerate(t *testing.T) {
 
-	snub := Snub{state: Acelerate}
+	snub := Snub{state: acelerate}
 	snub.handleAcelerate()
 
-	if snub.state != Brake {
-		t.Errorf("Wrong state %v != %v\n", snub.state, Brake)
+	if snub.state != brake {
+		t.Errorf("Wrong state %v != %v\n", snub.state, brake)
 	}
 
-	snub.state = AcelerateWater
+	snub.state = acelerateWater
 	snub.handleAcelerate()
 
-	if snub.state != BrakeWater {
-		t.Errorf("Wrong state %v != %v\n", snub.state, BrakeWater)
+	if snub.state != brakeWater {
+		t.Errorf("Wrong state %v != %v\n", snub.state, brakeWater)
 	}
 
 }
 
 func TestUpdateStateWater(t *testing.T) {
 
-	snub := Snub{state: AcelerateWater}
+	snub := Snub{state: acelerateWater}
 	snub.state = currentToNextState[snub.state]
 
-	if snub.state != BrakeWater {
-		t.Errorf("Wrong state %v != %v", snub.state, BrakeWater)
+	if snub.state != brakeWater {
+		t.Errorf("Wrong state %v != %v", snub.state, brakeWater)
 	}
 
 	snub.state = currentToNextState[snub.state]
 
-	if snub.state != CoolDownWater {
-		t.Errorf("Wrong state %v != %v", snub.state, CoolDownWater)
+	if snub.state != cooldownWater {
+		t.Errorf("Wrong state %v != %v", snub.state, cooldownWater)
 	}
 
 	snub.state = currentToNextState[snub.state]
 
-	if snub.state != AcelerateWater {
-		t.Errorf("Wrong state %v != %v", snub.state, AcelerateWater)
+	if snub.state != acelerateWater {
+		t.Errorf("Wrong state %v != %v", snub.state, acelerateWater)
 	}
 }
