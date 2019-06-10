@@ -67,7 +67,7 @@ before_install:
   - openssl aes-256-cbc -K $encrypted_46d61bdc678c_key -iv $encrypted_46d61bdc678c_iv -in deploy/deploy_key.enc -out deploy/deploy_key -d
 
   # MQTT environment variables
-  - openssl aes-256-cbc -K $encrypted_a8aa7a1b7e93_key -iv $encrypted_a8aa7a1b7e93_iv -in .env_mqtt.enc -out ../.env_mqtt -d
+  - openssl aes-256-cbc -K $encrypted_a8aa7a1b7e93_key -iv $encrypted_a8aa7a1b7e93_iv -in deploy/.env_mqtt.enc -out deploy/.env_mqtt -d
 
 
 before_script:

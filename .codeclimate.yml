@@ -94,3 +94,4 @@ exclude_patterns:
   - unbrake-api/unbrake_api/settings.py
   - unbrake-api/unbrake_api/runner.py
   - unbrake-api/production/settings.py
+  - utils/*
