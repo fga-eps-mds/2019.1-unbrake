@@ -1,19 +1,21 @@
 import React from "react";
 import { connect } from "react-redux";
 import "../App.css";
-import PropTypes from "prop-types";
 import { withStyles } from "@material-ui/core/styles";
 import AppBar from "@material-ui/core/AppBar";
 import Tabs from "@material-ui/core/Tabs";
 import Tab from "@material-ui/core/Tab";
 import Button from "@material-ui/core/Button";
 import Typography from "@material-ui/core/Typography";
+import PropTypes from "prop-types";
 import CalibrationUpload from "./CalibrationUpload";
 import Vibration from "./Vibration";
 import Force from "./Force";
 import Temperature from "./Temperature";
 import Command from "./Command";
 import Speed from "./Speed";
+
+import { messageSistem } from "../actions/NotificationActions";
 
 const TabPadding = 24;
 const borderRadius = 2.5;
@@ -23,6 +25,32 @@ const forceOption = 2;
 const speedOption = 3;
 const vibrationOption = 4;
 const commandOption = 5;
+const empty = 0;
+
+const allVariablesCalib = [
+  "CHT1",
+  "FCT1",
+  "OFT1",
+  "CHT2",
+  "FCT2",
+  "OFT2",
+  "CHF1",
+  "FCF1",
+  "OFF1",
+  "CHF2",
+  "FCF2",
+  "OFF2",
+  "CHR1",
+  "RAP",
+  "CHVB",
+  "FCVB",
+  "OFVB",
+  "CHVC",
+  "CUVC",
+  "MAVC",
+  "CUPC",
+  "MAPC"
+];
 
 const GeneralConfigs = () => (
   <div className="App">
@@ -64,12 +92,24 @@ const styles = theme => ({
   }
 });
 
-const validateCalibration = calibration => {
-  if (Object.values(calibration).length) {
-    return Object.values(calibration).every(x => x !== "");
+async function validateCalibration(calibration, sendMessage) {
+  let message = "";
+
+  for (const key of Object.values(allVariablesCalib)) {
+    if (calibration[key] === undefined || calibration[key].length === empty) {
+      if (message === "") message = `O(s) campos ${key}`;
+      else message += `, ${key}`;
+    }
   }
-  return false;
-};
+  if (message !== "") {
+    message += " está(ão) vazios";
+    sendMessage({
+      message,
+      variante: "error",
+      condition: true
+    });
+  }
+}
 
 /*
  *const getEmptyFields = (calibration) => {
@@ -96,8 +136,9 @@ class Calibration extends React.Component {
 
   handleSubmit() {
     const { calibration } = this.props;
-    const { calibrationValues } = calibration.values;
-    validateCalibration(calibrationValues);
+    const calibrationValues = calibration.values;
+    const { sendMessage } = this.props;
+    validateCalibration(calibrationValues, sendMessage);
     /*
      * Se estiver correto, submete a calibração e exibe a notificação verde
      * Case contrário, mostra a notificação mostrando os campos que estão
@@ -139,6 +180,10 @@ class Calibration extends React.Component {
   }
 }
 
+Calibration.propTypes = {
+  sendMessage: PropTypes.func.isRequired
+};
+
 function mapStateToProps(state) {
   return {
     calibration: state.form.calibration
@@ -148,10 +193,16 @@ function mapStateToProps(state) {
 Calibration.defaultProps = {
   calibration: { values: {} }
 };
+const mapDispatchToProps = dispatch => ({
+  sendMessage: payload => dispatch(messageSistem(payload))
+});
 
 Calibration.propTypes = {
   classes: PropTypes.objectOf(PropTypes.string).isRequired,
   calibration: PropTypes.objectOf(PropTypes.string)
 };
 
-export default connect(mapStateToProps)(withStyles(styles)(Calibration));
+export default connect(
+  mapStateToProps,
+  mapDispatchToProps
+)(withStyles(styles)(Calibration));
