@@ -1,0 +1,8 @@
+#!/bin/bash
+
+SELF_PATH="$(dirname $(readlink -f "$0"))"
+. "$SELF_PATH/functions.sh"
+cd "$SELF_PATH/.."
+
+ENTRY="gofmt" ./scripts/run -w -s .
+echo 'Files fixed!'

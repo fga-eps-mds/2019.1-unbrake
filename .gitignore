@@ -1,5 +1,8 @@
-    # Created by https://www.gitignore.io/api/node,reactnative
+# Created by https://www.gitignore.io/api/node,reactnative
 # Edit at https://www.gitignore.io/?templates=node,reactnative
+
+# Vim
+*.sw[po]
 
 # Docker Secrets
 */secrets/*
@@ -9,6 +12,14 @@
 deploy/api
 deploy/frontend
 deploy/secrets
+deploy/.env_mqtt
+
+### Go ###
+*.exe
+unbrake-local/bin/*
+unbrake-local/unbrake
+unbrake-local/unbrake.exe
+unbrake-local/coverage.*
 
 ### Node ###
 # Logs
@@ -76,12 +87,6 @@ __pycache__/
 local_settings.py
 db.sqlite3
 media
-
-# Migrations
-# Will be commited only when merging to master
-**/migrations/*
-!**/migrations/__init__.py
-
 
 # If your build process includes running collectstatic, then you probably don't need or want to include staticfiles/
 # in your Git repository. Update and uncomment the following line accordingly.

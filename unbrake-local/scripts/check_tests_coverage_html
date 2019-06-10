@@ -1,0 +1,12 @@
+#!/bin/bash
+
+SELF_PATH="$(dirname $(readlink -f "$0"))"
+. "$SELF_PATH/functions.sh"
+cd "$SELF_PATH/.."
+
+run_command './scripts/run test -race -coverprofile=coverage.out' \
+  && ./scripts/run tool cover -html=coverage.out -o=coverage.html \
+  && [ -n "$BROWSER" ] \
+  && $BROWSER coverage.html \
+  || echo -e "\n\033[0;32mCoverage collected!!!\033[0m" \
+  && echo -e "Copy: '\033[0;32mfile://$SELF_PATH/../coverage.html\033[0m' to your browser and see the results!"

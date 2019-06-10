@@ -24,6 +24,8 @@ env:
   global:
     - DOCKER_COMPOSE_VERSION=1.23.2
 
+    - DOCKER_DEVELOPMENT_TAG="latest-development"
+
     # Staging things
     - DOCKER_STAGING_TMP_TAG="latest-staging-tmp"
     - DOCKER_STAGING_TAG=latest-staging
@@ -55,13 +57,19 @@ before_install:
   - sudo apt-get update
   - sudo apt-get -y -o Dpkg::Options::="--force-confnew" install docker-ce
 
-  # Decrypt secrets
+  # Decrypt API secrets
   - openssl aes-256-cbc -K $encrypted_60c0c29d8825_key -iv $encrypted_60c0c29d8825_iv -in unbrake-api/secrets/API_DJANGO_SECRET_KEY.enc -out unbrake-api/secrets/API_DJANGO_SECRET_KEY -d
   - openssl aes-256-cbc -K $encrypted_0ee7f2b702ec_key -iv $encrypted_0ee7f2b702ec_iv -in unbrake-api/secrets/DB_PASSWORD.enc -out unbrake-api/secrets/DB_PASSWORD -d
   - openssl aes-256-cbc -K $encrypted_30c4033c2e8d_key -iv $encrypted_30c4033c2e8d_iv -in unbrake-api/secrets/HTTPS_KEY.enc -out unbrake-api/secrets/HTTPS_KEY -d
 
   # Deploy Key
   - openssl aes-256-cbc -K $encrypted_e249d61d45ce_key -iv $encrypted_e249d61d45ce_iv -in deploy/deploy_key.enc -out deploy/deploy_key -d
+
+  # Decrypt local module secrets
+  - openssl aes-256-cbc -K $encrypted_82207c1313f0_key -iv $encrypted_82207c1313f0_iv -in unbrake-local/secrets/MQTT_KEY.enc -out unbrake-local/secrets/MQTT_KEY -d
+
+  # MQTT environment variables
+  - openssl aes-256-cbc -K $encrypted_10db6ee4c8ef_key -iv $encrypted_10db6ee4c8ef_iv -in deploy/.env_mqtt.enc -out deploy/.env_mqtt -d
 
 
 before_script:
@@ -70,9 +78,18 @@ before_script:
   - ./cc-test-reporter before-build
 
 
-# Aliases
+# Aliases -------------------------------------------------------
+build_staging: &build_development
+  stage: "build staging/development environments"
+  before_script: skip
+  script:
+    - docker build "$BUILD_FOLDER/" -t "$DOCKER_IMAGE:${DOCKER_DEVELOPMENT_TAG}" -f "$BUILD_FOLDER/Dockerfile"
+    - echo "$DOCKER_PASSWORD" | docker login -u "${DOCKER_USERNAME}" --password-stdin
+    - docker push "$DOCKER_IMAGE:${DOCKER_DEVELOPMENT_TAG}"
+    - docker logout
+
 build_staging: &build_staging
-  stage: "build staging environment"
+  stage: "build staging/development environments"
   before_script: skip
   script:
     - docker build "$BUILD_FOLDER/" -t "$DOCKER_IMAGE:${DOCKER_STAGING_TMP_TAG}" -f "$BUILD_FOLDER/production/Dockerfile"
@@ -90,9 +107,35 @@ deploy_staging: &deploy_staging
     - echo "$DOCKER_PASSWORD" | docker login -u "${DOCKER_USERNAME}" --password-stdin
     - docker push "$DOCKER_IMAGE:${DOCKER_STAGING_TAG}"
     - docker logout
+# --------------------------------------------------------------
 
 jobs:
   include:
+    # Build all these images images on parallel for speed
+    - <<: *build_development
+      name: "Build frontend (development)"
+      env:
+        - BUILD_FOLDER=unbrake-frontend
+        - DOCKER_IMAGE=unbrake/frontend
+
+    - <<: *build_development
+      name: "Build API (development)"
+      env:
+        - BUILD_FOLDER=unbrake-api
+        - DOCKER_IMAGE=unbrake/api
+
+    - <<: *build_staging
+      name: "Build frontend (staging)"
+      env:
+        - BUILD_FOLDER=unbrake-frontend
+        - DOCKER_IMAGE=unbrake/frontend
+
+    - <<: *build_staging
+      name: "Build API (staging)"
+      env:
+        - BUILD_FOLDER=unbrake-api
+        - DOCKER_IMAGE=unbrake/api
+
     - stage: "development checkings and tests"
       name: "General git checks"
       before_install: skip
@@ -101,33 +144,49 @@ jobs:
         - git diff --check || (echo 'Trailing whitespaces or conflict marks found!' && exit 1)
         - if [ -d unbrake ]; then echo 'The unbrake folder must not exist!' && (exit 1); fi
 
-    - name: "Static analysis, tests, collect coverage and check services"
+    - name: "Static analysis"
       script:
-        - docker-compose up -d
-        - docker-compose exec frontend npm run check_all
-        - docker-compose exec api python manage.py check_all
+        - sudo docker pull "unbrake/api:$DOCKER_DEVELOPMENT_TAG"
+        - sudo docker pull "unbrake/frontend:$DOCKER_DEVELOPMENT_TAG"
+        - sudo docker pull "unbrake/local"
+        - sed -i -e "/\s\+build/d" -e "/\s\+context/d" -e "/\s\+dockerfile/d" docker-compose.yml
+
+        - docker-compose up -d 
+
+        - docker-compose exec frontend npm run check_format
+        - docker-compose exec frontend npm run check_lint
+
+        - docker-compose exec api python manage.py check_format
+        - docker-compose exec api python manage.py check_lint
+
         - docker-compose down -v
+
+        - (cd unbrake-local && ./scripts/check_format)
+        - (cd unbrake-local && ./scripts/check_lint)
+
+    - name: "Run tests and collect coverage"
+      script:
+        - sudo docker pull "unbrake/api:$DOCKER_DEVELOPMENT_TAG"
+        - sudo docker pull "unbrake/frontend:$DOCKER_DEVELOPMENT_TAG"
+        - sudo docker pull "unbrake/local"
+        - sed -i -e "/\s\+build/d" -e "/\s\+context/d" -e "/\s\+dockerfile/d" docker-compose.yml
+
+        - docker-compose up -d
+        - docker-compose exec frontend npm run check_tests:coverage
+        - docker-compose exec api python manage.py check_tests_coverage
+        - docker-compose down -v
+
+        - (cd unbrake-local && ./scripts/check_tests_coverage)
 
         # Collect coverage
         - mkdir coverage
         - (cd unbrake-frontend && ./../cc-test-reporter format-coverage -t lcov -o ../coverage/frontend.json -p /app/frontend src/tests/coverage/lcov.info)
         - (cd unbrake-api && ./../cc-test-reporter format-coverage -t coverage.py -o ../coverage/api.json -p /app/api)
+        - (cd unbrake-local && ./../cc-test-reporter format-coverage -t gocov -o ../coverage/local.json -p github.com/fga-eps-mds/2019.1-unbrake/unbrake-local coverage.out)
 
         # Merge coverage results and upload
-        - ./cc-test-reporter sum-coverage -o coverage/codeclimate.json -p 2 coverage/*.json
+        - ./cc-test-reporter sum-coverage -o coverage/codeclimate.json -p 3 coverage/*.json
         - if [[ "$TRAVIS_TEST_RESULT" == 0 ]] && [ "$TRAVIS_PULL_REQUEST" == "false" ]; then ./cc-test-reporter upload-coverage -i coverage/codeclimate.json; fi
-
-    - <<: *build_staging
-      name: "Build frontend"
-      env:
-        - BUILD_FOLDER=unbrake-frontend
-        - DOCKER_IMAGE=unbrake/frontend
-
-    - <<: *build_staging
-      name: "Build API"
-      env:
-        - BUILD_FOLDER=unbrake-api
-        - DOCKER_IMAGE=unbrake/api
 
     - <<: *deploy_staging
       name: "Deploy frontend"

@@ -35,6 +35,12 @@ plugins:
   eslint:
     enabled: true
     config: unbrake-frontend/.eslintrc.json
+  gofmt:
+    enabled: true
+  golint:
+    enabled: true
+  govet:
+    enabled: true
   markdownlint:
     enabled: true
     checks:
@@ -52,6 +58,8 @@ plugins:
   radon:
     enabled: true
   fixme:
+    enabled: true
+  git-legal:
     enabled: true
   git-legal:
     enabled: true
@@ -86,3 +94,4 @@ exclude_patterns:
   - unbrake-api/unbrake_api/settings.py
   - unbrake-api/unbrake_api/runner.py
   - unbrake-api/production/settings.py
+  - utils/*

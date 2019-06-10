@@ -1,14 +1,28 @@
 [flake8]
 
 exclude =
-  .git,
-  __pycache__,
-  env,
-  venv,
-  .env,
-  .venv,
+  .git/*,
+  __pycache__/*,
+  production/*,
+  secrets/*,
+  env/*,
+  venv/*,
+  .env/*,
+  .venv/*,
+  **/migrations/*,
   .pylintrc,
-  migrations
+  .coverage*,
+  coverage*,
+  db.sqlite3,
+  scripts/*,
+  hooks/*,
+  Dockerfile,
+  *.txt,
+  *.sh,
+  pytest.ini,
+  .pytest*,
+  .flake8
+
 
 per-file-ignores =
     settings.py:E501,

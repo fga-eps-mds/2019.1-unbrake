@@ -1,3 +1,16 @@
+/*
+* Generates a self contained binary application which reads data from
+* a serial connection (was developed thinking on arduíno via USB)
+* and send it through network.
+*
+* It is also able to send commands in ascii format. We are working
+* On a application which each ascii character represents a state
+* where some things are on and others off. In our case acelerator,
+* brake, etc.
+
+* We also provide a simple GUI through systray in which users can
+* interact with the application.
+ */
 package main
 
 import (
@@ -6,39 +19,142 @@ import (
 	"os/signal"
 	"path"
 	"runtime"
+	"strconv"
 	"strings"
 	"sync"
 	"time"
 
+	emitter "github.com/emitter-io/go/v2"
 	"github.com/getlantern/systray"
 	"github.com/tarm/serial"
 )
 
+// General application constants
 const (
-	BUFFER_SIZE             = 48
-	SIMULATOR_PORT_ENV      = "SIMULATOR_PORT"
-	DEFAULT_PORT            = "/dev/ttyACM0"
-	BAUD_RATE               = 115200
-	FREQUENCY_READING       = 10
-	LOG_FILE_PATH           = "unbrake.log"
-	APPLICATION_FOLDER_NAME = "UnBrake"
+	logFilePath           = "unbrake.log"
+	applicationFolderName = "UnBrake"
 )
 
+// Serial constants
+const (
+	bufferSize       = 48
+	simulatorPortEnv = "SIMULATOR_PORT"
+	defaultPort      = "/dev/ttyACM0"
+	baudRate         = 115200
+	frequencyReading = 10
+
+	upperSpeedLimit       = 150
+	lowerSpeedLimit       = 150
+	timeSleepWater        = 3
+	timeCooldown          = 3
+	temperatureLimit      = 400
+	rightSizeOfSplit      = 11
+	delayAcelerateToBrake = 2
+)
+
+// MQTT constants
+const (
+	mqttHostEnv       = "MQTT_HOST"
+	mqttDefaultHost   = "unbrake.ml"
+	mqttDefaultPort   = "8080"
+	mqttPortEnv       = "MQTT_PORT"
+	mqttChannelPrefix = "unbrake/galpao"
+	mqttKeyEnv        = "MQTT_KEY"
+)
+
+// Channels for controlling execution
 var wg sync.WaitGroup
-var stop_collecting_data chan bool
-var sigs chan os.Signal
+var stopCollectingDataCh chan bool
+var sigsCh chan os.Signal
+var portCh = make(chan *serial.Port, 3)
+var frequencyCh = make(chan int)
+var temperatureCh = make(chan [2]int)
+var brakingForceCh = make(chan [2]int)
+var vibrationCh = make(chan int)
+var speedCh = make(chan int)
+var pressureCh = make(chan int)
+
+// Flags with intermediary states
+var stabilizing = false
+var throwingWater = false
+
+// Global snub which represents state of running test
+var snub = Snub{state: acelerate}
+
+// Possible states of a snub, value is ascii which
+// represents its state
+const (
+	cooldown            = string(iota + '$') //'$'
+	acelerate                                //'%'
+	brake                                    //'&'
+	acelerateBrake                           //'''
+	cooldownWater                            //'('
+	acelerateWater                           //')'
+	brakeWater                               //'*'
+	acelerateBrakeWater                      //'+'
+)
+
+// Mapping current state to next state
+var currentToNextState = map[string]string{
+	acelerate:      brake,
+	brake:          cooldown,
+	cooldown:       acelerate,
+	acelerateWater: brakeWater,
+	brakeWater:     cooldownWater,
+	cooldownWater:  acelerateWater,
+}
+
+// Regular state to matching state but throwing water
+var offToOnWater = map[string]string{
+	acelerate:      acelerateWater,
+	brake:          brakeWater,
+	cooldown:       cooldownWater,
+	acelerateWater: acelerateWater,
+	brakeWater:     brakeWater,
+	cooldownWater:  cooldownWater,
+}
+
+// From a throwing water state to a regular state
+var onToOffWater = map[string]string{
+	acelerateWater: acelerate,
+	brakeWater:     brake,
+	cooldownWater:  cooldown,
+	acelerate:      acelerate,
+	brake:          brake,
+	cooldown:       cooldown,
+}
+
+// Ascii character which represents state to state name
+var byteToStateName = map[string]string{
+	"$":  "cooldown",
+	"%":  "acelerate",
+	"&":  "brake",
+	"\"": "acelerateBrake",
+	"(":  "cooldownWater",
+	")":  "acelerateWater",
+	"*":  "brakeWater",
+	"+":  "acelerateBrakeWater",
+}
+
+// Snub is a cycle of aceleration, braking and cooldown,
+// multiple snubs compose a test
+type Snub struct {
+	state string
+	mux   sync.Mutex
+}
 
 func main() {
-	log_file := getLogFile()
-	defer log_file.Close()
+	logFile := getLogFile()
+	defer logFile.Close()
 
 	log.Println("--------------------------------------------")
 	log.Println("Initializing application...")
 
-	sigs = make(chan os.Signal, 1)
-	signal.Notify(sigs, os.Interrupt)
+	sigsCh = make(chan os.Signal, 1)
+	signal.Notify(sigsCh, os.Interrupt)
 
 	onExit := func() {
+		snub.state = cooldown
 		log.Println("Exiting...")
 	}
 	systray.Run(onReady, onExit)
@@ -47,6 +163,86 @@ func main() {
 	log.Println("--------------------------------------------")
 }
 
+// Will update current state to its next, respecting timing and
+// critical regions
+func (snub *Snub) handleAcelerate() {
+	stabilizing = true
+	log.Printf("Stabilizing...\n")
+	time.Sleep(time.Second * delayAcelerateToBrake)
+
+	snub.mux.Lock()
+	defer snub.mux.Unlock()
+
+	oldState := snub.state
+	snub.state = currentToNextState[snub.state]
+	log.Printf("Change state: %v ---> %v\n", byteToStateName[oldState], byteToStateName[snub.state])
+	stabilizing = false
+
+}
+
+// Will change from a regular state to a state with same
+// effects but throwing water
+func (snub *Snub) turnOnWater(port *serial.Port) {
+	snub.mux.Lock()
+
+	oldState := snub.state
+	snub.state = offToOnWater[snub.state]
+	throwingWater = true
+	_, err := port.Write([]byte(snub.state))
+	if err != nil {
+		log.Fatal(err)
+	}
+	log.Printf("Turn on water(%vs): %v ---> %v\n", timeSleepWater, byteToStateName[oldState], byteToStateName[snub.state])
+
+	snub.mux.Unlock()
+
+	time.Sleep(time.Second * timeSleepWater)
+
+	snub.mux.Lock()
+
+	oldState = snub.state
+	snub.state = onToOffWater[snub.state]
+	_, err = port.Write([]byte(snub.state))
+	if err != nil {
+		log.Fatal(err)
+	}
+	throwingWater = false
+	log.Printf("Turn off water: %v ---> %v\n", byteToStateName[oldState], byteToStateName[snub.state])
+
+	snub.mux.Unlock()
+}
+
+// Handle changing state from braking to cooldown, waiting the
+// cooldown and gettting back to acelerating
+func (snub *Snub) handleBrake(port *serial.Port) {
+	snub.mux.Lock()
+
+	oldState := snub.state
+	snub.state = currentToNextState[snub.state]
+	_, err := port.Write([]byte(snub.state))
+	if err != nil {
+		log.Fatal(err)
+	}
+	log.Printf("Change state: %v ---> %v\n", byteToStateName[oldState], byteToStateName[snub.state])
+
+	snub.mux.Unlock()
+
+	time.Sleep(time.Second * timeCooldown)
+
+	snub.mux.Lock()
+
+	oldState = snub.state
+	snub.state = currentToNextState[snub.state]
+	_, err = port.Write([]byte(snub.state))
+	if err != nil {
+		log.Fatal(err)
+	}
+	log.Printf("Change state: %v ---> %v\n", byteToStateName[oldState], byteToStateName[snub.state])
+
+	snub.mux.Unlock()
+}
+
+// Required by systray (GUI)
 func onReady() {
 	systray.SetIcon(icon)
 	systray.SetTitle("UnBrake")
@@ -54,43 +250,47 @@ func onReady() {
 
 	mQuitOrig := systray.AddMenuItem("Sair", "Fechar UnBrake")
 
-	stop_collecting_data = make(chan bool, 1)
+	stopCollectingDataCh = make(chan bool, 1)
 
 	// Wait for quitting
 	go func() {
 		select {
 		case <-mQuitOrig.ClickedCh:
 			log.Println("Quitting request by interface")
-		case <-sigs:
+		case <-sigsCh:
 			log.Println("Quitting request by signal")
 		}
 
-		stop_collecting_data <- true
+		stopCollectingDataCh <- true
 		systray.Quit()
 		log.Println("Finished systray")
 	}()
 
 	wg.Add(1)
 	go collectData()
+	go publishAll()
+	go handleSnubState()
 
 	wg.Wait()
 }
 
+// Will collect data from serial bus and distributes it
+// to others goroutines
 func collectData() {
 	defer wg.Done()
 
-	const reading_delay = time.Second / FREQUENCY_READING
-	simulator_port := getSimulatorPort()
+	const ReadingDelay = time.Second / frequencyReading
+	simulatorPort := getSimulatorPort()
 
 	log.Println("Initializing collectData routine...")
-	log.Printf("Simulator Port = %s", simulator_port)
-	log.Printf("Buffer size = %d", BUFFER_SIZE)
-	log.Printf("Baud rate = %d", BAUD_RATE)
-	log.Printf("Reading delay = %v", reading_delay)
+	log.Printf("Simulator Port = %s", simulatorPort)
+	log.Printf("Buffer size = %d", bufferSize)
+	log.Printf("Baud rate = %d", baudRate)
+	log.Printf("Reading delay = %v", ReadingDelay)
 
 	c := &serial.Config{
-		Name: simulator_port,
-		Baud: BAUD_RATE,
+		Name: simulatorPort,
+		Baud: baudRate,
 	}
 
 	port, err := serial.OpenPort(c)
@@ -99,26 +299,37 @@ func collectData() {
 		log.Fatal(err)
 	}
 
+	portCh <- port
+	close(portCh)
+
 	port.Flush()
-	continue_collecting := true
-	for continue_collecting {
+	continueCollecting := true
+	for continueCollecting {
 		select {
-		case stop := <-stop_collecting_data:
+		case stop := <-stopCollectingDataCh:
 			if stop {
-				log.Println("Stopping collecting of data...")
-				continue_collecting = false
+				_, err := port.Write([]byte(cooldown))
+				if err != nil {
+					log.Fatal(err)
+				}
+				continueCollecting = false
 			}
-		case sig := <-sigs:
+		case sig := <-sigsCh:
 			log.Println("Signal received: ", sig)
-			log.Println("Stopping collecting the data...")
-			continue_collecting = false
+			_, err := port.Write([]byte(cooldown))
+			if err != nil {
+				log.Fatal(err)
+			}
+			continueCollecting = false
 		default:
 			getData(port, "\"")
-			time.Sleep(reading_delay)
+			time.Sleep(ReadingDelay)
 		}
 	}
 }
 
+// Will get the data from the bus and returns it as an
+// array of bytes
 func getData(port *serial.Port, command string) []byte {
 	n, err := port.Write([]byte(command))
 
@@ -126,58 +337,206 @@ func getData(port *serial.Port, command string) []byte {
 		log.Fatal(err)
 	}
 
-	buf := make([]byte, BUFFER_SIZE)
+	buf := make([]byte, bufferSize)
 	n, err = port.Read(buf)
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	//log.Printf("\t%d km/h\n", buf[0]) // For reading one byte
-	log.Printf("%s", strings.TrimSpace(string(buf[:n])))
+	log.Printf("%s\n", strings.TrimSpace(string(buf[:n])))
+
+	split := strings.Split(string(buf[:n]), ",")
+
+	if len(split) == rightSizeOfSplit {
+
+		const (
+			frequencyIdx = iota
+			temperature1Idx
+			temperature2Idx
+			brakingForce1Idx
+			brakingForce2Idx
+			vibrationIdx
+			speedIdx // In duty cycle
+			pressureIdx
+		)
+
+		frequency, _ := strconv.Atoi(split[frequencyIdx])
+		frequencyCh <- frequency
+
+		firstTemperature, _ := strconv.Atoi(split[temperature1Idx])
+		secondTemperature, _ := strconv.Atoi(split[temperature2Idx])
+		temperatureCh <- [2]int{firstTemperature, secondTemperature}
+
+		firstBrakingForce, _ := strconv.Atoi(split[temperature1Idx])
+		secondBrakingForce, _ := strconv.Atoi(split[temperature2Idx])
+		brakingForceCh <- [2]int{firstBrakingForce, secondBrakingForce}
+
+		vibration, _ := strconv.Atoi(split[vibrationIdx])
+		vibrationCh <- vibration
+
+		speed, _ := strconv.Atoi(split[speedIdx])
+		speedCh <- speed
+
+		pressure, _ := strconv.Atoi(split[pressureIdx])
+		pressureCh <- pressure
+	}
 
 	return buf
 }
 
-func getLogFile() *os.File {
-	log_path := ""
-	if runtime.GOOS != "windows" {
-		log_path = path.Join("/home", os.Getenv("USER"), APPLICATION_FOLDER_NAME, "logs")
-	} else {
-		log_path = path.Join(os.Getenv("APPDATA"), "logs", APPLICATION_FOLDER_NAME, "logs")
+func publishAll() {
+	go func() {
+		for {
+			publishData(strconv.Itoa(<-frequencyCh), "/frequency")
+		}
+	}()
+
+	go func() {
+		for {
+			temperatureData := <-temperatureCh
+			publishData(strconv.Itoa(temperatureData[0]), "/temperature/sensor1")
+			publishData(strconv.Itoa(temperatureData[1]), "/temperature/sensor2")
+		}
+	}()
+
+	go func() {
+		for {
+			brakingForceData := <-brakingForceCh
+			publishData(strconv.Itoa(brakingForceData[0]), "/brakingForce/sensor1")
+			publishData(strconv.Itoa(brakingForceData[1]), "/brakingForce/sensor2")
+		}
+	}()
+
+	go func() {
+		for {
+			publishData(strconv.Itoa(<-vibrationCh), "/vibration")
+		}
+	}()
+
+	go func() {
+		for {
+			publishData(strconv.Itoa(<-speedCh), "/speed")
+		}
+	}()
+
+	go func() {
+		for {
+			publishData(strconv.Itoa(<-pressureCh), "/pressure")
+		}
+	}()
+}
+
+// Publish data to MQTT broker
+func publishData(data string, subChannel string) {
+	key, doesExists := os.LookupEnv(mqttKeyEnv)
+	if !doesExists {
+		log.Fatal("MQTT key not set!!!")
 	}
 
-	os.MkdirAll(log_path, os.ModePerm)
-	log_path = path.Join(log_path, LOG_FILE_PATH)
+	channel, data := mqttChannelPrefix+subChannel, data
 
-	log_file, err := os.OpenFile(log_path, os.O_SYNC|os.O_WRONLY|os.O_CREATE|os.O_APPEND, 0666)
+	client, _ := emitter.Connect(getMqttHost(), func(_ *emitter.Client, msg emitter.Message) {
+		log.Printf("Sent message: '%s' topic: '%s'\n", msg.Payload(), msg.Topic())
+	})
+
+	client.Publish(key, channel, data)
+}
+
+// Get complete host name with port of the MQTT broker
+func getMqttHost() string {
+	host, doesExists := os.LookupEnv(mqttHostEnv)
+	if !doesExists {
+		host = mqttDefaultHost
+	}
+
+	port, doesExists := os.LookupEnv(mqttPortEnv)
+	if !doesExists {
+		port = mqttDefaultPort
+	}
+
+	return "tcp://" + host + ":" + port
+}
+
+// Will manage the state of running snub, handling all state transitions,
+// synchronization, collecting needed data and writting needed commands
+func handleSnubState() {
+	port := <-portCh
+
+	for {
+
+		select {
+
+		case speed := <-speedCh:
+
+			if (snub.state == acelerate || snub.state == acelerateWater) && !stabilizing {
+				if speed >= upperSpeedLimit {
+					go snub.handleAcelerate()
+					_, err := port.Write([]byte(snub.state))
+					if err != nil {
+						log.Fatal(err)
+					}
+				}
+			}
+
+			if snub.state == brake || snub.state == brakeWater {
+				if speed < lowerSpeedLimit {
+					go snub.handleBrake(port)
+				}
+			}
+
+		case temperature := <-temperatureCh:
+
+			if (temperature[0] > temperatureLimit || temperature[1] > temperatureLimit) && !throwingWater {
+				if snub.state == acelerate || snub.state == brake || snub.state == cooldown {
+					go snub.turnOnWater(port)
+				}
+			}
+
+		default:
+		}
+	}
+}
+
+// Based on current OS will create application folder
+// and log file (if not exists). Returns the log file
+// as a File object
+func getLogFile() *os.File {
+	logPath := ""
+	if runtime.GOOS != "windows" {
+		logPath = path.Join("/home", os.Getenv("USER"), applicationFolderName, "logs")
+	} else {
+		logPath = path.Join(os.Getenv("APPDATA"), applicationFolderName, "logs")
+	}
+
+	os.MkdirAll(logPath, os.ModePerm)
+	logPath = path.Join(logPath, logFilePath)
+
+	logFile, err := os.OpenFile(logPath, os.O_SYNC|os.O_WRONLY|os.O_CREATE|os.O_APPEND, 0666)
 	if err != nil {
 		log.Fatalf("error opening file: %v", err)
 	}
 	log.SetFlags(log.Ldate | log.Ltime | log.Lmicroseconds)
-	log.SetOutput(log_file)
+	log.SetOutput(logFile)
 
-	return log_file
+	return logFile
 }
 
+// Get serial port that will be used to communicate with the physical device
 func getSimulatorPort() string {
 	log.Println("Getting simulator port...")
 
-	simulator_port, does_exists := os.LookupEnv(SIMULATOR_PORT_ENV)
+	simulatorPort, doesExists := os.LookupEnv(simulatorPortEnv)
 
-	if !does_exists {
-		err := os.Setenv(SIMULATOR_PORT_ENV, DEFAULT_PORT)
-		if err != nil {
-			log.Fatal(err)
-		}
-
-		simulator_port = os.Getenv(SIMULATOR_PORT_ENV)
+	if !doesExists {
+		simulatorPort = defaultPort
 	}
 
-	log.Println("Got simulator port: ", simulator_port)
-	return simulator_port
+	log.Println("Got simulator port: ", simulatorPort)
+	return simulatorPort
 }
 
-var icon []byte = []byte{
+// Icon used on systray, how the application will appear on notification area
+var icon = []byte{
 	0x00, 0x00, 0x01, 0x00, 0x01, 0x00, 0x20, 0x20, 0x00, 0x00, 0x01, 0x00,
 	0x20, 0x00, 0xa8, 0x10, 0x00, 0x00, 0x16, 0x00, 0x00, 0x00, 0x28, 0x00,
 	0x00, 0x00, 0x20, 0x00, 0x00, 0x00, 0x40, 0x00, 0x00, 0x00, 0x01, 0x00,
