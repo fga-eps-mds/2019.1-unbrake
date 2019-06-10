@@ -58,13 +58,16 @@ before_install:
   - sudo apt-get -y -o Dpkg::Options::="--force-confnew" install docker-ce
 
   # Decrypt secrets
-  - openssl aes-256-cbc -K $encrypted_0ee7f2b702ec_key -iv $encrypted_0ee7f2b702ec_iv -in unbrake-api/secrets/API_DJANGO_SECRET_KEY.enc -out unbrake-api/secrets/API_DJANGO_SECRET_KEY -d
-  - openssl aes-256-cbc -K $encrypted_0ee7f2b702ec_key -iv $encrypted_0ee7f2b702ec_iv -in unbrake-api/secrets/DB_PASSWORD.enc -out unbrake-api/secrets/DB_PASSWORD -d
-  - openssl aes-256-cbc -K $encrypted_0ee7f2b702ec_key -iv $encrypted_0ee7f2b702ec_iv -in unbrake-api/secrets/HTTPS_KEY.enc -out unbrake-api/secrets/HTTPS_KEY -d
-  - openssl aes-256-cbc -K $encrypted_0ee7f2b702ec_key -iv $encrypted_0ee7f2b702ec_iv -in unbrake-api/secrets/MQTT_READING_KEY.enc -out unbrake-api/secrets/MQTT_READING_KEY -d
+  - openssl aes-256-cbc -K $encrypted_ec73e88a7c5d_key -iv $encrypted_ec73e88a7c5d_iv -in unbrake-api/secrets/API_DJANGO_SECRET_KEY.enc -out unbrake-api/secrets/API_DJANGO_SECRET_KEY -d
+  - openssl aes-256-cbc -K $encrypted_e2b707099939_key -iv $encrypted_e2b707099939_iv -in unbrake-api/secrets/DB_PASSWORD.enc -out unbrake-api/secrets/DB_PASSWORD -d
+  - openssl aes-256-cbc -K $encrypted_ddb8f7363e54_key -iv $encrypted_ddb8f7363e54_iv -in unbrake-api/secrets/MQTT_READING_KEY.enc -out unbrake-api/secrets/MQTT_READING_KEY -d
+  - openssl aes-256-cbc -K $encrypted_12b7f6274154_key -iv $encrypted_12b7f6274154_iv -in unbrake-api/secrets/HTTPS_KEY.enc -out unbrake-api/secrets/HTTPS_KEY -d
 
   # Deploy Key
-  - openssl aes-256-cbc -K $encrypted_e249d61d45ce_key -iv $encrypted_e249d61d45ce_iv -in deploy/deploy_key.enc -out deploy/deploy_key -d
+  - openssl aes-256-cbc -K $encrypted_46d61bdc678c_key -iv $encrypted_46d61bdc678c_iv -in deploy/deploy_key.enc -out deploy/deploy_key -d
+
+  # MQTT environment variables
+  - openssl aes-256-cbc -K $encrypted_a8aa7a1b7e93_key -iv $encrypted_a8aa7a1b7e93_iv -in .env_mqtt.enc -out ../.env_mqtt -d
 
 
 before_script:
