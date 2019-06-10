@@ -11,6 +11,7 @@ services:
     secrets:
       - api-django-secret-key
       - postgres_password
+      - mqtt-reading-key
 
   frontend:
     image: 'unbrake/frontend:latest'
@@ -51,6 +52,8 @@ secrets:
     file: secrets/API_DJANGO_SECRET_KEY
   postgres_password:
     file: secrets/DB_PASSWORD
+  mqtt-reading-key:
+    file: ./unbrake-api/secrets/MQTT_READING_KEY
 
 volumes:
   postgres_data:
