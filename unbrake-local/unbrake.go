@@ -178,6 +178,8 @@ func onReady() {
 	systray.SetTitle("UnBrake")
 	systray.SetTooltip("UnBrake")
 
+	addPortsSectionGUI()
+
 	mQuitOrig := systray.AddMenuItem("Sair", "Fechar UnBrake")
 
 	stopCollectingDataCh = make(chan bool, 1)
@@ -196,6 +198,15 @@ func onReady() {
 		log.Println("Finished systray")
 	}()
 
+	wg.Add(1)
+	go collectData()
+	go publishAll()
+	go handleSnubState()
+
+	wg.Wait()
+}
+
+func addPortsSectionGUI() {
 	systray.AddSeparator()
 	portsTitle := systray.AddMenuItem("Portas", "Selecione a porta de leitura")
 	portsTitle.Disable()
@@ -207,24 +218,27 @@ func onReady() {
 	for i, portName := range portsNames {
 		ports[i] = createPort(portName, "Select port")
 	}
+
 	systray.AddSeparator()
 
-	// Handle serial ports checking/unchecking
-	for _, port := range ports {
-		go func(portLocal serialPortGUI) {
-			for {
-				<-portLocal.item.ClickedCh
-				portLocal.toggleCheck()
+	handleSelect := func(selected int, ports []serialPortGUI) {
+		ports[selected].check()
+		for i := range ports {
+			if i != selected {
+				ports[i].uncheck()
 			}
-		}(port)
+		}
 	}
 
-	wg.Add(1)
-	go collectData()
-	go publishAll()
-	go handleSnubState()
-
-	wg.Wait()
+	// Handle serial ports checking/unchecking
+	for i, port := range ports {
+		go func(selected int, portLocal serialPortGUI) {
+			for {
+				<-portLocal.item.ClickedCh
+				handleSelect(selected, ports)
+			}
+		}(i, port)
+	}
 }
 
 // Creates a Serial on systray
@@ -243,14 +257,17 @@ func (port *serialPortGUI) setTitle(title string) {
 	port.item.SetTitle(title)
 }
 
-// Check/Uncheck port menu item based on
-// current state
-func (port *serialPortGUI) toggleCheck() {
+// Check port menu item based on current state
+func (port *serialPortGUI) check() {
 	if !port.item.Checked() {
 		port.setTitle(checkedPrefix + port.title)
-
 		port.item.Check()
-	} else {
+	}
+}
+
+// Uncheck port menu item based on current state
+func (port *serialPortGUI) uncheck() {
+	if port.item.Checked() {
 		originalTitleSize := len(port.title) - len(checkedPrefix)
 		port.setTitle(port.title[originalTitleSize-2:])
 
