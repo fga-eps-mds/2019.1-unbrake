@@ -2,12 +2,12 @@ import React from "react";
 import PropTypes from "prop-types";
 import { reduxForm } from "redux-form";
 import { withStyles, Grid } from "@material-ui/core";
-import styles from "../Styles";
-import { field } from "../ComponentsForm";
-import completeTire from "../../img/completeTire.png";
-import sideTire from "../../img/sideTire.png";
-import tire from "../../img/tire.png";
-import VBelt from "../../img/Vbelt.png";
+import styles from "../components/Styles";
+import { field } from "../components/ComponentsForm";
+import completeTire from "../img/completeTire.png";
+import sideTire from "../img/sideTire.png";
+import tire from "../img/tire.png";
+import VBelt from "../img/Vbelt.png";
 
 const label = name => {
   let nameLabel = "";

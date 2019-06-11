@@ -14,6 +14,7 @@ import Force from "./Force";
 import Temperature from "./Temperature";
 import Command from "./Command";
 import Speed from "./Speed";
+import Relation from "./Relation";
 
 import { messageSistem } from "../actions/NotificationActions";
 import { API_URL_GRAPHQL } from "../utils/Constants";
@@ -27,6 +28,7 @@ const forceOption = 2;
 const speedOption = 3;
 const vibrationOption = 4;
 const commandOption = 5;
+const relationOption = 6;
 const empty = 0;
 const sizeMessageDefault = 12;
 
@@ -189,6 +191,7 @@ class Calibration extends React.Component {
               <Tab label="Velocidade" />
               <Tab label="Vibração" />
               <Tab label="Comando" />
+              <Tab label="Relações" />
             </Tabs>
             <Button onClick={this.handleSubmit}>Cadastrar</Button>
           </AppBar>
@@ -198,6 +201,7 @@ class Calibration extends React.Component {
           {value === speedOption && <Speed />}
           {value === vibrationOption && <Vibration />}
           {value === commandOption && <Command />}
+          {value === relationOption && <Relation />}
         </div>
       </div>
     );
