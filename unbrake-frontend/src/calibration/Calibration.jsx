@@ -16,6 +16,8 @@ import Command from "./Command";
 import Speed from "./Speed";
 
 import { messageSistem } from "../actions/NotificationActions";
+import { API_URL_GRAPHQL } from "../utils/Constants";
+import Request from "../utils/Request";
 
 const TabPadding = 24;
 const borderRadius = 2.5;
@@ -26,6 +28,7 @@ const speedOption = 3;
 const vibrationOption = 4;
 const commandOption = 5;
 const empty = 0;
+const sizeMessageDefault = 12;
 
 const allVariablesCalib = [
   "CHT1",
@@ -51,6 +54,49 @@ const allVariablesCalib = [
   "CUPC",
   "MAPC"
 ];
+
+const validadeFields = (calibration, sendMessage) => {
+  let message = allVariablesCalib.reduce((prevMessage, newField) => {
+    if (
+      calibration[newField] === undefined ||
+      calibration[newField].length === empty
+    ) {
+      if (prevMessage.length === sizeMessageDefault)
+        return `${prevMessage} ${newField}`;
+      return `${prevMessage}, ${newField}`;
+    }
+    return prevMessage;
+  }, "O(s) campos ");
+
+  if (message.length > sizeMessageDefault) {
+    message += " está(ão) vazios";
+    sendMessage({
+      message,
+      variante: "error",
+      condition: true
+    });
+    return false;
+  }
+  return true;
+};
+
+const saveCalibration = async (calibration, sendMessage) => {
+  const validate = validadeFields(calibration, sendMessage);
+  if (validate === false) return;
+
+  const url = allVariablesCalib.reduce((prevMessage, newField) => {
+    return `${prevMessage},${newField}:${calibration[newField]}`;
+  }, `${API_URL_GRAPHQL}?query=mutation{createCalibra(name:"teste"`);
+
+  const response = await Request(url, "POST");
+  if (response.errors === undefined) {
+    sendMessage({
+      message: "Arquivo cadastrado com sucesso",
+      variante: "success",
+      condition: true
+    });
+  }
+};
 
 const GeneralConfigs = () => (
   <div className="App">
@@ -92,34 +138,6 @@ const styles = theme => ({
   }
 });
 
-async function validateCalibration(calibration, sendMessage) {
-  let message = "";
-
-  for (const key of Object.values(allVariablesCalib)) {
-    if (calibration[key] === undefined || calibration[key].length === empty) {
-      if (message === "") message = `O(s) campos ${key}`;
-      else message += `, ${key}`;
-    }
-  }
-  if (message !== "") {
-    message += " está(ão) vazios";
-    sendMessage({
-      message,
-      variante: "error",
-      condition: true
-    });
-  }
-}
-
-/*
- *const getEmptyFields = (calibration) => {
- *  if(Object.values(calibration).length){
- *    return Object.keys(calibration).every(k => (calibration[k] === "" ? k:null))
- *  }
- *  return []
- *}
- */
-
 class Calibration extends React.Component {
   constructor(props) {
     super(props);
@@ -138,7 +156,7 @@ class Calibration extends React.Component {
     const { calibration } = this.props;
     const calibrationValues = calibration.values;
     const { sendMessage } = this.props;
-    validateCalibration(calibrationValues, sendMessage);
+    saveCalibration(calibrationValues, sendMessage);
     /*
      * Se estiver correto, submete a calibração e exibe a notificação verde
      * Case contrário, mostra a notificação mostrando os campos que estão
