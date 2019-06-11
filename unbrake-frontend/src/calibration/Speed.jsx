@@ -9,7 +9,7 @@ import { checkbox, field } from "../components/ComponentsForm";
 const labelSecondary = name => {
   let nameLabel = "";
   switch (name) {
-    case "Vkm":
+    case "Vkmh":
       nameLabel = "Velocidade (Km/h)";
       break;
     case "Vms":
@@ -28,7 +28,7 @@ const labelSecondary = name => {
 const label = name => {
   let nameLabel = "";
   switch (name) {
-    case "CHA":
+    case "CHR1":
       nameLabel = "Canal de aquisição";
       break;
     case "Fhz":
@@ -124,17 +124,17 @@ const allCheckbox = (selectsControl, classes, handleChange) => {
 
 const renderDictionary = speed => {
   const directionary = [
-    [{ name: "CHR1", value: speed.CHA, disable: true }],
+    [{ name: "CHR1", value: speed.CHR1, disable: true }],
     [
       { name: "Fhz", value: speed.Fhz, disable: true },
-      { name: "Vkm", value: speed.Vkm, disable: true }
+      { name: "Vkmh", value: speed.Vkmh, disable: true }
     ],
     [
       { name: "Rrpm", value: speed.Rrpm, disable: true },
       { name: "Vms", value: speed.Vms, disable: true }
     ],
     [
-      { name: "RAP", value: speed.RPm, disable: false },
+      { name: "RPm", value: speed.RPm, disable: false },
       { name: "DPkm", value: speed.DPkm, disable: true }
     ]
   ];
@@ -156,13 +156,13 @@ class Speed extends React.Component {
     super(props);
     this.state = {
       speed: {
-        CHA: "", // canal de aquisição
+        CHR1: "", // canal de aquisição
         Fhz: "", // frequencia
+        Vkmh: "", // velocidade km/h
         PRrpm: false, // plota rotação
         Rrpm: "", // rotação
         RPm: "", // raio pneu
         PVkmh: false, // plota velocidade
-        Vkm: "", // velocidade km/h
         Vms: "", // velocidade m/s
         DPkm: "", // distância percorrida
         PDPkm: false, // plota distância percorrida
@@ -192,7 +192,7 @@ class Speed extends React.Component {
         xs={12}
         item
         justify="center"
-        style={{ marginTop: "70px" }}
+        style={{ marginTop: "10px" }}
       >
         <Grid alignItems="center" justify="center" container>
           <form className={classes.container}>

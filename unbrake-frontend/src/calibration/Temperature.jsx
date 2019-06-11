@@ -209,7 +209,7 @@ class Temperature extends React.Component {
         xs={12}
         item
         justify="center"
-        style={{ marginTop: "70px" }}
+        style={{ marginTop: "10px" }}
       >
         <Grid alignItems="center" justify="center" container>
           <form className={classes.container}>

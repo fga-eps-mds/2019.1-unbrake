@@ -139,7 +139,7 @@ class Vibration extends React.Component {
           alignItems="center"
           justify="center"
           container
-          style={{ minHeight: "60vh" }}
+          style={{ marginTop: "10px" }}
         >
           <form className={classes.container}>
             <Grid item xs />

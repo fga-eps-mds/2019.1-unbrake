@@ -9,16 +9,16 @@ import { checkbox, field } from "../components/ComponentsForm";
 const labelSecondary = name => {
   let nameLabel = "";
   switch (name) {
-    case "CCv":
+    case "CHVC":
       nameLabel = "Canal - comando / velocidade";
       break;
-    case "CCp":
+    case "CHPC":
       nameLabel = "Canal - comando / pressão";
       break;
-    case "Vkmh":
+    case "CUVC":
       nameLabel = "Velocidade (km/h)";
       break;
-    case "Pb":
+    case "CUPC":
       nameLabel = "Pressão (Bar)";
       break;
     default:
@@ -31,10 +31,10 @@ const labelSecondary = name => {
 const label = name => {
   let nameLabel = "";
   switch (name) {
-    case "VMkmh":
+    case "MAVC":
       nameLabel = "Velocidade máxima (kmh)";
       break;
-    case "PMb":
+    case "MAPC":
       nameLabel = "Pressão máxima (Bar)";
       break;
     case "Vdc":
@@ -128,8 +128,8 @@ const allCheckbox = (selectsControl, classes, handleChange) => {
 const renderDictionary = command => {
   const directionary = [
     [
-      { name: "CHVC", value: command.CCv, disable: true },
-      { name: "CHPC", value: command.CCp, disable: true }
+      { name: "CHVC", value: command.CHVC, disable: true },
+      { name: "CHPC", value: command.CHPC, disable: true }
     ],
     [
       { name: "Vdc", value: command.Vdc, disable: true },
@@ -140,12 +140,12 @@ const renderDictionary = command => {
       { name: "PCmv", value: command.PCmv, disable: true }
     ],
     [
-      { name: "CUVC", value: command.Vkmh, disable: false },
-      { name: "CUPC", value: command.Pb, disable: false }
+      { name: "CUVC", value: command.CUVC, disable: false },
+      { name: "CUPC", value: command.CUPC, disable: false }
     ],
     [
-      { name: "MAVC", value: command.VMkmh, disable: false },
-      { name: "MAPC", value: command.PMb, disable: false }
+      { name: "MAVC", value: command.MAVC, disable: false },
+      { name: "MAPC", value: command.MAPC, disable: false }
     ]
   ];
   return directionary;
@@ -156,12 +156,12 @@ class Command extends React.Component {
     super(props);
     this.state = {
       command: {
-        CCv: "", // Canal - comando / velocidade
-        CCp: "", // Canal - comando / pressão
-        Vkmh: "", // Velocidade (km/h)
-        Pb: "", // Pressão (Bar)
-        VMkmh: "", // Velocidade máxima (kmh)
-        PMb: "", // Pressão máxima (Bar)
+        CHVC: "", // Canal - comando / velocidade
+        CHPC: "", // Canal - comando / pressão
+        CUVC: "", // Velocidade (km/h)
+        CUPC: "", // Pressão (Bar)
+        MAVC: "", // Velocidade máxima (kmh)
+        MAPC: "", // Pressão máxima (Bar)
         Vdc: "", // Velocidade (Duty Cycle)
         Pdc: "", // Pressão (Duty Cycle)
         VCmv: "", // Velocidade comando (mV)
@@ -197,7 +197,7 @@ class Command extends React.Component {
         xs={12}
         item
         justify="center"
-        style={{ marginTop: "70px" }}
+        style={{ marginTop: "10px" }}
       >
         <Grid alignItems="center" justify="center" container>
           <form className={classes.container}>

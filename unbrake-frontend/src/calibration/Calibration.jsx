@@ -52,7 +52,13 @@ const allVariablesCalib = [
   "CUVC",
   "MAVC",
   "CUPC",
-  "MAPC"
+  "MAPC",
+  "LST",
+  "RAL",
+  "DIA",
+  "RSM",
+  "DPO",
+  "DPM"
 ];
 
 const validadeFields = (calibration, sendMessage) => {
