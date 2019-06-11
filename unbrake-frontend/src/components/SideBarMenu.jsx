@@ -25,14 +25,15 @@ import {
   Settings,
   ShowChart
 } from "@material-ui/icons";
-import { BrowserRouter, Route } from "react-router-dom";
+import { Router, Route } from "react-router-dom";
 import { connect } from "react-redux";
-
+import history from "../utils/history";
 import Configuration from "../configuration/Configuration";
 import Calibration from "../calibration/Calibration";
 import Analysis from "./Analysis";
 import UserOptionsMenu from "./UserOptionsMenu";
 import Test from "../testModule/TestComponent";
+import ResetPassword from "./ResetPassword";
 
 const drawerWidth = 240;
 const drawerCloseWidth = 7;
@@ -43,7 +44,7 @@ const menuButtonRight = 36;
 const flexShrinkValue = 0;
 const optionsId = ["analysisId", "configurationId", "calibrationId", "testId"];
 
-const listMenu = (location, history) => {
+const listMenu = (location, histor) => {
   const list = ["analysis", "configuration", "calibration", "test"].map(
     (text, index) => {
       let name;
@@ -76,7 +77,7 @@ const listMenu = (location, history) => {
             onClick={() => {
               const to = `/${text}`;
               if (location.pathname !== to) {
-                history.push(to);
+                histor.push(to);
               }
             }}
             selected={location.pathname === `/+${text}`}
@@ -133,6 +134,7 @@ const RouteLogic = () => {
       <Route exact path="/analysis" component={() => <Analysis />} />
       <Route exact path="/calibration" component={() => <Calibration />} />
       <Route exact path="/test" component={() => <Test />} />
+      <Route exact path="/reset-password" component={() => <ResetPassword />} />
     </main>
   );
 };
@@ -156,9 +158,9 @@ const SideBarMenu = class extends React.PureComponent {
     const { classes, theme, loadingVerifyingAuth } = this.props;
     const { open } = this.state;
     return (
-      <BrowserRouter>
+      <Router history={history}>
         <Route
-          render={({ location, history }) => (
+          render={({ location }) => (
             <React.Fragment>
               {loadingVerifyingAuth && (
                 <div className={classes.root}>
@@ -195,7 +197,7 @@ const SideBarMenu = class extends React.PureComponent {
             </React.Fragment>
           )}
         />
-      </BrowserRouter>
+      </Router>
     );
   }
 };
