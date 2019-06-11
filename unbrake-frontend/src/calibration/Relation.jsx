@@ -224,7 +224,8 @@ Relation.propTypes = {
 };
 
 const RelationForm = reduxForm({
-  form: "calibration"
+  form: "calibration",
+  destroyOnUnmount: false
 })(Relation);
 
 export default withStyles(styles)(RelationForm);

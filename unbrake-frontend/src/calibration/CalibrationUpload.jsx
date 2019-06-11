@@ -94,7 +94,8 @@ class CalibrationUpload extends React.Component {
           ...fileUpload.CALIBRA_VIBRACAO,
           ...fileUpload.CALIBRA_FORCA,
           ...fileUpload.CALIBRA_VELOCIDADE,
-          ...fileUpload.CALIBRA_COMANDO
+          ...fileUpload.CALIBRA_COMANDO,
+          ...fileUpload.CALIBRA_RELACOES
         };
         dispatch(initialize("calibration", calibration));
       }
