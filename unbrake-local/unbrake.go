@@ -1,16 +1,16 @@
 /*
-* Generates a self contained binary application which reads data from
-* a serial connection (was developed thinking on arduíno via USB)
-* and send it through network.
-*
-* It is also able to send commands in ascii format. We are working
-* On a application which each ascii character represents a state
-* where some things are on and others off. In our case acelerator,
-* brake, etc.
+Generates a self contained binary application which reads data from
+a serial connection (was developed thinking on arduíno via USB)
+and send it through network.
 
-* We also provide a simple GUI through systray in which users can
-* interact with the application.
- */
+It is also able to send commands in ascii format. We are working
+On a application which each ascii character represents a state
+where some things are on and others off. In our case acelerator,
+brake, etc.
+
+We also provide a simple GUI through systray in which users can
+interact with the application.
+*/
 package main
 
 import (
@@ -143,6 +143,15 @@ type Snub struct {
 	mux   sync.Mutex
 }
 
+const checkedPrefix = "\u2713 "
+
+// Represents the systray menu item of a serial port
+// to be used
+type serialPortGUI struct {
+	item  *systray.MenuItem
+	title string
+}
+
 func main() {
 	logFile := getLogFile()
 	defer logFile.Close()
@@ -161,6 +170,92 @@ func main() {
 
 	log.Println("Application finished!")
 	log.Println("--------------------------------------------")
+}
+
+// Required by systray (GUI)
+func onReady() {
+	systray.SetIcon(icon)
+	systray.SetTitle("UnBrake")
+	systray.SetTooltip("UnBrake")
+
+	mQuitOrig := systray.AddMenuItem("Sair", "Fechar UnBrake")
+
+	stopCollectingDataCh = make(chan bool, 1)
+
+	// Wait for quitting
+	go func() {
+		select {
+		case <-mQuitOrig.ClickedCh:
+			log.Println("Quitting request by interface")
+		case <-sigsCh:
+			log.Println("Quitting request by signal")
+		}
+
+		stopCollectingDataCh <- true
+		systray.Quit()
+		log.Println("Finished systray")
+	}()
+
+	systray.AddSeparator()
+	portsTitle := systray.AddMenuItem("Portas", "Selecione a porta de leitura")
+	portsTitle.Disable()
+
+	systray.AddSeparator()
+
+	portsNames := []string{"porta1", "porta2", "porta3"}
+	ports := make([]serialPortGUI, len(portsNames))
+	for i, portName := range portsNames {
+		ports[i] = createPort(portName, "Select port")
+	}
+	systray.AddSeparator()
+
+	// Handle serial ports checking/unchecking
+	for _, port := range ports {
+		go func(portLocal serialPortGUI) {
+			for {
+				<-portLocal.item.ClickedCh
+				portLocal.toggleCheck()
+			}
+		}(port)
+	}
+
+	wg.Add(1)
+	go collectData()
+	go publishAll()
+	go handleSnubState()
+
+	wg.Wait()
+}
+
+// Creates a Serial on systray
+func createPort(title, tooltip string) serialPortGUI {
+	var port serialPortGUI
+
+	port.title = title
+	port.item = systray.AddMenuItem(title, tooltip)
+
+	return port
+}
+
+// Set the title of a serial on GUI
+func (port *serialPortGUI) setTitle(title string) {
+	port.title = title
+	port.item.SetTitle(title)
+}
+
+// Check/Uncheck port menu item based on
+// current state
+func (port *serialPortGUI) toggleCheck() {
+	if !port.item.Checked() {
+		port.setTitle(checkedPrefix + port.title)
+
+		port.item.Check()
+	} else {
+		originalTitleSize := len(port.title) - len(checkedPrefix)
+		port.setTitle(port.title[originalTitleSize-2:])
+
+		port.item.Uncheck()
+	}
 }
 
 // Will update current state to its next, respecting timing and
@@ -240,38 +335,6 @@ func (snub *Snub) handleBrake(port *serial.Port) {
 	log.Printf("Change state: %v ---> %v\n", byteToStateName[oldState], byteToStateName[snub.state])
 
 	snub.mux.Unlock()
-}
-
-// Required by systray (GUI)
-func onReady() {
-	systray.SetIcon(icon)
-	systray.SetTitle("UnBrake")
-	systray.SetTooltip("UnBrake")
-
-	mQuitOrig := systray.AddMenuItem("Sair", "Fechar UnBrake")
-
-	stopCollectingDataCh = make(chan bool, 1)
-
-	// Wait for quitting
-	go func() {
-		select {
-		case <-mQuitOrig.ClickedCh:
-			log.Println("Quitting request by interface")
-		case <-sigsCh:
-			log.Println("Quitting request by signal")
-		}
-
-		stopCollectingDataCh <- true
-		systray.Quit()
-		log.Println("Finished systray")
-	}()
-
-	wg.Add(1)
-	go collectData()
-	go publishAll()
-	go handleSnubState()
-
-	wg.Wait()
 }
 
 // Will collect data from serial bus and distributes it
