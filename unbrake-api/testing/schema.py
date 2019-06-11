@@ -76,14 +76,11 @@ class CreateTesting(graphene.Mutation):
 
         testing = Testing(
             create_by=create_by,
+            calibration=calibration,
+            configuration=configuration
         )
 
         testing.save()
-        testing.calibration_set.add(calibration)
-        testing.config_set.add(configuration)
-
-        calibration.testing = testing
-        configuration.testing = testing
 
         return CreateTesting(testing=testing)
 

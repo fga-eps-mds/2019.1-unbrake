@@ -33,7 +33,6 @@ class CreateConfig(graphene.Mutation):
         Arguments required to create a new config
         '''
         name = graphene.String()
-        is_default = graphene.Boolean()
         number = graphene.Int()
         time_between_cycles = graphene.Int()
         upper_limit = graphene.Int()

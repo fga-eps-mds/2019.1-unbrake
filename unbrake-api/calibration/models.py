@@ -11,7 +11,6 @@
 '''
 
 from django.db import models
-from testing.models import Testing
 
 # Create your models here.
 
@@ -89,11 +88,6 @@ class Calibration(models.Model):
         CalibrationRelations, on_delete=models.CASCADE)
     command = models.OneToOneField(
         CalibrationCommand, on_delete=models.CASCADE)
-    testing = models.ForeignKey(Testing,
-                                on_delete=models.CASCADE,
-                                blank=True,
-                                null=True
-                                )
 
 
 class CalibrationTemperature(models.Model):
