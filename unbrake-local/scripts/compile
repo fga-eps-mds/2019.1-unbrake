@@ -14,11 +14,11 @@ cd "$SELF_PATH" \
     && echo -e "Compiling to UnBrake binaries..\n" \
     \
     && echo -en "Compiling Linux version... " \
-    && ./run build -o "$PACKAGE_PATH/bin/$BIN_LINUX_AMD64_NAME" unbrake.go \
+    && ./run build -o "$PACKAGE_PATH/bin/$BIN_LINUX_AMD64_NAME" \
     && echo -e "\033[0;32mOK!\033[0m" \
     \
     && echo -en "Compiling Windows version... " \
-    && GOOS=windows GOARCH=amd64 ./run build -ldflags -H=windowsgui -o "$PACKAGE_PATH/bin/$BIN_WIN_AMD64_NAME" unbrake.go \
+    && GOOS=windows GOARCH=amd64 ./run build -ldflags -H=windowsgui -o "$PACKAGE_PATH/bin/$BIN_WIN_AMD64_NAME" \
     && echo -e "\033[0;32mOK!\033[0m" \
     \
     && sudo chown -R $USER:$USER $BINARY_FOLDER &> /dev/null

@@ -18,7 +18,6 @@ import (
 	"os"
 	"os/signal"
 	"path"
-	"runtime"
 	"strconv"
 	"strings"
 	"sync"
@@ -581,12 +580,7 @@ func handleSnubState() {
 // and log file (if not exists). Returns the log file
 // as a File object
 func getLogFile() *os.File {
-	logPath := ""
-	if runtime.GOOS != "windows" {
-		logPath = path.Join("/home", os.Getenv("USER"), applicationFolderName, "logs")
-	} else {
-		logPath = path.Join(os.Getenv("APPDATA"), applicationFolderName, "logs")
-	}
+	logPath := getLogPath()
 
 	os.MkdirAll(logPath, os.ModePerm)
 	logPath = path.Join(logPath, logFilePath)
