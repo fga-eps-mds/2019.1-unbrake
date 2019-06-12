@@ -8,14 +8,16 @@ import user.schema
 import configuration.schema
 import calibration.schema
 import calibration.mutation
+import testing.schema
 
-# pylint: disable = too-few-public-methods
+# pylint: disable = too-few-public-methods, too-many-ancestors
 
 
 class Query(
         user.schema.Query,
         configuration.schema.Query,
         calibration.schema.Query,
+        testing.schema.Query,
         graphene.ObjectType):
     '''
     This class will inherit from multiple Queries
@@ -27,6 +29,7 @@ class Mutation(
         user.schema.Mutation,
         configuration.schema.Mutation,
         calibration.mutation.Mutation,
+        testing.schema.Mutation,
         graphene.ObjectType,):
     '''
     This class is responsible for providing the token to user
