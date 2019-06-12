@@ -209,28 +209,37 @@ const validadeFields = (calibration, sendMessage) => {
   return true;
 };
 
-const saveCalibration = async (values, sendMessage, handleChangeId) => {
-  const validate = validadeFields(values.calibration, sendMessage);
-  if (validate === false) return;
-
-  createAllCalibrations.map(async (value, number) => {
+const firstRequests = async values => {
+  const calibrationParts = createAllCalibrations.map(async (value, number) => {
     const id = await createMutationUrl(
       value,
       allVariablesCalib[number],
       values.calibration
     );
-    handleChangeId(value.name, id);
+    return { name: [value.name], id };
+    // handleChangeId(value.name, id);
   });
+  let calibration = await Promise.all(calibrationParts);
+  calibration = calibration.reduce((initial, actual) => {
+    initial[actual.name] = actual.id; // eslint-disable-line no-param-reassign
+    return initial;
+  }, {});
+
+  return calibration;
+};
+
+const saveCalibration = async (values, sendMessage, handleChangeId) => {
+  const validate = validadeFields(values.calibration, sendMessage);
+  if (validate === false) return;
 
   // console.log("Response ids", values.idsCalibrations, values.calibration);
+  const idsCalibration = await firstRequests(values, handleChangeId);
 
-  const idCalibration = await createMutationUrl(
-    createCalibration,
-    variablesCalib,
-    values.idsCalibrations
-  );
-  handleChangeId("calibration", idCalibration);
-  // console.log("create calib", idCalibration)
+  await createMutationUrl(createCalibration, variablesCalib, idsCalibration);
+  /*
+   *handleChangeId("calibration", idCalibration);
+   * console.log("create calib", idCalibration)
+   */
 };
 
 const GeneralConfigs = () => (
@@ -287,6 +296,7 @@ class Calibration extends React.Component {
     this.setState(prevState => ({
       idsCalibrations: { ...prevState.idsCalibrations, ...idsCalibrations }
     }));
+    // console.log('i', this.state)
     /*
      * this.setState({idsCalibrations[name]:})
      * console.log("state",this.state)
