@@ -2,9 +2,13 @@
     This file test the mutations of the calibration app
 '''
 
+# pylint: disable = unused-import
 import json
 import pytest
 from django.test import Client
+from utils.token import create_token
+
+# pylint: disable = redefined-outer-name
 
 
 def stringfy(entrada):
@@ -84,158 +88,165 @@ RESPONSE_CALIBRATION = {
 
 
 @pytest.mark.django_db
-def test_mutation_speed():
+def test_mutation_speed(create_token):
     '''
         This function create a speed calibration using the graphene mutation
         end check if the return of graphene is equal to the parameters used
         to create it
     '''
+    token = create_token()
     url = (
         '/graphql?query=mutation{createSpeed(' + stringfy(RESPONSE_SPEED) + ')'
         '{speed{acquisitionChanel, tireRadius}}}')
-    create_speed = CLIENT.post(url)
+    create_speed = CLIENT.post(url, HTTP_AUTHORIZATION=token)
     assert create_speed.status_code == 200
     response = create_speed.json()['data']['createSpeed']['speed']
     assert response == RESPONSE_SPEED
 
 
 @pytest.mark.django_db
-def test_mutation_command():
+def test_mutation_command(create_token):
     '''
         This function create a command calibration using the graphene
         mutation end check if the return of graphene is equal to
         the parameters used to create it
     '''
+    token = create_token()
     url = ('/graphql?query=mutation'
            '{createCommand(' + stringfy(RESPONSE_COMMAND) + ')'
            '{command{ commandChanelSpeed, actualSpeed, maxSpeed,'
            'chanelCommandPression, actualPression, maxPression}}}')
-    create_command = CLIENT.post(url)
+    create_command = CLIENT.post(url, HTTP_AUTHORIZATION=token)
     assert create_command.status_code == 200
     response = create_command.json()['data']['createCommand']['command']
     assert response == RESPONSE_COMMAND
 
 
 @pytest.mark.django_db
-def test_mutation_relations():
+def test_mutation_relations(create_token):
     '''
         This function create a relations calibration using the graphene
         mutation end check if the return of graphene is equal to
         the parameters used to create it
     '''
+    token = create_token()
     url = ('/graphql?query=mutation'
            '{createRelations(' + stringfy(RESPONSE_RELATIONS) + ')'
            '{relations{transversalSelectionWidth, heigthWidthRelation,'
            'rimDiameter, syncMotorRodation,'
            'sheaveMoveDiameter, sheaveMotorDiameter}}}')
-    create_relation = CLIENT.post(url)
+    create_relation = CLIENT.post(url, HTTP_AUTHORIZATION=token)
     assert create_relation.status_code == 200
     response = create_relation.json()['data']['createRelations']['relations']
     assert response == RESPONSE_RELATIONS
 
 
 @pytest.mark.django_db
-def test_mutation_vibration():
+def test_mutation_vibration(create_token):
     '''
         This function create a vibration calibration using the graphene
         mutation end check if the return of graphene is equal to
         the parameters used to create it
     '''
+    token = create_token()
     url = (
         '/graphql?query=mutation'
         '{createVibration(' + stringfy(RESPONSE_VIBRATION) + ')'
         '{vibration{acquisitionChanel, conversionFactor, vibrationOffset}}}')
-    create_vibration = CLIENT.post(url)
+    create_vibration = CLIENT.post(url, HTTP_AUTHORIZATION=token)
     assert create_vibration.status_code == 200
     response = create_vibration.json()['data']['createVibration']['vibration']
     assert response == RESPONSE_VIBRATION
 
 
 @pytest.mark.django_db
-def test_mutation_force():
+def test_mutation_force(create_token):
     '''
         This function create a force calibration using the graphene
         mutation end check if the return of graphene is equal to
         the parameters used to create it
     '''
+    token = create_token()
     url = ('/graphql?query=mutation'
            '{createForce(' + stringfy(RESPONSE_FIRST_FORCE) + ')'
            '{force{acquisitionChanel, conversionFactor, forceOffset}}}')
-    create_first_force = CLIENT.post(url)
+    create_first_force = CLIENT.post(url, HTTP_AUTHORIZATION=token)
     assert create_first_force.status_code == 200
     response = create_first_force.json()['data']['createForce']['force']
     assert response == RESPONSE_FIRST_FORCE
 
 
 @pytest.mark.django_db
-def test_mutation_temperature():
+def test_mutation_temperature(create_token):
     '''
         This function create a temperature calibration using the graphene
         mutation end check if the return of graphene is equal to
         the parameters used to create it
     '''
+    token = create_token()
     url = ('/graphql?query=mutation'
            '{createTemperature(' + stringfy(RESPONSE_FIRST_TEMPERATURE) + ')'
            '{temperature{acquisitionChanel,'
            'conversionFactor, temperatureOffset}}}')
-    create_first_temperature = CLIENT.post(url)
+    create_first_temperature = CLIENT.post(url, HTTP_AUTHORIZATION=token)
     assert create_first_temperature.status_code == 200
     response = create_first_temperature.json()['data']['createTemperature']
     assert response['temperature'] == RESPONSE_FIRST_TEMPERATURE
 
 
 @pytest.mark.django_db
-def test_mutation_calibrate():
+def test_mutation_calibrate(create_token):
     '''
         This function create a command calibration using the graphene
         mutation end check if the return of graphene is equal to
         the parameters used to create it
     '''
+    token = create_token()
     url = (
         '/graphql?query=mutation{createSpeed(' + stringfy(RESPONSE_SPEED) + ')'
         '{speed{acquisitionChanel, tireRadius}}}')
-    CLIENT.post(url)
+    CLIENT.post(url, HTTP_AUTHORIZATION=token)
 
     url = ('/graphql?query=mutation'
            '{createCommand(' + stringfy(RESPONSE_COMMAND) + ')'
            '{command{ commandChanelSpeed, actualSpeed, maxSpeed,'
            'chanelCommandPression, actualPression, maxPression}}}')
-    CLIENT.post(url)
+    CLIENT.post(url, HTTP_AUTHORIZATION=token)
 
     url = ('/graphql?query=mutation'
            '{createRelations(' + stringfy(RESPONSE_RELATIONS) + ')'
            '{relations{transversalSelectionWidth, heigthWidthRelation,'
            'rimDiameter, syncMotorRodation,'
            'sheaveMoveDiameter, sheaveMotorDiameter}}}')
-    CLIENT.post(url)
+    CLIENT.post(url, HTTP_AUTHORIZATION=token)
 
     url = (
         '/graphql?query=mutation'
         '{createVibration(' + stringfy(RESPONSE_VIBRATION) + ')'
         '{vibration{acquisitionChanel, conversionFactor, vibrationOffset}}}')
-    CLIENT.post(url)
+    CLIENT.post(url, HTTP_AUTHORIZATION=token)
 
     url = ('/graphql?query=mutation'
            '{createForce(' + stringfy(RESPONSE_FIRST_FORCE) + ')'
            '{force{acquisitionChanel, conversionFactor, forceOffset}}}')
-    CLIENT.post(url)
+    CLIENT.post(url, HTTP_AUTHORIZATION=token)
 
     url = ('/graphql?query=mutation'
            '{createForce(' + stringfy(RESPONSE_SECOND_FORCE) + ')'
            '{force{acquisitionChanel, conversionFactor, forceOffset}}}')
-    CLIENT.post(url)
+    CLIENT.post(url, HTTP_AUTHORIZATION=token)
 
     url = ('/graphql?query=mutation'
            '{createTemperature(' + stringfy(RESPONSE_FIRST_TEMPERATURE) + ')'
            '{temperature{acquisitionChanel,'
            'conversionFactor, temperatureOffset}}}')
-    CLIENT.post(url)
+    CLIENT.post(url, HTTP_AUTHORIZATION=token)
 
     url = ('/graphql?query=mutation'
            '{createTemperature(' + stringfy(RESPONSE_SECOND_TEMPERATURE) + ')'
            '{temperature{acquisitionChanel,'
            'conversionFactor, temperatureOffset}}}')
-    CLIENT.post(url)
+    CLIENT.post(url, HTTP_AUTHORIZATION=token)
 
     url = ('/graphql?query=mutation{createCalibration(idVibration: 1,'
            'name: "Teste", idSpeed:1, idCommand: 1, idRelations: 1,'
@@ -253,7 +264,7 @@ def test_mutation_calibrate():
            'calibrationtemperatureSet {acquisitionChanel, conversionFactor,'
            'temperatureOffset, acquisitionChanel, conversionFactor,'
            'temperatureOffset}}}}')
-    create_calibration = CLIENT.post(url)
+    create_calibration = CLIENT.post(url, HTTP_AUTHORIZATION=token)
     status_calibration = create_calibration.status_code == 200
     create_calibration = create_calibration.json()['data']['createCalibration']
     assert create_calibration['calibration'] == RESPONSE_CALIBRATION
@@ -271,7 +282,7 @@ def test_mutation_calibrate():
         'forceOffset, acquisitionChanel, conversionFactor, forceOffset},'
         'calibrationtemperatureSet {acquisitionChanel, conversionFactor,'
         'temperatureOffset, acquisitionChanel, conversionFactor,'
-        'temperatureOffset}}}')
+        'temperatureOffset}}}', HTTP_AUTHORIZATION=token)
     status_get_calibration = get_calibration.status_code == 200
     get_calibration = get_calibration.json()['data']['calibration']
     assert get_calibration == RESPONSE_CALIBRATION
@@ -289,7 +300,7 @@ def test_mutation_calibrate():
         'forceOffset, acquisitionChanel, conversionFactor, forceOffset},'
         'calibrationtemperatureSet {acquisitionChanel, conversionFactor,'
         'temperatureOffset, acquisitionChanel, conversionFactor,'
-        'temperatureOffset}}}')
+        'temperatureOffset}}}', HTTP_AUTHORIZATION=token)
     status_get_all = get_all_calibration.status_code == 200
     assert status_calibration and status_get_all and status_get_calibration
     get_all_calibration = get_all_calibration.json()['data']

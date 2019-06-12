@@ -2,11 +2,14 @@
     Tests of mutations to Testing model
 '''
 
+# pylint: disable = unused-import
 import json
 import pytest
 from django.test import Client
+from utils.token import create_token
 
 
+# pylint: disable = redefined-outer-name, unused-import
 def stringfy(entrada):
     '''
         This function receve a json end return a string of the json
@@ -120,57 +123,59 @@ RESPONSE_TESTING = {
 
 
 @pytest.mark.django_db
-def test_mutation_testing():
+def test_mutation_testing(create_token):
     '''
         Is create a calibraion and a configuration object, then is create
         a Testing object using the mutations of graphene
     '''
 
+    token = create_token()
+
     url = (
         '/graphql?query=mutation{createSpeed(' + stringfy(RESPONSE_SPEED) + ')'
         '{speed{acquisitionChanel, tireRadius}}}')
-    CLIENT.post(url)
+    CLIENT.post(url, HTTP_AUTHORIZATION=token)
 
     url = ('/graphql?query=mutation'
            '{createCommand(' + stringfy(RESPONSE_COMMAND) + ')'
            '{command{ commandChanelSpeed, actualSpeed, maxSpeed,'
            'chanelCommandPression, actualPression, maxPression}}}')
-    CLIENT.post(url)
+    CLIENT.post(url, HTTP_AUTHORIZATION=token)
 
     url = ('/graphql?query=mutation'
            '{createRelations(' + stringfy(RESPONSE_RELATIONS) + ')'
            '{relations{transversalSelectionWidth, heigthWidthRelation,'
            'rimDiameter, syncMotorRodation,'
            'sheaveMoveDiameter, sheaveMotorDiameter}}}')
-    CLIENT.post(url)
+    CLIENT.post(url, HTTP_AUTHORIZATION=token)
 
     url = (
         '/graphql?query=mutation'
         '{createVibration(' + stringfy(RESPONSE_VIBRATION) + ')'
         '{vibration{acquisitionChanel, conversionFactor, vibrationOffset}}}')
-    CLIENT.post(url)
+    CLIENT.post(url, HTTP_AUTHORIZATION=token)
 
     url = ('/graphql?query=mutation'
            '{createForce(' + stringfy(RESPONSE_FIRST_FORCE) + ')'
            '{force{acquisitionChanel, conversionFactor, forceOffset}}}')
-    CLIENT.post(url)
+    CLIENT.post(url, HTTP_AUTHORIZATION=token)
 
     url = ('/graphql?query=mutation'
            '{createForce(' + stringfy(RESPONSE_SECOND_FORCE) + ')'
            '{force{acquisitionChanel, conversionFactor, forceOffset}}}')
-    CLIENT.post(url)
+    CLIENT.post(url, HTTP_AUTHORIZATION=token)
 
     url = ('/graphql?query=mutation'
            '{createTemperature(' + stringfy(RESPONSE_FIRST_TEMPERATURE) + ')'
            '{temperature{acquisitionChanel,'
            'conversionFactor, temperatureOffset}}}')
-    CLIENT.post(url)
+    CLIENT.post(url, HTTP_AUTHORIZATION=token)
 
     url = ('/graphql?query=mutation'
            '{createTemperature(' + stringfy(RESPONSE_SECOND_TEMPERATURE) + ')'
            '{temperature{acquisitionChanel,'
            'conversionFactor, temperatureOffset}}}')
-    CLIENT.post(url)
+    CLIENT.post(url, HTTP_AUTHORIZATION=token)
 
     url = ('/graphql?query=mutation{createCalibration(idVibration: 1,'
            'name: "Teste", idSpeed:1, idCommand: 1, idRelations: 1,'
@@ -188,7 +193,7 @@ def test_mutation_testing():
            'calibrationtemperatureSet {acquisitionChanel, conversionFactor,'
            'temperatureOffset, acquisitionChanel, conversionFactor,'
            'temperatureOffset}}}}')
-    CLIENT.post(url)
+    CLIENT.post(url, HTTP_AUTHORIZATION=token)
 
     url = ('/graphql?query=mutation'
            '{createConfig(name: "Teste", '
@@ -196,14 +201,14 @@ def test_mutation_testing():
            '{config{id}}}'
            )
 
-    CLIENT.post(url)
+    CLIENT.post(url, HTTP_AUTHORIZATION=token)
 
     url = ('/graphql?query=mutation{createTesting(createBy:"Teste", '
            'idCalibration: 1, idConfiguration: 1){testing{'
            'createBy,'
            + QUERY_CALIBRATION + ', ' + QUERY_CONFIGURATION + '}}}')
 
-    testing = CLIENT.post(url)
+    testing = CLIENT.post(url, HTTP_AUTHORIZATION=token)
     assert testing.status_code == 200
     res = testing.json()['data']['createTesting']['testing']
     assert res == RESPONSE_TESTING

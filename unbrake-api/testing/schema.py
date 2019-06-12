@@ -3,6 +3,7 @@
 '''
 import graphene
 from graphene_django.types import DjangoObjectType
+from graphql_jwt.decorators import login_required
 from testing.models import Testing
 from calibration.models import Calibration
 from configuration.models import Config
@@ -33,6 +34,7 @@ class Query:
 
     all_testing = graphene.List(TestingType)
 
+    @login_required
     def resolve_testing(self, info, **kwargs):
         '''
             Return a Testing object on db by id
@@ -40,6 +42,7 @@ class Query:
         pk = kwargs.get('id')
         return Testing.objects.get(pk=pk)
 
+    @login_required
     def resolve_all_testing(self, info):
         '''
             Return all Testing objects on db
@@ -53,6 +56,7 @@ class CreateTesting(graphene.Mutation):
         Defining the mutate to create a new Testing object on db
     '''
     testing = graphene.Field(TestingType)
+    error = graphene.String()
 
     class Arguments:
         '''
@@ -62,6 +66,7 @@ class CreateTesting(graphene.Mutation):
         id_calibration = graphene.Int()
         id_configuration = graphene.Int()
 
+    @login_required
     def mutate(
             self,
             info,
@@ -71,6 +76,7 @@ class CreateTesting(graphene.Mutation):
         '''
             Define how the arguments are used to create a new Testing object
         '''
+
         calibration = Calibration.objects.get(id=id_calibration)
         configuration = Config.objects.get(id=id_configuration)
 
