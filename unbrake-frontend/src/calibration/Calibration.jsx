@@ -5,9 +5,15 @@ import { withStyles } from "@material-ui/core/styles";
 import AppBar from "@material-ui/core/AppBar";
 import Tabs from "@material-ui/core/Tabs";
 import Tab from "@material-ui/core/Tab";
-import Button from "@material-ui/core/Button";
 import Typography from "@material-ui/core/Typography";
 import PropTypes from "prop-types";
+import { Button, Dialog } from "@material-ui/core";
+import TextField from "@material-ui/core/TextField";
+import DialogActions from "@material-ui/core/DialogActions";
+import DialogContent from "@material-ui/core/DialogContent";
+import DialogContentText from "@material-ui/core/DialogContentText";
+import DialogTitle from "@material-ui/core/DialogTitle";
+
 import CalibrationUpload from "./CalibrationUpload";
 import Vibration from "./Vibration";
 import Force from "./Force";
@@ -164,6 +170,7 @@ const createAllCalibrations = [
 ];
 
 const variablesCalib = [
+  { front: "name", back: "name" },
   { front: "firstTemperature", back: "idFirstTemperature" },
   { front: "secondTemperature", back: "idSecondTemperature" },
   { front: "firstForce", back: "idFirstForce" },
@@ -232,14 +239,45 @@ const saveCalibration = async (values, sendMessage, handleChangeId) => {
   const validate = validadeFields(values.calibration, sendMessage);
   if (validate === false) return;
 
-  // console.log("Response ids", values.idsCalibrations, values.calibration);
   const idsCalibration = await firstRequests(values, handleChangeId);
+  idsCalibration.name = values.name;
 
   await createMutationUrl(createCalibration, variablesCalib, idsCalibration);
-  /*
-   *handleChangeId("calibration", idCalibration);
-   * console.log("create calib", idCalibration)
-   */
+};
+
+const dialogName = (functions, states) => {
+  return (
+    <Dialog
+      open={states.open}
+      onClose={functions.handleClose}
+      aria-labelledby="form-dialog-title"
+    >
+      <DialogTitle id="form-dialog-title">Nome da Calibração</DialogTitle>
+      <DialogContent>
+        <DialogContentText>
+          Insira aqui o nome que você deseja dar para este arquivo de Calibração
+        </DialogContentText>
+        <TextField
+          autoFocus
+          margin="dense"
+          name="name"
+          label="Nome"
+          type="text"
+          onChange={functions.handleChangeStates}
+          value={states.name}
+          fullWidth
+        />
+      </DialogContent>
+      <DialogActions>
+        <Button onClick={functions.handleClose} color="primary">
+          Cancelar
+        </Button>
+        <Button onClick={() => functions.handleSubmit()} color="primary">
+          Cadastrar
+        </Button>
+      </DialogActions>
+    </Dialog>
+  );
 };
 
 const GeneralConfigs = () => (
@@ -269,26 +307,28 @@ class Calibration extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
+      open: false,
       value: 0,
-      idsCalibrations: {
-        calibration: "",
-        command: "",
-        firstForce: "",
-        firstTemperature: "",
-        relations: "",
-        secondForce: "",
-        secondTemperature: "",
-        speed: "",
-        vibration: ""
-      }
+      name: ""
     };
     this.handleChange = this.handleChange.bind(this);
+    this.handleValidate = this.handleValidate.bind(this);
     this.handleSubmit = this.handleSubmit.bind(this);
     this.handleChangeId = this.handleChangeId.bind(this);
+    this.handleClose = this.handleClose.bind(this);
+    this.handleChangeStates = this.handleChangeStates.bind(this);
+  }
+
+  handleClose() {
+    this.setState({ open: false });
   }
 
   handleChange(event, value) {
     this.setState({ value });
+  }
+
+  handleChangeStates(event) {
+    this.setState({ [event.target.name]: event.target.value });
   }
 
   handleChangeId(name, value) {
@@ -296,32 +336,34 @@ class Calibration extends React.Component {
     this.setState(prevState => ({
       idsCalibrations: { ...prevState.idsCalibrations, ...idsCalibrations }
     }));
-    // console.log('i', this.state)
-    /*
-     * this.setState({idsCalibrations[name]:})
-     * console.log("state",this.state)
-     */
+  }
+
+  handleValidate() {
+    const { calibration, sendMessage } = this.props;
+
+    const validate = validadeFields(calibration.values, sendMessage);
+    if (validate === false) return;
+
+    this.setState({ open: true });
   }
 
   handleSubmit() {
     const { calibration, sendMessage } = this.props;
-    const { idsCalibrations } = this.state;
-    const values = {
-      calibration: calibration.values,
-      idsCalibrations
-    };
+    const { name } = this.state;
+    const values = { calibration: calibration.values, name };
 
     saveCalibration(values, sendMessage, this.handleChangeId);
-    /*
-     * Se estiver correto, submete a calibração e exibe a notificação verde
-     * Case contrário, mostra a notificação mostrando os campos que estão
-     * vazios
-     */
   }
 
   render() {
     const { classes } = this.props;
-    const { value } = this.state;
+    const { value, name, open } = this.state;
+    const states = { name, open };
+    const functions = {
+      handleClose: this.handleClose,
+      handleChangeStates: this.handleChangeStates,
+      handleSubmit: this.handleSubmit
+    };
 
     return (
       <div>
@@ -340,7 +382,7 @@ class Calibration extends React.Component {
               <Tab label="Comando" />
               <Tab label="Relações" />
             </Tabs>
-            <Button onClick={this.handleSubmit}>Cadastrar</Button>
+            <Button onClick={this.handleValidate}>Cadastrar</Button>
           </AppBar>
           {value === generalConfigsOption && GeneralConfigs()}
           {value === temperatureOption && <Temperature />}
@@ -350,6 +392,7 @@ class Calibration extends React.Component {
           {value === commandOption && <Command />}
           {value === relationOption && <Relation />}
         </div>
+        {dialogName(functions, states)}
       </div>
     );
   }

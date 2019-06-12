@@ -22,18 +22,21 @@ export const createMutationUrl = async (
   }(`;
 
   let url = variableNames.reduce((prevMessage, newField) => {
-    // console.log(informations.response, newField.front, values.command,values)
-
-    if (prevMessage.length === initialUrl.length)
+    if (prevMessage.length === initialUrl.length) {
+      if (isNaN(values[newField.front])) {
+        return `${prevMessage}${newField.back}:"${values[newField.front]}"`;
+      }
       return `${prevMessage}${newField.back}:${values[newField.front]}`;
+    }
+    if (isNaN(values[newField.front])) {
+      return `${prevMessage},${newField.back}:"${values[newField.front]}"`;
+    }
     return `${prevMessage},${newField.back}:${values[newField.front]}`;
   }, initialUrl);
 
   url += `){${informations.response}{${informations.variablesResponse}}}}`;
 
   const response = await Request(url, "POST");
-
-  // console.log(`Response ${informations.response}`, response)
 
   if (response.errors !== undefined) return invalidId;
 
