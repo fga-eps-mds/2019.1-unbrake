@@ -13,12 +13,13 @@ func getLogPath() string {
 
 func getSerialPorts() []string {
 	var ports []string
+	const portsFolder = "/dev"
 
-	files, _ := ioutil.ReadDir("/dev")
+	files, _ := ioutil.ReadDir(portsFolder)
 
 	for _, file := range files {
 		if strings.HasPrefix(file.Name(), "ttyACM") {
-			ports = append(ports, file.Name())
+			ports = append(ports, path.Join(portsFolder, file.Name()))
 		}
 	}
 
