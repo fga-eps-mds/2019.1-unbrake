@@ -37,7 +37,7 @@ const (
 // Serial constants
 const (
 	bufferSize       = 48
-	simulatorPortEnv = "SIMULATOR_PORT"
+	simulatorPortEnv = "SERIAL_PORT"
 	defaultPort      = "/dev/ttyACM0"
 	baudRate         = 115200
 	frequencyReading = 10
@@ -49,6 +49,17 @@ const (
 	temperatureLimit      = 400
 	rightSizeOfSplit      = 11
 	delayAcelerateToBrake = 2
+)
+
+const (
+	frequencyIdx = iota
+	temperature1Idx
+	temperature2Idx
+	brakingForce1Idx
+	brakingForce2Idx
+	vibrationIdx
+	speedIdx // In duty cycle
+	pressureIdx
 )
 
 // MQTT constants
@@ -230,7 +241,7 @@ func handlePortsSectionGUI() {
 		}
 	}
 	if !found {
-		portsNames = append(portsNames)
+		portsNames = append(portsNames, envSerialPort)
 	}
 
 	// Create ports
@@ -242,15 +253,15 @@ func handlePortsSectionGUI() {
 	systray.AddSeparator()
 
 	handleSelect := func(selected int, ports []serialPortGUI) {
-		ports[selected].uncheck()
-		serialPortNameCh <- ports[selected].title
-		ports[selected].check()
-
 		for i := range ports {
 			if i != selected {
 				ports[i].uncheck()
 			}
 		}
+
+		ports[selected].uncheck()
+		serialPortNameCh <- ports[selected].title
+		ports[selected].check()
 	}
 
 	// Handle serial ports checking/unchecking
@@ -389,8 +400,9 @@ func collectData() {
 		serialPortName := <-serialPortNameCh
 
 		configuration := &serial.Config{
-			Name: serialPortName,
-			Baud: baudRate,
+			Name:        serialPortName,
+			Baud:        baudRate,
+			ReadTimeout: time.Second,
 		}
 
 		port, err := serial.OpenPort(configuration)
@@ -442,13 +454,15 @@ func getData(port *serial.Port, command string) []byte {
 	n, err := port.Write([]byte(command))
 
 	if err != nil {
-		log.Fatal(err)
+		log.Println("Error writing to serial ", err, ". Is this the right port?")
 	}
 
 	buf := make([]byte, bufferSize)
 	n, err = port.Read(buf)
 	if err != nil {
-		log.Fatal(err)
+		log.Println("Error reading from serial ", err, ". Is this the right port?")
+	} else if n == 0 {
+		log.Println("Error reading from serial: timeout waiting for bytes. Is this the right port?")
 	}
 
 	log.Printf("%s\n", strings.TrimSpace(string(buf[:n])))
@@ -456,17 +470,6 @@ func getData(port *serial.Port, command string) []byte {
 	split := strings.Split(string(buf[:n]), ",")
 
 	if len(split) == rightSizeOfSplit {
-
-		const (
-			frequencyIdx = iota
-			temperature1Idx
-			temperature2Idx
-			brakingForce1Idx
-			brakingForce2Idx
-			vibrationIdx
-			speedIdx // In duty cycle
-			pressureIdx
-		)
 
 		frequency, _ := strconv.Atoi(split[frequencyIdx])
 		select {
@@ -584,7 +587,7 @@ func getMqttHost() string {
 }
 
 // Will manage the state of running snub, handling all state transitions,
-// synchronization, collecting needed data and writting needed commands
+// synchronization, collecting needed data and writing needed commands
 func handleSnubState() {
 	port := <-serialPortCh
 	for {
