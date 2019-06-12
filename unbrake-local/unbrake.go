@@ -220,7 +220,18 @@ func handlePortsSectionGUI() {
 
 	// Get available ports
 	portsNames := getSerialPorts()
-	portsNames = append(portsNames, getEnvVariableSerialPort())
+
+	// Add environment variable serial port if not already exists
+	found, envSerialPort := false, getEnvVariableSerialPort()
+	for i := range portsNames {
+		if portsNames[i] == envSerialPort {
+			found = true
+			break
+		}
+	}
+	if !found {
+		portsNames = append(portsNames)
+	}
 
 	// Create ports
 	ports := make([]serialPortGUI, len(portsNames))
