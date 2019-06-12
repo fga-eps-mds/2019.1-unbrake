@@ -2,11 +2,11 @@
 Tests for models of configuration app
 '''
 
-# pylint: disable = unused-import
 import pytest
 from django.test import Client
 from configuration.models import Config
-from utils.token import create_token
+from utils.token import create_token  # pylint: disable = unused-import
+
 
 CLIENT = Client()
 # First argument are the parameters names
@@ -14,7 +14,7 @@ CLIENT = Client()
 # First argument of param is the first parameter name and so on
 # id is like the name for the test case
 # Is possible to test only one test case with: pytest [file] -k [id]
-# pylint: disable = redefined-outer-name, unused-import
+# pylint: disable = redefined-outer-name
 
 
 @pytest.mark.django_db

@@ -2,11 +2,11 @@
     This file test the mutations of the calibration app
 '''
 
-# pylint: disable = unused-import
 import json
 import pytest
 from django.test import Client
-from utils.token import create_token
+from utils.token import create_token  # pylint: disable = unused-import
+
 
 # pylint: disable = redefined-outer-name
 

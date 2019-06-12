@@ -2,20 +2,20 @@
 Tests for models of calibration app
 '''
 
-# pylint: disable = unused-import
 import pytest
 from django.test import Client
 from calibration.models import CalibrationVibration, CalibrationForce
 from calibration.models import CalibrationRelations, CalibrationTemperature
 from calibration.models import CalibrationCommand, CalibrationSpeed
-from utils.token import create_token
+from utils.token import create_token  # pylint: disable = unused-import
+
 
 # First argument are the parameters names
 # Second is a tuple of params
 # First argument of param is the first parameter name and so on
 # id is like the name for the test case
 # Is possible to test only one test case with: pytest [file] -k [id]
-# pylint: disable = redefined-outer-name, unused-import
+# pylint: disable = redefined-outer-name
 @pytest.mark.django_db
 def test_calibration_vibration(create_token):
     '''

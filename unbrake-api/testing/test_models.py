@@ -2,14 +2,13 @@
     Tests of mutations to Testing model
 '''
 
-# pylint: disable = unused-import
 import json
 import pytest
 from django.test import Client
-from utils.token import create_token
+from utils.token import create_token  # pylint: disable = unused-import
 
 
-# pylint: disable = redefined-outer-name, unused-import
+# pylint: disable = redefined-outer-name
 def stringfy(entrada):
     '''
         This function receve a json end return a string of the json
