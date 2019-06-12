@@ -27,6 +27,8 @@ copy_module_files
 echo -e "Copying secrets to ${REMOTE_HOST}..."
 scp -r secrets api frontend root@${REMOTE_HOST}:/root/
 scp -r compose.* root@${REMOTE_HOST}:/root/
+scp -r nginx.* root@${REMOTE_HOST}:/root/
+scp .env* root@${REMOTE_HOST}:/root/
 
 echo -e "\nDeploying to ${REMOTE_HOST}..."
 ssh root@${REMOTE_HOST} ENVIRONMENT=${ENVIRONMENT} bash < scripts/deploy_remote.sh
