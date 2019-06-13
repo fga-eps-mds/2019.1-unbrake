@@ -15,6 +15,7 @@ import { connect } from "react-redux";
 import { addFile } from "../actions/FileActions";
 import { API_URL_GRAPHQL } from "../utils/Constants";
 import Request from "../utils/Request";
+import { createQuery, allVariablesCalib } from "./CalibrationVariables";
 
 const styles = theme => ({
   title: {
@@ -41,6 +42,51 @@ const styles = theme => ({
     minWidth: 200
   }
 });
+
+const calibrationJSON = [
+  "calibrationtemperatureSet",
+  "calibrationtemperatureSet",
+  "calibrationforceSet",
+  "calibrationforceSet",
+  "speed",
+  "vibration",
+  "command",
+  "relations"
+];
+
+const createCalibration = (data, dispatch) => {
+  const nextPosition = 1;
+
+  const cont = { calibrationtemperatureSet: -1, calibrationforceSet: -1 };
+
+  const newCalibraiton = calibrationJSON.reduce(
+    (prevDicionary, calibJSON, index) => {
+      if (
+        calibJSON === "calibrationtemperatureSet" ||
+        calibJSON === "calibrationforceSet"
+      )
+        cont[calibJSON] += nextPosition;
+
+      return allVariablesCalib[index].reduce((prevDictionaryTwo, variables) => {
+        let subDictionay;
+
+        if (
+          calibJSON === "calibrationtemperatureSet" ||
+          calibJSON === "calibrationforceSet"
+        )
+          subDictionay = {
+            [variables.front]: data[calibJSON][cont[calibJSON]][variables.back]
+          };
+        else
+          subDictionay = { [variables.front]: data[calibJSON][variables.back] };
+
+        return { ...prevDictionaryTwo, ...subDictionay };
+      }, prevDicionary);
+    },
+    {}
+  );
+  dispatch(initialize("calibration", newCalibraiton));
+};
 
 const itensSelection = allCalibration => {
   let allCalib = [{ id: 0, name: "" }];
@@ -111,10 +157,25 @@ class CalibrationUpload extends React.Component {
     this.setState({ [event.target.name]: event.target.value });
     const invalidId = 0;
     if (
-      event.target.name === "dataBaseConfiguration" &&
+      event.target.name === "dataBaseCalibration" &&
       event.target.value > invalidId
     )
-      this.handleSelectConfig(event.target.value);
+      this.handleSelectCalibration(event.target.value);
+  }
+
+  handleSelectCalibration(id) {
+    const { dispatch } = this.props;
+
+    const query = createQuery();
+    const url = `${API_URL_GRAPHQL}?query=query{calibration(id:${id}){${query}}}`;
+
+    const method = "GET";
+
+    Request(url, method).then(response => {
+      const data = response.data.calibration;
+
+      createCalibration(data, dispatch);
+    });
   }
 
   uploadField(field, filename) {

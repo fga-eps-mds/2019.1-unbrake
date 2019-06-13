@@ -1,3 +1,19 @@
+export const createQuery = () => {
+  const vibration =
+    "vibration{acquisitionChanel, conversionFactor, vibrationOffset}";
+  const speed = "speed{acquisitionChanel, tireRadius}";
+  const relations =
+    "relations{transversalSelectionWidth, heigthWidthRelation, rimDiameter, syncMotorRodation, sheaveMoveDiameter, sheaveMotorDiameter}";
+  const command =
+    "command {commandChanelSpeed ,actualSpeed ,maxSpeed ,chanelCommandPression, actualPression, maxPression}";
+  const temperature =
+    "calibrationtemperatureSet{acquisitionChanel ,conversionFactor ,temperatureOffset}";
+  const force =
+    "calibrationforceSet{acquisitionChanel ,conversionFactor ,forceOffset}";
+  const query = `${vibration},${speed},${relations},${command},${temperature},${force}`;
+  return query;
+};
+
 export const variablesTemperatureOne = [
   { front: "CHT1", back: "acquisitionChanel" },
   { front: "FCT1", back: "conversionFactor" },
