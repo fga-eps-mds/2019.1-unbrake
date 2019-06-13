@@ -14,6 +14,8 @@ interact with the application.
 package main
 
 import (
+	"encoding/json"
+	"fmt"
 	"log"
 	"os"
 	"os/signal"
@@ -265,7 +267,18 @@ func handleTestingReceiving() {
 			}
 		}()
 
-		// TODO: Start Test
+		testing := <-testingCh
+
+		data := make(map[string]interface{})
+
+		err := json.Unmarshal([]byte(testing), &data)
+
+		if err != nil {
+			log.Println("Wasn't possible to decode JSON, error: ", err)
+		}
+
+		fmt.Println(data)
+
 	} else {
 		log.Println("MQTT key not set!!! Not waiting for tests to arrive...")
 	}
