@@ -40,19 +40,33 @@ Execute o binário
 e acesse a interface da aplicação em https://unbrake.ml ou algum servidor local.
 
 Se o binário estiver em execução, será adicionado um ícone na área de
-notificações do seu sistema operacional, pelo qual
-é possível interagir com a aplicação.
+notificações do seu sistema operacional, pelo qual é possível
+interagir com a aplicação.
 
 * **A aplicação não deve ser executada como root (administrador)!**
 
 Problemas com a execução? Consulte o [troubleshooting](#troubleshooting)
 
-### Variáveis de ambiente
+### Interagindo com o módulo local
 
-Atualmente as seguintes variáveis de ambiente são relevantes para a aplicação:
+A aplicação irá iniciar e ficará esperando pela seleção de porta por parte
+do usuário. No Windows serão listadas todas as portas seriais e no linux
+apenas as que baterem com o seguinte padrão `/dev/ttyACM*` (é o padrão de nome
+dado pelo Linux ao arduíno leonardo).
 
-* **SIMULATOR_PORT**: nome/caminho da porta serial em que a placa está conectada.
+Se desejar utilizar uma porta não listada, você pode fazer isso via
+[configuração](#configuração-do-módulo-local)
+
+### Configuração do módulo local
+
+As configurações atualmente só podem ser feitas via variáveis de ambiente.
+
+* **SERIAL_PORT**: nome/caminho da porta serial em que a placa está conectada.
 Ex: `/dev/ttyACM0`, `COM1`.
+* **MQTT_HOST**: host do MQTT broker que será utilizado na comunicação
+* **MQTT_PORT**: porta na qual o MQTT broker está escutando
+* **MQTT_KEY**: chave do MQTT broker (emitter-io utilizado)
+(pedir ao responsável pelo host)
 
 ### Logs
 
@@ -93,13 +107,6 @@ Antes de analisar as seguintes opções cheque o log para ter mais informações
 </details>
 
 <details>
-  <summary> Minha placa não é reconhecida pelo meu Sistema Operacional </summary>
-  <br>
-
-  **Solução:** Consulte [aqui](https://www.arduino.cc/en/Guide/HomePage)
-</details>
-
-<details>
   <summary> Log informa que não tenho permissões para abrir um arquivo </summary>
   <br>
 
@@ -127,6 +134,13 @@ Antes de analisar as seguintes opções cheque o log para ter mais informações
   _**OBS:** Esses passos não precisam ser executados sempre, apenas uma vez_
 
   Mais detalhes podem ser encontrados [aqui](https://www.arduino.cc/en/Guide/Linux)
+</details>
+
+<details>
+  <summary> Minha placa não é reconhecida pelo meu Sistema Operacional </summary>
+  <br>
+
+  **Solução:** Consulte [aqui](https://www.arduino.cc/en/Guide/HomePage)
 </details>
 
 ## Guia de Desenvolvimento
