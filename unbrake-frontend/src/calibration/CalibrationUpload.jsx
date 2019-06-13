@@ -2,7 +2,7 @@ import React from "react";
 import iniparser from "iniparser";
 import Grid from "@material-ui/core/Grid";
 import Paper from "@material-ui/core/Paper";
-// import Button from "@material-ui/core/Button";
+import Button from "@material-ui/core/Button";
 import MenuItem from "@material-ui/core/MenuItem";
 import TextField from "@material-ui/core/TextField";
 import IconButton from "@material-ui/core/IconButton";
@@ -15,7 +15,7 @@ import { connect } from "react-redux";
 import { addFile } from "../actions/FileActions";
 import { API_URL_GRAPHQL } from "../utils/Constants";
 import Request from "../utils/Request";
-import { createQuery, allVariablesCalib } from "./CalibrationVariables";
+import { createQuery, allVariablesCalib, empty } from "./CalibrationVariables";
 
 const styles = theme => ({
   title: {
@@ -88,6 +88,19 @@ const createCalibration = (data, dispatch) => {
   dispatch(initialize("calibration", newCalibraiton));
 };
 
+const getSelectCalibration = (id, dispatch) => {
+  const query = createQuery();
+  const url = `${API_URL_GRAPHQL}?query=query{calibration(id:${id}){${query}}}`;
+
+  const method = "GET";
+
+  Request(url, method).then(response => {
+    const data = response.data.calibration;
+
+    createCalibration(data, dispatch);
+  });
+};
+
 const itensSelection = allCalibration => {
   let allCalib = [{ id: 0, name: "" }];
   allCalib = allCalib.concat(allCalibration);
@@ -122,15 +135,13 @@ const selectConfiguration = (handleChange, calibStates, classes) => {
   );
 };
 
-/*
- * const defaultButton = handleUpDefault => {
- *   return (
- *     <Button onClick={handleUpDefault} color="secondary" variant="contained">
- *       Calibração Padrão
- *     </Button>
- *   );
- * };
- */
+const defaultButton = handleUpDefault => {
+  return (
+    <Button onClick={handleUpDefault} color="secondary" variant="contained">
+      Calibração Padrão
+    </Button>
+  );
+};
 
 class CalibrationUpload extends React.Component {
   constructor(props) {
@@ -142,10 +153,11 @@ class CalibrationUpload extends React.Component {
 
     this.fileUpload = this.fileUpload.bind(this);
     this.handleChange = this.handleChange.bind(this);
+    this.handleUpDefault = this.handleUpDefault.bind(this);
   }
 
   componentDidMount() {
-    const url = `${API_URL_GRAPHQL}?query=query{allCalibration{id, name}}`;
+    const url = `${API_URL_GRAPHQL}?query=query{allCalibration{id, name, isDefault}}`;
     const method = "GET";
     Request(url, method).then(json => {
       const data = json.data.allCalibration;
@@ -154,13 +166,17 @@ class CalibrationUpload extends React.Component {
   }
 
   handleChange(event) {
+    const { dispatch } = this.props;
+
     this.setState({ [event.target.name]: event.target.value });
     const invalidId = 0;
     if (
       event.target.name === "dataBaseCalibration" &&
       event.target.value > invalidId
     )
-      this.handleSelectCalibration(event.target.value);
+      getSelectCalibration(event.target.value, dispatch);
+
+    // this.handleSelectCalibration(event.target.value);
   }
 
   handleSelectCalibration(id) {
@@ -176,6 +192,18 @@ class CalibrationUpload extends React.Component {
 
       createCalibration(data, dispatch);
     });
+  }
+
+  handleUpDefault() {
+    const { dispatch } = this.props;
+    const { allCalibration } = this.state;
+
+    const defaultsCalib = allCalibration.filter(calibration => {
+      return calibration.isDefault === true;
+    });
+
+    if (defaultsCalib.length > empty)
+      getSelectCalibration(defaultsCalib[0].id, dispatch);
   }
 
   uploadField(field, filename) {
@@ -250,7 +278,7 @@ class CalibrationUpload extends React.Component {
         {this.uploadField("calibration", filename)}
         <Grid container justify="center" item alignItems="center" xs={12}>
           {selectConfiguration(this.handleChange, calibStates, classes)}
-          {/* {defaultButton(this.handleUpDefault)} */}
+          {defaultButton(this.handleUpDefault)}
         </Grid>
       </Grid>
     );

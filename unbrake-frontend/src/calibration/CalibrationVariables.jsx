@@ -1,3 +1,5 @@
+export const empty = 0;
+
 export const createQuery = () => {
   const vibration =
     "vibration{acquisitionChanel, conversionFactor, vibrationOffset}";
@@ -142,7 +144,7 @@ export const variablesCalib = [
 ];
 
 export const createCalibration = {
-  mutation: "createCalibration",
+  mutation: "createDefaultCalibration",
   response: "calibration",
   variablesResponse: "id"
 };

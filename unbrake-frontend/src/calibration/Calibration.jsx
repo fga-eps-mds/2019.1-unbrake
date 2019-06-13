@@ -29,7 +29,8 @@ import {
   allVariablesCalib,
   createAllCalibrations,
   variablesCalib,
-  createCalibration
+  createCalibration,
+  empty
 } from "./CalibrationVariables";
 
 const TabPadding = 24;
@@ -41,7 +42,6 @@ const speedOption = 3;
 const vibrationOption = 4;
 const commandOption = 5;
 const relationOption = 6;
-const empty = 0;
 const sizeMessageDefault = 12;
 
 const styles = theme => ({
