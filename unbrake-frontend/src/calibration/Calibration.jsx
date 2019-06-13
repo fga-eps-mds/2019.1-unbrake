@@ -155,7 +155,7 @@ const dialogName = (functions, states) => {
 };
 
 const GeneralConfigs = () => (
-  <div className="App">
+  <div>
     <div style={{ marginTop: "6%", marginBottom: "2%" }}>
       <CalibrationUpload />
     </div>
