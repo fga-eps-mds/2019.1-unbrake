@@ -7,6 +7,7 @@ from django.test import Client
 from calibration.models import CalibrationVibration, CalibrationForce
 from calibration.models import CalibrationRelations, CalibrationTemperature
 from calibration.models import CalibrationCommand, CalibrationSpeed
+from utils.token import create_token  # pylint: disable = unused-import
 
 
 # First argument are the parameters names
@@ -14,14 +15,15 @@ from calibration.models import CalibrationCommand, CalibrationSpeed
 # First argument of param is the first parameter name and so on
 # id is like the name for the test case
 # Is possible to test only one test case with: pytest [file] -k [id]
+# pylint: disable = redefined-outer-name
 @pytest.mark.django_db
-def test_calibration_vibration():
+def test_calibration_vibration(create_token):
     '''
         This test save a CalibrationVibration object on db,
         require the saved object by graphql,
         and check if the requirement is equal the saved object
     '''
-
+    token = create_token()
     response = {
         'acquisitionChanel': 6,
         'conversionFactor': 1.00,
@@ -43,7 +45,8 @@ def test_calibration_vibration():
     client = Client()
     result = client.get(
         '/graphql?query={calibrationVibration(id: 1)'
-        '{acquisitionChanel, conversionFactor, vibrationOffset}}')
+        '{acquisitionChanel, conversionFactor, vibrationOffset}}',
+        HTTP_AUTHORIZATION=token)
     assert result.status_code == 200
     single_aux = result.json()['data']['calibrationVibration']
     single_calibration_vibration = single_aux
@@ -54,7 +57,8 @@ def test_calibration_vibration():
     client = Client()
     result = client.get(
         '/graphql?query={allCalibrationVibration'
-        '{id, acquisitionChanel, conversionFactor, vibrationOffset}}')
+        '{id, acquisitionChanel, conversionFactor, vibrationOffset}}',
+        HTTP_AUTHORIZATION=token)
     assert result.status_code == 200
     multiple_aux = result.json()['data']['allCalibrationVibration']
     multiple_calibration_vibration_1 = multiple_aux[1]
@@ -65,13 +69,13 @@ def test_calibration_vibration():
 
 
 @pytest.mark.django_db
-def test_calibration_force():
+def test_calibration_force(create_token):
     '''
         This test save a CalibrationForce object on db,
         require the saved object by graphql,
         and check if the requirement is equal the saved object
     '''
-
+    token = create_token()
     response = {
         'acquisitionChanel': 3,
         'conversionFactor': 1.000,
@@ -87,8 +91,8 @@ def test_calibration_force():
     client = Client()
     result = client.get(
         '/graphql?query={calibrationForce(id: 1)'
-        '{acquisitionChanel, conversionFactor, forceOffset}}'
-    )
+        '{acquisitionChanel, conversionFactor, forceOffset}}',
+        HTTP_AUTHORIZATION=token)
     assert result.status_code == 200
     single_calibration_force = result.json()['data']['calibrationForce']
 
@@ -104,8 +108,8 @@ def test_calibration_force():
     client = Client()
     result = client.get(
         '/graphql?query={allCalibrationForce'
-        '{id, acquisitionChanel, conversionFactor, forceOffset}}'
-    )
+        '{id, acquisitionChanel, conversionFactor, forceOffset}}',
+        HTTP_AUTHORIZATION=token)
     assert result.status_code == 200
     multiple_aux = result.json()['data']['allCalibrationForce']
     multiple_calibration_force_1 = multiple_aux[1]
@@ -116,13 +120,13 @@ def test_calibration_force():
 
 
 @pytest.mark.django_db
-def test_calibration_speed():
+def test_calibration_speed(create_token):
     '''
         This test save a CalibrationSpeed object on db,
         require the saved object by graphql,
         and check if the requirement is equal the saved object
     '''
-
+    token = create_token()
     response = {
         'acquisitionChanel': 5,
         'tireRadius': 0.291550
@@ -136,7 +140,7 @@ def test_calibration_speed():
     client = Client()
     result = client.get(
         '/graphql?query={calibrationSpeed(id: 1)'
-        '{acquisitionChanel, tireRadius}}')
+        '{acquisitionChanel, tireRadius}}', HTTP_AUTHORIZATION=token)
     assert result.status_code == 200
     single_calibration_speed = result.json()['data']['calibrationSpeed']
 
@@ -151,7 +155,7 @@ def test_calibration_speed():
     client = Client()
     result = client.get(
         '/graphql?query={allCalibrationSpeed'
-        '{id, acquisitionChanel, tireRadius}}')
+        '{id, acquisitionChanel, tireRadius}}', HTTP_AUTHORIZATION=token)
     assert result.status_code == 200
     multiple_aux = result.json()['data']['allCalibrationSpeed']
     multiple_calibration_speed_1 = multiple_aux[1]
@@ -169,13 +173,13 @@ def test_calibration_speed():
      )
 )
 def test_all_calibration_speed(acquisition_chanel_0, acquisition_chanel_1,
-                               tire_radius_0, tire_radius_1):
+                               tire_radius_0, tire_radius_1, create_token):
     '''
         This test save two CalibrationSpeed objects on db,
         require all the saved objects by graphql,
         and check if the requirement is equal the saveds objects
     '''
-
+    token = create_token()
     response_0 = {
         'acquisitionChanel': acquisition_chanel_0,
         'tireRadius': tire_radius_0
@@ -199,7 +203,7 @@ def test_all_calibration_speed(acquisition_chanel_0, acquisition_chanel_1,
     client = Client()
     result = client.get(
         '/graphql?query={allCalibrationSpeed'
-        '{acquisitionChanel, tireRadius}}')
+        '{acquisitionChanel, tireRadius}}', HTTP_AUTHORIZATION=token)
     assert result.status_code == 200
     calibration_speed0 = result.json()['data']['allCalibrationSpeed'][0]
     calibration_speed1 = result.json()['data']['allCalibrationSpeed'][1]
@@ -210,13 +214,13 @@ def test_all_calibration_speed(acquisition_chanel_0, acquisition_chanel_1,
 
 
 @pytest.mark.django_db
-def test_calibration_relations():
+def test_calibration_relations(create_token):
     '''
         This test save a CalibrationRelations object on db,
         require the saved object by graphql,
         and check if the requirement is equal the saved object
     '''
-
+    token = create_token()
     response = {
         'id': '1',
         'transversalSelectionWidth': 175,
@@ -250,7 +254,8 @@ def test_calibration_relations():
         '/graphql?query={calibrationRelations(id: 1)'
         '{id, transversalSelectionWidth,'
         'heigthWidthRelation, rimDiameter, syncMotorRodation,'
-        'sheaveMoveDiameter, sheaveMotorDiameter}}')
+        'sheaveMoveDiameter, sheaveMotorDiameter}}',
+        HTTP_AUTHORIZATION=token)
 
     assert result.status_code == 200
 
@@ -265,7 +270,8 @@ def test_calibration_relations():
         '/graphql?query={allCalibrationRelations'
         '{id, transversalSelectionWidth,'
         'heigthWidthRelation, rimDiameter, syncMotorRodation,'
-        'sheaveMoveDiameter, sheaveMotorDiameter}}')
+        'sheaveMoveDiameter, sheaveMotorDiameter}}',
+        HTTP_AUTHORIZATION=token)
     assert result.status_code == 200
 
     multiple_aux = result.json()['data']['allCalibrationRelations']
@@ -277,13 +283,13 @@ def test_calibration_relations():
 
 
 @pytest.mark.django_db
-def test_calibration_temperature():
+def test_calibration_temperature(create_token):
     '''
         This test save a CalibrationTemperature object on db,
         require the saved object by graphql,
         and check if the requirement is equal the saved object
     '''
-
+    token = create_token()
     response = {
         'acquisitionChanel': 1,
         'conversionFactor': 0.200,
@@ -305,8 +311,8 @@ def test_calibration_temperature():
     client = Client()
     result = client.get(
         '/graphql?query={calibrationTemperature(id: 1)'
-        '{acquisitionChanel, conversionFactor, temperatureOffset}}'
-    )
+        '{acquisitionChanel, conversionFactor, temperatureOffset}}',
+        HTTP_AUTHORIZATION=token)
     assert result.status_code == 200
     single_aux = result.json()['data']['calibrationTemperature']
     single_calibration_temperature = single_aux
@@ -317,8 +323,8 @@ def test_calibration_temperature():
     client = Client()
     result = client.get(
         '/graphql?query={allCalibrationTemperature'
-        '{id, acquisitionChanel, conversionFactor, temperatureOffset}}'
-    )
+        '{id, acquisitionChanel, conversionFactor, temperatureOffset}}',
+        HTTP_AUTHORIZATION=token)
     assert result.status_code == 200
     multiple_aux = result.json()['data']['allCalibrationTemperature']
     multiple_calibration_temperature_1 = multiple_aux[1]
@@ -329,13 +335,13 @@ def test_calibration_temperature():
 
 
 @pytest.mark.django_db
-def test_calibration_commands():
+def test_calibration_commands(create_token):
     '''
         This test save a CalibrationCommand object on db,
         require the saved object by graphql,
         and check if the requirement is equal the saved object
     '''
-
+    token = create_token()
     response = {
         'commandChanelSpeed': 7,
         'actualSpeed': 0.000,
@@ -367,7 +373,8 @@ def test_calibration_commands():
     result_single = client.get(
         '/graphql?query={calibrationCommand(id: 1)'
         '{commandChanelSpeed,actualSpeed,maxSpeed,'
-        'chanelCommandPression,actualPression,maxPression}}')
+        'chanelCommandPression,actualPression,maxPression}}',
+        HTTP_AUTHORIZATION=token)
     assert result_single.status_code == 200
 
     single_aux = result_single.json()['data']['calibrationCommand']
@@ -376,7 +383,8 @@ def test_calibration_commands():
     result_multiple = client.get(
         '/graphql?query={allCalibrationCommand'
         '{id,commandChanelSpeed,actualSpeed,maxSpeed,'
-        'chanelCommandPression,actualPression,maxPression}}')
+        'chanelCommandPression,actualPression,maxPression}}',
+        HTTP_AUTHORIZATION=token)
     assert result_multiple.status_code == 200
 
     multiple_aux = result_multiple.json()['data']['allCalibrationCommand']
