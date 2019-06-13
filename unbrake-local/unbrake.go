@@ -1,16 +1,16 @@
 /*
-* Generates a self contained binary application which reads data from
-* a serial connection (was developed thinking on arduíno via USB)
-* and send it through network.
-*
-* It is also able to send commands in ascii format. We are working
-* On a application which each ascii character represents a state
-* where some things are on and others off. In our case acelerator,
-* brake, etc.
+Generates a self contained binary application which reads data from
+a serial connection (was developed thinking on arduíno via USB)
+and send it through network.
 
-* We also provide a simple GUI through systray in which users can
-* interact with the application.
- */
+It is also able to send commands in ascii format. We are working
+On a application which each ascii character represents a state
+where some things are on and others off. In our case acelerator,
+brake, etc.
+
+We also provide a simple GUI through systray in which users can
+interact with the application.
+*/
 package main
 
 import (
@@ -18,7 +18,6 @@ import (
 	"os"
 	"os/signal"
 	"path"
-	"runtime"
 	"strconv"
 	"strings"
 	"sync"
@@ -38,17 +37,16 @@ const (
 // Serial constants
 const (
 	bufferSize       = 48
-	simulatorPortEnv = "SIMULATOR_PORT"
-	defaultPort      = "/dev/ttyACM0"
+	simulatorPortEnv = "SERIAL_PORT"
 	baudRate         = 115200
 	frequencyReading = 10
+	numSerialAttrs   = 11 // number of attributes read simultaneously from serial device
 
 	upperSpeedLimit       = 150
 	lowerSpeedLimit       = 150
 	timeSleepWater        = 3
 	timeCooldown          = 3
 	temperatureLimit      = 400
-	rightSizeOfSplit      = 11
 	delayAcelerateToBrake = 2
 )
 
@@ -66,13 +64,8 @@ const (
 var wg sync.WaitGroup
 var stopCollectingDataCh chan bool
 var sigsCh chan os.Signal
-var portCh = make(chan *serial.Port, 3)
-var frequencyCh = make(chan int)
-var temperatureCh = make(chan [2]int)
-var brakingForceCh = make(chan [2]int)
-var vibrationCh = make(chan int)
-var speedCh = make(chan int)
-var pressureCh = make(chan int)
+var serialPortNameCh = make(chan string, 1)
+var serialPortCh = make(chan *serial.Port, 3)
 
 // Flags with intermediary states
 var stabilizing = false
@@ -136,11 +129,55 @@ var byteToStateName = map[string]string{
 	"+":  "acelerateBrakeWater",
 }
 
+var serialAttrs = make([]SerialAttribute, numSerialAttrs)
+
+// Index of information get on reading from serial
+const (
+	frequencyIdx = iota
+	temperature1Idx
+	temperature2Idx
+	brakingForce1Idx
+	brakingForce2Idx
+	vibrationIdx
+	speedIdx
+	pressureIdx
+)
+
+// Subchannels for each information sent to MQTT, same index rules
+// as the original data string from serial
+var mqttSubchannels = []string{
+	"/frequency",
+	"/temperature/sensor1",
+	"/temperature/sensor2",
+	"/brakingForce/sensor1",
+	"/brakingForce/sensor2",
+	"/vibration",
+	"/speed",
+	"/pressure",
+}
+
+// SerialAttribute represent one attributes of the many that are returned as values
+// from the physical device on serial communication
+type SerialAttribute struct {
+	mqttSubchannel string      // Subchannel associated at mqtt broker
+	publishCh      chan string // for publishing
+	handleCh       chan int    // for handling values
+}
+
 // Snub is a cycle of aceleration, braking and cooldown,
 // multiple snubs compose a test
 type Snub struct {
 	state string
 	mux   sync.Mutex
+}
+
+const checkedPrefix = "\u2713 "
+
+// Represents the systray menu item of a serial port
+// to be used
+type serialPortGUI struct {
+	item  *systray.MenuItem
+	title string
 }
 
 func main() {
@@ -153,6 +190,12 @@ func main() {
 	sigsCh = make(chan os.Signal, 1)
 	signal.Notify(sigsCh, os.Interrupt)
 
+	for i, subChannel := range mqttSubchannels {
+		serialAttrs[i].mqttSubchannel = subChannel
+		serialAttrs[i].publishCh = make(chan string)
+		serialAttrs[i].handleCh = make(chan int)
+	}
+
 	onExit := func() {
 		snub.state = cooldown
 		log.Println("Exiting...")
@@ -161,6 +204,132 @@ func main() {
 
 	log.Println("Application finished!")
 	log.Println("--------------------------------------------")
+}
+
+// Required by systray (GUI)
+func onReady() {
+	systray.SetIcon(icon)
+	systray.SetTitle("UnBrake")
+	systray.SetTooltip("UnBrake")
+
+	handlePortsSectionGUI()
+
+	mQuitOrig := systray.AddMenuItem("Sair", "Fechar UnBrake")
+
+	stopCollectingDataCh = make(chan bool, 1)
+
+	// Wait for quitting
+	go func() {
+		select {
+		case <-mQuitOrig.ClickedCh:
+			log.Println("Quitting request by interface")
+		case <-sigsCh:
+			log.Println("Quitting request by signal")
+		}
+
+		stopCollectingDataCh <- true
+		systray.Quit()
+		log.Println("Finished systray")
+	}()
+
+	wg.Add(1)
+	go collectData()
+	go handleSnubState()
+
+	if _, collectEnv := os.LookupEnv(mqttKeyEnv); collectEnv {
+		go publishAll()
+	} else {
+		log.Println("MQTT key not set!!! Data will not be published...")
+	}
+
+	wg.Wait()
+}
+
+// Controls the serial ports selection via GUI
+func handlePortsSectionGUI() {
+	systray.AddSeparator()
+	portsTitle := systray.AddMenuItem("Portas", "Selecione a porta de leitura")
+	portsTitle.Disable()
+
+	systray.AddSeparator()
+
+	// Get available ports
+	portsNames := getSerialPorts()
+
+	// Add environment variable serial port if not already exists
+	found, envSerialPort := false, getEnvVariableSerialPort()
+	for i := range portsNames {
+		if portsNames[i] == envSerialPort {
+			found = true
+			break
+		}
+	}
+	if !found && envSerialPort != "" {
+		portsNames = append(portsNames, envSerialPort)
+	}
+
+	// Create ports
+	ports := make([]serialPortGUI, len(portsNames))
+	for i, portName := range portsNames {
+		ports[i] = createPort(portName, "Select port")
+	}
+
+	systray.AddSeparator()
+
+	handleSelect := func(selected int, ports []serialPortGUI) {
+		for i := range ports {
+			if i != selected {
+				ports[i].uncheck()
+			}
+		}
+
+		ports[selected].uncheck()
+		serialPortNameCh <- ports[selected].title
+		ports[selected].check()
+	}
+
+	// Handle serial ports checking/unchecking
+	for i, port := range ports {
+		go func(selected int, portLocal serialPortGUI) {
+			for {
+				<-portLocal.item.ClickedCh
+				handleSelect(selected, ports)
+			}
+		}(i, port)
+	}
+}
+
+// Creates a Serial on systray
+func createPort(title, tooltip string) serialPortGUI {
+	var port serialPortGUI
+
+	port.title = title
+	port.item = systray.AddMenuItem(title, tooltip)
+
+	return port
+}
+
+// Set the title of a serial on GUI
+func (port *serialPortGUI) setTitle(title string) {
+	port.title = title
+	port.item.SetTitle(title)
+}
+
+// Check port menu item based on current state
+func (port *serialPortGUI) check() {
+	if !port.item.Checked() {
+		port.setTitle(checkedPrefix + port.title)
+		port.item.Check()
+	}
+}
+
+// Uncheck port menu item based on current state
+func (port *serialPortGUI) uncheck() {
+	if port.item.Checked() {
+		port.setTitle(port.title[len(checkedPrefix):])
+
+		port.item.Uncheck()
+	}
 }
 
 // Will update current state to its next, respecting timing and
@@ -242,88 +411,63 @@ func (snub *Snub) handleBrake(port *serial.Port) {
 	snub.mux.Unlock()
 }
 
-// Required by systray (GUI)
-func onReady() {
-	systray.SetIcon(icon)
-	systray.SetTitle("UnBrake")
-	systray.SetTooltip("UnBrake")
-
-	mQuitOrig := systray.AddMenuItem("Sair", "Fechar UnBrake")
-
-	stopCollectingDataCh = make(chan bool, 1)
-
-	// Wait for quitting
-	go func() {
-		select {
-		case <-mQuitOrig.ClickedCh:
-			log.Println("Quitting request by interface")
-		case <-sigsCh:
-			log.Println("Quitting request by signal")
-		}
-
-		stopCollectingDataCh <- true
-		systray.Quit()
-		log.Println("Finished systray")
-	}()
-
-	wg.Add(1)
-	go collectData()
-	go publishAll()
-	go handleSnubState()
-
-	wg.Wait()
-}
-
 // Will collect data from serial bus and distributes it
 // to others goroutines
 func collectData() {
 	defer wg.Done()
 
 	const ReadingDelay = time.Second / frequencyReading
-	simulatorPort := getSimulatorPort()
 
-	log.Println("Initializing collectData routine...")
-	log.Printf("Simulator Port = %s", simulatorPort)
-	log.Printf("Buffer size = %d", bufferSize)
-	log.Printf("Baud rate = %d", baudRate)
-	log.Printf("Reading delay = %v", ReadingDelay)
-
-	c := &serial.Config{
-		Name: simulatorPort,
-		Baud: baudRate,
-	}
-
-	port, err := serial.OpenPort(c)
-
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	portCh <- port
-	close(portCh)
-
-	port.Flush()
 	continueCollecting := true
 	for continueCollecting {
-		select {
-		case stop := <-stopCollectingDataCh:
-			if stop {
+		log.Println("Waiting for valid serial port selection...")
+		serialPortName := <-serialPortNameCh
+
+		configuration := &serial.Config{
+			Name:        serialPortName,
+			Baud:        baudRate,
+			ReadTimeout: time.Second,
+		}
+
+		port, err := serial.OpenPort(configuration)
+		if err == nil {
+			serialPortCh <- port
+		} else {
+			log.Println(err)
+			continue
+		}
+
+		log.Println("Initializing collectData routine...")
+		log.Printf("Simulator Port = %s", serialPortName)
+		log.Printf("Buffer size = %d", bufferSize)
+		log.Printf("Baud rate = %d", baudRate)
+		log.Printf("Reading delay = %v", ReadingDelay)
+
+		port.Flush()
+		for {
+			select {
+			case stop := <-stopCollectingDataCh:
+				if stop {
+					_, err := port.Write([]byte(cooldown))
+					if err != nil {
+						log.Fatal(err)
+					}
+					continueCollecting = false
+				}
+			case sig := <-sigsCh:
+				log.Println("Signal received: ", sig)
 				_, err := port.Write([]byte(cooldown))
 				if err != nil {
 					log.Fatal(err)
 				}
 				continueCollecting = false
+			case serialPortName = <-serialPortNameCh:
+				serialPortNameCh <- serialPortName
+				collectData()
+			default:
+				getData(port, "\"")
+				time.Sleep(ReadingDelay)
 			}
-		case sig := <-sigsCh:
-			log.Println("Signal received: ", sig)
-			_, err := port.Write([]byte(cooldown))
-			if err != nil {
-				log.Fatal(err)
-			}
-			continueCollecting = false
-		default:
-			getData(port, "\"")
-			time.Sleep(ReadingDelay)
 		}
 	}
 }
@@ -332,114 +476,63 @@ func collectData() {
 // array of bytes
 func getData(port *serial.Port, command string) []byte {
 	n, err := port.Write([]byte(command))
-
 	if err != nil {
-		log.Fatal(err)
+		log.Println("Error writing to serial ", err, ". Is this the right port?")
 	}
 
 	buf := make([]byte, bufferSize)
-	n, err = port.Read(buf)
-	if err != nil {
-		log.Fatal(err)
+	if n, err = port.Read(buf); err != nil {
+		log.Println("Error reading from serial ", err, ". Is this the right port?")
+	} else if n == 0 {
+		log.Println("Error reading from serial: timeout waiting for bytes. Is this the right port?")
 	}
 
 	log.Printf("%s\n", strings.TrimSpace(string(buf[:n])))
-
 	split := strings.Split(string(buf[:n]), ",")
 
-	if len(split) == rightSizeOfSplit {
+	if len(split) == numSerialAttrs { // Was a complete read
+		for i, attr := range split {
+			attrInt, _ := strconv.Atoi(attr)
 
-		const (
-			frequencyIdx = iota
-			temperature1Idx
-			temperature2Idx
-			brakingForce1Idx
-			brakingForce2Idx
-			vibrationIdx
-			speedIdx // In duty cycle
-			pressureIdx
-		)
+			select {
+			case serialAttrs[i].handleCh <- attrInt:
+			default:
+			}
 
-		frequency, _ := strconv.Atoi(split[frequencyIdx])
-		frequencyCh <- frequency
-
-		firstTemperature, _ := strconv.Atoi(split[temperature1Idx])
-		secondTemperature, _ := strconv.Atoi(split[temperature2Idx])
-		temperatureCh <- [2]int{firstTemperature, secondTemperature}
-
-		firstBrakingForce, _ := strconv.Atoi(split[temperature1Idx])
-		secondBrakingForce, _ := strconv.Atoi(split[temperature2Idx])
-		brakingForceCh <- [2]int{firstBrakingForce, secondBrakingForce}
-
-		vibration, _ := strconv.Atoi(split[vibrationIdx])
-		vibrationCh <- vibration
-
-		speed, _ := strconv.Atoi(split[speedIdx])
-		speedCh <- speed
-
-		pressure, _ := strconv.Atoi(split[pressureIdx])
-		pressureCh <- pressure
+			select {
+			case serialAttrs[i].publishCh <- attr:
+			default:
+			}
+		}
 	}
 
 	return buf
 }
 
+// Publish to MQTT broker the whole current state of local application
 func publishAll() {
-	go func() {
-		for {
-			publishData(strconv.Itoa(<-frequencyCh), "/frequency")
-		}
-	}()
-
-	go func() {
-		for {
-			temperatureData := <-temperatureCh
-			publishData(strconv.Itoa(temperatureData[0]), "/temperature/sensor1")
-			publishData(strconv.Itoa(temperatureData[1]), "/temperature/sensor2")
-		}
-	}()
-
-	go func() {
-		for {
-			brakingForceData := <-brakingForceCh
-			publishData(strconv.Itoa(brakingForceData[0]), "/brakingForce/sensor1")
-			publishData(strconv.Itoa(brakingForceData[1]), "/brakingForce/sensor2")
-		}
-	}()
-
-	go func() {
-		for {
-			publishData(strconv.Itoa(<-vibrationCh), "/vibration")
-		}
-	}()
-
-	go func() {
-		for {
-			publishData(strconv.Itoa(<-speedCh), "/speed")
-		}
-	}()
-
-	go func() {
-		for {
-			publishData(strconv.Itoa(<-pressureCh), "/pressure")
-		}
-	}()
+	for i := 0; i < numSerialAttrs; i++ {
+		go func(idx int) {
+			for {
+				publishData(<-serialAttrs[idx].publishCh, serialAttrs[idx].mqttSubchannel)
+			}
+		}(i)
+	}
 }
 
 // Publish data to MQTT broker
 func publishData(data string, subChannel string) {
-	key, doesExists := os.LookupEnv(mqttKeyEnv)
-	if !doesExists {
-		log.Fatal("MQTT key not set!!!")
+	if key, doesExists := os.LookupEnv(mqttKeyEnv); doesExists {
+		channel, data := mqttChannelPrefix+subChannel, data
+
+		client, _ := emitter.Connect(getMqttHost(), func(_ *emitter.Client, msg emitter.Message) {
+			log.Printf("Sent message: '%s' topic: '%s'\n", msg.Payload(), msg.Topic())
+		})
+
+		client.Publish(key, channel, data)
+	} else {
+		log.Println("MQTT key not set!!! Not publishing any data...")
 	}
-
-	channel, data := mqttChannelPrefix+subChannel, data
-
-	client, _ := emitter.Connect(getMqttHost(), func(_ *emitter.Client, msg emitter.Message) {
-		log.Printf("Sent message: '%s' topic: '%s'\n", msg.Payload(), msg.Topic())
-	})
-
-	client.Publish(key, channel, data)
 }
 
 // Get complete host name with port of the MQTT broker
@@ -458,16 +551,19 @@ func getMqttHost() string {
 }
 
 // Will manage the state of running snub, handling all state transitions,
-// synchronization, collecting needed data and writting needed commands
+// synchronization, collecting needed data and writing needed commands
 func handleSnubState() {
-	port := <-portCh
+	port := <-serialPortCh
 
 	for {
+		select {
+		case port = <-serialPortCh:
+		default:
+		}
 
 		select {
 
-		case speed := <-speedCh:
-
+		case speed := <-serialAttrs[speedIdx].handleCh:
 			if (snub.state == acelerate || snub.state == acelerateWater) && !stabilizing {
 				if speed >= upperSpeedLimit {
 					go snub.handleAcelerate()
@@ -484,15 +580,14 @@ func handleSnubState() {
 				}
 			}
 
-		case temperature := <-temperatureCh:
+		case temperature1 := <-serialAttrs[temperature1Idx].handleCh:
+			temperature2 := <-serialAttrs[temperature2Idx].handleCh
 
-			if (temperature[0] > temperatureLimit || temperature[1] > temperatureLimit) && !throwingWater {
+			if (temperature1 > temperatureLimit || temperature2 > temperatureLimit) && !throwingWater {
 				if snub.state == acelerate || snub.state == brake || snub.state == cooldown {
 					go snub.turnOnWater(port)
 				}
 			}
-
-		default:
 		}
 	}
 }
@@ -501,12 +596,7 @@ func handleSnubState() {
 // and log file (if not exists). Returns the log file
 // as a File object
 func getLogFile() *os.File {
-	logPath := ""
-	if runtime.GOOS != "windows" {
-		logPath = path.Join("/home", os.Getenv("USER"), applicationFolderName, "logs")
-	} else {
-		logPath = path.Join(os.Getenv("APPDATA"), applicationFolderName, "logs")
-	}
+	logPath := getLogPath()
 
 	os.MkdirAll(logPath, os.ModePerm)
 	logPath = path.Join(logPath, logFilePath)
@@ -522,16 +612,13 @@ func getLogFile() *os.File {
 }
 
 // Get serial port that will be used to communicate with the physical device
-func getSimulatorPort() string {
-	log.Println("Getting simulator port...")
-
+func getEnvVariableSerialPort() string {
 	simulatorPort, doesExists := os.LookupEnv(simulatorPortEnv)
 
 	if !doesExists {
-		simulatorPort = defaultPort
+		simulatorPort = ""
 	}
 
-	log.Println("Got simulator port: ", simulatorPort)
 	return simulatorPort
 }
 
