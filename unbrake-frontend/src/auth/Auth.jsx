@@ -33,16 +33,9 @@ export async function verifyToken() {
   return response.data.verifyToken.payload.username !== null;
 }
 
-export function isAuthenticated(response) {
-  if (response.data !== undefined && response.data !== null) {
-    const stringfyCookie = String(cookies.get("token"));
-    return (
-      stringfyCookie !== "undefined" &&
-      stringfyCookie !== "null" &&
-      response !== false
-    );
-  }
-  return false;
+export function isAuthenticated() {
+  const stringfyCookie = String(cookies.get("token"));
+  return stringfyCookie !== "undefined" && stringfyCookie !== "null";
 }
 
 export function hasPermission(permission, loadingVerifyingAuth) {

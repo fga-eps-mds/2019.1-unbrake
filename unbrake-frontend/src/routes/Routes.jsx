@@ -16,7 +16,6 @@ export default () => (
         path="/(|configuration|calibration|analysis|test|vibration|force|command|reset-password)"
         component={SideBarMenu}
       />
-      <Route exact path="/login" component={Login} />
       <AuthorizedRoute
         superuser={localStorage.getItem("isSuperuser") === "true"}
         exact
