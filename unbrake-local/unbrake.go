@@ -38,7 +38,6 @@ const (
 const (
 	bufferSize       = 48
 	simulatorPortEnv = "SERIAL_PORT"
-	defaultPort      = "/dev/ttyACM0"
 	baudRate         = 115200
 	frequencyReading = 10
 	numSerialAttrs   = 11 // number of attributes read simultaneously from serial device
@@ -265,7 +264,7 @@ func handlePortsSectionGUI() {
 			break
 		}
 	}
-	if !found {
+	if !found && envSerialPort != "" {
 		portsNames = append(portsNames, envSerialPort)
 	}
 
@@ -617,7 +616,7 @@ func getEnvVariableSerialPort() string {
 	simulatorPort, doesExists := os.LookupEnv(simulatorPortEnv)
 
 	if !doesExists {
-		simulatorPort = defaultPort
+		simulatorPort = ""
 	}
 
 	return simulatorPort
