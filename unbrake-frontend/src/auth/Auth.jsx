@@ -35,7 +35,11 @@ export async function verifyToken() {
 
 export function isAuthenticated() {
   const stringfyCookie = String(cookies.get("token"));
-  return stringfyCookie !== "undefined" && stringfyCookie !== "null";
+  if (stringfyCookie !== "undefined" && stringfyCookie !== "null") {
+    return true;
+  }
+  localStorage.clear();
+  return false;
 }
 
 export function hasPermission(permission, loadingVerifyingAuth) {
