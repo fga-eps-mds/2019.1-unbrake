@@ -25,6 +25,13 @@ import Relation from "./Relation";
 import { messageSistem } from "../actions/NotificationActions";
 import { createMutationUrl } from "../utils/Request";
 
+import {
+  allVariablesCalib,
+  createAllCalibrations,
+  variablesCalib,
+  createCalibration
+} from "./CalibrationVariables";
+
 const TabPadding = 24;
 const borderRadius = 2.5;
 const generalConfigsOption = 0;
@@ -53,139 +60,6 @@ const styles = theme => ({
     justifyContent: "center"
   }
 });
-
-const variablesTemperatureOne = [
-  { front: "CHT1", back: "acquisitionChanel" },
-  { front: "FCT1", back: "conversionFactor" },
-  { front: "OFT1", back: "temperatureOffset" }
-];
-
-const variablesTemperatureTwo = [
-  { front: "CHT2", back: "acquisitionChanel" },
-  { front: "FCT2", back: "conversionFactor" },
-  { front: "OFT2", back: "temperatureOffset" }
-];
-
-const variablesForceOne = [
-  { front: "CHF1", back: "acquisitionChanel" },
-  { front: "FCF1", back: "conversionFactor" },
-  { front: "OFF1", back: "forceOffset" }
-];
-
-const variablesForceTwo = [
-  { front: "CHF2", back: "acquisitionChanel" },
-  { front: "FCF2", back: "conversionFactor" },
-  { front: "OFF2", back: "forceOffset" }
-];
-
-const variablesSpeed = [
-  { front: "CHR1", back: "acquisitionChanel" },
-  { front: "RAP", back: "tireRadius" }
-];
-
-const variablesVibration = [
-  { front: "CHVB", back: "acquisitionChanel" },
-  { front: "FCVB", back: "conversionFactor" },
-  { front: "OFVB", back: "vibrationOffset" }
-];
-
-const variablesCommand = [
-  { front: "CHVC", back: "commandChanelSpeed" },
-  { front: "CUVC", back: "actualSpeed" },
-  { front: "MAVC", back: "maxSpeed" },
-  { front: "CHPC", back: "chanelCommandPression" },
-  { front: "CUPC", back: "actualPression" },
-  { front: "MAPC", back: "maxPression" }
-];
-
-const variablesRelations = [
-  { front: "LST", back: "transversalSelectionWidth" },
-  { front: "RAL", back: "heigthWidthRelation" },
-  { front: "DIA", back: "rimDiameter" },
-  { front: "RSM", back: "syncMotorRodation" },
-  { front: "DPO", back: "sheaveMotorDiameter" },
-  { front: "DPM", back: "sheaveMoveDiameter" }
-];
-
-const allVariablesCalib = [
-  variablesTemperatureOne,
-  variablesTemperatureTwo,
-  variablesForceOne,
-  variablesForceTwo,
-  variablesSpeed,
-  variablesVibration,
-  variablesCommand,
-  variablesRelations
-];
-
-const createAllCalibrations = [
-  {
-    mutation: "createTemperature",
-    response: "temperature",
-    variablesResponse: "id",
-    name: "firstTemperature"
-  },
-  {
-    mutation: "createTemperature",
-    response: "temperature",
-    variablesResponse: "id",
-    name: "secondTemperature"
-  },
-  {
-    mutation: "createForce",
-    response: "force",
-    variablesResponse: "id",
-    name: "firstForce"
-  },
-  {
-    mutation: "createForce",
-    response: "force",
-    variablesResponse: "id",
-    name: "secondForce"
-  },
-  {
-    mutation: "createSpeed",
-    response: "speed",
-    variablesResponse: "id",
-    name: "speed"
-  },
-  {
-    mutation: "createVibration",
-    response: "vibration",
-    variablesResponse: "id",
-    name: "vibration"
-  },
-  {
-    mutation: "createCommand",
-    response: "command",
-    variablesResponse: "id",
-    name: "command"
-  },
-  {
-    mutation: "createRelations",
-    response: "relations",
-    variablesResponse: "id",
-    name: "relations"
-  }
-];
-
-const variablesCalib = [
-  { front: "name", back: "name" },
-  { front: "firstTemperature", back: "idFirstTemperature" },
-  { front: "secondTemperature", back: "idSecondTemperature" },
-  { front: "firstForce", back: "idFirstForce" },
-  { front: "secondForce", back: "idSecondForce" },
-  { front: "speed", back: "idSpeed" },
-  { front: "vibration", back: "idVibration" },
-  { front: "command", back: "idCommand" },
-  { front: "relations", back: "idRelations" }
-];
-
-const createCalibration = {
-  mutation: "createCalibration",
-  response: "calibration",
-  variablesResponse: "id"
-};
 
 const validadeFields = (calibration, sendMessage) => {
   let message = allVariablesCalib.reduce((prevMessage, newDictionary) => {
@@ -352,6 +226,8 @@ class Calibration extends React.Component {
     const { name } = this.state;
     const values = { calibration: calibration.values, name };
 
+    this.setState({ open: false });
+
     saveCalibration(values, sendMessage, this.handleChangeId);
   }
 
@@ -382,8 +258,14 @@ class Calibration extends React.Component {
               <Tab label="Comando" />
               <Tab label="Relações" />
             </Tabs>
-            <Button onClick={this.handleValidate}>Cadastrar</Button>
           </AppBar>
+          <Button
+            color="secondary"
+            variant="contained"
+            onClick={this.handleValidate}
+          >
+            Cadastrar
+          </Button>
           {value === generalConfigsOption && GeneralConfigs()}
           {value === temperatureOption && <Temperature />}
           {value === forceOption && <Force />}
