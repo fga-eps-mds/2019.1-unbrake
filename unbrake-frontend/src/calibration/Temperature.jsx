@@ -2,6 +2,7 @@ import React from "react";
 import PropTypes from "prop-types";
 import { reduxForm } from "redux-form";
 import { withStyles, Grid } from "@material-ui/core";
+import * as emitter from "emitter-io";
 import styles from "../components/Styles";
 import RealTimeChart from "../components/RealTimeChart";
 import { checkbox, field } from "../components/ComponentsForm";
@@ -182,7 +183,24 @@ class Temperature extends React.Component {
         OFF2: "" // offset de força 2
       }
     };
+    this.client = emitter.connect({
+      host: "unbrake-hom.ml",
+      port: 8080,
+      secure: false
+    });
+    this.client.subscribe({
+      key: props.mqttKey,
+      channel: "unbrake/galpao/temperature/sensor1"
+    });
+    this.data = [{ uv: 0 }];
     this.handleChange = this.handleChange.bind(this);
+  }
+
+  componentDidMount() {
+    const scope = this;
+    this.client.on("message", msg => {
+      scope.data.push({ uv: parseInt(msg.asString(), 10) });
+    });
   }
 
   handleChange(event) {
@@ -239,7 +257,7 @@ class Temperature extends React.Component {
           justify="center"
           className={classes.gridGraphic}
         >
-          <RealTimeChart />
+          <RealTimeChart data={this.data} />
         </Grid>
       </Grid>
     );
@@ -247,7 +265,8 @@ class Temperature extends React.Component {
 }
 
 Temperature.propTypes = {
-  classes: PropTypes.objectOf(PropTypes.string).isRequired
+  classes: PropTypes.objectOf(PropTypes.string).isRequired,
+  mqttKey: PropTypes.string.isRequired
 };
 
 const TemperatureForm = reduxForm({

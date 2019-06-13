@@ -2,7 +2,7 @@
 Views of general purpose on Unbrake API
 '''
 
-from django.http import HttpResponse
+from django.http import JsonResponse
 
 
 def get_mqtt_reading_key(request):
@@ -21,4 +21,5 @@ def get_mqtt_reading_key(request):
             ===================================================================
             """
         )
-    return HttpResponse(key_file.read())
+    data = {'key': key_file.read().rstrip()}
+    return JsonResponse(data)

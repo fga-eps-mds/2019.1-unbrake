@@ -6,6 +6,8 @@ import AppBar from "@material-ui/core/AppBar";
 import Tabs from "@material-ui/core/Tabs";
 import Tab from "@material-ui/core/Tab";
 import Typography from "@material-ui/core/Typography";
+import Request from "../utils/Request";
+import { API_URL_GRAPHQL } from "../utils/Constants";
 import CalibrationUpload from "./CalibrationUpload";
 import Vibration from "./Vibration";
 import Force from "./Force";
@@ -71,13 +73,21 @@ class Calibration extends React.Component {
     this.handleChange = this.handleChange.bind(this);
   }
 
+  componentDidMount() {
+    const url = `${API_URL_GRAPHQL}/mqtt-reading-key`;
+    const method = "GET";
+    Request(url, method).then(json => {
+      this.setState({ mqttKey: json.key });
+    });
+  }
+
   handleChange(event, value) {
     this.setState({ value });
   }
 
   render() {
     const { classes } = this.props;
-    const { value } = this.state;
+    const { value, mqttKey } = this.state;
 
     return (
       <div className={classes.root}>
@@ -92,7 +102,7 @@ class Calibration extends React.Component {
           </Tabs>
         </AppBar>
         {value === generalConfigsOption && GeneralConfigs()}
-        {value === temperatureOption && <Temperature />}
+        {value === temperatureOption && <Temperature mqttKey={mqttKey} />}
         {value === forceOption && <Force />}
         {value === speedOption && <Speed />}
         {value === vibrationOption && <Vibration />}
