@@ -61,6 +61,7 @@ INSTALLED_APPS = [
     'configuration',
     'corsheaders',
     'calibration',
+    'testing',
 ]
 
 MIDDLEWARE = [
