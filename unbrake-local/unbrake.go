@@ -66,6 +66,7 @@ var stopCollectingDataCh chan bool
 var sigsCh chan os.Signal
 var serialPortNameCh = make(chan string, 1)
 var serialPortCh = make(chan *serial.Port, 3)
+var testingCh = make(chan string)
 
 // Flags with intermediary states
 var stabilizing = false
@@ -235,6 +236,7 @@ func onReady() {
 	wg.Add(1)
 	go collectData()
 	go handleSnubState()
+	go handleTestingReceiving()
 
 	if _, collectEnv := os.LookupEnv(mqttKeyEnv); collectEnv {
 		go publishAll()
@@ -243,6 +245,30 @@ func onReady() {
 	}
 
 	wg.Wait()
+}
+
+// Handle receiving of tests to be executed
+func handleTestingReceiving() {
+	if key, doesExists := os.LookupEnv(mqttKeyEnv); doesExists {
+		client, _ := emitter.Connect(getMqttHost(), func(_ *emitter.Client, msg emitter.Message) {
+			log.Printf("Sent message: '%s' topic: '%s'\n", msg.Payload(), msg.Topic())
+		})
+
+		// Wait for tests
+		const channel = mqttChannelPrefix + "/testing"
+		go func() {
+			for {
+				client.Subscribe(key, channel, func(_ *emitter.Client, msg emitter.Message) {
+					testingCh <- string(msg.Payload())
+				})
+				time.Sleep(time.Second)
+			}
+		}()
+
+		// TODO: Start Test
+	} else {
+		log.Println("MQTT key not set!!! Not waiting for tests to arrive...")
+	}
 }
 
 // Controls the serial ports selection via GUI
