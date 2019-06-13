@@ -25,12 +25,12 @@ const tooltipsConfig = () => ({
   intersect: false
 });
 
-const datasetsConfig = () => ({
-  label: "Depth",
+const sensorConfig = (label, color) => ({
+  label: label,
   fill: false,
   cubicInterpolationMode: "monotone",
-  backgroundColor: "#305c8a",
-  borderColor: "#305c8a"
+  backgroundColor: color,
+  borderColor: color
 });
 
 const RealTimeChart = props => {
@@ -39,7 +39,11 @@ const RealTimeChart = props => {
       data={{
         datasets: [
           {
-            ...datasetsConfig(),
+            ...sensorConfig(props.labelSensor1, props.colorSensor1),
+            data: []
+          },
+          {
+            ...sensorConfig(props.labelSensor2, props.colorSensor2),
             data: []
           }
         ]
@@ -50,7 +54,7 @@ const RealTimeChart = props => {
           display: false
         },
         legend: {
-          display: false
+          display: true
         },
         scales: {
           xAxes: [
@@ -65,10 +69,12 @@ const RealTimeChart = props => {
                 delay: 1000,
                 refresh: 500,
                 onRefresh: chart => {
-                  chart.data.datasets[0].data.push({
-                    x: Date.now(),
-                    y: props.data[props.data.length - indexPadding].uv
-                  });
+                  chart.data.datasets.forEach((dataset, index) => {
+                    dataset.data.push({
+                      x: Date.now(),
+                      y: index ? props.sensor2[props.sensor2.length - indexPadding] : props.sensor1[props.sensor1.length - indexPadding]
+                    });
+                  })
                 }
               }
             }
@@ -82,15 +88,13 @@ const RealTimeChart = props => {
 };
 
 RealTimeChart.propTypes = {
-  data: PropTypes.arrayOf(PropTypes.objectOf(PropTypes.number))
+  sensor1: PropTypes.arrayOf(PropTypes.number),
+  sensor2: PropTypes.arrayOf(PropTypes.number)
 };
 
 RealTimeChart.defaultProps = {
-  data: [
-    {
-      uv: 0
-    }
-  ]
+  sensor1: [0],
+  sensor2: [0]
 };
 
 export default RealTimeChart;

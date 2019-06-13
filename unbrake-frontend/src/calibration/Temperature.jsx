@@ -1,6 +1,6 @@
 import React from "react";
 import PropTypes from "prop-types";
-import { reduxForm } from "redux-form";
+import { reduxForm, change } from "redux-form";
 import { withStyles, Grid } from "@material-ui/core";
 import * as emitter from "emitter-io";
 import styles from "../components/Styles";
@@ -172,7 +172,7 @@ class Temperature extends React.Component {
         CHF1: "", // canal de aquisição 1
         CHF2: "", // canal de aquisição 2
         PFkgf1: false, // plota força (kfg) 1
-        Fmv1: "", // força (mv) 1
+        Fmv1: "100", // força (mv) 1
         Fmv2: "", // força (mv) 2
         PFkgf2: false, // plota força (kfg) 1
         Fkgf1: "", // força (kgf) 1
@@ -192,14 +192,27 @@ class Temperature extends React.Component {
       key: props.mqttKey,
       channel: "unbrake/galpao/temperature/sensor1"
     });
-    this.data = [{ uv: 0 }];
+    this.client.subscribe({
+      key: props.mqttKey,
+      channel: "unbrake/galpao/temperature/sensor2"
+    });
+    this.sensor1 = [];
+    this.sensor2 = [];
     this.handleChange = this.handleChange.bind(this);
   }
 
+  
   componentDidMount() {
     const scope = this;
     this.client.on("message", msg => {
-      scope.data.push({ uv: parseInt(msg.asString(), 10) });
+      if(msg.channel === "unbrake/galpao/temperature/sensor1/"){
+        const valueSensor1 = parseInt(msg.asString(), 10);
+        this.sensor1.push(parseInt(msg.asString()));
+        console.log(this.state)
+      } else if(msg.channel === "unbrake/galpao/temperature/sensor2/"){
+        this.sensor2.push(parseInt(msg.asString(), 10));
+      }
+        this.setState({force:{ ...this.state.force, Fmv1:Math.random()}})
     });
   }
 
@@ -235,17 +248,6 @@ class Temperature extends React.Component {
             <Grid container item justify="center" xs={6}>
               {allFields(states, classes, this.handleChange)}
             </Grid>
-            <Grid
-              container
-              item
-              alignItems="flex-start"
-              justify="center"
-              xs={3}
-            >
-              <Grid container item alignItems="center" justify="center" xs={12}>
-                {allCheckbox(selectsControl, classes, this.handleChange)}
-              </Grid>
-            </Grid>
             <Grid item xs />
           </form>
         </Grid>
@@ -257,7 +259,15 @@ class Temperature extends React.Component {
           justify="center"
           className={classes.gridGraphic}
         >
-          <RealTimeChart data={this.data} />
+          <h1>{this.state.force.Fmv1}</h1>
+          <RealTimeChart
+            sensor1={this.sensor1}
+            sensor2={this.sensor2}
+            labelSensor1="Temperatura 1"
+            colorSensor1="#133e79"
+            labelSensor2="Temperatura 2"
+            colorSensor2="#348941"
+          />
         </Grid>
       </Grid>
     );
