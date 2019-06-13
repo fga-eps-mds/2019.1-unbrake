@@ -51,23 +51,6 @@ const (
 	delayAcelerateToBrake = 2
 )
 
-type PhysicalQuantity struct {
-	idx       int    // position
-	mqttSubCh string // Subchannel associated at mqtt broker
-}
-
-// Index of information get on reading from serial
-const (
-	frequencyIdx = iota
-	temperature1Idx
-	temperature2Idx
-	brakingForce1Idx
-	brakingForce2Idx
-	vibrationIdx
-	speedIdx
-	pressureIdx
-)
-
 // MQTT constants
 const (
 	mqttHostEnv       = "MQTT_HOST"
@@ -78,31 +61,12 @@ const (
 	mqttKeyEnv        = "MQTT_KEY"
 )
 
-// Subchannels for each information sent to MQTT, same index rules
-// as the original data string from serial
-var mqttSubchannels = []string{
-	"/frequency",
-	"/temperature/sensor1",
-	"/temperature/sensor2",
-	"/brakingForce/sensor1",
-	"/brakingForce/sensor2",
-	"/vibration",
-	"/speed",
-	"/pressure",
-	"", // Not known attribute
-	"", // Not known attribute
-	"", // Not known attribute
-}
-
 // Channels for controlling execution
 var wg sync.WaitGroup
 var stopCollectingDataCh chan bool
 var sigsCh chan os.Signal
 var serialPortNameCh = make(chan string, 1)
 var serialPortCh = make(chan *serial.Port, 3)
-
-var publishSerialAttrsCh [numSerialAttrs]chan string // for publishing
-var handleSerialAttrsCh [numSerialAttrs]chan int     // for handling values
 
 // Flags with intermediary states
 var stabilizing = false
@@ -166,6 +130,41 @@ var byteToStateName = map[string]string{
 	"+":  "acelerateBrakeWater",
 }
 
+var serialAttrs = make([]SerialAttribute, numSerialAttrs)
+
+// Index of information get on reading from serial
+const (
+	frequencyIdx = iota
+	temperature1Idx
+	temperature2Idx
+	brakingForce1Idx
+	brakingForce2Idx
+	vibrationIdx
+	speedIdx
+	pressureIdx
+)
+
+// Subchannels for each information sent to MQTT, same index rules
+// as the original data string from serial
+var mqttSubchannels = []string{
+	"/frequency",
+	"/temperature/sensor1",
+	"/temperature/sensor2",
+	"/brakingForce/sensor1",
+	"/brakingForce/sensor2",
+	"/vibration",
+	"/speed",
+	"/pressure",
+}
+
+// SerialAttribute represent one attributes of the many that are returned as values
+// from the physical device on serial communication
+type SerialAttribute struct {
+	mqttSubchannel string      // Subchannel associated at mqtt broker
+	publishCh      chan string // for publishing
+	handleCh       chan int    // for handling values
+}
+
 // Snub is a cycle of aceleration, braking and cooldown,
 // multiple snubs compose a test
 type Snub struct {
@@ -192,9 +191,10 @@ func main() {
 	sigsCh = make(chan os.Signal, 1)
 	signal.Notify(sigsCh, os.Interrupt)
 
-	for i := 0; i < numSerialAttrs; i++ {
-		handleSerialAttrsCh[i] = make(chan int)
-		publishSerialAttrsCh[i] = make(chan string)
+	for i, subChannel := range mqttSubchannels {
+		serialAttrs[i].mqttSubchannel = subChannel
+		serialAttrs[i].publishCh = make(chan string)
+		serialAttrs[i].handleCh = make(chan int)
 	}
 
 	onExit := func() {
@@ -246,6 +246,7 @@ func onReady() {
 	wg.Wait()
 }
 
+// Controls the serial ports selection via GUI
 func handlePortsSectionGUI() {
 	systray.AddSeparator()
 	portsTitle := systray.AddMenuItem("Portas", "Selecione a porta de leitura")
@@ -495,12 +496,12 @@ func getData(port *serial.Port, command string) []byte {
 			attrInt, _ := strconv.Atoi(attr)
 
 			select {
-			case handleSerialAttrsCh[i] <- attrInt:
+			case serialAttrs[i].handleCh <- attrInt:
 			default:
 			}
 
 			select {
-			case publishSerialAttrsCh[i] <- attr:
+			case serialAttrs[i].publishCh <- attr:
 			default:
 			}
 		}
@@ -509,11 +510,12 @@ func getData(port *serial.Port, command string) []byte {
 	return buf
 }
 
+// Publish to MQTT broker the whole current state of local application
 func publishAll() {
 	for i := 0; i < numSerialAttrs; i++ {
 		go func(idx int) {
 			for {
-				publishData(<-publishSerialAttrsCh[idx], mqttSubchannels[idx])
+				publishData(<-serialAttrs[idx].publishCh, serialAttrs[idx].mqttSubchannel)
 			}
 		}(i)
 	}
@@ -562,7 +564,7 @@ func handleSnubState() {
 
 		select {
 
-		case speed := <-handleSerialAttrsCh[speedIdx]:
+		case speed := <-serialAttrs[speedIdx].handleCh:
 			if (snub.state == acelerate || snub.state == acelerateWater) && !stabilizing {
 				if speed >= upperSpeedLimit {
 					go snub.handleAcelerate()
@@ -579,8 +581,8 @@ func handleSnubState() {
 				}
 			}
 
-		case temperature1 := <-handleSerialAttrsCh[temperature1Idx]:
-			temperature2 := <-handleSerialAttrsCh[temperature2Idx]
+		case temperature1 := <-serialAttrs[temperature1Idx].handleCh:
+			temperature2 := <-serialAttrs[temperature2Idx].handleCh
 
 			if (temperature1 > temperatureLimit || temperature2 > temperatureLimit) && !throwingWater {
 				if snub.state == acelerate || snub.state == brake || snub.state == cooldown {
