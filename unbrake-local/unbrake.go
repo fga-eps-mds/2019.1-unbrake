@@ -41,16 +41,22 @@ const (
 	defaultPort      = "/dev/ttyACM0"
 	baudRate         = 115200
 	frequencyReading = 10
+	numSerialAttrs   = 11 // number of attributes read simultaneously from serial device
 
 	upperSpeedLimit       = 150
 	lowerSpeedLimit       = 150
 	timeSleepWater        = 3
 	timeCooldown          = 3
 	temperatureLimit      = 400
-	rightSizeOfSplit      = 11
 	delayAcelerateToBrake = 2
 )
 
+type PhysicalQuantity struct {
+	idx       int    // position
+	mqttSubCh string // Subchannel associated at mqtt broker
+}
+
+// Index of information get on reading from serial
 const (
 	frequencyIdx = iota
 	temperature1Idx
@@ -58,7 +64,7 @@ const (
 	brakingForce1Idx
 	brakingForce2Idx
 	vibrationIdx
-	speedIdx // In duty cycle
+	speedIdx
 	pressureIdx
 )
 
@@ -72,18 +78,31 @@ const (
 	mqttKeyEnv        = "MQTT_KEY"
 )
 
+// Subchannels for each information sent to MQTT, same index rules
+// as the original data string from serial
+var mqttSubchannels = []string{
+	"/frequency",
+	"/temperature/sensor1",
+	"/temperature/sensor2",
+	"/brakingForce/sensor1",
+	"/brakingForce/sensor2",
+	"/vibration",
+	"/speed",
+	"/pressure",
+	"", // Not known attribute
+	"", // Not known attribute
+	"", // Not known attribute
+}
+
 // Channels for controlling execution
 var wg sync.WaitGroup
 var stopCollectingDataCh chan bool
 var sigsCh chan os.Signal
 var serialPortNameCh = make(chan string, 1)
 var serialPortCh = make(chan *serial.Port, 3)
-var frequencyCh = make(chan int)
-var temperatureCh = make(chan [2]int)
-var brakingForceCh = make(chan [2]int)
-var vibrationCh = make(chan int)
-var speedCh = make(chan int)
-var pressureCh = make(chan int)
+
+var publishSerialAttrsCh [numSerialAttrs]chan string // for publishing
+var handleSerialAttrsCh [numSerialAttrs]chan int     // for handling values
 
 // Flags with intermediary states
 var stabilizing = false
@@ -172,6 +191,11 @@ func main() {
 
 	sigsCh = make(chan os.Signal, 1)
 	signal.Notify(sigsCh, os.Interrupt)
+
+	for i := 0; i < numSerialAttrs; i++ {
+		handleSerialAttrsCh[i] = make(chan int)
+		publishSerialAttrsCh[i] = make(chan string)
+	}
 
 	onExit := func() {
 		snub.state = cooldown
@@ -452,108 +476,47 @@ func collectData() {
 // array of bytes
 func getData(port *serial.Port, command string) []byte {
 	n, err := port.Write([]byte(command))
-
 	if err != nil {
 		log.Println("Error writing to serial ", err, ". Is this the right port?")
 	}
 
 	buf := make([]byte, bufferSize)
-	n, err = port.Read(buf)
-	if err != nil {
+	if n, err = port.Read(buf); err != nil {
 		log.Println("Error reading from serial ", err, ". Is this the right port?")
 	} else if n == 0 {
 		log.Println("Error reading from serial: timeout waiting for bytes. Is this the right port?")
 	}
 
 	log.Printf("%s\n", strings.TrimSpace(string(buf[:n])))
-
 	split := strings.Split(string(buf[:n]), ",")
 
-	if len(split) == rightSizeOfSplit {
+	if len(split) == numSerialAttrs { // Was a complete read
+		for i, attr := range split {
+			attrInt, _ := strconv.Atoi(attr)
 
-		frequency, _ := strconv.Atoi(split[frequencyIdx])
-		select {
-		case frequencyCh <- frequency:
-		default:
+			select {
+			case handleSerialAttrsCh[i] <- attrInt:
+			default:
+			}
+
+			select {
+			case publishSerialAttrsCh[i] <- attr:
+			default:
+			}
 		}
-
-		firstTemperature, _ := strconv.Atoi(split[temperature1Idx])
-		secondTemperature, _ := strconv.Atoi(split[temperature2Idx])
-		select {
-		case temperatureCh <- [2]int{firstTemperature, secondTemperature}:
-		default:
-		}
-
-		firstBrakingForce, _ := strconv.Atoi(split[temperature1Idx])
-		secondBrakingForce, _ := strconv.Atoi(split[temperature2Idx])
-		select {
-		case brakingForceCh <- [2]int{firstBrakingForce, secondBrakingForce}:
-		default:
-		}
-
-		vibration, _ := strconv.Atoi(split[vibrationIdx])
-		select {
-		case vibrationCh <- vibration:
-		default:
-		}
-
-		speed, _ := strconv.Atoi(split[speedIdx])
-		select {
-		case speedCh <- speed:
-		default:
-		}
-
-		pressure, _ := strconv.Atoi(split[pressureIdx])
-		select {
-		case pressureCh <- pressure:
-		default:
-		}
-
 	}
 
 	return buf
 }
 
 func publishAll() {
-	go func() {
-		for {
-			publishData(strconv.Itoa(<-frequencyCh), "/frequency")
-		}
-	}()
-
-	go func() {
-		for {
-			temperatureData := <-temperatureCh
-			publishData(strconv.Itoa(temperatureData[0]), "/temperature/sensor1")
-			publishData(strconv.Itoa(temperatureData[1]), "/temperature/sensor2")
-		}
-	}()
-
-	go func() {
-		for {
-			brakingForceData := <-brakingForceCh
-			publishData(strconv.Itoa(brakingForceData[0]), "/brakingForce/sensor1")
-			publishData(strconv.Itoa(brakingForceData[1]), "/brakingForce/sensor2")
-		}
-	}()
-
-	go func() {
-		for {
-			publishData(strconv.Itoa(<-vibrationCh), "/vibration")
-		}
-	}()
-
-	go func() {
-		for {
-			publishData(strconv.Itoa(<-speedCh), "/speed")
-		}
-	}()
-
-	go func() {
-		for {
-			publishData(strconv.Itoa(<-pressureCh), "/pressure")
-		}
-	}()
+	for i := 0; i < numSerialAttrs; i++ {
+		go func(idx int) {
+			for {
+				publishData(<-publishSerialAttrsCh[idx], mqttSubchannels[idx])
+			}
+		}(i)
+	}
 }
 
 // Publish data to MQTT broker
@@ -567,7 +530,7 @@ func publishData(data string, subChannel string) {
 
 		client.Publish(key, channel, data)
 	} else {
-		log.Println("MQTT key not set!!! Not publishing data...")
+		log.Println("MQTT key not set!!! Not publishing any data...")
 	}
 }
 
@@ -590,6 +553,7 @@ func getMqttHost() string {
 // synchronization, collecting needed data and writing needed commands
 func handleSnubState() {
 	port := <-serialPortCh
+
 	for {
 		select {
 		case port = <-serialPortCh:
@@ -598,8 +562,7 @@ func handleSnubState() {
 
 		select {
 
-		case speed := <-speedCh:
-
+		case speed := <-handleSerialAttrsCh[speedIdx]:
 			if (snub.state == acelerate || snub.state == acelerateWater) && !stabilizing {
 				if speed >= upperSpeedLimit {
 					go snub.handleAcelerate()
@@ -616,15 +579,14 @@ func handleSnubState() {
 				}
 			}
 
-		case temperature := <-temperatureCh:
+		case temperature1 := <-handleSerialAttrsCh[temperature1Idx]:
+			temperature2 := <-handleSerialAttrsCh[temperature2Idx]
 
-			if (temperature[0] > temperatureLimit || temperature[1] > temperatureLimit) && !throwingWater {
+			if (temperature1 > temperatureLimit || temperature2 > temperatureLimit) && !throwingWater {
 				if snub.state == acelerate || snub.state == brake || snub.state == cooldown {
 					go snub.turnOnWater(port)
 				}
 			}
-
-		default:
 		}
 	}
 }
