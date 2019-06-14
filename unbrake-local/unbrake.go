@@ -30,6 +30,69 @@ import (
 	"github.com/tarm/serial"
 )
 
+type Testing struct {
+	Model  string `json:"model"`
+	Pk     int    `json:"pk"`
+	Fields struct {
+		CreateBy    string `json:"create_by"`
+		Calibration struct {
+			Name      string `json:"name"`
+			IsDefault bool   `json:"is_default"`
+			Vibration struct {
+				AcquisitionChanel int     `json:"acquisition_chanel"`
+				ConversionFactor  float64 `json:"conversion_factor"`
+				VibrationOffset   float64 `json:"vibration_offset"`
+			} `json:"vibration"`
+			Speed struct {
+				AcquisitionChanel int     `json:"acquisition_chanel"`
+				TireRadius        float64 `json:"tire_radius"`
+			} `json:"speed"`
+			Relations struct {
+				TransversalSelectionWidth int `json:"transversal_selection_width"`
+				HeigthWidthRelation       int `json:"heigth_width_relation"`
+				RimDiameter               int `json:"rim_diameter"`
+				SyncMotorRodation         int `json:"sync_motor_rodation"`
+				SheaveMoveDiameter        int `json:"sheave_move_diameter"`
+				SheaveMotorDiameter       int `json:"sheave_motor_diameter"`
+			} `json:"relations"`
+			Command struct {
+				CommandChanelSpeed    int     `json:"command_chanel_speed"`
+				ActualSpeed           float64 `json:"actual_speed"`
+				MaxSpeed              float64 `json:"max_speed"`
+				ChanelCommandPression int     `json:"chanel_command_pression"`
+				ActualPression        float64 `json:"actual_pression"`
+				MaxPression           float64 `json:"max_pression"`
+			} `json:"command"`
+			Temperature []struct {
+				AcquisitionChanel int     `json:"acquisition_chanel"`
+				ConversionFactor  float64 `json:"conversion_factor"`
+				TemperatureOffset float64 `json:"temperature_offset"`
+				Calibration       int     `json:"calibration"`
+			} `json:"temperature"`
+			Force []struct {
+				AcquisitionChanel int     `json:"acquisition_chanel"`
+				ConversionFactor  float64 `json:"conversion_factor"`
+				ForceOffset       float64 `json:"force_offset"`
+				Calibration       int     `json:"calibration"`
+			} `json:"force"`
+		} `json:"calibration"`
+		Configuration struct {
+			Name              string  `json:"name"`
+			IsDefault         bool    `json:"is_default"`
+			Number            int     `json:"number"`
+			TimeBetweenCycles int     `json:"time_between_cycles"`
+			UpperLimit        int     `json:"upper_limit"`
+			InferiorLimit     int     `json:"inferior_limit"`
+			UpperTime         int     `json:"upper_time"`
+			InferiorTime      int     `json:"inferior_time"`
+			DisableShutdown   bool    `json:"disable_shutdown"`
+			EnableOutput      bool    `json:"enable_output"`
+			Temperature       float64 `json:"temperature"`
+			Time              float64 `json:"time"`
+		} `json:"configuration"`
+	} `json:"fields"`
+}
+
 // General application constants
 const (
 	logFilePath           = "unbrake.log"
@@ -44,12 +107,6 @@ const (
 	frequencyReading = 10
 	numSerialAttrs   = 11 // number of attributes read simultaneously from serial device
 
-	upperSpeedLimit       = 150
-	lowerSpeedLimit       = 150
-	timeSleepWater        = 3
-	timeCooldown          = 3
-	temperatureLimit      = 400
-	delayAcelerateToBrake = 2
 )
 
 // MQTT constants
@@ -69,6 +126,13 @@ var sigsCh chan os.Signal
 var serialPortNameCh = make(chan string, 1)
 var serialPortCh = make(chan *serial.Port, 3)
 var testingCh = make(chan string)
+var upperSpeedLimit = 150
+var lowerSpeedLimit = 150
+var timeSleepWater = 3.0
+var timeCooldown = 3
+var temperatureLimit = 400.0
+var delayAcelerateToBrake = 2
+var totalOfSnubs int
 
 // Flags with intermediary states
 var stabilizing = false
@@ -269,7 +333,7 @@ func handleTestingReceiving() {
 
 		testing := <-testingCh
 
-		data := make(map[string]interface{})
+		var data Testing
 
 		err := json.Unmarshal([]byte(testing), &data)
 
@@ -277,7 +341,21 @@ func handleTestingReceiving() {
 			log.Println("Wasn't possible to decode JSON, error: ", err)
 		}
 
-		fmt.Println(data)
+		totalOfSnubs = data.Fields.Configuration.Number
+		upperSpeedLimit = data.Fields.Configuration.UpperLimit
+		lowerSpeedLimit = data.Fields.Configuration.InferiorLimit
+		timeSleepWater = data.Fields.Configuration.Time
+		delayAcelerateToBrake = data.Fields.Configuration.UpperTime
+		timeCooldown = data.Fields.Configuration.InferiorTime
+		temperatureLimit = data.Fields.Configuration.Temperature
+
+		fmt.Printf("totalOfSnubs: %v\n", totalOfSnubs)
+		fmt.Printf("upperSpeedLimit: %v\n", upperSpeedLimit)
+		fmt.Printf("lowerSpeedLimit: %v\n", lowerSpeedLimit)
+		fmt.Printf("timeSleepWater: %v\n", timeSleepWater)
+		fmt.Printf("delayAcelerateToBrake: %v\n", delayAcelerateToBrake)
+		fmt.Printf("timeCooldown: %v\n", timeCooldown)
+		fmt.Printf("temperatureLimit: %v\n", temperatureLimit)
 
 	} else {
 		log.Println("MQTT key not set!!! Not waiting for tests to arrive...")
@@ -376,7 +454,7 @@ func (port *serialPortGUI) uncheck() {
 func (snub *Snub) handleAcelerate() {
 	stabilizing = true
 	log.Printf("Stabilizing...\n")
-	time.Sleep(time.Second * delayAcelerateToBrake)
+	time.Sleep(time.Second * time.Duration(delayAcelerateToBrake))
 
 	snub.mux.Lock()
 	defer snub.mux.Unlock()
@@ -404,7 +482,7 @@ func (snub *Snub) turnOnWater(port *serial.Port) {
 
 	snub.mux.Unlock()
 
-	time.Sleep(time.Second * timeSleepWater)
+	time.Sleep(time.Second * time.Duration(timeSleepWater))
 
 	snub.mux.Lock()
 
@@ -435,7 +513,7 @@ func (snub *Snub) handleBrake(port *serial.Port) {
 
 	snub.mux.Unlock()
 
-	time.Sleep(time.Second * timeCooldown)
+	time.Sleep(time.Second * time.Duration(timeCooldown))
 
 	snub.mux.Lock()
 
@@ -622,7 +700,7 @@ func handleSnubState() {
 		case temperature1 := <-serialAttrs[temperature1Idx].handleCh:
 			temperature2 := <-serialAttrs[temperature2Idx].handleCh
 
-			if (temperature1 > temperatureLimit || temperature2 > temperatureLimit) && !throwingWater {
+			if (temperature1 > int(temperatureLimit) || temperature2 > int(temperatureLimit)) && !throwingWater {
 				if snub.state == acelerate || snub.state == brake || snub.state == cooldown {
 					go snub.turnOnWater(port)
 				}
