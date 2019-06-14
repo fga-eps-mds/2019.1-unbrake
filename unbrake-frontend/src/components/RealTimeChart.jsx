@@ -5,6 +5,8 @@ import "chartjs-plugin-streaming";
 
 const indexPadding = 1;
 
+const sensorInitialValue = 42;
+
 const yAxesConfig = () => [
   {
     scaleLabel: {
@@ -26,28 +28,32 @@ const tooltipsConfig = () => ({
 });
 
 const sensorConfig = (label, color) => ({
-  label: label,
+  label,
   fill: false,
   cubicInterpolationMode: "monotone",
   backgroundColor: color,
   borderColor: color
 });
 
+const datasets = props => {
+  const { labelSensor1, labelSensor2, colorSensor1, colorSensor2 } = props;
+  return {
+    datasets: [
+      {
+        ...sensorConfig(labelSensor1, colorSensor1),
+        data: []
+      },
+      {
+        ...sensorConfig(labelSensor2, colorSensor2),
+        data: []
+      }
+    ]
+  };
+};
 const RealTimeChart = props => {
   return (
     <Line
-      data={{
-        datasets: [
-          {
-            ...sensorConfig(props.labelSensor1, props.colorSensor1),
-            data: []
-          },
-          {
-            ...sensorConfig(props.labelSensor2, props.colorSensor2),
-            data: []
-          }
-        ]
-      }}
+      data={datasets(props)}
       options={{
         maintainAspectRatio: false,
         title: {
@@ -72,9 +78,11 @@ const RealTimeChart = props => {
                   chart.data.datasets.forEach((dataset, index) => {
                     dataset.data.push({
                       x: Date.now(),
-                      y: index ? props.sensor2[props.sensor2.length - indexPadding] : props.sensor1[props.sensor1.length - indexPadding]
+                      y: index
+                        ? props.sensor2[props.sensor2.length - indexPadding]
+                        : props.sensor1[props.sensor1.length - indexPadding]
                     });
-                  })
+                  });
                 }
               }
             }
@@ -93,8 +101,8 @@ RealTimeChart.propTypes = {
 };
 
 RealTimeChart.defaultProps = {
-  sensor1: [0],
-  sensor2: [0]
+  sensor1: [sensorInitialValue],
+  sensor2: [sensorInitialValue]
 };
 
 export default RealTimeChart;

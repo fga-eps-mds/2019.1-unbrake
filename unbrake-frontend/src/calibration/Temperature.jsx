@@ -1,11 +1,12 @@
 import React from "react";
 import PropTypes from "prop-types";
 import { reduxForm, change } from "redux-form";
+import { connect } from "react-redux";
 import { withStyles, Grid } from "@material-ui/core";
 import * as emitter from "emitter-io";
 import styles from "../components/Styles";
 import RealTimeChart from "../components/RealTimeChart";
-import { checkbox, field } from "../components/ComponentsForm";
+import { field } from "../components/ComponentsForm";
 
 const labelSecondary = name => {
   let nameLabel = "";
@@ -105,27 +106,6 @@ const allFields = (states, classes, handleChange) => {
   return rowns;
 };
 
-const allCheckbox = (selectsControl, classes, handleChange) => {
-  const checks = selectsControl.map(value => {
-    const type = value;
-    type.label = label(value.name);
-    return (
-      <Grid
-        key={`checkbox ${value.name}`}
-        alignItems="center"
-        justify="center"
-        container
-        item
-        xs={12}
-        className={classes.checboxSize}
-      >
-        {checkbox(type, handleChange)}
-      </Grid>
-    );
-  });
-  return checks;
-};
-
 const renderDictionary = force => {
   const {
     CHF1,
@@ -184,7 +164,7 @@ class Temperature extends React.Component {
       }
     };
     this.client = emitter.connect({
-      host: "unbrake-hom.ml",
+      host: "unbrake.ml",
       port: 8080,
       secure: false
     });
@@ -201,18 +181,16 @@ class Temperature extends React.Component {
     this.handleChange = this.handleChange.bind(this);
   }
 
-  
   componentDidMount() {
-    const scope = this;
     this.client.on("message", msg => {
-      if(msg.channel === "unbrake/galpao/temperature/sensor1/"){
-        const valueSensor1 = parseInt(msg.asString(), 10);
-        this.sensor1.push(parseInt(msg.asString()));
-        console.log(this.state)
-      } else if(msg.channel === "unbrake/galpao/temperature/sensor2/"){
+      const { dispatch } = this.props;
+      if (msg.channel === "unbrake/galpao/temperature/sensor1/") {
+        dispatch(change("calibration", "Tmv1", msg.asString()));
+        this.sensor1.push(parseInt(msg.asString(), 10));
+      } else if (msg.channel === "unbrake/galpao/temperature/sensor2/") {
         this.sensor2.push(parseInt(msg.asString(), 10));
+        dispatch(change("calibration", "Tmv2", msg.asString()));
       }
-        this.setState({force:{ ...this.state.force, Fmv1:Math.random()}})
     });
   }
 
@@ -227,13 +205,8 @@ class Temperature extends React.Component {
 
   render() {
     const { force } = this.state;
-    const { PFkgf1, PFkgf2 } = force;
     const { classes } = this.props;
     const states = renderDictionary(force);
-    const selectsControl = [
-      { name: "PT1", value: PFkgf1, disable: false },
-      { name: "PT2", value: PFkgf2, disable: false }
-    ];
     return (
       <Grid
         container
@@ -259,7 +232,6 @@ class Temperature extends React.Component {
           justify="center"
           className={classes.gridGraphic}
         >
-          <h1>{this.state.force.Fmv1}</h1>
           <RealTimeChart
             sensor1={this.sensor1}
             sensor2={this.sensor2}
@@ -276,7 +248,8 @@ class Temperature extends React.Component {
 
 Temperature.propTypes = {
   classes: PropTypes.objectOf(PropTypes.string).isRequired,
-  mqttKey: PropTypes.string.isRequired
+  mqttKey: PropTypes.string.isRequired,
+  dispatch: PropTypes.func.isRequired
 };
 
 const TemperatureForm = reduxForm({
@@ -284,4 +257,4 @@ const TemperatureForm = reduxForm({
   destroyOnUnmount: false
 })(Temperature);
 
-export default withStyles(styles)(TemperatureForm);
+export default connect()(withStyles(styles)(TemperatureForm));
