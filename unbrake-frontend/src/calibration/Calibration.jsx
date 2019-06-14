@@ -293,6 +293,7 @@ function mapStateToProps(state) {
 Calibration.defaultProps = {
   calibration: { values: {} }
 };
+
 const mapDispatchToProps = dispatch => ({
   sendMessage: payload => dispatch(messageSistem(payload))
 });

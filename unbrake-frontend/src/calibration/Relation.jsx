@@ -1,6 +1,7 @@
 import React from "react";
 import PropTypes from "prop-types";
-import { reduxForm } from "redux-form";
+import { reduxForm, initialize } from "redux-form";
+import { connect } from "react-redux";
 import { withStyles, Grid } from "@material-ui/core";
 import styles from "../components/Styles";
 import { field } from "../components/ComponentsForm";
@@ -8,6 +9,11 @@ import completeTire from "../img/completeTire.png";
 import sideTire from "../img/sideTire.png";
 import tire from "../img/tire.png";
 import VBelt from "../img/Vbelt.png";
+
+const double = 2;
+const percentage = 100;
+const inch = 15.4;
+const decimalPlace = 2;
 
 const label = name => {
   let nameLabel = "";
@@ -22,19 +28,19 @@ const label = name => {
       nameLabel = "Diametro do aro";
       break;
     case "RSM":
-      nameLabel = "Rotação sincrona do motor";
+      nameLabel = "Rotação sincrona do motor (rpm)";
       break;
     case "DPO":
-      nameLabel = "Diametro da polia motora";
+      nameLabel = "Diametro da polia motora (mm)";
       break;
     case "DPM":
-      nameLabel = "Diametro da polia movida";
+      nameLabel = "Diametro da polia movida (mm)";
       break;
     case "RDT":
-      nameLabel = "Relação de transmissão";
+      nameLabel = "Relação de transmissão (rpm)";
       break;
     case "RDP":
-      nameLabel = "Raio do pneu";
+      nameLabel = "Raio do pneu (mm)";
       break;
     default:
       break;
@@ -114,8 +120,8 @@ const tireDictionary = relation => {
 const vbeltDictionary = relation => {
   const dictionary = [
     [
-      { name: "RSM", value: relation.RSM, disable: false },
-      { name: "DPO", value: relation.DPO, disable: false }
+      { name: "DPO", value: relation.DPO, disable: false },
+      { name: "RSM", value: relation.RSM, disable: false }
     ],
     [
       { name: "DPM", value: relation.DPM, disable: false },
@@ -169,6 +175,25 @@ class Relation extends React.Component {
     this.handleChange = this.handleChange.bind(this);
   }
 
+  shouldComponentUpdate(nextProps) {
+    const { dispatch } = this.props;
+    const { values } = nextProps.calibration;
+
+    if (values !== undefined) {
+      const valueRDT = (values.RSM * values.DPO) / values.DPM;
+      const newVariables = { RDT: valueRDT.toFixed(decimalPlace) };
+
+      const valueRDP =
+        ((values.LST * values.RAL) / percentage) * double + values.DIA * inch;
+      newVariables.RDP = valueRDP.toFixed(decimalPlace);
+
+      dispatch(initialize("calibration", { ...values, ...newVariables }));
+
+      return true;
+    }
+    return false;
+  }
+
   handleChange(event) {
     const { target } = event;
     const value = target.type === "checkbox" ? target.checked : target.value;
@@ -219,8 +244,20 @@ class Relation extends React.Component {
   }
 }
 
+function mapStateToProps(state) {
+  return {
+    calibration: state.form.calibration
+  };
+}
+
+Relation.defaultProps = {
+  calibration: { values: {} }
+};
+
 Relation.propTypes = {
-  classes: PropTypes.objectOf(PropTypes.string).isRequired
+  classes: PropTypes.objectOf(PropTypes.string).isRequired,
+  dispatch: PropTypes.func.isRequired,
+  calibration: PropTypes.objectOf(PropTypes.string)
 };
 
 const RelationForm = reduxForm({
@@ -228,4 +265,4 @@ const RelationForm = reduxForm({
   destroyOnUnmount: false
 })(Relation);
 
-export default withStyles(styles)(RelationForm);
+export default connect(mapStateToProps)(withStyles(styles)(RelationForm));

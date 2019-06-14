@@ -37,7 +37,7 @@ const label = name => {
     case "Rrpm":
       nameLabel = "Rotação (RPM)";
       break;
-    case "RPm":
+    case "RAP":
       nameLabel = "Raio do pneu (m)";
       break;
     case "PRrpm":
@@ -134,7 +134,7 @@ const renderDictionary = speed => {
       { name: "Vms", value: speed.Vms, disable: true }
     ],
     [
-      { name: "RPm", value: speed.RPm, disable: false },
+      { name: "RAP", value: speed.RAP, disable: false },
       { name: "DPkm", value: speed.DPkm, disable: true }
     ]
   ];
@@ -161,7 +161,7 @@ class Speed extends React.Component {
         Vkmh: "", // velocidade km/h
         PRrpm: false, // plota rotação
         Rrpm: "", // rotação
-        RPm: "", // raio pneu
+        RAP: "", // raio pneu
         PVkmh: false, // plota velocidade
         Vms: "", // velocidade m/s
         DPkm: "", // distância percorrida
