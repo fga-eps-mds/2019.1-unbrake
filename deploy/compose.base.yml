@@ -68,8 +68,6 @@ secrets:
     file: secrets/API_DJANGO_SECRET_KEY
   postgres_password:
     file: secrets/DB_PASSWORD
-  emitter-license:
-    file: secrets/EMITTER_LICENSE
 
 volumes:
   postgres_data:

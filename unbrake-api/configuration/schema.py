@@ -4,6 +4,7 @@
 
 import graphene
 from graphene_django.types import DjangoObjectType
+from graphql_jwt.decorators import login_required
 from configuration.models import Config
 
 # pylint: disable = too-few-public-methods
@@ -33,7 +34,6 @@ class CreateConfig(graphene.Mutation):
         Arguments required to create a new config
         '''
         name = graphene.String()
-        is_default = graphene.Boolean()
         number = graphene.Int()
         time_between_cycles = graphene.Int()
         upper_limit = graphene.Int()
@@ -45,6 +45,7 @@ class CreateConfig(graphene.Mutation):
         temperature = graphene.Float()
         time = graphene.Float()
 
+    @login_required
     def mutate(
             self,
             info,
@@ -88,6 +89,7 @@ class CreateDefaultConfig(graphene.Mutation):
     Class to create a new default Config object on db
     '''
     config = graphene.Field(ConfigType)
+    error = graphene.String()
 
     class Arguments:
         '''
@@ -106,6 +108,7 @@ class CreateDefaultConfig(graphene.Mutation):
         temperature = graphene.Float()
         time = graphene.Float()
 
+    @login_required
     def mutate(
             self,
             info,
@@ -214,12 +217,14 @@ class Query:
 
     config_not_default = graphene.List(ConfigType)
 
+    @login_required
     def resolve_all_config(self, info, **kwargs):
         '''
             Returning all CyclesConfig on db
         '''
         return Config.objects.all()
 
+    @login_required
     def resolve_config_at(self, info, **kwargs):
         '''
             Returning only one Config by id
@@ -228,6 +233,7 @@ class Query:
 
         return Config.objects.get(pk=pk)
 
+    @login_required
     def resolve_config(self, info, **kwargs):
         '''
             Return one config by name
@@ -236,12 +242,14 @@ class Query:
 
         return Config.objects.get(name=name)
 
+    @login_required
     def resolve_config_default(self, info):
         '''
         Return a list with all the Config objects with is_default equal true
         '''
         return Config.objects.exclude(is_default=False)
 
+    @login_required
     def resolve_config_not_default(self, info):
         '''
         Return a list with all the Config objects with is_default equal false
