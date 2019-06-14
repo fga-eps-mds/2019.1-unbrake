@@ -5,7 +5,6 @@ import { withStyles } from "@material-ui/core/styles";
 import AppBar from "@material-ui/core/AppBar";
 import Tabs from "@material-ui/core/Tabs";
 import Tab from "@material-ui/core/Tab";
-import Typography from "@material-ui/core/Typography";
 import PropTypes from "prop-types";
 import { Button, Dialog } from "@material-ui/core";
 import TextField from "@material-ui/core/TextField";
@@ -21,19 +20,17 @@ import Temperature from "./Temperature";
 import Command from "./Command";
 import Speed from "./Speed";
 import Relation from "./Relation";
-
 import { messageSistem } from "../actions/NotificationActions";
 import { createMutationUrl } from "../utils/Request";
-
 import {
   allVariablesCalib,
   createAllCalibrations,
   variablesCalib,
   createCalibration,
-  empty
+  empty,
+  labels
 } from "./CalibrationVariables";
 
-const TabPadding = 24;
 const borderRadius = 1.5;
 const generalConfigsOption = 0;
 const temperatureOption = 1;
@@ -42,9 +39,9 @@ const speedOption = 3;
 const vibrationOption = 4;
 const commandOption = 5;
 const relationOption = 6;
-const sizeMessageDefault = 12;
+const sizeMessageDefault = 14;
 const invalidID = -1;
-let message = "";
+let createMessage = "";
 
 const styles = theme => ({
   root: {
@@ -57,34 +54,34 @@ const styles = theme => ({
   }
 });
 
-const sendMessageFunction = (sendMessage, mess, variante) => {
+const sendMessageFunction = (sendMessage, message, variante) => {
   sendMessage({
-    mess,
+    message,
     variante,
     condition: true
   });
 };
 
 const validadeFields = (calibration, sendMessage) => {
-  message = allVariablesCalib.reduce((prevMessage, newDictionary) => {
+  createMessage = allVariablesCalib.reduce((prevMessage, newDictionary) => {
     const newMessage = newDictionary.reduce((prevMessageTwo, newField) => {
       if (
         calibration[newField.front] === undefined ||
         calibration[newField.front].length === empty
       ) {
         if (prevMessageTwo.length === sizeMessageDefault)
-          return `${prevMessageTwo} ${newField.front}`;
-        return `${prevMessageTwo}, ${newField.front}`;
+          return `${prevMessageTwo} "${labels(newField.front)}"`;
+        return `${prevMessageTwo}, "${labels(newField.front)}"`;
       }
       return prevMessageTwo;
     }, prevMessage);
 
     return newMessage;
-  }, "O(s) campos ");
+  }, "O(s) campo(s) ");
 
-  if (message.length > sizeMessageDefault) {
-    message += " está(ão) vazios";
-    sendMessageFunction(message, "error", sendMessage);
+  if (createMessage.length > sizeMessageDefault) {
+    createMessage += " está(ão) vazios";
+    sendMessageFunction(sendMessage, createMessage, "error");
     return false;
   }
   return true;
@@ -122,11 +119,11 @@ const saveCalibration = async (values, sendMessage, handleChangeId) => {
   );
 
   if (responseSaved === invalidID) {
-    message = "Falha no cadastro da calibração";
-    sendMessageFunction(message, "error", sendMessage);
+    createMessage = "Falha no cadastro da calibração";
+    sendMessageFunction(sendMessage, createMessage, "error");
   } else {
-    message = "Calibração cadastrada com sucesso";
-    sendMessageFunction(message, "sucess", sendMessage);
+    createMessage = "Calibração cadastrada com sucesso";
+    sendMessageFunction(sendMessage, createMessage, "success");
   }
 };
 
@@ -170,23 +167,8 @@ const GeneralConfigs = () => (
     <div style={{ marginTop: "6%", marginBottom: "2%" }}>
       <CalibrationUpload />
     </div>
-
-    <div style={{ justifyContent: "center", display: "flex" }} />
   </div>
 );
-
-function TabContainer(props) {
-  const { children } = props;
-  return (
-    <Typography component="div" style={{ padding: TabPadding }}>
-      {children}
-    </Typography>
-  );
-}
-
-TabContainer.propTypes = {
-  children: PropTypes.node.isRequired
-};
 
 const appBar = (functions, classes, value) => {
   return (

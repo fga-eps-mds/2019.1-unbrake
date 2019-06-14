@@ -25,7 +25,7 @@ const labelSecondary = name => {
   return nameLabel;
 };
 
-const label = name => {
+export const labelSpeed = name => {
   let nameLabel = "";
   switch (name) {
     case "CHR1":
@@ -61,7 +61,7 @@ const label = name => {
 
 const renderField = (states, classes, handleChange) => {
   const type = states;
-  type.label = label(states.name);
+  type.label = labelSpeed(states.name);
   return <React.Fragment>{field(type, classes, handleChange)}</React.Fragment>;
 };
 
@@ -104,7 +104,7 @@ const allFields = (states, classes, handleChange) => {
 const allCheckbox = (selectsControl, classes, handleChange) => {
   const checks = selectsControl.map(value => {
     const type = value;
-    type.label = label(value.name);
+    type.label = labelSpeed(value.name);
     return (
       <Grid
         key={`checkbox ${value.name}`}

@@ -16,7 +16,7 @@ const inch = 15.4;
 const decimalPlace = 2;
 const validNumber = 0;
 
-const label = name => {
+export const labelRelation = name => {
   let nameLabel = "";
   switch (name) {
     case "LST":
@@ -51,7 +51,7 @@ const label = name => {
 
 const renderField = (states, classes, handleChange) => {
   const type = states;
-  type.label = label(states.name);
+  type.label = labelRelation(states.name);
   return <React.Fragment>{field(type, classes, handleChange)}</React.Fragment>;
 };
 

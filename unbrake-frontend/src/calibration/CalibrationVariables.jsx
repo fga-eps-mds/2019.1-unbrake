@@ -1,3 +1,10 @@
+import { labelCommand } from "./Command";
+import { labelForce } from "./Force";
+import { labelRelation } from "./Relation";
+import { labelSpeed } from "./Speed";
+import { labelTemperature } from "./Temperature";
+import { labelVibration } from "./Vibration";
+
 export const empty = 0;
 
 export const calibrationJSON = [
@@ -158,4 +165,14 @@ export const createCalibration = {
   mutation: "createDefaultCalibration",
   response: "calibration",
   variablesResponse: "id"
+};
+
+export const labels = name => {
+  if (labelCommand(name) !== "") return labelCommand(name);
+  if (labelForce(name) !== "") return labelForce(name);
+  if (labelRelation(name) !== "") return labelRelation(name);
+  if (labelSpeed(name) !== "") return labelSpeed(name);
+  if (labelTemperature(name) !== "") return labelTemperature(name);
+  if (labelVibration(name) !== "") return labelVibration(name);
+  return "";
 };

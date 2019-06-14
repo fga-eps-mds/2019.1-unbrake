@@ -28,7 +28,7 @@ const labelSecondary = name => {
   return nameLabel;
 };
 
-const label = name => {
+export const labelCommand = name => {
   let nameLabel = "";
   switch (name) {
     case "MAVC":
@@ -64,7 +64,7 @@ const label = name => {
 
 const renderField = (states, classes, handleChange) => {
   const type = states;
-  type.label = label(states.name);
+  type.label = labelCommand(states.name);
   return <React.Fragment>{field(type, classes, handleChange)}</React.Fragment>;
 };
 
@@ -107,7 +107,7 @@ const allFields = (states, classes, handleChange) => {
 const allCheckbox = (selectsControl, classes, handleChange) => {
   const checks = selectsControl.map(value => {
     const type = value;
-    type.label = label(value.name);
+    type.label = labelCommand(value.name);
     return (
       <Grid
         key={`checkbox ${value.name}`}
