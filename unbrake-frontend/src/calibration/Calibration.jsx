@@ -43,6 +43,8 @@ const vibrationOption = 4;
 const commandOption = 5;
 const relationOption = 6;
 const sizeMessageDefault = 12;
+const invalidID = -1;
+let message = "";
 
 const styles = theme => ({
   root: {
@@ -55,8 +57,16 @@ const styles = theme => ({
   }
 });
 
+const sendMessageFunction = (sendMessage, mess, variante) => {
+  sendMessage({
+    mess,
+    variante,
+    condition: true
+  });
+};
+
 const validadeFields = (calibration, sendMessage) => {
-  let message = allVariablesCalib.reduce((prevMessage, newDictionary) => {
+  message = allVariablesCalib.reduce((prevMessage, newDictionary) => {
     const newMessage = newDictionary.reduce((prevMessageTwo, newField) => {
       if (
         calibration[newField.front] === undefined ||
@@ -74,11 +84,7 @@ const validadeFields = (calibration, sendMessage) => {
 
   if (message.length > sizeMessageDefault) {
     message += " está(ão) vazios";
-    sendMessage({
-      message,
-      variante: "error",
-      condition: true
-    });
+    sendMessageFunction(message, "error", sendMessage);
     return false;
   }
   return true;
@@ -92,7 +98,6 @@ const firstRequests = async values => {
       values.calibration
     );
     return { name: [value.name], id };
-    // handleChangeId(value.name, id);
   });
   let calibration = await Promise.all(calibrationParts);
   calibration = calibration.reduce((initial, actual) => {
@@ -110,7 +115,19 @@ const saveCalibration = async (values, sendMessage, handleChangeId) => {
   const idsCalibration = await firstRequests(values, handleChangeId);
   idsCalibration.name = values.name;
 
-  await createMutationUrl(createCalibration, variablesCalib, idsCalibration);
+  const responseSaved = await createMutationUrl(
+    createCalibration,
+    variablesCalib,
+    idsCalibration
+  );
+
+  if (responseSaved === invalidID) {
+    message = "Falha no cadastro da calibração";
+    sendMessageFunction(message, "error", sendMessage);
+  } else {
+    message = "Calibração cadastrada com sucesso";
+    sendMessageFunction(message, "sucess", sendMessage);
+  }
 };
 
 const dialogName = (functions, states) => {
@@ -173,48 +190,46 @@ TabContainer.propTypes = {
 
 const appBar = (functions, classes, value) => {
   return (
-    <Grid item container xs={12} justify="center" alignItems="center">
-      <div className={classes.root}>
-        <AppBar position="static" color="inherit" className={classes.appBar}>
-          <Tabs
-            value={value}
-            onChange={functions.handleChange}
-            variant="scrollable"
-            scrollButtons="auto"
-          >
-            <Tab label="Gerais" />
-            <Tab label="Temperatura" />
-            <Tab label="Força" />
-            <Tab label="Velocidade" />
-            <Tab label="Vibração" />
-            <Tab label="Comando" />
-            <Tab label="Relações" />
-          </Tabs>
-        </AppBar>
-        <Grid
-          item
-          xs={12}
-          container
-          justify="center"
-          style={{ marginTop: "15px" }}
+    <div className={classes.root}>
+      <AppBar position="static" color="inherit" className={classes.appBar}>
+        <Tabs
+          value={value}
+          onChange={functions.handleChange}
+          variant="scrollable"
+          scrollButtons="auto"
         >
-          <Button
-            color="secondary"
-            variant="contained"
-            onClick={functions.handleValidate}
-          >
-            Cadastrar
-          </Button>
-        </Grid>
-        {value === generalConfigsOption && GeneralConfigs()}
-        {value === temperatureOption && <Temperature />}
-        {value === forceOption && <Force />}
-        {value === speedOption && <Speed />}
-        {value === vibrationOption && <Vibration />}
-        {value === commandOption && <Command />}
-        {value === relationOption && <Relation />}
-      </div>
-    </Grid>
+          <Tab label="Gerais" />
+          <Tab label="Temperatura" />
+          <Tab label="Força" />
+          <Tab label="Velocidade" />
+          <Tab label="Vibração" />
+          <Tab label="Comando" />
+          <Tab label="Relações" />
+        </Tabs>
+      </AppBar>
+      <Grid
+        item
+        xs={12}
+        container
+        justify="center"
+        style={{ marginTop: "15px" }}
+      >
+        <Button
+          color="secondary"
+          variant="contained"
+          onClick={functions.handleValidate}
+        >
+          Cadastrar
+        </Button>
+      </Grid>
+      {value === generalConfigsOption && GeneralConfigs()}
+      {value === temperatureOption && <Temperature />}
+      {value === forceOption && <Force />}
+      {value === speedOption && <Speed />}
+      {value === vibrationOption && <Vibration />}
+      {value === commandOption && <Command />}
+      {value === relationOption && <Relation />}
+    </div>
   );
 };
 
@@ -223,7 +238,7 @@ class Calibration extends React.Component {
     super(props);
     this.state = {
       open: false,
-      value: 6,
+      value: 0,
       name: ""
     };
     this.handleChange = this.handleChange.bind(this);

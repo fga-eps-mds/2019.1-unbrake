@@ -1,5 +1,16 @@
 export const empty = 0;
 
+export const calibrationJSON = [
+  "calibrationtemperatureSet",
+  "calibrationtemperatureSet",
+  "calibrationforceSet",
+  "calibrationforceSet",
+  "speed",
+  "vibration",
+  "command",
+  "relations"
+];
+
 export const createQuery = () => {
   const vibration =
     "vibration{acquisitionChanel, conversionFactor, vibrationOffset}";
@@ -12,7 +23,7 @@ export const createQuery = () => {
     "calibrationtemperatureSet{acquisitionChanel ,conversionFactor ,temperatureOffset}";
   const force =
     "calibrationforceSet{acquisitionChanel ,conversionFactor ,forceOffset}";
-  const query = `${vibration},${speed},${relations},${command},${temperature},${force}`;
+  const query = `${vibration},${speed},${relations},${command},${temperature},${force}, isDefault, name`;
   return query;
 };
 
