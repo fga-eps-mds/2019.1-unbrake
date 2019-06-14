@@ -14,6 +14,7 @@ const double = 2;
 const percentage = 100;
 const inch = 15.4;
 const decimalPlace = 2;
+const validNumber = 0;
 
 const label = name => {
   let nameLabel = "";
@@ -89,30 +90,17 @@ const tireFields = (states, classes, handleChange) => {
   });
   return fields;
 };
-const vbeltFields = (states, classes, handleChange) => {
-  const fields = states.map(value => {
-    return (
-      <Grid
-        alignItems="center"
-        justify="center"
-        container
-        item
-        xs={12}
-        key={`fields ${value[1].name}`}
-      >
-        {rowField(value, classes, handleChange)}
-      </Grid>
-    );
-  });
-  return fields;
-};
 
 const tireDictionary = relation => {
   const dictionary = [
-    [{ name: "LST", value: relation.LST, disable: false }],
-    [{ name: "RAL", value: relation.RAL, disable: false }],
-    [{ name: "DIA", value: relation.DIA, disable: false }],
-    [{ name: "RDP", value: relation.RDP, disable: true }]
+    [
+      { name: "LST", value: relation.LST, disable: false },
+      { name: "RAL", value: relation.RAL, disable: false }
+    ],
+    [
+      { name: "DIA", value: relation.DIA, disable: false },
+      { name: "RDP", value: relation.RDP, disable: true }
+    ]
   ];
   return dictionary;
 };
@@ -134,7 +122,9 @@ const vbeltDictionary = relation => {
 const images = () => {
   return (
     <Grid style={{ display: "flex", flexDirection: "column" }}>
-      <Grid style={{ display: "flex", flexDirection: "row" }}>
+      <h3 styles={{ height: "22px" }}>Configurações da roda</h3>
+
+      <Grid justify="center" style={{ display: "flex", flexDirection: "row" }}>
         <img src={completeTire} alt="CompleteTire" height="250" />
         <Grid
           style={{
@@ -147,14 +137,24 @@ const images = () => {
           <img src={tire} alt="tire" height="75" />
         </Grid>
       </Grid>
-      <img
-        src={VBelt}
-        alt="VBelt"
-        height="200"
-        style={{ marginTop: "100px" }}
-      />
+      <Grid style={{ marginTop: "100px" }}>
+        <h3 styles={{ height: "22px" }}>Configurações das polias</h3>
+
+        <img src={VBelt} alt="VBelt" height="200" />
+      </Grid>
     </Grid>
   );
+};
+
+const generatorVariables = values => {
+  const newVariables = {};
+  const valueRDT = (values.RSM * values.DPO) / values.DPM;
+  if (valueRDT > validNumber) newVariables.RDT = valueRDT.toFixed(decimalPlace);
+
+  const valueRDP =
+    ((values.LST * values.RAL) / percentage) * double + values.DIA * inch;
+  if (valueRDP > validNumber) newVariables.RDP = valueRDP.toFixed(decimalPlace);
+  return newVariables;
 };
 
 class Relation extends React.Component {
@@ -180,13 +180,7 @@ class Relation extends React.Component {
     const { values } = nextProps.calibration;
 
     if (values !== undefined) {
-      const valueRDT = (values.RSM * values.DPO) / values.DPM;
-      const newVariables = { RDT: valueRDT.toFixed(decimalPlace) };
-
-      const valueRDP =
-        ((values.LST * values.RAL) / percentage) * double + values.DIA * inch;
-      newVariables.RDP = valueRDP.toFixed(decimalPlace);
-
+      const newVariables = generatorVariables(values);
       dispatch(initialize("calibration", { ...values, ...newVariables }));
 
       return true;
@@ -214,30 +208,34 @@ class Relation extends React.Component {
         xs={12}
         item
         justify="center"
-        style={{ marginTop: "70px" }}
+        style={{ marginTop: "10px" }}
       >
-        <Grid alignItems="center" justify="center" container>
-          <form className={classes.container}>
-            <Grid item xs />
-            <Grid container item justify="center" xs={6}>
-              {images()}
-            </Grid>
-            <Grid
-              container
-              item
-              alignItems="flex-start"
-              justify="center"
-              xs={3}
-            >
+        <Grid alignItems="center" justify="center" container xs={10}>
+          <Grid item xs />
+          <Grid container item justify="center" xs={6}>
+            {images()}
+          </Grid>
+          <Grid container item alignItems="flex-start" justify="center" xs={6}>
+            <form className={classes.container}>
               <Grid container item alignItems="center" justify="center" xs={12}>
+                <h2 styles={{ height: "22px" }}>Pneu</h2>
                 {tireFields(statesTire, classes, this.handleChange)}
-                <Grid style={{ marginTop: "100px" }}>
-                  {vbeltFields(statesVbelt, classes, this.handleChange)}
-                </Grid>
               </Grid>
-            </Grid>
-            <Grid item xs />
-          </form>
+
+              <Grid
+                container
+                item
+                alignItems="center"
+                justify="center"
+                xs={12}
+                style={{ marginTop: "100px" }}
+              >
+                <h2 styles={{ height: "22px" }}>Velocidade máxima</h2>
+                {tireFields(statesVbelt, classes, this.handleChange)}
+              </Grid>
+            </form>
+          </Grid>
+          <Grid item xs />
         </Grid>
       </Grid>
     );

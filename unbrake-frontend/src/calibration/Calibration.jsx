@@ -182,7 +182,7 @@ class Calibration extends React.Component {
     super(props);
     this.state = {
       open: false,
-      value: 0,
+      value: 6,
       name: ""
     };
     this.handleChange = this.handleChange.bind(this);
