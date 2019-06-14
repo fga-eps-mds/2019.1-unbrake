@@ -137,7 +137,7 @@ const images = () => {
           <img src={tire} alt="tire" height="75" />
         </Grid>
       </Grid>
-      <Grid style={{ marginTop: "100px" }}>
+      <Grid style={{ marginTop: "50px" }}>
         <h3 styles={{ height: "22px" }}>Configurações das polias</h3>
 
         <img src={VBelt} alt="VBelt" height="200" />

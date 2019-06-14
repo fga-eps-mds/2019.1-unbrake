@@ -13,7 +13,7 @@ import DialogActions from "@material-ui/core/DialogActions";
 import DialogContent from "@material-ui/core/DialogContent";
 import DialogContentText from "@material-ui/core/DialogContentText";
 import DialogTitle from "@material-ui/core/DialogTitle";
-
+import Grid from "@material-ui/core/Grid";
 import CalibrationUpload from "./CalibrationUpload";
 import Vibration from "./Vibration";
 import Force from "./Force";
@@ -34,7 +34,7 @@ import {
 } from "./CalibrationVariables";
 
 const TabPadding = 24;
-const borderRadius = 2.5;
+const borderRadius = 1.5;
 const generalConfigsOption = 0;
 const temperatureOption = 1;
 const forceOption = 2;
@@ -46,18 +46,12 @@ const sizeMessageDefault = 12;
 
 const styles = theme => ({
   root: {
-    flexGrow: 1
+    flexGrow: 1,
+    width: "100%",
+    marginTop: "90px"
   },
   appBar: {
-    borderTopLeftRadius: theme.spacing.unit * borderRadius,
-    borderBottomLeftRadius: theme.spacing.unit * borderRadius,
-    borderTopRightRadius: theme.spacing.unit * borderRadius,
-    borderBottomRightRadius: theme.spacing.unit * borderRadius,
-    marginTop: "8%",
-    marginLeft: "10%",
-    width: "80%",
-    alignItems: "center",
-    justifyContent: "center"
+    borderRadius: theme.spacing.unit * borderRadius
   }
 });
 
@@ -177,6 +171,53 @@ TabContainer.propTypes = {
   children: PropTypes.node.isRequired
 };
 
+const appBar = (functions, classes, value) => {
+  return (
+    <Grid item container xs={12} justify="center" alignItems="center">
+      <div className={classes.root}>
+        <AppBar position="static" color="inherit" className={classes.appBar}>
+          <Tabs
+            value={value}
+            onChange={functions.handleChange}
+            variant="scrollable"
+            scrollButtons="auto"
+          >
+            <Tab label="Gerais" />
+            <Tab label="Temperatura" />
+            <Tab label="Força" />
+            <Tab label="Velocidade" />
+            <Tab label="Vibração" />
+            <Tab label="Comando" />
+            <Tab label="Relações" />
+          </Tabs>
+        </AppBar>
+        <Grid
+          item
+          xs={12}
+          container
+          justify="center"
+          style={{ marginTop: "15px" }}
+        >
+          <Button
+            color="secondary"
+            variant="contained"
+            onClick={functions.handleValidate}
+          >
+            Cadastrar
+          </Button>
+        </Grid>
+        {value === generalConfigsOption && GeneralConfigs()}
+        {value === temperatureOption && <Temperature />}
+        {value === forceOption && <Force />}
+        {value === speedOption && <Speed />}
+        {value === vibrationOption && <Vibration />}
+        {value === commandOption && <Command />}
+        {value === relationOption && <Relation />}
+      </div>
+    </Grid>
+  );
+};
+
 class Calibration extends React.Component {
   constructor(props) {
     super(props);
@@ -238,44 +279,18 @@ class Calibration extends React.Component {
     const functions = {
       handleClose: this.handleClose,
       handleChangeStates: this.handleChangeStates,
-      handleSubmit: this.handleSubmit
+      handleSubmit: this.handleSubmit,
+      handleChange: this.handleChange,
+      handleValidate: this.handleValidate
     };
 
     return (
-      <div>
-        <div className={classes.root}>
-          <AppBar
-            color="inherit"
-            className={classes.appBar}
-            position="relative"
-          >
-            <Tabs centered value={value} onChange={this.handleChange}>
-              <Tab label="Gerais" />
-              <Tab label="Temperatura" />
-              <Tab label="Força" />
-              <Tab label="Velocidade" />
-              <Tab label="Vibração" />
-              <Tab label="Comando" />
-              <Tab label="Relações" />
-            </Tabs>
-          </AppBar>
-          <Button
-            color="secondary"
-            variant="contained"
-            onClick={this.handleValidate}
-          >
-            Cadastrar
-          </Button>
-          {value === generalConfigsOption && GeneralConfigs()}
-          {value === temperatureOption && <Temperature />}
-          {value === forceOption && <Force />}
-          {value === speedOption && <Speed />}
-          {value === vibrationOption && <Vibration />}
-          {value === commandOption && <Command />}
-          {value === relationOption && <Relation />}
-        </div>
+      <Grid item container xs={12} justify="center" alignItems="center">
+        <Grid item container xs={11} justify="center" alignItems="center">
+          {appBar(functions, classes, value)}
+        </Grid>
         {dialogName(functions, states)}
-      </div>
+      </Grid>
     );
   }
 }
