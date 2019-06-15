@@ -11,25 +11,8 @@ const limits = (value, allValues) => {
     : undefined;
 };
 
-const validate = values => {
-  const errors = {};
-  const requiredFields = [
-    "TAS",
-    "TAT",
-    "UWT",
-    "NOS",
-    "LSL",
-    "USL",
-    "TBS",
-    "LWT"
-  ];
-  requiredFields.forEach(field => {
-    if (!values[field]) {
-      errors[field] = "Campo obrigatório";
-    }
-  });
-  return errors;
-};
+export const required = value =>
+  value || typeof value === "number" ? undefined : "Obrigatório";
 
 const fieldsLabels = {
   NOS: "Numero de Snubs",
@@ -75,7 +58,11 @@ const rowsFields = (classes, vector, handleChange) => {
             onChange={handleChange}
             type="number"
             name={nameField}
-            validate={nameField === "USL" || nameField === "LSL" ? limits : []}
+            validate={
+              nameField === "USL" || nameField === "LSL"
+                ? [limits, required]
+                : required
+            }
             className={classes.textField}
             margin="normal"
             variant="outlined"
@@ -150,6 +137,7 @@ const CommunGrid = (classes, type, handleChange) => {
         type="number"
         name={type.name}
         className={classes.textField}
+        validate={required}
         margin="normal"
         variant="outlined"
       />
@@ -299,8 +287,7 @@ ConfigurationForm.propTypes = {
 };
 
 const Configurationa = reduxForm({
-  form: "configuration",
-  validate
+  form: "configuration"
 })(ConfigurationForm);
 
 export default withStyles(styles)(Configurationa);
