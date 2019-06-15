@@ -79,6 +79,7 @@ const rowsFields = (classes, vector, handleChange) => {
             className={classes.textField}
             margin="normal"
             variant="outlined"
+            value={value.value}
           />
         </div>
       </Grid>
@@ -234,9 +235,10 @@ class ConfigurationForm extends React.Component {
   handleChange(event) {
     const { target } = event;
     const value = target.type === "checkbox" ? target.checked : target.value;
-    const configuration = { [event.target.name]: value };
+    const configurations = { [event.target.name]: value };
+
     this.setState(prevState => ({
-      configuration: { ...prevState.configuration, ...configuration }
+      configuration: { ...prevState.configuration, ...configurations }
     }));
   }
 
@@ -300,7 +302,8 @@ ConfigurationForm.propTypes = {
 
 const Configurationa = reduxForm({
   form: "configuration",
-  validate
+  validate,
+  destroyOnUnmount: false
 })(ConfigurationForm);
 
 export default withStyles(styles)(Configurationa);
