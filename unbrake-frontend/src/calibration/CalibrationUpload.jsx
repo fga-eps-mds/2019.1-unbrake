@@ -18,35 +18,10 @@ import {
   createQuery,
   allVariablesCalib,
   calibrationJSON,
-  empty
+  empty,
+  styles
 } from "./CalibrationVariables";
 import { messageSistem } from "../actions/NotificationActions";
-
-const styles = theme => ({
-  title: {
-    padding: "5px"
-  },
-  grid: {
-    padding: "5px"
-  },
-  input_file_name: {
-    marginLeft: 8,
-    flex: 1
-  },
-  input: {
-    display: "none"
-  },
-  rootUploadFile: {
-    padding: "2px 4px",
-    display: "flex",
-    alignItems: "center",
-    width: 400
-  },
-  formControl: {
-    margin: theme.spacing.unit,
-    minWidth: 200
-  }
-});
 
 const createCalibration = (data, dispatch) => {
   const nextPosition = 1;
@@ -119,7 +94,6 @@ const getSelectCalibration = (id, dispatch, sendMessage) => {
 const itensSelection = allCalibration => {
   let allCalib = [{ id: 0, name: "" }];
   allCalib = allCalib.concat(allCalibration);
-
   const itens = allCalib.map(value => {
     return (
       <MenuItem key={value.name + value.id} value={value.id}>
@@ -179,7 +153,9 @@ class CalibrationUpload extends React.Component {
     Request(url, method)
       .then(json => {
         const data = json.data.allCalibration;
-        this.setState({ allCalibration: data });
+        if (data !== null) {
+          this.setState({ allCalibration: data });
+        }
       })
       .then(() => {
         if (Object.keys(calibration.values).length === empty) {
@@ -219,6 +195,7 @@ class CalibrationUpload extends React.Component {
     const { dispatch, sendMessage } = this.props;
     const { allCalibration } = this.state;
 
+    if (allCalibration === "") return;
     const defaultsCalib = allCalibration.filter(calibration => {
       return calibration.isDefault === true;
     });

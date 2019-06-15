@@ -7,6 +7,32 @@ import { labelVibration } from "./Vibration";
 
 export const empty = 0;
 
+export const styles = theme => ({
+  title: {
+    padding: "5px"
+  },
+  grid: {
+    padding: "5px"
+  },
+  input_file_name: {
+    marginLeft: 8,
+    flex: 1
+  },
+  input: {
+    display: "none"
+  },
+  rootUploadFile: {
+    padding: "2px 4px",
+    display: "flex",
+    alignItems: "center",
+    width: 400
+  },
+  formControl: {
+    margin: theme.spacing.unit,
+    minWidth: 200
+  }
+});
+
 export const calibrationJSON = [
   "calibrationtemperatureSet",
   "calibrationtemperatureSet",
@@ -162,7 +188,7 @@ export const variablesCalib = [
 ];
 
 export const createCalibration = {
-  mutation: "createDefaultCalibration",
+  mutation: "createCalibration",
   response: "calibration",
   variablesResponse: "id"
 };
