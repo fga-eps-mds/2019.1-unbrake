@@ -8,6 +8,8 @@ import styles from "../components/Styles";
 import RealTimeChart from "../components/RealTimeChart";
 import { field } from "../components/ComponentsForm";
 
+const base10 = 10;
+
 const labelSecondary = name => {
   let nameLabel = "";
   switch (name) {
@@ -55,7 +57,7 @@ const label = name => {
       nameLabel = "Fator de conversão 1";
       break;
     case "FCT2":
-      nameLabel = "Fator de conversão 1";
+      nameLabel = "Fator de conversão 2";
       break;
     default:
       nameLabel = labelSecondary(name);
@@ -86,6 +88,10 @@ const rowField = (states, classes, handleChange) => {
     );
   });
   return fields;
+};
+
+const conversionFunction = (x, a, b) => {
+  return parseFloat(a) * parseFloat(x) + parseFloat(b);
 };
 
 const allFields = (states, classes, handleChange) => {
@@ -151,10 +157,8 @@ class Temperature extends React.Component {
       force: {
         CHF1: "", // canal de aquisição 1
         CHF2: "", // canal de aquisição 2
-        PFkgf1: false, // plota força (kfg) 1
         Fmv1: "100", // força (mv) 1
         Fmv2: "", // força (mv) 2
-        PFkgf2: false, // plota força (kfg) 1
         Fkgf1: "", // força (kgf) 1
         Fkgf2: "", // força (kgf) 2
         FCF1: "", // fator de conversão 1
@@ -182,14 +186,32 @@ class Temperature extends React.Component {
   }
 
   componentDidMount() {
+    const { dispatch } = this.props;
+    const { calibration } = this.props;
+    const { values } = calibration;
     this.client.on("message", msg => {
-      const { dispatch } = this.props;
       if (msg.channel === "unbrake/galpao/temperature/sensor1/") {
+        const { FCT1, OFT1 } = values;
+        this.sensor1.push(parseInt(msg.asString(), base10));
         dispatch(change("calibration", "Tmv1", msg.asString()));
-        this.sensor1.push(parseInt(msg.asString(), 10));
+        dispatch(
+          change(
+            "calibration",
+            "TC1",
+            conversionFunction(msg.asString(), FCT1, OFT1)
+          )
+        );
       } else if (msg.channel === "unbrake/galpao/temperature/sensor2/") {
-        this.sensor2.push(parseInt(msg.asString(), 10));
+        const { FCT2, OFT2 } = values;
+        this.sensor2.push(parseInt(msg.asString(), base10));
         dispatch(change("calibration", "Tmv2", msg.asString()));
+        dispatch(
+          change(
+            "calibration",
+            "TC2",
+            conversionFunction(msg.asString(), FCT2, OFT2)
+          )
+        );
       }
     });
   }
@@ -249,7 +271,8 @@ class Temperature extends React.Component {
 Temperature.propTypes = {
   classes: PropTypes.objectOf(PropTypes.string).isRequired,
   mqttKey: PropTypes.string.isRequired,
-  dispatch: PropTypes.func.isRequired
+  dispatch: PropTypes.func.isRequired,
+  calibration: PropTypes.objectOf(PropTypes.string).isRequired
 };
 
 const TemperatureForm = reduxForm({
@@ -257,4 +280,13 @@ const TemperatureForm = reduxForm({
   destroyOnUnmount: false
 })(Temperature);
 
-export default connect()(withStyles(styles)(TemperatureForm));
+export default connect(state => ({
+  calibration: {
+    values: {
+      FCT1: state.form.calibration.values.FCT1,
+      OFT1: state.form.calibration.values.OFT1,
+      FCT2: state.form.calibration.values.FCT2,
+      OFT2: state.form.calibration.values.OFT2
+    }
+  }
+}))(withStyles(styles)(TemperatureForm));

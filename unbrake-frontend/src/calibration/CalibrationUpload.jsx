@@ -135,7 +135,8 @@ const mapStateToProps = state => ({
 
 const Upload = reduxForm({
   form: "calibration",
-  destroyOnUnmount: false
+  destroyOnUnmount: false,
+  initialValues: { OFT1: 0, FCT1: 0, OFT2: 0, FCT2: 0 }
 })(CalibrationUpload);
 
 export default connect(

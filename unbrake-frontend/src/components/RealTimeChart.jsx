@@ -50,50 +50,57 @@ const datasets = props => {
     ]
   };
 };
-const RealTimeChart = props => {
-  return (
-    <Line
-      data={datasets(props)}
-      options={{
-        maintainAspectRatio: false,
-        title: {
-          display: false
-        },
-        legend: {
-          display: true
-        },
-        scales: {
-          xAxes: [
-            {
-              type: "realtime",
-              maxBarThickness: 3,
-              gridLines: {
-                display: true
-              },
-              realtime: {
-                duration: 20000,
-                delay: 1000,
-                refresh: 500,
-                onRefresh: chart => {
-                  chart.data.datasets.forEach((dataset, index) => {
-                    dataset.data.push({
-                      x: Date.now(),
-                      y: index
-                        ? props.sensor2[props.sensor2.length - indexPadding]
-                        : props.sensor1[props.sensor1.length - indexPadding]
+class RealTimeChart extends React.Component {
+  shouldComponentUpdate() {
+    return false;
+  }
+
+  render() {
+    const { sensor1, sensor2 } = this.props;
+    return (
+      <Line
+        data={datasets(this.props)}
+        options={{
+          maintainAspectRatio: false,
+          title: {
+            display: false
+          },
+          legend: {
+            display: true
+          },
+          scales: {
+            xAxes: [
+              {
+                type: "realtime",
+                maxBarThickness: 3,
+                gridLines: {
+                  display: true
+                },
+                realtime: {
+                  duration: 20000,
+                  delay: 1000,
+                  refresh: 500,
+                  onRefresh: chart => {
+                    chart.data.datasets.forEach((dataset, index) => {
+                      dataset.data.push({
+                        x: Date.now(),
+                        y: index
+                          ? sensor2[sensor2.length - indexPadding]
+                          : sensor1[sensor1.length - indexPadding]
+                      });
                     });
-                  });
+                  }
                 }
               }
-            }
-          ],
-          yAxes: yAxesConfig()
-        },
-        tooltips: tooltipsConfig()
-      }}
-    />
-  );
-};
+            ],
+            yAxes: yAxesConfig()
+          },
+          tooltips: tooltipsConfig()
+        }}
+      />
+    );
+  }
+}
 
 RealTimeChart.propTypes = {
   sensor1: PropTypes.arrayOf(PropTypes.number),
