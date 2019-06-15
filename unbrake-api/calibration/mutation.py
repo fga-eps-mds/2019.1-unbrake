@@ -3,7 +3,7 @@
 '''
 
 import graphene
-from graphql_jwt.decorators import login_required
+from graphql_jwt.decorators import login_required, superuser_required
 from calibration.models import (
     CalibrationVibration,
     CalibrationForce,
@@ -334,6 +334,7 @@ class CreateDefaultCalibration(graphene.Mutation):
         id_second_temperature = graphene.Int()
         id_command = graphene.Int()
 
+    @superuser_required
     def mutate(
             self,
             info,
