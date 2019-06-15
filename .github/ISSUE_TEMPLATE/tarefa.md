@@ -1,13 +1,11 @@
 ---
 name: Template de tarefas
 about: Template para definir a tarefa para algum membro
-title: ''
+title: 'Título da tarefa'
 labels: ''
 assignees: ''
 
 ---
-
-# Template de tarefas
 
 ## Descrição
 
@@ -18,6 +16,11 @@ Descreva a tarefa aqui
 - [ ] Primeira tarefa
 - [ ] Segunda tarefa
 - [ ] ...
+
+## Critérios adicionais
+
+- [ ] Tem que atender mais esse critério
+- [ ] Esse também
 
 ## Informação adicional
 

@@ -23,7 +23,7 @@ import {
 } from "./CalibrationVariables";
 import { messageSistem } from "../actions/NotificationActions";
 
-const positionVector = -1;
+const positionVector = 1;
 
 const createCalibration = (data, dispatch) => {
   const nextPosition = 1;

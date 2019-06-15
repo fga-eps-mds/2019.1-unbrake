@@ -44,6 +44,9 @@ plugins:
   markdownlint:
     enabled: true
     checks:
+      # Does not suit issue/pr templates
+      MD002:
+        enabled: false
       # Ordered list item prefix
       MD029:
         enabled: false
@@ -58,8 +61,6 @@ plugins:
   radon:
     enabled: true
   fixme:
-    enabled: true
-  git-legal:
     enabled: true
   git-legal:
     enabled: true
