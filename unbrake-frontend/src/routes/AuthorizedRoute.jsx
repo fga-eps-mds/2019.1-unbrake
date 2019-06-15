@@ -31,6 +31,7 @@ class AuthorizedRoute extends React.PureComponent {
     verifyToken().then(value => {
       changeVerifyingAuth(value);
     });
+    isAuthenticated();
     if (path === "/login") {
       return verifyLoginPath(this.props);
     }
