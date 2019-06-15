@@ -17,6 +17,11 @@ Descreva a tarefa aqui
 - [ ] Segunda tarefa
 - [ ] ...
 
+## Critérios adicionais
+
+- [ ] Tem que atender mais esse critério
+- [ ] Esse também
+
 ## Informação adicional
 
 Dê mais informação sobre a tarefa (sites, imagens, ideias, qualquer coisa que
