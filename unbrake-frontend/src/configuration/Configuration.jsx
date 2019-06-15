@@ -22,6 +22,7 @@ import {
 } from "./ConfigFunctions";
 import NotificationContainer from "../components/Notification";
 import { messageSistem } from "../actions/NotificationActions";
+import { redirectPage } from "../actions/RedirectActions";
 
 const positionVector = 1;
 
@@ -128,11 +129,14 @@ class Configuration extends React.Component {
 
   handleSubmit() {
     const { configuration, name, isDefault } = this.state;
-    const { sendMessage } = this.props;
+    const { sendMessage, redirect } = this.props;
 
-    if (isDefault)
-      submitDefault(configuration.CONFIG_ENSAIO, name, sendMessage);
-    else submit(configuration.CONFIG_ENSAIO, name, sendMessage);
+    if (isDefault) {
+      if (submitDefault(configuration.CONFIG_ENSAIO, name, sendMessage))
+        redirect({ url: "/calibration" });
+    } else if (submit(configuration.CONFIG_ENSAIO, name, sendMessage)) {
+      redirect({ url: "/calibration" });
+    }
   }
 
   handleUpDefault() {
@@ -283,11 +287,13 @@ class Configuration extends React.Component {
 
 Configuration.propTypes = {
   classes: PropTypes.objectOf(PropTypes.string).isRequired,
-  sendMessage: PropTypes.func.isRequired
+  sendMessage: PropTypes.func.isRequired,
+  redirect: PropTypes.func.isRequired
 };
 
 const mapDispatchToProps = dispatch => ({
-  sendMessage: payload => dispatch(messageSistem(payload))
+  sendMessage: payload => dispatch(messageSistem(payload)),
+  redirect: payload => dispatch(redirectPage(payload))
 });
 
 export default connect(

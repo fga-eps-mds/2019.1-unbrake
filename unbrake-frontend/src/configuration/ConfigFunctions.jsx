@@ -34,17 +34,22 @@ export async function submit(configuration, name, sendMessage) {
     configuration.TAT
   }){config{number, timeBetweenCycles,upperLimit,inferiorLimit}}}`;
   const method = "POST";
-  Request(url, method).then(() => {
+  Request(url, method).then(response => {
+    if (response.errors === undefined) {
+      sendMessage({
+        message: "Arquivo cadastrado com sucesso",
+        variante: "success",
+        condition: true
+      });
+      return true;
+    }
     sendMessage({
-      message: "Arquivo cadastrado com sucesso",
-      variante: "success",
+      message: "Falha no cadastro do arquivo de calibração",
+      variante: "error",
       condition: true
     });
+    return false;
   });
-  const waitTime = 3000;
-  setTimeout(() => {
-    // window.location.reload();
-  }, waitTime);
 }
 
 export async function submitDefault(configuration, name, sendMessage) {
@@ -68,17 +73,22 @@ export async function submitDefault(configuration, name, sendMessage) {
     configuration.TAT
   }){config{number, timeBetweenCycles,upperLimit,inferiorLimit}}}`;
   const method = "POST";
-  Request(url, method).then(() => {
+  Request(url, method).then(response => {
+    if (response.errors === undefined) {
+      sendMessage({
+        message: "Arquivo cadastrado com sucesso",
+        variante: "success",
+        condition: true
+      });
+      return true;
+    }
     sendMessage({
-      message: "Arquivo cadastrado com sucesso",
-      variante: "success",
+      message: "Falha no cadastro do arquivo de calibração",
+      variante: "error",
       condition: true
     });
+    return false;
   });
-  const waitTime = 3000;
-  setTimeout(() => {
-    // window.location.reload();
-  }, waitTime);
 }
 
 export const dialogName = (functions, dialogStates) => {
