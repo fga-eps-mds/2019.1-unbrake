@@ -23,6 +23,8 @@ import {
 } from "./CalibrationVariables";
 import { messageSistem } from "../actions/NotificationActions";
 
+const positionVector = -1;
+
 const createCalibration = (data, dispatch) => {
   const nextPosition = 1;
 
@@ -200,9 +202,10 @@ class CalibrationUpload extends React.Component {
     const defaultsCalib = allCalibration.filter(calibration => {
       return calibration.isDefault === true;
     });
-
-    if (defaultsCalib.length > empty)
-      getSelectCalibration(defaultsCalib[0].id, dispatch, sendMessage);
+    if (defaultsCalib.length > empty) {
+      const position = defaultsCalib.length - positionVector;
+      getSelectCalibration(defaultsCalib[position].id, dispatch, sendMessage);
+    }
   }
 
   uploadField(field, filename) {
