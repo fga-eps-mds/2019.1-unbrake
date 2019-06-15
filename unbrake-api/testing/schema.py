@@ -9,6 +9,7 @@ from graphene_django.types import DjangoObjectType
 from graphql_jwt.decorators import login_required
 from testing.models import Testing
 from configuration.models import Config
+from utils.general import get_secret
 from calibration.models import (
     CalibrationVibration,
     CalibrationSpeed,
@@ -100,9 +101,9 @@ class CreateTesting(graphene.Mutation):
         return CreateTesting(testing=testing)
 
 
-class SendTesting(graphene.Mutation):
+class SubmitTesting(graphene.Mutation):
     '''
-        Mutation to send a testing to unbrake-local with mqtt
+        Mutation to submit a testing to unbrake-local with mqtt
     '''
     # pylint: disable =  unused-argument, no-self-use
 
@@ -113,11 +114,13 @@ class SendTesting(graphene.Mutation):
             Id of the Testing object that will be sent to unbrake-local
         '''
         testing_id = graphene.Int()
+        mqtt_host = graphene.String()
+        mqtt_port = graphene.Int()
 
-    def mutate(self, info, testing_id):
+    @staticmethod
+    def _get_testing_info(testing_id):
         '''
-            Function to get all objects on db and create a string to be sent
-            to unbrake-local
+        Get all information needed for performing the experiment
         '''
 
         testing = Testing.objects.get(pk=testing_id)
@@ -191,23 +194,30 @@ class SendTesting(graphene.Mutation):
 
         testing['fields']['calibration']['command'] = command['fields']
 
-        testing = json.dumps(testing)
+        return json.dumps(testing)
+
+    def mutate(self, info, testing_id, mqtt_host, mqtt_port):
+        '''
+            Function to get all objects on db and create a string to be sent
+            to unbrake-local
+        '''
 
         client = Client()
 
         client.connect(
-            host="unbrake.ml",
-            port=8080,
+            host=mqtt_host,
+            port=mqtt_port,
             secure=False
         )
 
+        testing = SubmitTesting._get_testing_info(testing_id)
         client.publish(
-            "",
+            get_secret('mqtt-writing-key'),
             "unbrake/galpao/testing",
             testing
         )
 
-        return SendTesting(succes=testing)
+        return SubmitTesting(succes=testing)
 
 
 class Mutation(graphene.ObjectType):
@@ -215,4 +225,4 @@ class Mutation(graphene.ObjectType):
         Graphene class concat all mutations
     '''
     create_testing = CreateTesting.Field()
-    send_testing = SendTesting.Field()
+    submit_testing = SubmitTesting.Field()

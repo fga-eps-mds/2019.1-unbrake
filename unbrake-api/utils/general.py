@@ -23,4 +23,4 @@ def get_secret(secret_name):
             """
         )
 
-    return key_file
+    return key_file.read().strip()
