@@ -2,45 +2,210 @@ import React from "react";
 import iniparser from "iniparser";
 import Grid from "@material-ui/core/Grid";
 import Paper from "@material-ui/core/Paper";
-
+import Button from "@material-ui/core/Button";
+import MenuItem from "@material-ui/core/MenuItem";
+import TextField from "@material-ui/core/TextField";
 import IconButton from "@material-ui/core/IconButton";
 import CloudUploadIcon from "@material-ui/icons/CloudUpload";
-
 import { withStyles } from "@material-ui/core/styles";
 import PropTypes from "prop-types";
 import { initialize, reduxForm } from "redux-form";
 import { connect } from "react-redux";
 import { addFile } from "../actions/FileActions";
+import { API_URL_GRAPHQL } from "../utils/Constants";
+import Request from "../utils/Request";
+import {
+  createQuery,
+  allVariablesCalib,
+  calibrationJSON,
+  empty,
+  styles
+} from "./CalibrationVariables";
+import { messageSistem } from "../actions/NotificationActions";
 
-const styles = () => ({
-  title: {
-    padding: "5px"
-  },
-  grid: {
-    padding: "5px"
-  },
+const positionVector = 1;
 
-  input_file_name: {
-    marginLeft: 8,
-    flex: 1
-  },
+const createCalibration = (data, dispatch) => {
+  const nextPosition = 1;
 
-  input: {
-    display: "none"
-  },
+  const cont = { calibrationtemperatureSet: -1, calibrationforceSet: -1 };
 
-  rootUploadFile: {
-    padding: "2px 4px",
-    display: "flex",
-    alignItems: "center",
-    width: 400
-  }
-});
+  const newCalibraiton = calibrationJSON.reduce(
+    (prevDicionary, calibJSON, index) => {
+      if (
+        calibJSON === "calibrationtemperatureSet" ||
+        calibJSON === "calibrationforceSet"
+      )
+        cont[calibJSON] += nextPosition;
+
+      return allVariablesCalib[index].reduce((prevDictionaryTwo, variables) => {
+        let subDictionay;
+
+        if (
+          calibJSON === "calibrationtemperatureSet" ||
+          calibJSON === "calibrationforceSet"
+        )
+          subDictionay = {
+            [variables.front]: data[calibJSON][cont[calibJSON]][variables.back]
+          };
+        else
+          subDictionay = { [variables.front]: data[calibJSON][variables.back] };
+
+        return { ...prevDictionaryTwo, ...subDictionay };
+      }, prevDicionary);
+    },
+    {}
+  );
+  dispatch(initialize("calibration", newCalibraiton));
+};
+
+const getSelectCalibration = (id, dispatch, sendMessage) => {
+  let message = "";
+
+  const query = createQuery();
+  const url = `${API_URL_GRAPHQL}?query=query{calibration(id:${id}){${query}}}`;
+
+  const method = "GET";
+
+  Request(url, method).then(response => {
+    if (response.errors === undefined) {
+      const data = response.data.calibration;
+
+      if (data.isDefault === true)
+        message = "Calibração padrão carregada com sucesso";
+      else message = `Calibração "${data.name}" carregada com sucesso`;
+
+      sendMessage({
+        message,
+        variante: "success",
+        condition: true
+      });
+
+      createCalibration(data, dispatch);
+    } else {
+      message = "Falha ao carregar calibração";
+      sendMessage({
+        message,
+        variante: "error",
+        condition: true
+      });
+    }
+  });
+};
+
+const itensSelection = allCalibration => {
+  let allCalib = [{ id: 0, name: "" }];
+
+  if (allCalibration !== "") allCalib = allCalib.concat(allCalibration);
+  const itens = allCalib.map(value => {
+    return (
+      <MenuItem key={value.name + value.id} value={value.id}>
+        {value.name}
+      </MenuItem>
+    );
+  });
+  return itens;
+};
+
+const selectConfiguration = (handleChange, calibStates, classes) => {
+  return (
+    <Grid item xs={4} className={classes.title}>
+      <TextField
+        id="outlined-select-currency"
+        select
+        label="Calibrações"
+        value={calibStates[0]}
+        onChange={handleChange}
+        name="dataBaseCalibration"
+        className={classes.formControl}
+        margin="normal"
+        variant="outlined"
+      >
+        {itensSelection(calibStates[1])}
+      </TextField>
+    </Grid>
+  );
+};
+
+const defaultButton = handleUpDefault => {
+  return (
+    <Button onClick={handleUpDefault} color="secondary" variant="contained">
+      Calibração Padrão
+    </Button>
+  );
+};
 
 class CalibrationUpload extends React.Component {
   constructor(props) {
     super(props);
+    this.state = {
+      dataBaseCalibration: 0,
+      allCalibration: ""
+    };
+
     this.fileUpload = this.fileUpload.bind(this);
+    this.handleChange = this.handleChange.bind(this);
+    this.handleUpDefault = this.handleUpDefault.bind(this);
+  }
+
+  componentDidMount() {
+    const { calibration } = this.props;
+
+    const url = `${API_URL_GRAPHQL}?query=query{allCalibration{id, name, isDefault}}`;
+    const method = "GET";
+    Request(url, method)
+      .then(json => {
+        const data = json.data.allCalibration;
+        if (data !== null) {
+          this.setState({ allCalibration: data });
+        }
+      })
+      .then(() => {
+        if (Object.keys(calibration.values).length === empty) {
+          this.handleUpDefault();
+        }
+      });
+  }
+
+  handleChange(event) {
+    const { dispatch, sendMessage } = this.props;
+
+    this.setState({ [event.target.name]: event.target.value });
+    const invalidId = 0;
+    if (
+      event.target.name === "dataBaseCalibration" &&
+      event.target.value > invalidId
+    )
+      getSelectCalibration(event.target.value, dispatch, sendMessage);
+  }
+
+  handleSelectCalibration(id) {
+    const { dispatch } = this.props;
+
+    const query = createQuery();
+    const url = `${API_URL_GRAPHQL}?query=query{calibration(id:${id}){${query}}}`;
+
+    const method = "GET";
+
+    Request(url, method).then(response => {
+      const data = response.data.calibration;
+
+      createCalibration(data, dispatch);
+    });
+  }
+
+  handleUpDefault() {
+    const { dispatch, sendMessage } = this.props;
+    const { allCalibration } = this.state;
+
+    if (allCalibration === "") return;
+    const defaultsCalib = allCalibration.filter(calibration => {
+      return calibration.isDefault === true;
+    });
+    if (defaultsCalib.length > empty) {
+      const position = defaultsCalib.length - positionVector;
+      getSelectCalibration(defaultsCalib[position].id, dispatch, sendMessage);
+    }
   }
 
   uploadField(field, filename) {
@@ -94,7 +259,8 @@ class CalibrationUpload extends React.Component {
           ...fileUpload.CALIBRA_VIBRACAO,
           ...fileUpload.CALIBRA_FORCA,
           ...fileUpload.CALIBRA_VELOCIDADE,
-          ...fileUpload.CALIBRA_COMANDO
+          ...fileUpload.CALIBRA_COMANDO,
+          ...fileUpload.CALIBRA_RELACOES
         };
         dispatch(initialize("calibration", calibration));
       }
@@ -104,32 +270,51 @@ class CalibrationUpload extends React.Component {
   }
 
   render() {
-    const { filename } = this.props;
+    const { filename, classes } = this.props;
+    const { dataBaseCalibration, allCalibration } = this.state;
+
+    const calibStates = [dataBaseCalibration, allCalibration];
 
     return (
       <Grid alignItems="center" justify="center" container>
         {this.uploadField("calibration", filename)}
+        <Grid
+          container
+          justify="center"
+          item
+          alignItems="center"
+          xs={12}
+          style={{ marginTop: "50px" }}
+        >
+          {selectConfiguration(this.handleChange, calibStates, classes)}
+          {defaultButton(this.handleUpDefault)}
+        </Grid>
       </Grid>
     );
   }
 }
 
 CalibrationUpload.defaultProps = {
-  filename: ""
+  filename: "",
+  calibration: { values: {} }
 };
 
 CalibrationUpload.propTypes = {
   classes: PropTypes.objectOf(PropTypes.string).isRequired,
   addFileName: PropTypes.func.isRequired,
   dispatch: PropTypes.func.isRequired,
-  filename: PropTypes.string
+  filename: PropTypes.string,
+  calibration: PropTypes.objectOf(PropTypes.string),
+  sendMessage: PropTypes.func.isRequired
 };
 
 const mapDispatchToProps = dispatch => ({
-  addFileName: value => dispatch(addFile(value))
+  addFileName: value => dispatch(addFile(value)),
+  sendMessage: payload => dispatch(messageSistem(payload))
 });
 
 const mapStateToProps = state => ({
+  calibration: state.form.calibration,
   filename: state.fileReducer.filename
 });
 

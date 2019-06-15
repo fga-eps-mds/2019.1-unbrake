@@ -6,7 +6,7 @@ import styles from "../components/Styles";
 import RealTimeChart from "../components/RealTimeChart";
 import { checkbox, field } from "../components/ComponentsForm";
 
-const label = name => {
+export const labelVibration = name => {
   let nameLabel = "";
   switch (name) {
     case "CHVB":
@@ -39,7 +39,7 @@ const label = name => {
 
 const renderField = (states, classes, handleChange) => {
   const type = states;
-  type.label = label(states.name);
+  type.label = labelVibration(states.name);
   return (
     <Grid alignItems="center" justify="center" container item xs={6}>
       {field(type, classes, handleChange)}
@@ -60,7 +60,7 @@ const freeFields = (states, classes, handleChange) => {
 
 const vibrationUnits = (states, classes, handleChange) => {
   const type = states[1];
-  type.label = label(type.name);
+  type.label = labelVibration(type.name);
   return (
     <Grid alignItems="center" container justify="center" item xs={12}>
       {renderField(states[0], classes, handleChange)}
@@ -139,7 +139,7 @@ class Vibration extends React.Component {
           alignItems="center"
           justify="center"
           container
-          style={{ minHeight: "60vh" }}
+          style={{ marginTop: "10px" }}
         >
           <form className={classes.container}>
             <Grid item xs />
