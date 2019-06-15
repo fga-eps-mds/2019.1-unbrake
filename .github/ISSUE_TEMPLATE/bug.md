@@ -7,8 +7,6 @@ assignees: ''
 
 ---
 
-# Reporte de bugs
-
 ## Descrição do problema
 
 Um descrição clara e concisa sobre o problema
