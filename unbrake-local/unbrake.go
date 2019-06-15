@@ -132,14 +132,18 @@ var (
 	port                 *serial.Port
 )
 var (
-	upperSpeedLimit       int
-	lowerSpeedLimit       int
-	timeSleepWater        float64
-	timeCooldown          int
-	temperatureLimit      float64
-	delayAcelerateToBrake int
-	totalOfSnubs          int
-	currentSnub           = 1
+	upperSpeedLimit                   float64
+	lowerSpeedLimit                   float64
+	timeSleepWater                    float64
+	timeCooldown                      int
+	temperatureLimit                  float64
+	delayAcelerateToBrake             int
+	totalOfSnubs                      int
+	firstConversionFactorTemperature  float64
+	secondConversionFactorTemperature float64
+	firstOffsetTemperature            float64
+	secondOffsetTemperature           float64
+	currentSnub                       = 1
 )
 
 // Flags with intermediary states
@@ -242,9 +246,9 @@ const (
 // SerialAttribute represent one attributes of the many that are returned as values
 // from the physical device on serial communication
 type SerialAttribute struct {
-	mqttSubchannel string      // Subchannel associated at mqtt broker
-	publishCh      chan string // for publishing
-	handleCh       chan int    // for handling values
+	mqttSubchannel string       // Subchannel associated at mqtt broker
+	publishCh      chan string  // for publishing
+	handleCh       chan float64 // for handling values
 }
 
 // Snub is a cycle of aceleration, braking and cooldown,
@@ -276,7 +280,7 @@ func main() {
 	for i, subChannel := range mqttSubchannelSerialAttrs {
 		serialAttrs[i].mqttSubchannel = subChannel
 		serialAttrs[i].publishCh = make(chan string)
-		serialAttrs[i].handleCh = make(chan int)
+		serialAttrs[i].handleCh = make(chan float64)
 	}
 
 	go func() {
@@ -373,6 +377,10 @@ func handleTestingReceiving() {
 		timeCooldown = data.Fields.Configuration.InferiorTime
 		temperatureLimit = 400 //data.Fields.Configuration.Temperature
 		enableWater = false    //data.Fields.Configuration.EnableOutput
+		firstConversionFactorTemperature = data.Fields.Calibration.Temperature[0].ConversionFactor
+		secondConversionFactorTemperature = data.Fields.Calibration.Temperature[1].ConversionFactor
+		firstOffsetTemperature = data.Fields.Calibration.Temperature[0].TemperatureOffset
+		secondOffsetTemperature = data.Fields.Calibration.Temperature[1].TemperatureOffset
 
 		fmt.Printf("totalOfSnubs: %v\n", totalOfSnubs)
 		fmt.Printf("upperSpeedLimit: %v\n", upperSpeedLimit)
@@ -381,6 +389,8 @@ func handleTestingReceiving() {
 		fmt.Printf("delayAcelerateToBrake: %v\n", delayAcelerateToBrake)
 		fmt.Printf("timeCooldown: %v\n", timeCooldown)
 		fmt.Printf("temperatureLimit: %v\n", temperatureLimit)
+		fmt.Printf("conversionFactorTemperature: %v\n", firstConversionFactorTemperature)
+		fmt.Printf("offsetTemperature: %v\n", firstOffsetTemperature)
 
 		wgHandleSnubState.Add(1)
 
@@ -588,6 +598,10 @@ func handleSnubEnd() {
 	}
 }
 
+func temperatureConversion(value float64, convertionFactor float64, offset float64) float64 {
+	return value*convertionFactor + offset
+}
+
 // Will collect data from serial bus and distributes it
 // to others goroutines
 func collectData() {
@@ -666,10 +680,10 @@ func getData(port *serial.Port, command string) []byte {
 
 	if len(split) == numSerialAttrs { // Was a complete read
 		for i, attr := range split {
-			attrInt, _ := strconv.Atoi(attr)
+			attrValue, _ := strconv.ParseFloat(attr, 64)
 
 			select {
-			case serialAttrs[i].handleCh <- attrInt:
+			case serialAttrs[i].handleCh <- attrValue:
 			default:
 			}
 
@@ -764,10 +778,10 @@ func handleSnubState() {
 	go func(portAux *serial.Port) {
 
 		for {
-			temperature1 := <-serialAttrs[temperature1Idx].handleCh
-			temperature2 := <-serialAttrs[temperature2Idx].handleCh
+			temperature1 := temperatureConversion(<-serialAttrs[temperature1Idx].handleCh, firstConversionFactorTemperature, firstOffsetTemperature)
+			temperature2 := temperatureConversion(<-serialAttrs[temperature2Idx].handleCh, secondConversionFactorTemperature, secondOffsetTemperature)
 
-			if (temperature1 > int(temperatureLimit) || temperature2 > int(temperatureLimit)) && enableWater {
+			if (temperature1 > temperatureLimit || temperature2 > temperatureLimit) && enableWater {
 				if snub.state == acelerate || snub.state == brake || snub.state == cooldown {
 					snub.turnOnWater(portAux)
 				}
