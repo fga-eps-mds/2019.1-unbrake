@@ -25,7 +25,8 @@ from unbrake_api.settings import (
     TEMPLATES,
     WSGI_APPLICATION,
     TEMPLATES,
-    ROOT_URLCONF
+    STATIC_URL,
+    ROOT_URLCONF,
 )
 
 
