@@ -7,8 +7,7 @@ import * as emitter from "emitter-io";
 import styles from "../components/Styles";
 import RealTimeChart from "../components/RealTimeChart";
 import { field } from "../components/ComponentsForm";
-
-const base10 = 10;
+import { conversionFunction, base10 } from "../utils/Constants";
 
 const labelSecondary = name => {
   let nameLabel = "";
@@ -88,10 +87,6 @@ const rowField = (states, classes, handleChange) => {
     );
   });
   return fields;
-};
-
-const conversionFunction = (x, a, b) => {
-  return parseFloat(a) * parseFloat(x) + parseFloat(b);
 };
 
 const allFields = (states, classes, handleChange) => {
@@ -187,11 +182,11 @@ class Temperature extends React.Component {
 
   componentDidMount() {
     const { dispatch } = this.props;
-    const { calibration } = this.props;
-    const { values } = calibration;
     this.client.on("message", msg => {
+      const { calibration } = this.props;
+      const { values } = calibration;
+      const { FCT1, OFT1, FCT2, OFT2 } = values;
       if (msg.channel === "unbrake/galpao/temperature/sensor1/") {
-        const { FCT1, OFT1 } = values;
         this.sensor1.push(parseInt(msg.asString(), base10));
         dispatch(change("calibration", "Tmv1", msg.asString()));
         dispatch(
@@ -202,7 +197,6 @@ class Temperature extends React.Component {
           )
         );
       } else if (msg.channel === "unbrake/galpao/temperature/sensor2/") {
-        const { FCT2, OFT2 } = values;
         this.sensor2.push(parseInt(msg.asString(), base10));
         dispatch(change("calibration", "Tmv2", msg.asString()));
         dispatch(

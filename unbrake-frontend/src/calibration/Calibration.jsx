@@ -103,7 +103,7 @@ class Calibration extends React.Component {
         </AppBar>
         {value === generalConfigsOption && GeneralConfigs()}
         {value === temperatureOption && <Temperature mqttKey={mqttKey} />}
-        {value === forceOption && <Force />}
+        {value === forceOption && <Force mqttKey={mqttKey} />}
         {value === speedOption && <Speed />}
         {value === vibrationOption && <Vibration />}
         {value === commandOption && <Command />}
