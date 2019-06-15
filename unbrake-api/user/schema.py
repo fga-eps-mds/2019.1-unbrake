@@ -6,6 +6,7 @@ import graphene
 from graphene_django import DjangoObjectType
 from django.contrib.auth import get_user_model
 from django.core.exceptions import ObjectDoesNotExist
+from graphql_jwt.decorators import login_required, superuser_required
 
 # pylint: disable = too-few-public-methods
 
@@ -38,6 +39,7 @@ class CreateUser(graphene.Mutation):
         password = graphene.String(required=True)
         is_superuser = graphene.Boolean(required=True)
 
+    @superuser_required
     def mutate(self, info, username, email, password, is_superuser):
         '''
         Create the user with the given parameters end add to db
@@ -109,18 +111,21 @@ class Query(graphene.ObjectType):
     user = graphene.Field(UserType, username=graphene.String())
     users = graphene.List(UserType)
 
+    @login_required
     def resolve_users(self, info):
         '''
         Return all user on db
         '''
         return get_user_model().objects.all()
 
+    @login_required
     def resolve_current_user(self, info):
         '''
         Return the current user
         '''
         return info.context.user
 
+    @login_required
     def resolve_user(self, info, **kwargs):
         '''
             Returning only one User by username
