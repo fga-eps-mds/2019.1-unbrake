@@ -93,7 +93,8 @@ const getSelectCalibration = (id, dispatch, sendMessage) => {
 
 const itensSelection = allCalibration => {
   let allCalib = [{ id: 0, name: "" }];
-  allCalib = allCalib.concat(allCalibration);
+
+  if (allCalibration !== "") allCalib = allCalib.concat(allCalibration);
   const itens = allCalib.map(value => {
     return (
       <MenuItem key={value.name + value.id} value={value.id}>

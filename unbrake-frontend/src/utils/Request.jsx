@@ -1,9 +1,14 @@
+import Cookies from "universal-cookie";
 import { API_URL_GRAPHQL } from "./Constants";
+
+const cookies = new Cookies();
 
 const invalidId = -1;
 
 export default async function Request(url, method) {
+  const token = cookies.get("token");
   const responser = await fetch(url, {
+    headers: { Authorization: `JWT ${token}` },
     method
   }).then(response => {
     return response.json();
