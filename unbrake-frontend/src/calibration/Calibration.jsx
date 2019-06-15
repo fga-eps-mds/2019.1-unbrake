@@ -6,6 +6,8 @@ import AppBar from "@material-ui/core/AppBar";
 import Tabs from "@material-ui/core/Tabs";
 import Tab from "@material-ui/core/Tab";
 import PropTypes from "prop-types";
+import FormControlLabel from "@material-ui/core/FormControlLabel";
+import Checkbox from "@material-ui/core/Checkbox";
 import { Button, Dialog } from "@material-ui/core";
 import TextField from "@material-ui/core/TextField";
 import DialogActions from "@material-ui/core/DialogActions";
@@ -27,11 +29,13 @@ import {
   createAllCalibrations,
   variablesCalib,
   createCalibration,
+  createDefaultCalibration,
   empty,
-  labels
+  labels,
+  sendMessageFunction,
+  styles
 } from "./CalibrationVariables";
 
-const borderRadius = 1.5;
 const generalConfigsOption = 0;
 const temperatureOption = 1;
 const forceOption = 2;
@@ -42,25 +46,6 @@ const relationOption = 6;
 const sizeMessageDefault = 14;
 const invalidID = -1;
 let createMessage = "";
-
-const styles = theme => ({
-  root: {
-    flexGrow: 1,
-    width: "100%",
-    marginTop: "90px"
-  },
-  appBar: {
-    borderRadius: theme.spacing.unit * borderRadius
-  }
-});
-
-const sendMessageFunction = (sendMessage, message, variante) => {
-  sendMessage({
-    message,
-    variante,
-    condition: true
-  });
-};
 
 const validadeFields = (calibration, sendMessage) => {
   createMessage = allVariablesCalib.reduce((prevMessage, newDictionary) => {
@@ -105,15 +90,12 @@ const firstRequests = async values => {
   return calibration;
 };
 
-const saveCalibration = async (values, sendMessage, handleChangeId) => {
-  const validate = validadeFields(values.calibration, sendMessage);
-  if (validate === false) return;
-
-  const idsCalibration = await firstRequests(values, handleChangeId);
+const saveCalibration = async (values, sendMessage) => {
+  const idsCalibration = await firstRequests(values);
   idsCalibration.name = values.name;
 
   const responseSaved = await createMutationUrl(
-    createCalibration,
+    values.createCalibration,
     variablesCalib,
     idsCalibration
   );
@@ -128,6 +110,8 @@ const saveCalibration = async (values, sendMessage, handleChangeId) => {
 };
 
 const dialogName = (functions, states) => {
+  let isDisabled = true;
+  if (localStorage.getItem("isSuperuser") === "true") isDisabled = false;
   return (
     <Dialog
       open={states.open}
@@ -148,6 +132,17 @@ const dialogName = (functions, states) => {
           onChange={functions.handleChangeStates}
           value={states.name}
           fullWidth
+        />
+        <FormControlLabel
+          control={
+            <Checkbox
+              disabled={isDisabled}
+              checked={states.isDefault}
+              onChange={functions.handleIsDefault}
+              value="isDefault"
+            />
+          }
+          label="Configuração padrão"
         />
       </DialogContent>
       <DialogActions>
@@ -221,14 +216,19 @@ class Calibration extends React.Component {
     this.state = {
       open: false,
       value: 0,
-      name: ""
+      name: "",
+      isDefault: false
     };
     this.handleChange = this.handleChange.bind(this);
     this.handleValidate = this.handleValidate.bind(this);
     this.handleSubmit = this.handleSubmit.bind(this);
-    this.handleChangeId = this.handleChangeId.bind(this);
     this.handleClose = this.handleClose.bind(this);
     this.handleChangeStates = this.handleChangeStates.bind(this);
+    this.handleIsDefault = this.handleIsDefault.bind(this);
+  }
+
+  handleIsDefault(event) {
+    this.setState({ isDefault: event.target.checked });
   }
 
   handleClose() {
@@ -243,42 +243,49 @@ class Calibration extends React.Component {
     this.setState({ [event.target.name]: event.target.value });
   }
 
-  handleChangeId(name, value) {
-    const idsCalibrations = { [name]: value };
-    this.setState(prevState => ({
-      idsCalibrations: { ...prevState.idsCalibrations, ...idsCalibrations }
-    }));
-  }
-
   handleValidate() {
     const { calibration, sendMessage } = this.props;
 
     const validate = validadeFields(calibration.values, sendMessage);
     if (validate === false) return;
 
-    this.setState({ open: true });
+    const inserName = { open: true, isDefault: false, name: "" };
+    this.setState(prevState => ({ ...prevState, ...inserName }));
   }
 
   handleSubmit() {
     const { calibration, sendMessage } = this.props;
-    const { name } = this.state;
-    const values = { calibration: calibration.values, name };
+    const { name, isDefault } = this.state;
+    const values = { calibration: calibration.values, name, createCalibration };
 
+    if (name === "") {
+      sendMessageFunction(
+        sendMessage,
+        "O nome é obrigatório para cadastrar a calibração",
+        "error"
+      );
+
+      return;
+    }
     this.setState({ open: false });
 
-    saveCalibration(values, sendMessage, this.handleChangeId);
+    if (isDefault === true) values.createCalibration = createDefaultCalibration;
+    else values.createCalibration = createCalibration;
+
+    saveCalibration(values, sendMessage);
   }
 
   render() {
     const { classes } = this.props;
-    const { value, name, open } = this.state;
-    const states = { name, open };
+    const { value, name, open, isDefault } = this.state;
+    const states = { name, open, isDefault };
     const functions = {
       handleClose: this.handleClose,
       handleChangeStates: this.handleChangeStates,
       handleSubmit: this.handleSubmit,
       handleChange: this.handleChange,
-      handleValidate: this.handleValidate
+      handleValidate: this.handleValidate,
+      handleIsDefault: this.handleIsDefault
     };
 
     return (

@@ -6,6 +6,7 @@ import { labelTemperature } from "./Temperature";
 import { labelVibration } from "./Vibration";
 
 export const empty = 0;
+const borderRadius = 1.5;
 
 export const styles = theme => ({
   title: {
@@ -30,8 +31,24 @@ export const styles = theme => ({
   formControl: {
     margin: theme.spacing.unit,
     minWidth: 200
+  },
+  root: {
+    flexGrow: 1,
+    width: "100%",
+    marginTop: "90px"
+  },
+  appBar: {
+    borderRadius: theme.spacing.unit * borderRadius
   }
 });
+
+export const sendMessageFunction = (sendMessage, message, variante) => {
+  sendMessage({
+    message,
+    variante,
+    condition: true
+  });
+};
 
 export const calibrationJSON = [
   "calibrationtemperatureSet",
@@ -189,6 +206,12 @@ export const variablesCalib = [
 
 export const createCalibration = {
   mutation: "createCalibration",
+  response: "calibration",
+  variablesResponse: "id"
+};
+
+export const createDefaultCalibration = {
+  mutation: "createDefaultCalibration",
   response: "calibration",
   variablesResponse: "id"
 };

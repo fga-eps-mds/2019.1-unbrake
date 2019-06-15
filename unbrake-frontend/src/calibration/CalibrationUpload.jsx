@@ -161,8 +161,10 @@ class CalibrationUpload extends React.Component {
         }
       })
       .then(() => {
-        if (Object.keys(calibration.values).length === empty) {
-          this.handleUpDefault();
+        if (calibration.values !== undefined) {
+          if (Object.keys(calibration.values).length === empty) {
+            this.handleUpDefault();
+          }
         }
       });
   }
