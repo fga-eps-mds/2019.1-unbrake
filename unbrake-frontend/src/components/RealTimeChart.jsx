@@ -5,7 +5,7 @@ import "chartjs-plugin-streaming";
 
 const indexPadding = 1;
 
-const sensorInitialValue = 42;
+const sensorInitialValue = -1;
 
 const yAxesConfig = () => [
   {
@@ -36,7 +36,23 @@ const sensorConfig = (label, color) => ({
 });
 
 const datasets = props => {
-  const { labelSensor1, labelSensor2, colorSensor1, colorSensor2 } = props;
+  const {
+    labelSensor1,
+    labelSensor2,
+    colorSensor1,
+    colorSensor2,
+    sensor2
+  } = props;
+  if (sensor2[0] === sensorInitialValue) {
+    return {
+      datasets: [
+        {
+          ...sensorConfig(labelSensor1, colorSensor1),
+          data: []
+        }
+      ]
+    };
+  }
   return {
     datasets: [
       {

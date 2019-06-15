@@ -13,14 +13,6 @@ exports[`<RealTimeChart /> render() renders the component 1`] = `
           "fill": false,
           "label": undefined,
         },
-        Object {
-          "backgroundColor": undefined,
-          "borderColor": undefined,
-          "cubicInterpolationMode": "monotone",
-          "data": Array [],
-          "fill": false,
-          "label": undefined,
-        },
       ],
     }
   }

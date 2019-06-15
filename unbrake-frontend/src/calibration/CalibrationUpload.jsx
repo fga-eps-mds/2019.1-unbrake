@@ -144,7 +144,9 @@ const Upload = reduxForm({
     OFF1: 0,
     FCF1: 0,
     OFF2: 0,
-    FCF2: 0
+    FCF2: 0,
+    FCVB: 0,
+    OFVB: 0
   }
 })(CalibrationUpload);
 
