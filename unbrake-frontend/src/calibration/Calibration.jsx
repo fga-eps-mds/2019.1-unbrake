@@ -140,9 +140,10 @@ const dialogName = (functions, states) => {
               checked={states.isDefault}
               onChange={functions.handleIsDefault}
               value="isDefault"
+              name="isDefault"
             />
           }
-          label="Configuração padrão"
+          label="Calibração padrão"
         />
       </DialogContent>
       <DialogActions>

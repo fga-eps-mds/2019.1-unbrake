@@ -1,15 +1,11 @@
 import React from "react";
 import iniparser from "iniparser";
 import Paper from "@material-ui/core/Paper";
-import { Grid, Button, Dialog } from "@material-ui/core";
+import { Grid, Button } from "@material-ui/core";
 import { withStyles } from "@material-ui/core/styles";
 import PropTypes from "prop-types";
 import MenuItem from "@material-ui/core/MenuItem";
 import TextField from "@material-ui/core/TextField";
-import DialogActions from "@material-ui/core/DialogActions";
-import DialogContent from "@material-ui/core/DialogContent";
-import DialogContentText from "@material-ui/core/DialogContentText";
-import DialogTitle from "@material-ui/core/DialogTitle";
 import IconButton from "@material-ui/core/IconButton";
 import CloudUploadIcon from "@material-ui/icons/CloudUpload";
 import { connect } from "react-redux";
@@ -17,9 +13,17 @@ import Request from "../utils/Request";
 import { API_URL_GRAPHQL } from "../utils/Constants";
 import ConfigurationForm from "./ConfigurationForm";
 import styles from "./Styles";
-import { createConfig, query, submit } from "./ConfigFunctions";
+import {
+  createConfig,
+  submitDefault,
+  query,
+  submit,
+  dialogName
+} from "./ConfigFunctions";
 import NotificationContainer from "../components/Notification";
 import { messageSistem } from "../actions/NotificationActions";
+
+const positionVector = 1;
 
 const itensSelection = allConfiguration => {
   let allConfig = [{ id: 0, name: "" }];
@@ -55,47 +59,6 @@ const selectConfiguration = (handleChange, configStates, classes) => {
   );
 };
 
-const dialogName = (functions, sendMessage, dialogStates) => {
-  return (
-    <Dialog
-      open={dialogStates.open}
-      onClose={functions.handleClose}
-      aria-labelledby="form-dialog-title"
-    >
-      <DialogTitle id="form-dialog-title">Nome da Configuração</DialogTitle>
-      <DialogContent>
-        <DialogContentText>
-          Insira aqui o nome que você deseja dar para este arquivo de
-          configuração
-        </DialogContentText>
-        <TextField
-          autoFocus
-          margin="dense"
-          name="name"
-          label="Nome"
-          type="text"
-          onChange={functions.handleChange}
-          value={dialogStates.name}
-          fullWidth
-        />
-      </DialogContent>
-      <DialogActions>
-        <Button onClick={functions.handleClose} color="primary">
-          Cancelar
-        </Button>
-        <Button
-          onClick={() =>
-            submit(dialogStates.configuration, dialogStates.name, sendMessage)
-          }
-          color="primary"
-        >
-          Cadastrar
-        </Button>
-      </DialogActions>
-    </Dialog>
-  );
-};
-
 const defaultButton = handleUpDefault => {
   return (
     <Button onClick={handleUpDefault} color="secondary" variant="contained">
@@ -123,6 +86,7 @@ class Configuration extends React.Component {
         },
         name: ""
       },
+      isDefault: false,
       fileName: "Upload do arquivo de configuração",
       dataBaseConfiguration: 0,
       allConfiguration: "",
@@ -132,9 +96,10 @@ class Configuration extends React.Component {
     this.handleUpDefault = this.handleUpDefault.bind(this);
     this.handleChange = this.handleChange.bind(this);
     this.fileUpload = this.fileUpload.bind(this);
-    this.handleClickOpen = this.handleClickOpen.bind(this);
     this.handleClose = this.handleClose.bind(this);
     this.handleClickSave = this.handleClickSave.bind(this);
+    this.handleSubmit = this.handleSubmit.bind(this);
+    this.handleIsDefault = this.handleIsDefault.bind(this);
   }
 
   componentDidMount() {
@@ -150,10 +115,6 @@ class Configuration extends React.Component {
     const CONFIG_ENSAIO = state.configuration;
     const newConfig = { CONFIG_ENSAIO };
     this.setState({ configuration: newConfig });
-    this.handleClickOpen();
-  }
-
-  handleClickOpen() {
     this.setState({ open: true });
   }
 
@@ -161,18 +122,32 @@ class Configuration extends React.Component {
     this.setState({ open: false });
   }
 
+  handleIsDefault(event) {
+    this.setState({ isDefault: event.target.checked });
+  }
+
+  handleSubmit() {
+    const { configuration, name, isDefault } = this.state;
+    const { sendMessage } = this.props;
+
+    if (isDefault)
+      submitDefault(configuration.CONFIG_ENSAIO, name, sendMessage);
+    else submit(configuration.CONFIG_ENSAIO, name, sendMessage);
+  }
+
   handleUpDefault() {
     const url = `${API_URL_GRAPHQL}?query=query{configDefault{${query}}}`;
 
     const method = "GET";
 
-    const VAZIO = 0;
+    const empty = 0;
 
     Request(url, method).then(response => {
-      if (response.data.configDefault.length === VAZIO) {
+      if (response.data.configDefault.length === empty) {
         return;
       }
-      const data = response.data.configDefault[0];
+      const position = response.data.configDefault.length - positionVector;
+      const data = response.data.configDefault[position];
       const configurationDefault = createConfig(data);
       this.setState({ configuration: configurationDefault });
     });
@@ -259,23 +234,27 @@ class Configuration extends React.Component {
   }
 
   render() {
-    const { classes, sendMessage } = this.props;
+    const { classes } = this.props;
     const {
       configuration,
       dataBaseConfiguration,
       allConfiguration,
       open,
-      name
+      name,
+      isDefault
     } = this.state;
     const functions = {
       handleChange: this.handleChange,
-      handleClose: this.handleClose
+      handleClose: this.handleClose,
+      handleSubmit: this.handleSubmit,
+      handleIsDefault: this.handleIsDefault
     };
     const configStates = [dataBaseConfiguration, allConfiguration];
     const dialogStates = {
       configuration: configuration.CONFIG_ENSAIO,
       open,
-      name
+      name,
+      isDefault
     };
 
     return (
@@ -288,20 +267,14 @@ class Configuration extends React.Component {
             {selectConfiguration(this.handleChange, configStates, classes)}
             {defaultButton(this.handleUpDefault)}
           </Grid>
-          <Grid
-            container
-            alignItems="center"
-            xs={12}
-            item
-            className={classes.form}
-          >
+          <Grid container xs={12} item className={classes.form}>
             <ConfigurationForm
               configuration={configuration}
               handleClickSave={this.handleClickSave}
             />
           </Grid>
         </div>
-        {dialogName(functions, sendMessage, dialogStates)}
+        {dialogName(functions, dialogStates)}
         <NotificationContainer />
       </Grid>
     );
