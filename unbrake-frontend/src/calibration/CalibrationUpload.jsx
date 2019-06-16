@@ -22,6 +22,7 @@ import {
   styles
 } from "./CalibrationVariables";
 import { messageSistem } from "../actions/NotificationActions";
+import { changeCalibTest } from "../actions/TestActions";
 
 const positionVector = 1;
 
@@ -75,6 +76,8 @@ const getSelectCalibration = (id, dispatch, sendMessage) => {
         message = "Calibração padrão carregada com sucesso";
       else message = `Calibração "${data.name}" carregada com sucesso`;
 
+      changeCalibTest({ calibId: id, calibName: data.name });
+
       sendMessage({
         message,
         variante: "success",
@@ -93,7 +96,7 @@ const getSelectCalibration = (id, dispatch, sendMessage) => {
   });
 };
 
-const itensSelection = allCalibration => {
+export const itensSelection = allCalibration => {
   let allCalib = [{ id: 0, name: "" }];
 
   if (allCalibration !== "") allCalib = allCalib.concat(allCalibration);
@@ -161,8 +164,10 @@ class CalibrationUpload extends React.Component {
         }
       })
       .then(() => {
-        if (Object.keys(calibration.values).length === empty) {
-          this.handleUpDefault();
+        if (calibration.values !== undefined) {
+          if (Object.keys(calibration.values).length === empty) {
+            this.handleUpDefault();
+          }
         }
       });
   }
@@ -184,7 +189,7 @@ class CalibrationUpload extends React.Component {
 
     const query = createQuery();
     const url = `${API_URL_GRAPHQL}?query=query{calibration(id:${id}){${query}}}`;
-
+    console.log(id);
     const method = "GET";
 
     Request(url, method).then(response => {
@@ -310,12 +315,14 @@ CalibrationUpload.propTypes = {
 
 const mapDispatchToProps = dispatch => ({
   addFileName: value => dispatch(addFile(value)),
-  sendMessage: payload => dispatch(messageSistem(payload))
+  sendMessage: payload => dispatch(messageSistem(payload)),
+  changeCalibTest: payload => dispatch(changeCalibTest(payload))
 });
 
 const mapStateToProps = state => ({
   calibration: state.form.calibration,
-  filename: state.fileReducer.filename
+  filename: state.fileReducer.filename,
+  calibration: state.form.calibration
 });
 
 const Upload = reduxForm({

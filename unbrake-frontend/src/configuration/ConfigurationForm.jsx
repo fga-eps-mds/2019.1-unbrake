@@ -181,7 +181,7 @@ const Buttons = classes => {
   return (
     <Grid container item xs={3} className={classes.grid}>
       <Button type="submit" color="secondary" variant="contained">
-        Cadastrar
+        Cadastrar Nova
       </Button>
     </Grid>
   );

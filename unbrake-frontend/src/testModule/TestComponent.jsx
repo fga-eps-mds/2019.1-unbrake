@@ -1,6 +1,7 @@
 import React from "react";
 import { Grid } from "@material-ui/core";
 // import Button from "@material-ui/core/Button"
+import { connect } from "react-redux";
 import AquisitionsAndCommand from "./AquisitionsAndCommand";
 import TestData from "./TestData";
 import TabMenuComponent from "./TabMenuComponent";
@@ -74,8 +75,11 @@ class Test extends React.Component {
   }
 
   render() {
+    const { configId, calibId } = this.props;
     const { test } = this.state;
     const { aquisition, data } = test;
+    // console.log(configId);
+    console.log(calibId);
     return (
       <Grid
         container
@@ -107,4 +111,14 @@ class Test extends React.Component {
   }
 }
 
-export default Test;
+const mapStateToProps = state => {
+  return {
+    configId: state.testReducer.configId,
+    calibId: state.testReducer.calibId
+  };
+};
+
+export default connect(
+  mapStateToProps,
+  null
+)(Test);

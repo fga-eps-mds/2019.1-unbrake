@@ -3,6 +3,7 @@ import PropTypes from "prop-types";
 import { reduxForm } from "redux-form";
 import { withStyles, Grid } from "@material-ui/core";
 import LinearProgress from "@material-ui/core/LinearProgress";
+import Button from "@material-ui/core/Button";
 import styles from "./Styles";
 
 const percentageTransformer = 100;
@@ -168,6 +169,10 @@ class TestData extends React.Component {
     return null;
   }
 
+  handleClick() {
+    // Fazer requisição de calib e conf
+  }
+
   render() {
     const { classes } = this.props;
     const { data } = this.state;
@@ -208,6 +213,21 @@ class TestData extends React.Component {
           </Grid>
           <Grid container item alignItems="center" justify="center" xs={12}>
             {testProgress(testPro, classes)}
+          </Grid>
+          <Grid container item justify="center" style={{ flex: 1 }}>
+            {
+              <Button
+                onClick={this.handleClick}
+                color="secondary"
+                variant="contained"
+                style={{
+                  flex: 1 / 2 + 1 / 24 + 1 / 32,
+                  backgroundColor: "#0cb85c"
+                }}
+              >
+                Iniciar Ensaio
+              </Button>
+            }
           </Grid>
         </Grid>
       </Grid>

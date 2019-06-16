@@ -20,11 +20,13 @@ import styles from "./Styles";
 import { createConfig, query, submit } from "./ConfigFunctions";
 import NotificationContainer from "../components/Notification";
 import { messageSistem } from "../actions/NotificationActions";
+import { changeConfigTest } from "../actions/TestActions";
 
-const itensSelection = allConfiguration => {
+export const itensSelectionConfig = allConfiguration => {
   let allConfig = [{ id: 0, name: "" }];
-  allConfig = allConfig.concat(allConfiguration);
-
+  if (allConfiguration !== "" && allConfiguration !== undefined) {
+    allConfig = allConfig.concat(allConfiguration);
+  }
   const itens = allConfig.map(value => {
     return (
       <MenuItem key={value.name + value.id} value={value.id}>
@@ -36,6 +38,7 @@ const itensSelection = allConfiguration => {
 };
 
 const selectConfiguration = (handleChange, configStates, classes) => {
+  console.log("ppp", configStates);
   return (
     <Grid item xs={4} className={classes.title}>
       <TextField
@@ -49,7 +52,7 @@ const selectConfiguration = (handleChange, configStates, classes) => {
         margin="normal"
         variant="outlined"
       >
-        {itensSelection(configStates[1])}
+        {itensSelectionConfig(configStates[1])}
       </TextField>
     </Grid>
   );
@@ -268,7 +271,7 @@ class Configuration extends React.Component {
   }
 
   render() {
-    const { classes, sendMessage } = this.props;
+    const { classes, sendMessage, changeConfigTest } = this.props;
     const {
       configuration,
       dataBaseConfiguration,
@@ -286,7 +289,14 @@ class Configuration extends React.Component {
       open,
       name
     };
-
+    if (
+      allConfiguration[dataBaseConfiguration - 1] !== null &&
+      allConfiguration[dataBaseConfiguration - 1] !== undefined
+    )
+      changeConfigTest({
+        configId: allConfiguration[dataBaseConfiguration - 1].id,
+        configName: allConfiguration[dataBaseConfiguration - 1].name
+      });
     return (
       <Grid alignItems="center" container className={classes.configuration}>
         <div>
@@ -323,8 +333,15 @@ Configuration.propTypes = {
 };
 
 const mapDispatchToProps = dispatch => ({
-  sendMessage: payload => dispatch(messageSistem(payload))
+  sendMessage: payload => dispatch(messageSistem(payload)),
+  changeConfigTest: payload => dispatch(changeConfigTest(payload))
 });
+
+const mapStateToProps = state => {
+  return {
+    configId: state.testReducer.configID
+  };
+};
 
 export default connect(
   null,
