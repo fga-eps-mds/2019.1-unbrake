@@ -50,24 +50,23 @@ const rowsFields = (classes, vector, handleChange) => {
     }
     return (
       <Grid key={`row${nameField}`} container xs={3} item justify="center">
-        <div>
-          <Field
-            id={nameField}
-            component={TextField}
-            label={fieldsLabels[nameField]}
-            onChange={handleChange}
-            type="number"
-            name={nameField}
-            validate={
-              nameField === "USL" || nameField === "LSL"
-                ? [limits, required]
-                : required
-            }
-            className={classes.textField}
-            margin="normal"
-            variant="outlined"
-          />
-        </div>
+        <Field
+          id={nameField}
+          component={TextField}
+          label={fieldsLabels[nameField]}
+          onChange={handleChange}
+          type="number"
+          name={nameField}
+          validate={
+            nameField === "USL" || nameField === "LSL"
+              ? [limits, required]
+              : required
+          }
+          className={classes.textField}
+          margin="normal"
+          variant="outlined"
+          value={value.value}
+        />
       </Grid>
     );
   });
@@ -238,9 +237,10 @@ class ConfigurationForm extends React.Component {
   handleChange(event) {
     const { target } = event;
     const value = target.type === "checkbox" ? target.checked : target.value;
-    const configuration = { [event.target.name]: value };
+    const configurations = { [event.target.name]: value };
+
     this.setState(prevState => ({
-      configuration: { ...prevState.configuration, ...configuration }
+      configuration: { ...prevState.configuration, ...configurations }
     }));
   }
 
@@ -292,7 +292,8 @@ ConfigurationForm.propTypes = {
 };
 
 const Configurationa = reduxForm({
-  form: "configuration"
+  form: "configuration",
+  destroyOnUnmount: false
 })(ConfigurationForm);
 
 export default withStyles(styles)(Configurationa);

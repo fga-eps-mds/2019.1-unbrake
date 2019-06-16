@@ -121,7 +121,7 @@ class Configuration extends React.Component {
     const method = "GET";
     Request(url, method).then(json => {
       const data = json.data.configNotDefault;
-      this.setState({ allConfiguration: data });
+      if (data !== null) this.setState({ allConfiguration: data });
     });
   }
 
@@ -240,6 +240,7 @@ class Configuration extends React.Component {
   }
 
   fileUpload(file, name) {
+    const { sendMessage } = this.props;
     this.setState({ fileName: file.name });
     const formData = new FormData();
     formData.append("file", name);
@@ -249,7 +250,15 @@ class Configuration extends React.Component {
     reader.onload = e => {
       const content = e.target.result;
       const fileUpload = iniparser.parseString(content);
-      scope.setState({ configuration: fileUpload });
+      if (fileUpload.CONFIG_ENSAIO !== undefined)
+        scope.setState({ configuration: fileUpload });
+      else {
+        sendMessage({
+          message: "Aquivo não se encontra no padrão .ini para configuração",
+          variante: "warning",
+          condition: true
+        });
+      }
     };
 
     reader.readAsText(file, "UTF-8");
