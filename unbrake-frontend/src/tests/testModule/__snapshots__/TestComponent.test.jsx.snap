@@ -130,7 +130,7 @@ exports[`<Test /> render() renders the component 1`] = `
     justify="center"
     xs={6}
   >
-    <WithStyles(ReduxForm)
+    <Connect(WithStyles(ReduxForm))
       newAquisition={
         Object {
           "DPm": "",
