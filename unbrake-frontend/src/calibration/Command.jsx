@@ -1,24 +1,27 @@
 import React from "react";
 import PropTypes from "prop-types";
-import { reduxForm } from "redux-form";
+import { reduxForm, change } from "redux-form";
+import { connect } from "react-redux";
 import { withStyles, Grid } from "@material-ui/core";
+import * as emitter from "emitter-io";
 import styles from "../components/Styles";
 import RealTimeChart from "../components/RealTimeChart";
-import { checkbox, field } from "../components/ComponentsForm";
+import { field } from "../components/ComponentsForm";
+import { base10, MQTT_HOST, MQTT_PORT } from "../utils/Constants";
 
 const labelSecondary = name => {
   let nameLabel = "";
   switch (name) {
-    case "CCv":
+    case "CHVC":
       nameLabel = "Canal - comando / velocidade";
       break;
-    case "CCp":
+    case "CHPC":
       nameLabel = "Canal - comando / pressão";
       break;
-    case "Vkmh":
+    case "CUVC":
       nameLabel = "Velocidade (km/h)";
       break;
-    case "Pb":
+    case "CUPC":
       nameLabel = "Pressão (Bar)";
       break;
     default:
@@ -31,10 +34,10 @@ const labelSecondary = name => {
 const label = name => {
   let nameLabel = "";
   switch (name) {
-    case "VMkmh":
+    case "MAVC":
       nameLabel = "Velocidade máxima (kmh)";
       break;
-    case "PMb":
+    case "MAPC":
       nameLabel = "Pressão máxima (Bar)";
       break;
     case "Vdc":
@@ -48,12 +51,6 @@ const label = name => {
       break;
     case "PCmv":
       nameLabel = "Pressão comando (mV)";
-      break;
-    case "PVc":
-      nameLabel = "Plota velocidade (comando)";
-      break;
-    case "PPc":
-      nameLabel = "Plota pressão (comando)";
       break;
     default:
       nameLabel = labelSecondary(name);
@@ -104,27 +101,6 @@ const allFields = (states, classes, handleChange) => {
   return fields;
 };
 
-const allCheckbox = (selectsControl, classes, handleChange) => {
-  const checks = selectsControl.map(value => {
-    const type = value;
-    type.label = label(value.name);
-    return (
-      <Grid
-        key={`checkbox ${value.name}`}
-        alignItems="center"
-        justify="center"
-        container
-        item
-        xs={12}
-        className={classes.checboxSize}
-      >
-        {checkbox(type, handleChange)}
-      </Grid>
-    );
-  });
-  return checks;
-};
-
 const renderDictionary = command => {
   const directionary = [
     [
@@ -165,12 +141,38 @@ class Command extends React.Component {
         Vdc: "", // Velocidade (Duty Cycle)
         Pdc: "", // Pressão (Duty Cycle)
         VCmv: "", // Velocidade comando (mV)
-        PCmv: "", // Pressão comando (mV)
-        PVc: false, // Plota velocidade (comando)
-        PPc: false // Plota pressão (comando)
+        PCmv: "" // Pressão comando (mV)
       }
     };
+    this.client = emitter.connect({
+      host: MQTT_HOST,
+      port: MQTT_PORT,
+      secure: false
+    });
+    this.client.subscribe({
+      key: props.mqttKey,
+      channel: "unbrake/galpao/speed"
+    });
+    this.client.subscribe({
+      key: props.mqttKey,
+      channel: "unbrake/galpao/pressure"
+    });
+    this.sensor1 = [];
+    this.sensor2 = [];
     this.handleChange = this.handleChange.bind(this);
+  }
+
+  componentDidMount() {
+    const { dispatch } = this.props;
+    this.client.on("message", msg => {
+      if (msg.channel === "unbrake/galpao/speed/") {
+        this.sensor1.push(parseInt(msg.asString(), base10));
+        dispatch(change("calibration", "VCmv", msg.asString()));
+      } else if (msg.channel === "unbrake/galpao/pressure/") {
+        this.sensor2.push(parseInt(msg.asString(), base10));
+        dispatch(change("calibration", "PCmv", msg.asString()));
+      }
+    });
   }
 
   handleChange(event) {
@@ -186,11 +188,6 @@ class Command extends React.Component {
     const { classes } = this.props;
     const { command } = this.state;
     const states = renderDictionary(command);
-    const { PVc, PPc } = command;
-    const selectsControl = [
-      { name: "PVc", value: PVc, disable: false },
-      { name: "PPc", value: PPc, disable: false }
-    ];
     return (
       <Grid
         container
@@ -205,17 +202,6 @@ class Command extends React.Component {
             <Grid container item justify="center" xs={6}>
               {allFields(states, classes, this.handleChange)}
             </Grid>
-            <Grid
-              container
-              item
-              alignItems="flex-start"
-              justify="center"
-              xs={3}
-            >
-              <Grid container item alignItems="center" justify="center" xs={12}>
-                {allCheckbox(selectsControl, classes, this.handleChange)}
-              </Grid>
-            </Grid>
             <Grid item xs />
           </form>
         </Grid>
@@ -227,7 +213,14 @@ class Command extends React.Component {
           justify="center"
           className={classes.gridGraphic}
         >
-          <RealTimeChart />
+          <RealTimeChart
+            sensor1={this.sensor1}
+            sensor2={this.sensor2}
+            labelSensor1="Velocidade"
+            colorSensor1="#133e79"
+            labelSensor2="Pressão"
+            colorSensor2="#348941"
+          />
         </Grid>
       </Grid>
     );
@@ -235,7 +228,9 @@ class Command extends React.Component {
 }
 
 Command.propTypes = {
-  classes: PropTypes.objectOf(PropTypes.string).isRequired
+  classes: PropTypes.objectOf(PropTypes.string).isRequired,
+  mqttKey: PropTypes.string.isRequired,
+  dispatch: PropTypes.func.isRequired
 };
 
 const CommandForm = reduxForm({
@@ -243,4 +238,11 @@ const CommandForm = reduxForm({
   destroyOnUnmount: false
 })(Command);
 
-export default withStyles(styles)(CommandForm);
+export default connect(state => ({
+  calibration: {
+    values: {
+      FCT1: state.form.calibration.values.FCT1,
+      OFT1: state.form.calibration.values.OFT1
+    }
+  }
+}))(withStyles(styles)(CommandForm));
