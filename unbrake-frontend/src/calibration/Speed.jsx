@@ -28,7 +28,7 @@ const labelSecondary = name => {
 const label = name => {
   let nameLabel = "";
   switch (name) {
-    case "CHA":
+    case "CHR1":
       nameLabel = "Canal de aquisição";
       break;
     case "Fhz":
@@ -37,7 +37,7 @@ const label = name => {
     case "Rrpm":
       nameLabel = "Rotação (RPM)";
       break;
-    case "RPm":
+    case "RAP":
       nameLabel = "Raio do pneu (m)";
       break;
     case "PRrpm":

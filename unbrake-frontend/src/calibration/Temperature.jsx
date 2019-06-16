@@ -7,7 +7,12 @@ import * as emitter from "emitter-io";
 import styles from "../components/Styles";
 import RealTimeChart from "../components/RealTimeChart";
 import { field } from "../components/ComponentsForm";
-import { conversionFunction, base10 } from "../utils/Constants";
+import {
+  conversionFunction,
+  base10,
+  MQTT_HOST,
+  MQTT_PORT
+} from "../utils/Constants";
 
 const labelSecondary = name => {
   let nameLabel = "";
@@ -163,8 +168,8 @@ class Temperature extends React.Component {
       }
     };
     this.client = emitter.connect({
-      host: "unbrake.ml",
-      port: 8080,
+      host: MQTT_HOST,
+      port: MQTT_PORT,
       secure: false
     });
     this.client.subscribe({
