@@ -6,14 +6,7 @@ import AppBar from "@material-ui/core/AppBar";
 import Tabs from "@material-ui/core/Tabs";
 import Tab from "@material-ui/core/Tab";
 import PropTypes from "prop-types";
-import FormControlLabel from "@material-ui/core/FormControlLabel";
-import Checkbox from "@material-ui/core/Checkbox";
-import { Button, Dialog } from "@material-ui/core";
-import TextField from "@material-ui/core/TextField";
-import DialogActions from "@material-ui/core/DialogActions";
-import DialogContent from "@material-ui/core/DialogContent";
-import DialogContentText from "@material-ui/core/DialogContentText";
-import DialogTitle from "@material-ui/core/DialogTitle";
+import Button from "@material-ui/core/Button";
 import Grid from "@material-ui/core/Grid";
 import CalibrationUpload from "./CalibrationUpload";
 import Vibration from "./Vibration";
@@ -24,6 +17,7 @@ import Speed from "./Speed";
 import Relation from "./Relation";
 import { messageSistem } from "../actions/NotificationActions";
 import { createMutationUrl } from "../utils/Request";
+import { redirectPage } from "../actions/RedirectActions";
 import {
   allVariablesCalib,
   createAllCalibrations,
@@ -33,7 +27,8 @@ import {
   empty,
   labels,
   sendMessageFunction,
-  styles
+  styles,
+  dialogName
 } from "./CalibrationVariables";
 
 const generalConfigsOption = 0;
@@ -109,55 +104,6 @@ const saveCalibration = async (values, sendMessage) => {
   }
 };
 
-const dialogName = (functions, states) => {
-  let isDisabled = true;
-  if (localStorage.getItem("isSuperuser") === "true") isDisabled = false;
-  return (
-    <Dialog
-      open={states.open}
-      onClose={functions.handleClose}
-      aria-labelledby="form-dialog-title"
-    >
-      <DialogTitle id="form-dialog-title">Nome da Calibração</DialogTitle>
-      <DialogContent>
-        <DialogContentText>
-          Insira aqui o nome que você deseja dar para este arquivo de Calibração
-        </DialogContentText>
-        <TextField
-          autoFocus
-          margin="dense"
-          name="name"
-          label="Nome"
-          type="text"
-          onChange={functions.handleChangeStates}
-          value={states.name}
-          fullWidth
-        />
-        <FormControlLabel
-          control={
-            <Checkbox
-              disabled={isDisabled}
-              checked={states.isDefault}
-              onChange={functions.handleIsDefault}
-              value="isDefault"
-              name="isDefault"
-            />
-          }
-          label="Calibração padrão"
-        />
-      </DialogContent>
-      <DialogActions>
-        <Button onClick={functions.handleClose} color="primary">
-          Cancelar
-        </Button>
-        <Button onClick={() => functions.handleSubmit()} color="primary">
-          Cadastrar
-        </Button>
-      </DialogActions>
-    </Dialog>
-  );
-};
-
 const GeneralConfigs = () => (
   <div>
     <div style={{ marginTop: "6%", marginBottom: "2%" }}>
@@ -165,6 +111,30 @@ const GeneralConfigs = () => (
     </div>
   </div>
 );
+
+const previousButton = handlePrevious => {
+  return (
+    <Button onClick={handlePrevious} color="secondary" variant="contained">
+      Etapa anterior
+    </Button>
+  );
+};
+
+const registerButton = handleValidate => {
+  return (
+    <Button color="secondary" variant="contained" onClick={handleValidate}>
+      Cadastrar
+    </Button>
+  );
+};
+
+const nextButton = handleNext => {
+  return (
+    <Button onClick={handleNext} color="secondary" variant="contained">
+      Próxima etapa
+    </Button>
+  );
+};
 
 const appBar = (functions, classes, value) => {
   return (
@@ -192,13 +162,15 @@ const appBar = (functions, classes, value) => {
         justify="center"
         style={{ marginTop: "15px" }}
       >
-        <Button
-          color="secondary"
-          variant="contained"
-          onClick={functions.handleValidate}
-        >
-          Cadastrar
-        </Button>
+        <Grid item xs={3} container justify="center" alignItems="center">
+          {previousButton(functions.handlePrevious)}
+        </Grid>
+        <Grid item xs={4} container justify="center" alignItems="center">
+          {registerButton(functions.handleValidate)}
+        </Grid>
+        <Grid item xs={4} container justify="center" alignItems="center">
+          {nextButton(functions.handleNext)}
+        </Grid>
       </Grid>
       {value === generalConfigsOption && GeneralConfigs()}
       {value === temperatureOption && <Temperature />}
@@ -226,6 +198,18 @@ class Calibration extends React.Component {
     this.handleClose = this.handleClose.bind(this);
     this.handleChangeStates = this.handleChangeStates.bind(this);
     this.handleIsDefault = this.handleIsDefault.bind(this);
+    this.handleNext = this.handleNext.bind(this);
+    this.handlePrevious = this.handlePrevious.bind(this);
+  }
+
+  handleNext() {
+    const { redirect } = this.props;
+    redirect({ url: "/test" });
+  }
+
+  handlePrevious() {
+    const { redirect } = this.props;
+    redirect({ url: "/configuration" });
   }
 
   handleIsDefault(event) {
@@ -286,7 +270,9 @@ class Calibration extends React.Component {
       handleSubmit: this.handleSubmit,
       handleChange: this.handleChange,
       handleValidate: this.handleValidate,
-      handleIsDefault: this.handleIsDefault
+      handleIsDefault: this.handleIsDefault,
+      handleNext: this.handleNext,
+      handlePrevious: this.handlePrevious
     };
 
     return (
@@ -301,7 +287,8 @@ class Calibration extends React.Component {
 }
 
 Calibration.propTypes = {
-  sendMessage: PropTypes.func.isRequired
+  sendMessage: PropTypes.func.isRequired,
+  redirect: PropTypes.func.isRequired
 };
 
 function mapStateToProps(state) {
@@ -315,7 +302,8 @@ Calibration.defaultProps = {
 };
 
 const mapDispatchToProps = dispatch => ({
-  sendMessage: payload => dispatch(messageSistem(payload))
+  sendMessage: payload => dispatch(messageSistem(payload)),
+  redirect: payload => dispatch(redirectPage(payload))
 });
 
 Calibration.propTypes = {

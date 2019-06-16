@@ -42,7 +42,7 @@ const itensSelection = allConfiguration => {
 
 const selectConfiguration = (handleChange, configStates, classes) => {
   return (
-    <Grid item xs={4} className={classes.title}>
+    <Grid item xs={3} justify="center" container className={classes.title}>
       <TextField
         id="outlined-select-currency"
         select
@@ -62,9 +62,21 @@ const selectConfiguration = (handleChange, configStates, classes) => {
 
 const defaultButton = handleUpDefault => {
   return (
-    <Button onClick={handleUpDefault} color="secondary" variant="contained">
-      Configuração Padrão
-    </Button>
+    <Grid container justify="center" item alignItems="center" xs={3}>
+      <Button onClick={handleUpDefault} color="secondary" variant="contained">
+        Configuração Padrão
+      </Button>
+    </Grid>
+  );
+};
+
+const nextButton = handleNext => {
+  return (
+    <Grid container justify="center" item alignItems="center" xs={3}>
+      <Button onClick={handleNext} color="secondary" variant="contained">
+        Próxima etapa
+      </Button>
+    </Grid>
   );
 };
 
@@ -101,6 +113,7 @@ class Configuration extends React.Component {
     this.handleClickSave = this.handleClickSave.bind(this);
     this.handleSubmit = this.handleSubmit.bind(this);
     this.handleIsDefault = this.handleIsDefault.bind(this);
+    this.handleNext = this.handleNext.bind(this);
   }
 
   componentDidMount() {
@@ -110,6 +123,11 @@ class Configuration extends React.Component {
       const data = json.data.configNotDefault;
       this.setState({ allConfiguration: data });
     });
+  }
+
+  handleNext() {
+    const { redirect } = this.props;
+    redirect({ url: "/calibration" });
   }
 
   handleClickSave(state) {
@@ -270,6 +288,7 @@ class Configuration extends React.Component {
           <Grid container justify="center" item alignItems="center" xs={12}>
             {selectConfiguration(this.handleChange, configStates, classes)}
             {defaultButton(this.handleUpDefault)}
+            {nextButton(this.handleNext)}
           </Grid>
           <Grid container xs={12} item className={classes.form}>
             <ConfigurationForm
