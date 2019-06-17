@@ -15,7 +15,7 @@ package main
 
 import (
 	"encoding/json"
-	"fmt"
+	"io/ioutil"
 	"log"
 	"os"
 	"os/signal"
@@ -29,6 +29,15 @@ import (
 	"github.com/getlantern/systray"
 	"github.com/tarm/serial"
 )
+
+// ConfigFile used to set global parameters
+type ConfigFile struct {
+	SerialPort        string
+	MqttHost          string
+	MqttPort          string
+	MqttKey           string
+	MqttChannelPrefix string
+}
 
 // Testing struct user to convert the JSON from mqtt
 type Testing struct {
@@ -98,12 +107,13 @@ type Testing struct {
 const (
 	logFilePath           = "unbrake.log"
 	applicationFolderName = "UnBrake"
+	configFileName        = "config.json"
 )
 
 // Serial constants
 const (
 	bufferSize       = 48
-	simulatorPortEnv = "SERIAL_PORT"
+	serialPortEnv    = "SERIAL_PORT"
 	baudRate         = 115200
 	frequencyReading = 5
 	numSerialAttrs   = 11 // number of attributes read simultaneously from serial device
@@ -112,12 +122,13 @@ const (
 
 // MQTT constants
 const (
-	mqttHostEnv       = "MQTT_HOST"
-	mqttDefaultHost   = "unbrake.ml"
-	mqttDefaultPort   = "8080"
-	mqttPortEnv       = "MQTT_PORT"
-	mqttChannelPrefix = "unbrake/galpao"
-	mqttKeyEnv        = "MQTT_KEY"
+	mqttHostEnv              = "MQTT_HOST"
+	mqttDefaultHost          = "unbrake.ml"
+	mqttDefaultPort          = "8080"
+	mqttPortEnv              = "MQTT_PORT"
+	mqttChannelPrefixDefault = "unbrake/galpao"
+	mqttChannelPrefixEnv     = "MQTT_CHANNEL_PREFIX"
+	mqttKeyEnv               = "MQTT_KEY"
 )
 
 // Channels for controlling execution
@@ -130,6 +141,7 @@ var (
 	serialPortCh         = make(chan *serial.Port, 3)
 	testingCh            = make(chan string)
 	port                 *serial.Port
+	configFile           ConfigFile
 )
 var (
 	upperSpeedLimit                   float64
@@ -271,6 +283,8 @@ func main() {
 	logFile := getLogFile()
 	defer logFile.Close()
 
+	loadConfigFile()
+
 	log.Println("--------------------------------------------")
 	log.Println("Initializing application...")
 
@@ -343,13 +357,13 @@ func onReady() {
 
 // Handle receiving of tests to be executed
 func handleTestingReceiving() {
-	if key, doesExists := os.LookupEnv(mqttKeyEnv); doesExists {
+	if key := getMqttKey(); key != "" {
 		client, _ := emitter.Connect(getMqttHost(), func(_ *emitter.Client, msg emitter.Message) {
 			log.Printf("Sent message: '%s' topic: '%s'\n", msg.Payload(), msg.Topic())
 		})
 
 		// Wait for tests
-		const channel = mqttChannelPrefix + "/testing"
+		var channel = getMqttChannelPrefix() + "/testing"
 		go func() {
 			for {
 				client.Subscribe(key, channel, func(_ *emitter.Client, msg emitter.Message) {
@@ -382,15 +396,15 @@ func handleTestingReceiving() {
 		firstOffsetTemperature = data.Fields.Calibration.Temperature[0].TemperatureOffset
 		secondOffsetTemperature = data.Fields.Calibration.Temperature[1].TemperatureOffset
 
-		fmt.Printf("totalOfSnubs: %v\n", totalOfSnubs)
-		fmt.Printf("upperSpeedLimit: %v\n", upperSpeedLimit)
-		fmt.Printf("lowerSpeedLimit: %v\n", lowerSpeedLimit)
-		fmt.Printf("timeSleepWater: %v\n", timeSleepWater)
-		fmt.Printf("delayAcelerateToBrake: %v\n", delayAcelerateToBrake)
-		fmt.Printf("timeCooldown: %v\n", timeCooldown)
-		fmt.Printf("temperatureLimit: %v\n", temperatureLimit)
-		fmt.Printf("conversionFactorTemperature: %v\n", firstConversionFactorTemperature)
-		fmt.Printf("offsetTemperature: %v\n", firstOffsetTemperature)
+		log.Printf("totalOfSnubs: %v\n", totalOfSnubs)
+		log.Printf("upperSpeedLimit: %v\n", upperSpeedLimit)
+		log.Printf("lowerSpeedLimit: %v\n", lowerSpeedLimit)
+		log.Printf("timeSleepWater: %v\n", timeSleepWater)
+		log.Printf("delayAcelerateToBrake: %v\n", delayAcelerateToBrake)
+		log.Printf("timeCooldown: %v\n", timeCooldown)
+		log.Printf("temperatureLimit: %v\n", temperatureLimit)
+		log.Printf("conversionFactorTemperature: %v\n", firstConversionFactorTemperature)
+		log.Printf("offsetTemperature: %v\n", firstOffsetTemperature)
 
 		wgHandleSnubState.Add(1)
 
@@ -423,15 +437,15 @@ func handlePortsSectionGUI() {
 	portsNames := getSerialPorts()
 
 	// Add environment variable serial port if not already exists
-	found, envSerialPort := false, getEnvVariableSerialPort()
+	found, userDefinedPort := false, getSerialPort()
 	for i := range portsNames {
-		if portsNames[i] == envSerialPort {
+		if portsNames[i] == userDefinedPort {
 			found = true
 			break
 		}
 	}
-	if !found && envSerialPort != "" {
-		portsNames = append(portsNames, envSerialPort)
+	if !found && userDefinedPort != "" {
+		portsNames = append(portsNames, userDefinedPort)
 	}
 
 	// Create ports
@@ -710,8 +724,8 @@ func publishSerialAttrs() {
 
 // Publish data to MQTT broker
 func publishData(data string, subChannel string) {
-	if key, doesExists := os.LookupEnv(mqttKeyEnv); doesExists {
-		channel, data := mqttChannelPrefix+subChannel, data
+	if key := getMqttKey(); key != "" {
+		channel, data := getMqttChannelPrefix()+subChannel, data
 
 		client, _ := emitter.Connect(getMqttHost(), func(_ *emitter.Client, msg emitter.Message) {
 			log.Printf("Sent message: '%s' topic: '%s'\n", msg.Payload(), msg.Topic())
@@ -727,15 +741,59 @@ func publishData(data string, subChannel string) {
 func getMqttHost() string {
 	host, doesExists := os.LookupEnv(mqttHostEnv)
 	if !doesExists {
-		host = mqttDefaultHost
+		if configFile.MqttHost != "" {
+			host = configFile.MqttHost
+		} else {
+			host = mqttDefaultHost
+		}
 	}
 
 	port, doesExists := os.LookupEnv(mqttPortEnv)
 	if !doesExists {
-		port = mqttDefaultPort
+		if configFile.MqttPort != "" {
+			port = configFile.MqttPort
+		} else {
+			port = mqttDefaultPort
+		}
 	}
 
 	return "tcp://" + host + ":" + port
+}
+
+func getSerialPort() string {
+	port, doesExists := os.LookupEnv(serialPortEnv)
+	if !doesExists {
+		if configFile.SerialPort != "" {
+			port = configFile.SerialPort
+		} else {
+			port = ""
+		}
+	}
+	return port
+}
+
+func getMqttKey() string {
+	key, doesExists := os.LookupEnv(mqttKeyEnv)
+	if !doesExists {
+		if configFile.MqttKey != "" {
+			key = configFile.MqttKey
+		} else {
+			key = ""
+		}
+	}
+	return key
+}
+
+func getMqttChannelPrefix() string {
+	channelPrefix, doesExists := os.LookupEnv(mqttChannelPrefixEnv)
+	if !doesExists {
+		if configFile.MqttChannelPrefix != "" {
+			channelPrefix = configFile.MqttChannelPrefix
+		} else {
+			channelPrefix = mqttChannelPrefixDefault
+		}
+	}
+	return channelPrefix
 }
 
 // Will manage the state of running snub, handling all state transitions,
@@ -809,15 +867,15 @@ func getLogFile() *os.File {
 	return logFile
 }
 
-// Get serial port that will be used to communicate with the physical device
-func getEnvVariableSerialPort() string {
-	simulatorPort, doesExists := os.LookupEnv(simulatorPortEnv)
-
-	if !doesExists {
-		simulatorPort = ""
+func loadConfigFile() {
+	data, err := ioutil.ReadFile(path.Join(aplicationFolderPath, configFileName))
+	if err != nil {
+		log.Println("Not possible to read configuration file, default will be used, or from enviroment variables")
 	}
-
-	return simulatorPort
+	err = json.Unmarshal(data, &configFile)
+	if err != nil {
+		log.Printf("Invalid Config file: %v\n", err)
+	}
 }
 
 // Icon used on systray, how the application will appear on notification area
