@@ -57,10 +57,9 @@ before_install:
   - sudo apt-get update
   - sudo apt-get -y -o Dpkg::Options::="--force-confnew" install docker-ce
 
-  # Decrypt secrets
+  # General secrets from API
   - openssl aes-256-cbc -K $encrypted_ec73e88a7c5d_key -iv $encrypted_ec73e88a7c5d_iv -in unbrake-api/secrets/API_DJANGO_SECRET_KEY.enc -out unbrake-api/secrets/API_DJANGO_SECRET_KEY -d
   - openssl aes-256-cbc -K $encrypted_e2b707099939_key -iv $encrypted_e2b707099939_iv -in unbrake-api/secrets/DB_PASSWORD.enc -out unbrake-api/secrets/DB_PASSWORD -d
-  - openssl aes-256-cbc -K $encrypted_ddb8f7363e54_key -iv $encrypted_ddb8f7363e54_iv -in unbrake-api/secrets/MQTT_READING_KEY.enc -out unbrake-api/secrets/MQTT_READING_KEY -d
   - openssl aes-256-cbc -K $encrypted_12b7f6274154_key -iv $encrypted_12b7f6274154_iv -in unbrake-api/secrets/HTTPS_KEY.enc -out unbrake-api/secrets/HTTPS_KEY -d
 
   # Deploy Key
@@ -68,6 +67,8 @@ before_install:
 
   # MQTT environment variables
   - openssl aes-256-cbc -K $encrypted_a8aa7a1b7e93_key -iv $encrypted_a8aa7a1b7e93_iv -in deploy/.env_mqtt.enc -out deploy/.env_mqtt -d
+  - openssl aes-256-cbc -K $encrypted_ddb8f7363e54_key -iv $encrypted_ddb8f7363e54_iv -in unbrake-api/secrets/MQTT_READING_KEY.enc -out unbrake-api/secrets/MQTT_READING_KEY -d
+  - openssl aes-256-cbc -K $encrypted_6d56a259a9f3_key -iv $encrypted_6d56a259a9f3_iv -in unbrake-api/secrets/MQTT_WRITING_KEY.enc -out unbrake-api/secrets/MQTT_WRITING_KEY -d
 
 
 before_script:
