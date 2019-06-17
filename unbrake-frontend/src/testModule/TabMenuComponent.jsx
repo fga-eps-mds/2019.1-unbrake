@@ -7,8 +7,7 @@ import Tab from "@material-ui/core/Tab";
 import PropTypes from "prop-types";
 import RealTimeChart from "../components/RealTimeChart";
 
-const margin = 2.5;
-
+const margin = 1.5;
 const zeroTab = 0;
 const firstTab = 1;
 const secondTab = 2;

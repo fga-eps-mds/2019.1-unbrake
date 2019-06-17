@@ -4,7 +4,7 @@
 
 import graphene
 from graphene_django.types import DjangoObjectType
-from graphql_jwt.decorators import login_required
+from graphql_jwt.decorators import login_required, superuser_required
 from configuration.models import Config
 
 # pylint: disable = too-few-public-methods
@@ -108,7 +108,7 @@ class CreateDefaultConfig(graphene.Mutation):
         temperature = graphene.Float()
         time = graphene.Float()
 
-    @login_required
+    @superuser_required
     def mutate(
             self,
             info,

@@ -244,7 +244,6 @@ class Configuration extends React.Component {
 
   fileUpload(file, name) {
     const { sendMessage } = this.props;
-
     this.setState({ fileName: file.name });
     const formData = new FormData();
     formData.append("file", name);
