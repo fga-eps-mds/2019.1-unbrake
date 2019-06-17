@@ -7,8 +7,10 @@ import (
 	"strings"
 )
 
+var aplicationFolderPath = path.Join("/home", os.Getenv("USER"), applicationFolderName)
+
 func getLogPath() string {
-	return path.Join("/home", os.Getenv("USER"), applicationFolderName, "logs")
+	return path.Join(aplicationFolderPath, "logs")
 }
 
 func getSerialPorts() []string {
