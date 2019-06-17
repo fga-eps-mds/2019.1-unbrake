@@ -14,6 +14,8 @@ interact with the application.
 package main
 
 import (
+	"encoding/json"
+	"fmt"
 	"log"
 	"os"
 	"os/signal"
@@ -28,6 +30,70 @@ import (
 	"github.com/tarm/serial"
 )
 
+// Testing struct user to convert the JSON from mqtt
+type Testing struct {
+	Model  string `json:"model"`
+	Pk     int    `json:"pk"`
+	Fields struct {
+		CreateBy    string `json:"create_by"`
+		Calibration struct {
+			Name      string `json:"name"`
+			IsDefault bool   `json:"is_default"`
+			Vibration struct {
+				AcquisitionChanel int     `json:"acquisition_chanel"`
+				ConversionFactor  float64 `json:"conversion_factor"`
+				VibrationOffset   float64 `json:"vibration_offset"`
+			} `json:"vibration"`
+			Speed struct {
+				AcquisitionChanel int     `json:"acquisition_chanel"`
+				TireRadius        float64 `json:"tire_radius"`
+			} `json:"speed"`
+			Relations struct {
+				TransversalSelectionWidth int `json:"transversal_selection_width"`
+				HeigthWidthRelation       int `json:"heigth_width_relation"`
+				RimDiameter               int `json:"rim_diameter"`
+				SyncMotorRodation         int `json:"sync_motor_rodation"`
+				SheaveMoveDiameter        int `json:"sheave_move_diameter"`
+				SheaveMotorDiameter       int `json:"sheave_motor_diameter"`
+			} `json:"relations"`
+			Command struct {
+				CommandChanelSpeed    int     `json:"command_chanel_speed"`
+				ActualSpeed           float64 `json:"actual_speed"`
+				MaxSpeed              float64 `json:"max_speed"`
+				ChanelCommandPression int     `json:"chanel_command_pression"`
+				ActualPression        float64 `json:"actual_pression"`
+				MaxPression           float64 `json:"max_pression"`
+			} `json:"command"`
+			Temperature []struct {
+				AcquisitionChanel int     `json:"acquisition_chanel"`
+				ConversionFactor  float64 `json:"conversion_factor"`
+				TemperatureOffset float64 `json:"temperature_offset"`
+				Calibration       int     `json:"calibration"`
+			} `json:"temperature"`
+			Force []struct {
+				AcquisitionChanel int     `json:"acquisition_chanel"`
+				ConversionFactor  float64 `json:"conversion_factor"`
+				ForceOffset       float64 `json:"force_offset"`
+				Calibration       int     `json:"calibration"`
+			} `json:"force"`
+		} `json:"calibration"`
+		Configuration struct {
+			Name              string  `json:"name"`
+			IsDefault         bool    `json:"is_default"`
+			Number            int     `json:"number"`
+			TimeBetweenCycles int     `json:"time_between_cycles"`
+			UpperLimit        int     `json:"upper_limit"`
+			InferiorLimit     int     `json:"inferior_limit"`
+			UpperTime         int     `json:"upper_time"`
+			InferiorTime      int     `json:"inferior_time"`
+			DisableShutdown   bool    `json:"disable_shutdown"`
+			EnableOutput      bool    `json:"enable_output"`
+			Temperature       float64 `json:"temperature"`
+			Time              float64 `json:"time"`
+		} `json:"configuration"`
+	} `json:"fields"`
+}
+
 // General application constants
 const (
 	logFilePath           = "unbrake.log"
@@ -39,15 +105,9 @@ const (
 	bufferSize       = 48
 	simulatorPortEnv = "SERIAL_PORT"
 	baudRate         = 115200
-	frequencyReading = 10
+	frequencyReading = 5
 	numSerialAttrs   = 11 // number of attributes read simultaneously from serial device
 
-	upperSpeedLimit       = 150
-	lowerSpeedLimit       = 150
-	timeSleepWater        = 3
-	timeCooldown          = 3
-	temperatureLimit      = 400
-	delayAcelerateToBrake = 2
 )
 
 // MQTT constants
@@ -61,15 +121,35 @@ const (
 )
 
 // Channels for controlling execution
-var wg sync.WaitGroup
-var stopCollectingDataCh chan bool
-var sigsCh chan os.Signal
-var serialPortNameCh = make(chan string, 1)
-var serialPortCh = make(chan *serial.Port, 3)
+var (
+	wgGeneral            sync.WaitGroup
+	wgHandleSnubState    sync.WaitGroup
+	stopCollectingDataCh chan bool
+	sigsCh               chan os.Signal
+	serialPortNameCh     = make(chan string, 1)
+	serialPortCh         = make(chan *serial.Port, 3)
+	testingCh            = make(chan string)
+	port                 *serial.Port
+)
+var (
+	upperSpeedLimit                   float64
+	lowerSpeedLimit                   float64
+	timeSleepWater                    float64
+	timeCooldown                      int
+	temperatureLimit                  float64
+	delayAcelerateToBrake             int
+	totalOfSnubs                      int
+	firstConversionFactorTemperature  float64
+	secondConversionFactorTemperature float64
+	firstOffsetTemperature            float64
+	secondOffsetTemperature           float64
+	currentSnub                       = 1
+)
 
 // Flags with intermediary states
 var stabilizing = false
-var throwingWater = false
+var enableWater bool
+var isAvailable bool
 
 // Global snub which represents state of running test
 var snub = Snub{state: acelerate}
@@ -141,11 +221,12 @@ const (
 	vibrationIdx
 	speedIdx
 	pressureIdx
+	currentSnubIdx
 )
 
 // Subchannels for each information sent to MQTT, same index rules
 // as the original data string from serial
-var mqttSubchannels = []string{
+var mqttSubchannelSerialAttrs = []string{
 	"/frequency",
 	"/temperature/sensor1",
 	"/temperature/sensor2",
@@ -156,12 +237,18 @@ var mqttSubchannels = []string{
 	"/pressure",
 }
 
+const (
+	mqttSubchannelCurrentSnub = "/currentSnub"
+	mqttSubchannelSnubState   = "/snubState"
+	mqttSubchannelIsAvailable = "/isAvailable"
+)
+
 // SerialAttribute represent one attributes of the many that are returned as values
 // from the physical device on serial communication
 type SerialAttribute struct {
-	mqttSubchannel string      // Subchannel associated at mqtt broker
-	publishCh      chan string // for publishing
-	handleCh       chan int    // for handling values
+	mqttSubchannel string       // Subchannel associated at mqtt broker
+	publishCh      chan string  // for publishing
+	handleCh       chan float64 // for handling values
 }
 
 // Snub is a cycle of aceleration, braking and cooldown,
@@ -190,11 +277,19 @@ func main() {
 	sigsCh = make(chan os.Signal, 1)
 	signal.Notify(sigsCh, os.Interrupt)
 
-	for i, subChannel := range mqttSubchannels {
+	for i, subChannel := range mqttSubchannelSerialAttrs {
 		serialAttrs[i].mqttSubchannel = subChannel
 		serialAttrs[i].publishCh = make(chan string)
-		serialAttrs[i].handleCh = make(chan int)
+		serialAttrs[i].handleCh = make(chan float64)
 	}
+
+	go func() {
+		isAvailable = true
+		for {
+			publishData(strconv.FormatBool(isAvailable), mqttSubchannelIsAvailable)
+			time.Sleep(time.Millisecond * 500)
+		}
+	}()
 
 	onExit := func() {
 		snub.state = cooldown
@@ -228,21 +323,92 @@ func onReady() {
 		}
 
 		stopCollectingDataCh <- true
+
 		systray.Quit()
 		log.Println("Finished systray")
 	}()
 
-	wg.Add(1)
+	wgGeneral.Add(1)
 	go collectData()
-	go handleSnubState()
+	go handleTestingReceiving()
 
 	if _, collectEnv := os.LookupEnv(mqttKeyEnv); collectEnv {
-		go publishAll()
+		go publishSerialAttrs()
 	} else {
 		log.Println("MQTT key not set!!! Data will not be published...")
 	}
 
-	wg.Wait()
+	wgGeneral.Wait()
+}
+
+// Handle receiving of tests to be executed
+func handleTestingReceiving() {
+	if key, doesExists := os.LookupEnv(mqttKeyEnv); doesExists {
+		client, _ := emitter.Connect(getMqttHost(), func(_ *emitter.Client, msg emitter.Message) {
+			log.Printf("Sent message: '%s' topic: '%s'\n", msg.Payload(), msg.Topic())
+		})
+
+		// Wait for tests
+		const channel = mqttChannelPrefix + "/testing"
+		go func() {
+			for {
+				client.Subscribe(key, channel, func(_ *emitter.Client, msg emitter.Message) {
+					testingCh <- string(msg.Payload())
+				})
+				time.Sleep(time.Second)
+			}
+		}()
+
+		testing := <-testingCh
+
+		var data Testing
+
+		err := json.Unmarshal([]byte(testing), &data)
+
+		if err != nil {
+			log.Println("Wasn't possible to decode JSON, error: ", err)
+		}
+
+		totalOfSnubs = 4      //data.Fields.Configuration.Number
+		upperSpeedLimit = 150 //data.Fields.Configuration.UpperLimit
+		lowerSpeedLimit = 150 //data.Fields.Configuration.InferiorLimit
+		timeSleepWater = data.Fields.Configuration.Time
+		delayAcelerateToBrake = data.Fields.Configuration.UpperTime
+		timeCooldown = data.Fields.Configuration.InferiorTime
+		temperatureLimit = 400 //data.Fields.Configuration.Temperature
+		enableWater = false    //data.Fields.Configuration.EnableOutput
+		firstConversionFactorTemperature = data.Fields.Calibration.Temperature[0].ConversionFactor
+		secondConversionFactorTemperature = data.Fields.Calibration.Temperature[1].ConversionFactor
+		firstOffsetTemperature = data.Fields.Calibration.Temperature[0].TemperatureOffset
+		secondOffsetTemperature = data.Fields.Calibration.Temperature[1].TemperatureOffset
+
+		fmt.Printf("totalOfSnubs: %v\n", totalOfSnubs)
+		fmt.Printf("upperSpeedLimit: %v\n", upperSpeedLimit)
+		fmt.Printf("lowerSpeedLimit: %v\n", lowerSpeedLimit)
+		fmt.Printf("timeSleepWater: %v\n", timeSleepWater)
+		fmt.Printf("delayAcelerateToBrake: %v\n", delayAcelerateToBrake)
+		fmt.Printf("timeCooldown: %v\n", timeCooldown)
+		fmt.Printf("temperatureLimit: %v\n", temperatureLimit)
+		fmt.Printf("conversionFactorTemperature: %v\n", firstConversionFactorTemperature)
+		fmt.Printf("offsetTemperature: %v\n", firstOffsetTemperature)
+
+		wgHandleSnubState.Add(1)
+
+		isAvailable = false
+
+		go handleSnubState()
+
+		wgHandleSnubState.Wait()
+		if _, err := port.Write([]byte(cooldown)); err != nil {
+			log.Fatal(err)
+		}
+		publishData(byteToStateName[snub.state], mqttSubchannelSnubState)
+		isAvailable = true
+		wgGeneral.Wait()
+
+	} else {
+		log.Println("MQTT key not set!!! Not waiting for tests to arrive...")
+	}
 }
 
 // Controls the serial ports selection via GUI
@@ -334,16 +500,21 @@ func (port *serialPortGUI) uncheck() {
 
 // Will update current state to its next, respecting timing and
 // critical regions
-func (snub *Snub) handleAcelerate() {
+func (snub *Snub) handleAcelerate(port *serial.Port) {
 	stabilizing = true
-	log.Printf("Stabilizing...\n")
-	time.Sleep(time.Second * delayAcelerateToBrake)
+	log.Println("Stabilizing...")
+	time.Sleep(time.Second * time.Duration(delayAcelerateToBrake))
 
 	snub.mux.Lock()
 	defer snub.mux.Unlock()
 
 	oldState := snub.state
 	snub.state = currentToNextState[snub.state]
+	if _, err := port.Write([]byte(snub.state)); err != nil {
+		log.Fatal(err)
+	}
+	publishData(byteToStateName[snub.state], mqttSubchannelSnubState)
+
 	log.Printf("Change state: %v ---> %v\n", byteToStateName[oldState], byteToStateName[snub.state])
 	stabilizing = false
 
@@ -356,26 +527,26 @@ func (snub *Snub) turnOnWater(port *serial.Port) {
 
 	oldState := snub.state
 	snub.state = offToOnWater[snub.state]
-	throwingWater = true
-	_, err := port.Write([]byte(snub.state))
-	if err != nil {
+	if _, err := port.Write([]byte(snub.state)); err != nil {
 		log.Fatal(err)
 	}
+	publishData(byteToStateName[snub.state], mqttSubchannelSnubState)
+
 	log.Printf("Turn on water(%vs): %v ---> %v\n", timeSleepWater, byteToStateName[oldState], byteToStateName[snub.state])
 
 	snub.mux.Unlock()
 
-	time.Sleep(time.Second * timeSleepWater)
+	time.Sleep(time.Second * time.Duration(timeSleepWater))
 
 	snub.mux.Lock()
 
 	oldState = snub.state
 	snub.state = onToOffWater[snub.state]
-	_, err = port.Write([]byte(snub.state))
-	if err != nil {
+	if _, err := port.Write([]byte(snub.state)); err != nil {
 		log.Fatal(err)
 	}
-	throwingWater = false
+	publishData(byteToStateName[snub.state], mqttSubchannelSnubState)
+
 	log.Printf("Turn off water: %v ---> %v\n", byteToStateName[oldState], byteToStateName[snub.state])
 
 	snub.mux.Unlock()
@@ -387,34 +558,54 @@ func (snub *Snub) handleBrake(port *serial.Port) {
 	snub.mux.Lock()
 
 	oldState := snub.state
-	snub.state = currentToNextState[snub.state]
-	_, err := port.Write([]byte(snub.state))
-	if err != nil {
+	snub.state = currentToNextState[snub.state] // Brake to Cooldown
+	if _, err := port.Write([]byte(snub.state)); err != nil {
 		log.Fatal(err)
 	}
+	publishData(byteToStateName[snub.state], mqttSubchannelSnubState)
+
 	log.Printf("Change state: %v ---> %v\n", byteToStateName[oldState], byteToStateName[snub.state])
 
 	snub.mux.Unlock()
 
-	time.Sleep(time.Second * timeCooldown)
+	time.Sleep(time.Second * time.Duration(timeCooldown))
 
 	snub.mux.Lock()
 
 	oldState = snub.state
-	snub.state = currentToNextState[snub.state]
-	_, err = port.Write([]byte(snub.state))
-	if err != nil {
+	snub.state = currentToNextState[snub.state] // Cooldown to acelerate
+
+	handleSnubEnd()
+
+	if _, err := port.Write([]byte(snub.state)); err != nil {
 		log.Fatal(err)
 	}
+	publishData(byteToStateName[snub.state], mqttSubchannelSnubState)
+
 	log.Printf("Change state: %v ---> %v\n", byteToStateName[oldState], byteToStateName[snub.state])
+	log.Printf("Current snub: %v\n", currentSnub)
 
 	snub.mux.Unlock()
+}
+
+func handleSnubEnd() {
+	currentSnub++
+	publishData(strconv.Itoa(currentSnub), mqttSubchannelCurrentSnub)
+	if currentSnub > totalOfSnubs {
+		snub.state = cooldown
+		currentSnub = 1
+		wgHandleSnubState.Done()
+	}
+}
+
+func temperatureConversion(value float64, convertionFactor float64, offset float64) float64 {
+	return value*convertionFactor + offset
 }
 
 // Will collect data from serial bus and distributes it
 // to others goroutines
 func collectData() {
-	defer wg.Done()
+	defer wgGeneral.Done()
 
 	const ReadingDelay = time.Second / frequencyReading
 
@@ -456,10 +647,7 @@ func collectData() {
 				}
 			case sig := <-sigsCh:
 				log.Println("Signal received: ", sig)
-				_, err := port.Write([]byte(cooldown))
-				if err != nil {
-					log.Fatal(err)
-				}
+
 				continueCollecting = false
 			case serialPortName = <-serialPortNameCh:
 				serialPortNameCh <- serialPortName
@@ -492,10 +680,10 @@ func getData(port *serial.Port, command string) []byte {
 
 	if len(split) == numSerialAttrs { // Was a complete read
 		for i, attr := range split {
-			attrInt, _ := strconv.Atoi(attr)
+			attrValue, _ := strconv.ParseFloat(attr, 64)
 
 			select {
-			case serialAttrs[i].handleCh <- attrInt:
+			case serialAttrs[i].handleCh <- attrValue:
 			default:
 			}
 
@@ -510,7 +698,7 @@ func getData(port *serial.Port, command string) []byte {
 }
 
 // Publish to MQTT broker the whole current state of local application
-func publishAll() {
+func publishSerialAttrs() {
 	for i := 0; i < numSerialAttrs; i++ {
 		go func(idx int) {
 			for {
@@ -553,43 +741,53 @@ func getMqttHost() string {
 // Will manage the state of running snub, handling all state transitions,
 // synchronization, collecting needed data and writing needed commands
 func handleSnubState() {
-	port := <-serialPortCh
+	port = <-serialPortCh
 
-	for {
-		select {
-		case port = <-serialPortCh:
-		default:
+	publishData(strconv.Itoa(currentSnub), mqttSubchannelCurrentSnub)
+	publishData(byteToStateName[snub.state], mqttSubchannelSnubState)
+	if _, err := port.Write([]byte(snub.state)); err != nil {
+		log.Println(err)
+		wgHandleSnubState.Done()
+	}
+
+	go func(portAux *serial.Port) {
+		for {
+			portAux = <-serialPortCh
 		}
+	}(port)
 
-		select {
+	go func(portAux *serial.Port) {
 
-		case speed := <-serialAttrs[speedIdx].handleCh:
+		for {
+			speed := <-serialAttrs[speedIdx].handleCh
 			if (snub.state == acelerate || snub.state == acelerateWater) && !stabilizing {
 				if speed >= upperSpeedLimit {
-					go snub.handleAcelerate()
-					_, err := port.Write([]byte(snub.state))
-					if err != nil {
-						log.Fatal(err)
-					}
+					snub.handleAcelerate(port)
+
 				}
 			}
-
 			if snub.state == brake || snub.state == brakeWater {
 				if speed < lowerSpeedLimit {
-					go snub.handleBrake(port)
-				}
-			}
-
-		case temperature1 := <-serialAttrs[temperature1Idx].handleCh:
-			temperature2 := <-serialAttrs[temperature2Idx].handleCh
-
-			if (temperature1 > temperatureLimit || temperature2 > temperatureLimit) && !throwingWater {
-				if snub.state == acelerate || snub.state == brake || snub.state == cooldown {
-					go snub.turnOnWater(port)
+					snub.handleBrake(port)
 				}
 			}
 		}
-	}
+
+	}(port)
+
+	go func(portAux *serial.Port) {
+
+		for {
+			temperature1 := temperatureConversion(<-serialAttrs[temperature1Idx].handleCh, firstConversionFactorTemperature, firstOffsetTemperature)
+			temperature2 := temperatureConversion(<-serialAttrs[temperature2Idx].handleCh, secondConversionFactorTemperature, secondOffsetTemperature)
+
+			if (temperature1 > temperatureLimit || temperature2 > temperatureLimit) && enableWater {
+				if snub.state == acelerate || snub.state == brake || snub.state == cooldown {
+					snub.turnOnWater(portAux)
+				}
+			}
+		}
+	}(port)
 }
 
 // Based on current OS will create application folder
