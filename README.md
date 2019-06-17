@@ -59,14 +59,38 @@ Se desejar utilizar uma porta não listada, você pode fazer isso via
 
 ### Configuração do módulo local
 
-As configurações atualmente só podem ser feitas via variáveis de ambiente.
+As configurações podem ser feitas via arquivo de configuração e/ou variáveis
+de ambiente.
 
-* **SERIAL_PORT**: nome/caminho da porta serial em que a placa está conectada.
+O arquivo de configuração deve ser criado com o nome `config.json` em
+`~/UnBrake/logs` no Linux e em `%APPDATA%/UnBrake/logs` no Windows.
+
+Exemplo de arquivo de configuração:
+``` json
+{
+    "serialPort": "/dev/ttyACM0",
+    "mqttHost": "unbrake.ml",
+    "mqttPort": "8080",
+    "mqttKey": "minhachavecompermissãodeescrita",
+    "mqttChannelPrefix": "unbrake/galpao"
+}
+
+```
+
+* **serialPort**: nome/caminho da porta serial em que a placa está conectada.
 Ex: `/dev/ttyACM0`, `COM1`.
-* **MQTT_HOST**: host do MQTT broker que será utilizado na comunicação
-* **MQTT_PORT**: porta na qual o MQTT broker está escutando
-* **MQTT_KEY**: chave do MQTT broker (emitter-io utilizado)
+* **mqttHost**: host do MQTT broker que será utilizado na comunicação
+* **mqttPort**: porta na qual o MQTT broker está escutando
+* **mqttKey**: chave do MQTT broker (emitter-io utilizado)
 (pedir ao responsável pelo host)
+
+Todos esses parâmetros também podem ser configurados através de variáveis
+de ambiente apenas fazendo a alteração do nome do parâmetro de camelcase
+para snake case e em caixa alta. Ex: `serialPort` se torna `SERIAL_PORT`.
+
+As variáveis de ambiente tem precedência sobre o arquivo de configuração.
+Caso a variável de ambiente não seja setada e nem haja arquivo de configuração,
+serão usadas valores default onde possível.
 
 ### Logs
 
