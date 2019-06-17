@@ -8,8 +8,10 @@ import (
 	"golang.org/x/sys/windows/registry"
 )
 
+var aplicationFolderPath = path.Join(os.Getenv("APPDATA"), applicationFolderName)
+
 func getLogPath() string {
-	return path.Join(os.Getenv("APPDATA"), applicationFolderName, "logs")
+	return path.Join(aplicationFolderPath, "logs")
 }
 
 func getSerialPorts() []string {
