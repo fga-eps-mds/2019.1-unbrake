@@ -10,11 +10,20 @@
   <a href="https://codeclimate.com/github/fga-eps-mds/2019.1-unbrake/test_coverage" alt="Test Coverage" >
     <img src="https://api.codeclimate.com/v1/badges/f8957e6e7e0bdced21c9/test_coverage" />
   </a>
+  <a href="https://bestpractices.coreinfrastructure.org/projects/2874" alt="CII Best Practices" >
+    <img src="https://bestpractices.coreinfrastructure.org/projects/2874/badge" />
+  </a>
+  <a href="https://libraries.io/github/fga-eps-mds/2019.1-unbrake" alt="Libraries.io Status" >
+    <img src="https://img.shields.io/librariesio/github/fga-eps-mds/2019.1-unbrake.svg" />
+  </a>
   <a href="https://goreportcard.com/report/github.com/fga-eps-mds/2019.1-unbrake" alt="Go Report Card" >
     <img src="https://goreportcard.com/badge/github.com/fga-eps-mds/2019.1-unbrake" />
   </a>
-  <a href="https://bestpractices.coreinfrastructure.org/projects/2874" alt="CII Best Practices" >
-    <img src="https://bestpractices.coreinfrastructure.org/projects/2874/badge" />
+  <a href="https://godoc.org/github.com/fga-eps-mds/2019.1-unbrake/unbrake-local">
+    <img src="https://godoc.org/github.com/fga-eps-mds/2019.1-unbrake/unbrake-local?status.svg" alt="GoDoc">
+  </a>
+  <a href="https://www.openhub.net/p/unbrake" alt="Openhub" >
+    <img src="https://www.openhub.net/p/unbrake/widgets/project_thin_badge.gif" />
   </a>
 </p>
 
@@ -24,9 +33,6 @@
   </a>
   <a href="https://github.com/fga-eps-mds/2019.1-unbrake/releases" alt="GitHub release" >
     <img src="https://img.shields.io/github/release/fga-eps-mds/2019.1-unbrake.svg" />
-  </a>
-  <a href="https://godoc.org/github.com/fga-eps-mds/2019.1-unbrake/unbrake-local">
-    <img src="https://godoc.org/github.com/fga-eps-mds/2019.1-unbrake/unbrake-local?status.svg" alt="GoDoc">
   </a>
   <a href="https://pullreminders.com?ref=badge" alt="pullreminders" >
     <img src="https://pullreminders.com/badge.svg" />
