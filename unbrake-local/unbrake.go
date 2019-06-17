@@ -138,7 +138,7 @@ var (
 	stopCollectingDataCh chan bool
 	sigsCh               chan os.Signal
 	serialPortNameCh     = make(chan string, 1)
-	serialPortCh         = make(chan *serial.Port, 3)
+	serialPortCh         = make(chan *serial.Port)
 	testingCh            = make(chan string)
 	port                 *serial.Port
 	configFile           ConfigFile
@@ -159,9 +159,13 @@ var (
 )
 
 // Flags with intermediary states
-var stabilizing = false
-var enableWater bool
-var isAvailable bool
+var (
+	stabilizing  = false
+	enableWater  bool
+	isAvailable  bool
+	isCollecting bool
+	isPublishing bool
+)
 
 // Global snub which represents state of running test
 var snub = Snub{state: acelerate}
@@ -263,6 +267,11 @@ type SerialAttribute struct {
 	handleCh       chan float64 // for handling values
 }
 
+var (
+	aplicationStatusCh = make(chan string)
+	//mqttKeyStatusCh    = make(chan string)
+)
+
 // Snub is a cycle of aceleration, braking and cooldown,
 // multiple snubs compose a test
 type Snub struct {
@@ -320,6 +329,24 @@ func onReady() {
 	systray.SetIcon(icon)
 	systray.SetTitle("UnBrake")
 	systray.SetTooltip("UnBrake")
+
+	statusTitle := systray.AddMenuItem("-Status-", "Seção para visualização do status da aplicação")
+	statusTitle.Disable()
+	statusCollecting := systray.AddMenuItem("Abobora", "Status da aquisição")
+	statusCollecting.Disable()
+	//mqttKeyStatus := systray.AddMenuItem("42", "Status da chave do Mqtt")
+	//mqttKeyStatus.Disable()
+
+	go func() {
+		for {
+			select {
+			case collectingStatusAux := <-aplicationStatusCh:
+				statusCollecting.SetTitle(collectingStatusAux)
+				//case mqttKeyStatusChAux := <-mqttKeyStatusCh:
+				//	mqttKeyStatus.SetTitle(mqttKeyStatusChAux)
+			}
+		}
+	}()
 
 	handlePortsSectionGUI()
 
@@ -431,8 +458,6 @@ func handlePortsSectionGUI() {
 	portsTitle := systray.AddMenuItem("Portas", "Selecione a porta de leitura")
 	portsTitle.Disable()
 
-	systray.AddSeparator()
-
 	// Get available ports
 	portsNames := getSerialPorts()
 
@@ -467,6 +492,12 @@ func handlePortsSectionGUI() {
 		serialPortNameCh <- ports[selected].title
 		ports[selected].check()
 	}
+
+	go func() {
+		for {
+			port = <-serialPortCh
+		}
+	}()
 
 	// Handle serial ports checking/unchecking
 	for i, port := range ports {
@@ -514,7 +545,7 @@ func (port *serialPortGUI) uncheck() {
 
 // Will update current state to its next, respecting timing and
 // critical regions
-func (snub *Snub) handleAcelerate(port *serial.Port) {
+func (snub *Snub) handleAcelerate() {
 	stabilizing = true
 	log.Println("Stabilizing...")
 	time.Sleep(time.Second * time.Duration(delayAcelerateToBrake))
@@ -536,7 +567,7 @@ func (snub *Snub) handleAcelerate(port *serial.Port) {
 
 // Will change from a regular state to a state with same
 // effects but throwing water
-func (snub *Snub) turnOnWater(port *serial.Port) {
+func (snub *Snub) turnOnWater() {
 	snub.mux.Lock()
 
 	oldState := snub.state
@@ -568,7 +599,7 @@ func (snub *Snub) turnOnWater(port *serial.Port) {
 
 // Handle changing state from braking to cooldown, waiting the
 // cooldown and gettting back to acelerating
-func (snub *Snub) handleBrake(port *serial.Port) {
+func (snub *Snub) handleBrake() {
 	snub.mux.Lock()
 
 	oldState := snub.state
@@ -625,6 +656,7 @@ func collectData() {
 
 	continueCollecting := true
 	for continueCollecting {
+		aplicationStatusCh <- "Waiting for port selection"
 		log.Println("Waiting for valid serial port selection...")
 		serialPortName := <-serialPortNameCh
 
@@ -635,12 +667,16 @@ func collectData() {
 		}
 
 		port, err := serial.OpenPort(configuration)
+
 		if err == nil {
 			serialPortCh <- port
 		} else {
 			log.Println(err)
 			continue
 		}
+
+		aplicationStatusCh <- "Collecting data"
+		isCollecting = true
 
 		log.Println("Initializing collectData routine...")
 		log.Printf("Simulator Port = %s", serialPortName)
@@ -724,6 +760,7 @@ func publishSerialAttrs() {
 
 // Publish data to MQTT broker
 func publishData(data string, subChannel string) {
+
 	if key := getMqttKey(); key != "" {
 		channel, data := getMqttChannelPrefix()+subChannel, data
 
@@ -734,6 +771,8 @@ func publishData(data string, subChannel string) {
 		client.Publish(key, channel, data)
 	} else {
 		log.Println("MQTT key not set!!! Not publishing any data...")
+		//mqttKeyStatusCh <- "Chave do Mqtt: Inválida"
+		return
 	}
 }
 
@@ -799,7 +838,6 @@ func getMqttChannelPrefix() string {
 // Will manage the state of running snub, handling all state transitions,
 // synchronization, collecting needed data and writing needed commands
 func handleSnubState() {
-	port = <-serialPortCh
 
 	publishData(strconv.Itoa(currentSnub), mqttSubchannelCurrentSnub)
 	publishData(byteToStateName[snub.state], mqttSubchannelSnubState)
@@ -808,32 +846,26 @@ func handleSnubState() {
 		wgHandleSnubState.Done()
 	}
 
-	go func(portAux *serial.Port) {
-		for {
-			portAux = <-serialPortCh
-		}
-	}(port)
-
-	go func(portAux *serial.Port) {
+	go func() {
 
 		for {
 			speed := <-serialAttrs[speedIdx].handleCh
 			if (snub.state == acelerate || snub.state == acelerateWater) && !stabilizing {
 				if speed >= upperSpeedLimit {
-					snub.handleAcelerate(port)
+					snub.handleAcelerate()
 
 				}
 			}
 			if snub.state == brake || snub.state == brakeWater {
 				if speed < lowerSpeedLimit {
-					snub.handleBrake(port)
+					snub.handleBrake()
 				}
 			}
 		}
 
-	}(port)
+	}()
 
-	go func(portAux *serial.Port) {
+	go func() {
 
 		for {
 			temperature1 := temperatureConversion(<-serialAttrs[temperature1Idx].handleCh, firstConversionFactorTemperature, firstOffsetTemperature)
@@ -841,11 +873,11 @@ func handleSnubState() {
 
 			if (temperature1 > temperatureLimit || temperature2 > temperatureLimit) && enableWater {
 				if snub.state == acelerate || snub.state == brake || snub.state == cooldown {
-					snub.turnOnWater(portAux)
+					snub.turnOnWater()
 				}
 			}
 		}
-	}(port)
+	}()
 }
 
 // Based on current OS will create application folder
