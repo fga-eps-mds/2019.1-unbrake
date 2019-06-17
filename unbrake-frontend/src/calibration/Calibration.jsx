@@ -245,7 +245,6 @@ class Calibration extends React.Component {
 
   handleChangeId(name, value) {
     const idsCalibrations = { [name]: value };
-    console.log(idsCalibrations);
 
     this.setState(prevState => ({
       idsCalibrations: { ...prevState.idsCalibrations, ...idsCalibrations }

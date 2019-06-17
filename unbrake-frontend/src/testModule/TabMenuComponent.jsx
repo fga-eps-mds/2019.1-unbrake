@@ -34,6 +34,29 @@ const styles = theme => ({
   }
 });
 
+const submitCalib = (test, allCalibration) => {
+  const moveIndexBack = 1;
+  const { value } = test.target.value;
+  const calib = allCalibration[value - moveIndexBack];
+  if (calib !== undefined) {
+    const { id } = calib.id;
+    const { name } = calib.name;
+    changeCalibTest({ calibId: id, calibName: name });
+  }
+};
+
+const submitConfig = (test, allConfiguration) => {
+  const { value } = test.target.value;
+  const moveIndexBack = 1;
+  const conditionCompare = 0;
+  if (value - moveIndexBack >= conditionCompare) {
+    const config = allConfiguration[value - moveIndexBack];
+    const configId = config.id;
+    const configName = config.name;
+    changeConfigTest({ configId, configName });
+  }
+};
+
 class TabMenuComponent extends React.Component {
   constructor(props) {
     super(props);
@@ -44,79 +67,9 @@ class TabMenuComponent extends React.Component {
       allConfiguration: ""
     };
     this.handleChange = this.handleChange.bind(this);
-    this.handleChange = this.handleChange.bind(this);
-  }
-
-  handleChange(event, newValue) {
-    this.setState({ value: newValue });
-  }
-
-  selectDefault() {
-    const {
-      classes,
-      calibId,
-      configId,
-      calibName,
-      configName,
-      changeCalibTest,
-      changeConfigTest
-    } = this.props;
-    const { allCalibration, allConfiguration } = this.state;
-    console.log(calibName);
-    return (
-      <div style={{ flex: 1 }}>
-        <TextField
-          id="outlined-select-currency"
-          select
-          label="Calibrações"
-          value={calibId}
-          name="config"
-          className={classes.formControl}
-          margin="normal"
-          variant="outlined"
-          style={{ width: "100%" }}
-          onChange={test => {
-            const calib = allCalibration[test.target.value - 1];
-            if (calib !== undefined) {
-              console.log("xxx", calib);
-
-              const id = calib.id;
-              const name = calib.name;
-              changeCalibTest({ calibId: id, calibName: name });
-            }
-          }}
-        >
-          {itensSelection(this.state.allCalibration)}
-        </TextField>
-        <TextField
-          id="outlined-select-currency"
-          select
-          label="Configurações"
-          value={configId}
-          name="calib"
-          className={classes.formControl}
-          margin="normal"
-          variant="outlined"
-          style={{ width: "100%" }}
-          onChange={value => {
-            if (value.target.value - 1 >= 0) {
-              const config = allConfiguration[value.target.value - 1];
-              console.log("config: ", config);
-              const configId = config.id;
-              const configName = config.name;
-              changeConfigTest({ configId, configName });
-            }
-          }}
-        >
-          {itensSelectionConfig(this.state.allConfiguration)}
-        </TextField>
-      </div>
-    );
   }
 
   componentDidMount() {
-    const { calibration } = this.props;
-
     const urlCalib = `${API_URL_GRAPHQL}?query=query{allCalibration{id, name, isDefault}}`;
     const method = "GET";
     Request(urlCalib, method).then(json => {
@@ -129,29 +82,55 @@ class TabMenuComponent extends React.Component {
     const urlConfig = `${API_URL_GRAPHQL}?query=query{configNotDefault{id, name}}`;
 
     Request(urlConfig, method).then(json => {
-      console.log("json: ", json);
-      const data = json.data.configNotDefault;
-      console.log("data: ", data);
+      const { data } = json.data.configNotDefault;
       if (data !== null) this.setState({ allConfiguration: data });
     });
   }
 
-  submit() {
-    const { calibId, configId } = this.props;
-    const urlUser = `${API_URL_GRAPHQL}?query=query{currentUser{username}}`;
-    const method = "GET";
-    Request(urlUser, method).then(username => {
-      const urlTesting = `${API_URL_GRAPHQL}?query=mutation{createTesting(createBy:"${username}",
-      idCalibration:${calibId},idConfiguration:${configId}){testing{id},error}}`;
-      const methodTest = "POST";
-      Request(urlTesting, methodTest);
-    });
+  selectDefault() {
+    const { classes, calibId, configId } = this.props;
+    const { allCalibration, allConfiguration } = this.state;
+    return (
+      <div style={{ flex: 1 }}>
+        <TextField
+          id="outlined-select-currency"
+          select
+          label="Calibrações"
+          value={calibId}
+          name="config"
+          className={classes.formControl}
+          margin="normal"
+          variant="outlined"
+          style={{ width: "100%" }}
+          onChange={test => submitCalib(test, allCalibration)}
+        >
+          {itensSelection(allCalibration)}
+        </TextField>
+        <TextField
+          id="outlined-select-currency"
+          select
+          label="Configurações"
+          value={configId}
+          name="calib"
+          className={classes.formControl}
+          margin="normal"
+          variant="outlined"
+          style={{ width: "100%" }}
+          onChange={value => submitConfig(value, allConfiguration)}
+        >
+          {itensSelectionConfig(allConfiguration)}
+        </TextField>
+      </div>
+    );
+  }
+
+  handleChange(event, newValue) {
+    this.setState({ value: newValue });
   }
 
   render() {
     const { classes } = this.props;
     const { value } = this.state;
-    console.log("opoooo", this.props);
     return (
       <Grid
         item
@@ -200,7 +179,13 @@ class TabMenuComponent extends React.Component {
 }
 
 TabMenuComponent.propTypes = {
-  classes: PropTypes.objectOf(PropTypes.string).isRequired
+  classes: PropTypes.objectOf(PropTypes.string).isRequired,
+  configId: PropTypes.string.isRequired,
+  calibId: PropTypes.string.isRequired
+  /*
+   * changeCalibTest: PropTypes.func.isRequired,
+   * changeConfigTest: PropTypes.func.isRequired
+   */
 };
 
 const mapStateToProps = state => {

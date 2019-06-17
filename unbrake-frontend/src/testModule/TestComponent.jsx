@@ -75,11 +75,8 @@ class Test extends React.Component {
   }
 
   render() {
-    const { configId, calibId } = this.props;
     const { test } = this.state;
     const { aquisition, data } = test;
-    // console.log(configId);
-    console.log(calibId);
     return (
       <Grid
         container

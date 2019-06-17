@@ -7,7 +7,6 @@ export const changeConfigTest = value => {
   };
 };
 export const changeCalibTest = value => {
-  console.log(value);
   return {
     type: CHANGE_CALIB_TEST,
     payload: value

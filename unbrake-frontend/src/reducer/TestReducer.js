@@ -10,11 +10,6 @@ const INITIAL_STATE = {
 export default (state = INITIAL_STATE, action) => {
   switch (action.type) {
     case CHANGE_CONFIG_TEST:
-      console.log("aaaa", {
-        ...state,
-        configId: action.payload.configId,
-        configName: action.payload.configName
-      });
       return {
         ...state,
         configId: action.payload.configId,
@@ -22,7 +17,6 @@ export default (state = INITIAL_STATE, action) => {
       };
 
     case CHANGE_CALIB_TEST:
-      console.log(action.payload);
       return {
         ...state,
         calibId: action.payload.calibId,

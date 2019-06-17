@@ -4,7 +4,10 @@ import { reduxForm } from "redux-form";
 import { withStyles, Grid } from "@material-ui/core";
 import LinearProgress from "@material-ui/core/LinearProgress";
 import Button from "@material-ui/core/Button";
+import { connect } from "react-redux";
 import styles from "./Styles";
+import { API_URL_GRAPHQL } from "../utils/Constants";
+import Request from "../utils/Request";
 
 const percentageTransformer = 100;
 
@@ -117,6 +120,28 @@ const infoSnub = (informations, classes) => {
   return render;
 };
 
+const submit = (configId, calibId) => {
+  const urlUser = `${API_URL_GRAPHQL}?query=query{currentUser{username}}`;
+  const method = "GET";
+  if (configId !== "" && calibId !== "") {
+    Request(urlUser, method).then(username => {
+      const urlTesting = `${API_URL_GRAPHQL}?query=mutation{createTesting(createBy:"${username}",
+      idCalibration:${calibId},idConfiguration:${configId}){testing{id},error}}`;
+      const methodTest = "POST";
+      Request(urlTesting, methodTest).then(response => {
+        const { data } = response.data;
+        const { createTesting } = data.createTesting;
+        const { testing } = createTesting.testing;
+        const { id } = testing.id;
+        const urlSubmit = `${API_URL_GRAPHQL}?query=mutation{submitTesting(mqttHost:"unbrake.ml",mqttPort:8080,testingId:${id}){succes}}`;
+        Request(urlSubmit, methodTest).then(() => {
+          // Alertar usuario TODO
+        });
+      });
+    });
+  }
+};
+
 const testInformations = (informations, classes) => {
   return (
     <Grid
@@ -147,6 +172,29 @@ const testInformations = (informations, classes) => {
   );
 };
 
+const renderSubmitTest = (configId, calibId) => {
+  const primalIndexStyle = 1;
+  const firstDenominatorStyle = 2;
+  const secondDenominatorStyle = 24;
+  const thirdDenominatorStyle = 32;
+  return (
+    <Button
+      onClick={submit(configId, calibId)}
+      color="secondary"
+      variant="contained"
+      style={{
+        flex:
+          primalIndexStyle / firstDenominatorStyle +
+          primalIndexStyle / secondDenominatorStyle +
+          primalIndexStyle / thirdDenominatorStyle,
+        backgroundColor: "#0cb85c"
+      }}
+    >
+      Iniciar Ensaio
+    </Button>
+  );
+};
+
 class TestData extends React.Component {
   constructor(props) {
     super(props);
@@ -169,12 +217,8 @@ class TestData extends React.Component {
     return null;
   }
 
-  handleClick() {
-    // Fazer requisição de calib e conf
-  }
-
   render() {
-    const { classes } = this.props;
+    const { classes, configId, calibId } = this.props;
     const { data } = this.state;
     const { TES, TEI, TEC, SA, TS, DTE } = data;
 
@@ -215,19 +259,7 @@ class TestData extends React.Component {
             {testProgress(testPro, classes)}
           </Grid>
           <Grid container item justify="center" style={{ flex: 1 }}>
-            {
-              <Button
-                onClick={this.handleClick}
-                color="secondary"
-                variant="contained"
-                style={{
-                  flex: 1 / 2 + 1 / 24 + 1 / 32,
-                  backgroundColor: "#0cb85c"
-                }}
-              >
-                Iniciar Ensaio
-              </Button>
-            }
+            {renderSubmitTest(configId, calibId)}
           </Grid>
         </Grid>
       </Grid>
@@ -237,11 +269,24 @@ class TestData extends React.Component {
 
 TestData.propTypes = {
   classes: PropTypes.objectOf(PropTypes.string).isRequired,
-  newData: PropTypes.oneOfType([PropTypes.object]).isRequired
+  newData: PropTypes.oneOfType([PropTypes.object]).isRequired,
+  calibId: PropTypes.string.isRequired,
+  configId: PropTypes.string.isRequired
+};
+const mapStateToProps = state => {
+  return {
+    configName: state.testReducer.configName,
+    configId: state.testReducer.configId,
+    calibName: state.testReducer.calibName,
+    calibId: state.testReducer.calibId
+  };
 };
 
 const TestDataForm = reduxForm({
   form: "testData"
 })(TestData);
 
-export default withStyles(styles)(TestDataForm);
+export default connect(
+  mapStateToProps,
+  null
+)(withStyles(styles)(TestDataForm));

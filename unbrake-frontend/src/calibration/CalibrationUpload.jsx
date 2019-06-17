@@ -189,7 +189,6 @@ class CalibrationUpload extends React.Component {
 
     const query = createQuery();
     const url = `${API_URL_GRAPHQL}?query=query{calibration(id:${id}){${query}}}`;
-    console.log(id);
     const method = "GET";
 
     Request(url, method).then(response => {
@@ -322,7 +321,8 @@ const mapDispatchToProps = dispatch => ({
 const mapStateToProps = state => ({
   calibration: state.form.calibration,
   filename: state.fileReducer.filename,
-  calibration: state.form.calibration
+  configId: state.testReducer.configId,
+  calibId: state.testReducer.calibId
 });
 
 const Upload = reduxForm({
