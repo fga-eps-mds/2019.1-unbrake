@@ -1,5 +1,8 @@
-import { API_URL_GRAPHQL } from "../utils/Constants";
+import React from "react";
+import { Grid, Paper, IconButton } from "@material-ui/core";
+import CloudUploadIcon from "@material-ui/icons/CloudUpload";
 import Request from "../utils/Request";
+import { API_URL_GRAPHQL } from "../utils/Constants";
 
 export const query =
   "id, name, number, time, temperature, timeBetweenCycles, upperLimit, inferiorLimit, upperTime, inferiorTime, disableShutdown, enableOutput";
@@ -54,6 +57,39 @@ export const createConfig = data => {
     }
   };
   return configurationDefault;
+};
+
+export const renderUploadField = (classes, fileUpload, names) => {
+  return (
+    <Grid container item xs={10} alignItems="center" justify="center">
+      <Grid item xs={4} className={classes.title}>
+        <h2>Upload arquivo de {names.archive}</h2>
+      </Grid>
+
+      <Grid item xs={4} className={classes.grid}>
+        <label htmlFor="contained-button-file">
+          <input
+            id="contained-button-file"
+            type="file"
+            name={names.field}
+            className={classes.input}
+            onChange={e => fileUpload(e.target.files[0], names.field)}
+          />
+          <Paper className={classes.rootUploadFile}>
+            <IconButton component="span">
+              <CloudUploadIcon style={{ color: "black" }} />
+            </IconButton>
+            <span
+              className={classes.input_file_name}
+              placeholder="Upload do arquivo de configuração"
+            >
+              {names.fileName}
+            </span>
+          </Paper>
+        </label>
+      </Grid>
+    </Grid>
+  );
 };
 
 export default createConfig;

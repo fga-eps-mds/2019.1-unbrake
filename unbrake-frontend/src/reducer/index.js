@@ -5,6 +5,7 @@ import AuthReducer from "./AuthReducer";
 import NotificationReducer from "./NotificationReducer";
 import RedirectReducer from "./RedirectReducer";
 import FileReducer from "./FileReducer";
+import TestReducer from "./TestReducer";
 
 const reducers = combineReducers({
   form: reduxFormReducer,
@@ -12,7 +13,8 @@ const reducers = combineReducers({
   authReducer: AuthReducer,
   notificationReducer: NotificationReducer,
   redirect: RedirectReducer,
-  fileReducer: FileReducer
+  fileReducer: FileReducer,
+  testReducer: TestReducer
 });
 
 export default reducers;

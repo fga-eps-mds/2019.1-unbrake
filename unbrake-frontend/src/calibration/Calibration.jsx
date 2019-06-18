@@ -245,6 +245,7 @@ class Calibration extends React.Component {
 
   handleChangeId(name, value) {
     const idsCalibrations = { [name]: value };
+
     this.setState(prevState => ({
       idsCalibrations: { ...prevState.idsCalibrations, ...idsCalibrations }
     }));
@@ -296,12 +297,6 @@ Calibration.propTypes = {
   sendMessage: PropTypes.func.isRequired
 };
 
-function mapStateToProps(state) {
-  return {
-    calibration: state.form.calibration
-  };
-}
-
 Calibration.defaultProps = {
   calibration: { values: {} }
 };
@@ -315,7 +310,4 @@ Calibration.propTypes = {
   calibration: PropTypes.objectOf(PropTypes.string)
 };
 
-export default connect(
-  mapStateToProps,
-  mapDispatchToProps
-)(withStyles(styles)(Calibration));
+export default connect(mapDispatchToProps)(withStyles(styles)(Calibration));

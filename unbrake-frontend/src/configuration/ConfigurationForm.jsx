@@ -179,9 +179,15 @@ const otherField = (classes, vector, handleChange) => {
 
 const Buttons = classes => {
   return (
-    <Grid container item xs={3} className={classes.grid}>
+    <Grid
+      container
+      item
+      xs={6}
+      className={classes.grid}
+      style={{ position: "fixed", left: "46%" }}
+    >
       <Button type="submit" color="secondary" variant="contained">
-        Cadastrar
+        Cadastrar Nova
       </Button>
     </Grid>
   );
