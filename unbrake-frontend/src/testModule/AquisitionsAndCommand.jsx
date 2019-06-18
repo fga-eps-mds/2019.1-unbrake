@@ -1,10 +1,13 @@
 import React from "react";
+import { connect } from "react-redux";
 import PropTypes from "prop-types";
 import { reduxForm, Field, initialize } from "redux-form";
 import { withStyles, Grid, FormControlLabel } from "@material-ui/core";
 import { Checkbox } from "redux-form-material-ui";
+import Button from "@material-ui/core/Button";
 import SettingsInputComponent from "@material-ui/icons/SettingsInputComponent";
 import SettingsInputComponentOutlined from "@material-ui/icons/SettingsInputComponentOutlined";
+import { redirectPage } from "../actions/RedirectActions";
 import styles from "./Styles";
 import { field } from "../components/ComponentsForm";
 
@@ -43,6 +46,14 @@ const labelFields = name => {
       break;
   }
   return nameLabel;
+};
+
+const previousButton = handlePrevious => {
+  return (
+    <Button onClick={handlePrevious} color="secondary" variant="contained">
+      Etapa anterior
+    </Button>
+  );
 };
 
 const allCheckbox = (selectsControl, classes, handleChange) => {
@@ -181,6 +192,7 @@ class AquisitionsAndCommand extends React.Component {
       }
     };
     this.handleChange = this.handleChange.bind(this);
+    this.handlePrevious = this.handlePrevious.bind(this);
   }
 
   shouldComponentUpdate(nextProps) {
@@ -192,6 +204,11 @@ class AquisitionsAndCommand extends React.Component {
       return true;
     }
     return false;
+  }
+
+  handlePrevious() {
+    const { redirect } = this.props;
+    redirect({ url: "/calibration" });
   }
 
   handleChange(event) {
@@ -209,7 +226,12 @@ class AquisitionsAndCommand extends React.Component {
     const states = renderDictionary(aquisition);
     return (
       <Grid container xs={12} item justify="center">
-        <h3>Aquisições e comandos</h3>
+        <Grid item xs={4} container justify="center" alignItems="center">
+          {previousButton(this.handlePrevious)}
+        </Grid>
+        <Grid item xs container justify="center" alignItems="center">
+          <h3>Aquisições e comandos</h3>
+        </Grid>
         <form className={classes.container}>
           <Grid container item justify="center" xs={12}>
             {allFields(states, classes, this.handleChange)}
@@ -223,11 +245,19 @@ class AquisitionsAndCommand extends React.Component {
 AquisitionsAndCommand.propTypes = {
   classes: PropTypes.objectOf(PropTypes.string).isRequired,
   dispatch: PropTypes.func.isRequired,
-  newAquisition: PropTypes.oneOfType([PropTypes.object]).isRequired
+  newAquisition: PropTypes.oneOfType([PropTypes.object]).isRequired,
+  redirect: PropTypes.func.isRequired
 };
+
+const mapDispatchToProps = dispatch => ({
+  redirect: payload => dispatch(redirectPage(payload))
+});
 
 const AquisitionsAndCommandForm = reduxForm({
   form: "testAquisition"
 })(AquisitionsAndCommand);
 
-export default withStyles(styles)(AquisitionsAndCommandForm);
+export default connect(
+  null,
+  mapDispatchToProps
+)(withStyles(styles)(AquisitionsAndCommandForm));

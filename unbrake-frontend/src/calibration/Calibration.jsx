@@ -6,12 +6,7 @@ import AppBar from "@material-ui/core/AppBar";
 import Tabs from "@material-ui/core/Tabs";
 import Tab from "@material-ui/core/Tab";
 import PropTypes from "prop-types";
-import { Button, Dialog } from "@material-ui/core";
-import TextField from "@material-ui/core/TextField";
-import DialogActions from "@material-ui/core/DialogActions";
-import DialogContent from "@material-ui/core/DialogContent";
-import DialogContentText from "@material-ui/core/DialogContentText";
-import DialogTitle from "@material-ui/core/DialogTitle";
+import Button from "@material-ui/core/Button";
 import Grid from "@material-ui/core/Grid";
 import CalibrationUpload from "./CalibrationUpload";
 import Vibration from "./Vibration";
@@ -22,16 +17,20 @@ import Speed from "./Speed";
 import Relation from "./Relation";
 import { messageSistem } from "../actions/NotificationActions";
 import { createMutationUrl } from "../utils/Request";
+import { redirectPage } from "../actions/RedirectActions";
 import {
   allVariablesCalib,
   createAllCalibrations,
   variablesCalib,
   createCalibration,
+  createDefaultCalibration,
   empty,
-  labels
+  labels,
+  sendMessageFunction,
+  styles,
+  dialogName
 } from "./CalibrationVariables";
 
-const borderRadius = 1.5;
 const generalConfigsOption = 0;
 const temperatureOption = 1;
 const forceOption = 2;
@@ -42,25 +41,6 @@ const relationOption = 6;
 const sizeMessageDefault = 14;
 const invalidID = -1;
 let createMessage = "";
-
-const styles = theme => ({
-  root: {
-    flexGrow: 1,
-    width: "100%",
-    marginTop: "90px"
-  },
-  appBar: {
-    borderRadius: theme.spacing.unit * borderRadius
-  }
-});
-
-const sendMessageFunction = (sendMessage, message, variante) => {
-  sendMessage({
-    message,
-    variante,
-    condition: true
-  });
-};
 
 const validadeFields = (calibration, sendMessage) => {
   createMessage = allVariablesCalib.reduce((prevMessage, newDictionary) => {
@@ -105,15 +85,12 @@ const firstRequests = async values => {
   return calibration;
 };
 
-const saveCalibration = async (values, sendMessage, handleChangeId) => {
-  const validate = validadeFields(values.calibration, sendMessage);
-  if (validate === false) return;
-
-  const idsCalibration = await firstRequests(values, handleChangeId);
+const saveCalibration = async (values, sendMessage, redirect) => {
+  const idsCalibration = await firstRequests(values);
   idsCalibration.name = values.name;
 
   const responseSaved = await createMutationUrl(
-    createCalibration,
+    values.createCalibration,
     variablesCalib,
     idsCalibration
   );
@@ -124,42 +101,8 @@ const saveCalibration = async (values, sendMessage, handleChangeId) => {
   } else {
     createMessage = "Calibração cadastrada com sucesso";
     sendMessageFunction(sendMessage, createMessage, "success");
+    redirect({ url: "/test" });
   }
-};
-
-const dialogName = (functions, states) => {
-  return (
-    <Dialog
-      open={states.open}
-      onClose={functions.handleClose}
-      aria-labelledby="form-dialog-title"
-    >
-      <DialogTitle id="form-dialog-title">Nome da Calibração</DialogTitle>
-      <DialogContent>
-        <DialogContentText>
-          Insira aqui o nome que você deseja dar para este arquivo de Calibração
-        </DialogContentText>
-        <TextField
-          autoFocus
-          margin="dense"
-          name="name"
-          label="Nome"
-          type="text"
-          onChange={functions.handleChangeStates}
-          value={states.name}
-          fullWidth
-        />
-      </DialogContent>
-      <DialogActions>
-        <Button onClick={functions.handleClose} color="primary">
-          Cancelar
-        </Button>
-        <Button onClick={() => functions.handleSubmit()} color="primary">
-          Cadastrar
-        </Button>
-      </DialogActions>
-    </Dialog>
-  );
 };
 
 const GeneralConfigs = () => (
@@ -169,6 +112,30 @@ const GeneralConfigs = () => (
     </div>
   </div>
 );
+
+const previousButton = handlePrevious => {
+  return (
+    <Button onClick={handlePrevious} color="secondary" variant="contained">
+      Etapa anterior
+    </Button>
+  );
+};
+
+const registerButton = handleValidate => {
+  return (
+    <Button color="secondary" variant="contained" onClick={handleValidate}>
+      Cadastrar
+    </Button>
+  );
+};
+
+const nextButton = handleNext => {
+  return (
+    <Button onClick={handleNext} color="secondary" variant="contained">
+      Próxima etapa
+    </Button>
+  );
+};
 
 const appBar = (functions, classes, value) => {
   return (
@@ -196,13 +163,15 @@ const appBar = (functions, classes, value) => {
         justify="center"
         style={{ marginTop: "15px" }}
       >
-        <Button
-          color="secondary"
-          variant="contained"
-          onClick={functions.handleValidate}
-        >
-          Cadastrar
-        </Button>
+        <Grid item xs={3} container justify="center" alignItems="center">
+          {previousButton(functions.handlePrevious)}
+        </Grid>
+        <Grid item xs={4} container justify="center" alignItems="center">
+          {registerButton(functions.handleValidate)}
+        </Grid>
+        <Grid item xs={4} container justify="center" alignItems="center">
+          {nextButton(functions.handleNext)}
+        </Grid>
       </Grid>
       {value === generalConfigsOption && GeneralConfigs()}
       {value === temperatureOption && <Temperature />}
@@ -221,14 +190,31 @@ class Calibration extends React.Component {
     this.state = {
       open: false,
       value: 0,
-      name: ""
+      name: "",
+      isDefault: false
     };
     this.handleChange = this.handleChange.bind(this);
     this.handleValidate = this.handleValidate.bind(this);
     this.handleSubmit = this.handleSubmit.bind(this);
-    this.handleChangeId = this.handleChangeId.bind(this);
     this.handleClose = this.handleClose.bind(this);
     this.handleChangeStates = this.handleChangeStates.bind(this);
+    this.handleIsDefault = this.handleIsDefault.bind(this);
+    this.handleNext = this.handleNext.bind(this);
+    this.handlePrevious = this.handlePrevious.bind(this);
+  }
+
+  handleNext() {
+    const { redirect } = this.props;
+    redirect({ url: "/test" });
+  }
+
+  handlePrevious() {
+    const { redirect } = this.props;
+    redirect({ url: "/configuration" });
+  }
+
+  handleIsDefault(event) {
+    this.setState({ isDefault: event.target.checked });
   }
 
   handleClose() {
@@ -243,43 +229,51 @@ class Calibration extends React.Component {
     this.setState({ [event.target.name]: event.target.value });
   }
 
-  handleChangeId(name, value) {
-    const idsCalibrations = { [name]: value };
-
-    this.setState(prevState => ({
-      idsCalibrations: { ...prevState.idsCalibrations, ...idsCalibrations }
-    }));
-  }
-
   handleValidate() {
     const { calibration, sendMessage } = this.props;
 
     const validate = validadeFields(calibration.values, sendMessage);
     if (validate === false) return;
 
-    this.setState({ open: true });
+    const inserName = { open: true, isDefault: false, name: "" };
+    this.setState(prevState => ({ ...prevState, ...inserName }));
   }
 
   handleSubmit() {
-    const { calibration, sendMessage } = this.props;
-    const { name } = this.state;
-    const values = { calibration: calibration.values, name };
+    const { calibration, sendMessage, redirect } = this.props;
+    const { name, isDefault } = this.state;
+    const values = { calibration: calibration.values, name, createCalibration };
 
+    if (name === "") {
+      sendMessageFunction(
+        sendMessage,
+        "O nome é obrigatório para cadastrar a calibração",
+        "error"
+      );
+
+      return;
+    }
     this.setState({ open: false });
 
-    saveCalibration(values, sendMessage, this.handleChangeId);
+    if (isDefault === true) values.createCalibration = createDefaultCalibration;
+    else values.createCalibration = createCalibration;
+
+    saveCalibration(values, sendMessage, redirect);
   }
 
   render() {
     const { classes } = this.props;
-    const { value, name, open } = this.state;
-    const states = { name, open };
+    const { value, name, open, isDefault } = this.state;
+    const states = { name, open, isDefault };
     const functions = {
       handleClose: this.handleClose,
       handleChangeStates: this.handleChangeStates,
       handleSubmit: this.handleSubmit,
       handleChange: this.handleChange,
-      handleValidate: this.handleValidate
+      handleValidate: this.handleValidate,
+      handleIsDefault: this.handleIsDefault,
+      handleNext: this.handleNext,
+      handlePrevious: this.handlePrevious
     };
 
     return (
@@ -294,7 +288,8 @@ class Calibration extends React.Component {
 }
 
 Calibration.propTypes = {
-  sendMessage: PropTypes.func.isRequired
+  sendMessage: PropTypes.func.isRequired,
+  redirect: PropTypes.func.isRequired
 };
 
 Calibration.defaultProps = {
@@ -302,12 +297,22 @@ Calibration.defaultProps = {
 };
 
 const mapDispatchToProps = dispatch => ({
-  sendMessage: payload => dispatch(messageSistem(payload))
+  sendMessage: payload => dispatch(messageSistem(payload)),
+  redirect: payload => dispatch(redirectPage(payload))
 });
+
+function mapStateToProps(state) {
+  return {
+    calibration: state.form.calibration
+  };
+}
 
 Calibration.propTypes = {
   classes: PropTypes.objectOf(PropTypes.string).isRequired,
   calibration: PropTypes.objectOf(PropTypes.string)
 };
 
-export default connect(mapDispatchToProps)(withStyles(styles)(Calibration));
+export default connect(
+  mapStateToProps,
+  mapDispatchToProps
+)(withStyles(styles)(Calibration));

@@ -11,25 +11,8 @@ const limits = (value, allValues) => {
     : undefined;
 };
 
-const validate = values => {
-  const errors = {};
-  const requiredFields = [
-    "TAS",
-    "TAT",
-    "UWT",
-    "NOS",
-    "LSL",
-    "USL",
-    "TBS",
-    "LWT"
-  ];
-  requiredFields.forEach(field => {
-    if (!values[field]) {
-      errors[field] = "Campo obrigatório";
-    }
-  });
-  return errors;
-};
+export const required = value =>
+  value || typeof value === "number" ? undefined : "Obrigatório";
 
 const fieldsLabels = {
   NOS: "Numero de Snubs",
@@ -67,21 +50,23 @@ const rowsFields = (classes, vector, handleChange) => {
     }
     return (
       <Grid key={`row${nameField}`} container xs={3} item justify="center">
-        <div>
-          <Field
-            id={nameField}
-            component={TextField}
-            label={fieldsLabels[nameField]}
-            onChange={handleChange}
-            type="number"
-            name={nameField}
-            validate={nameField === "USL" || nameField === "LSL" ? limits : []}
-            className={classes.textField}
-            margin="normal"
-            variant="outlined"
-            value={value.value}
-          />
-        </div>
+        <Field
+          id={nameField}
+          component={TextField}
+          label={fieldsLabels[nameField]}
+          onChange={handleChange}
+          type="number"
+          name={nameField}
+          validate={
+            nameField === "USL" || nameField === "LSL"
+              ? [limits, required]
+              : required
+          }
+          className={classes.textField}
+          margin="normal"
+          variant="outlined"
+          value={value.value}
+        />
       </Grid>
     );
   });
@@ -151,6 +136,7 @@ const CommunGrid = (classes, type, handleChange) => {
         type="number"
         name={type.name}
         className={classes.textField}
+        validate={required}
         margin="normal"
         variant="outlined"
       />
@@ -158,8 +144,27 @@ const CommunGrid = (classes, type, handleChange) => {
   );
 };
 
+const buttons = classes => {
+  return (
+    <Grid
+      container
+      item
+      xs={12}
+      alignItems="center"
+      justify="center"
+      className={classes.grid}
+    >
+      <Button type="submit" color="secondary" variant="contained">
+        Cadastrar
+      </Button>
+    </Grid>
+  );
+};
+
 const otherField = (classes, vector, handleChange) => {
-  const fields = vector.map(value => {
+  const firstCase = 0;
+  const secondCase = 1;
+  const fields = vector.map((value, index) => {
     return (
       <Grid
         key={`other${value[1].name}`}
@@ -170,28 +175,37 @@ const otherField = (classes, vector, handleChange) => {
       >
         {checkBox(classes, value[0], handleChange)}
         {CommunGrid(classes, value[1], handleChange)}
-        <Grid item container xs={3} />
+        {index === firstCase && (
+          <Grid container xs={3} item justify="center" alignItems="center" />
+        )}
+        {index === secondCase && (
+          <Grid container xs={3} item justify="center" alignItems="center">
+            {buttons(classes)}
+          </Grid>
+        )}
       </Grid>
     );
   });
   return fields;
 };
 
-const Buttons = classes => {
-  return (
-    <Grid
-      container
-      item
-      xs={6}
-      className={classes.grid}
-      style={{ position: "fixed", left: "46%" }}
-    >
-      <Button type="submit" color="secondary" variant="contained">
-        Cadastrar Nova
-      </Button>
-    </Grid>
-  );
-};
+/*
+ * const Buttons = classes => {
+ *   return (
+ *     <Grid
+ *       container
+ *       item
+ *       xs={6}
+ *       className={classes.grid}
+ *       style={{ position: "fixed", left: "46%" }}
+ *     >
+ *       <Button type="submit" color="secondary" variant="contained">
+ *         Cadastrar Nova
+ *       </Button>
+ *     </Grid>
+ *   );
+ * };
+ */
 
 const verifyCheckbox = variable => {
   let bool;
@@ -282,17 +296,6 @@ class ConfigurationForm extends React.Component {
       >
         {fieldsConfigurations(classes, rows, this.handleChange)}
         {otherField(classes, othersFields, this.handleChange)}
-        <Grid container xs={12} item justify="center">
-          <Grid
-            item
-            container
-            xs={6}
-            justify="center"
-            className={classes.gridButton}
-          >
-            {Buttons(classes)}
-          </Grid>
-        </Grid>
       </form>
     );
   }
@@ -308,7 +311,6 @@ ConfigurationForm.propTypes = {
 
 const Configurationa = reduxForm({
   form: "configuration",
-  validate,
   destroyOnUnmount: false
 })(ConfigurationForm);
 
