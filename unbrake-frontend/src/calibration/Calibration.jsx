@@ -291,12 +291,6 @@ Calibration.propTypes = {
   redirect: PropTypes.func.isRequired
 };
 
-function mapStateToProps(state) {
-  return {
-    calibration: state.form.calibration
-  };
-}
-
 Calibration.defaultProps = {
   calibration: { values: {} }
 };
@@ -312,6 +306,6 @@ Calibration.propTypes = {
 };
 
 export default connect(
-  mapStateToProps,
+  null,
   mapDispatchToProps
 )(withStyles(styles)(Calibration));

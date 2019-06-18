@@ -189,6 +189,24 @@ const otherField = (classes, vector, handleChange) => {
   return fields;
 };
 
+/*
+ * const Buttons = classes => {
+ *   return (
+ *     <Grid
+ *       container
+ *       item
+ *       xs={6}
+ *       className={classes.grid}
+ *       style={{ position: "fixed", left: "46%" }}
+ *     >
+ *       <Button type="submit" color="secondary" variant="contained">
+ *         Cadastrar Nova
+ *       </Button>
+ *     </Grid>
+ *   );
+ * };
+ */
+
 const verifyCheckbox = variable => {
   let bool;
   if (variable === "FALSE" || variable === false) {
