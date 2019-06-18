@@ -85,7 +85,7 @@ const firstRequests = async values => {
   return calibration;
 };
 
-const saveCalibration = async (values, sendMessage) => {
+const saveCalibration = async (values, sendMessage, redirect) => {
   const idsCalibration = await firstRequests(values);
   idsCalibration.name = values.name;
 
@@ -101,6 +101,7 @@ const saveCalibration = async (values, sendMessage) => {
   } else {
     createMessage = "Calibração cadastrada com sucesso";
     sendMessageFunction(sendMessage, createMessage, "success");
+    redirect({ url: "/test" });
   }
 };
 
@@ -239,7 +240,7 @@ class Calibration extends React.Component {
   }
 
   handleSubmit() {
-    const { calibration, sendMessage } = this.props;
+    const { calibration, sendMessage, redirect } = this.props;
     const { name, isDefault } = this.state;
     const values = { calibration: calibration.values, name, createCalibration };
 
@@ -257,7 +258,7 @@ class Calibration extends React.Component {
     if (isDefault === true) values.createCalibration = createDefaultCalibration;
     else values.createCalibration = createCalibration;
 
-    saveCalibration(values, sendMessage);
+    saveCalibration(values, sendMessage, redirect);
   }
 
   render() {
@@ -300,12 +301,18 @@ const mapDispatchToProps = dispatch => ({
   redirect: payload => dispatch(redirectPage(payload))
 });
 
+function mapStateToProps(state) {
+  return {
+    calibration: state.form.calibration
+  };
+}
+
 Calibration.propTypes = {
   classes: PropTypes.objectOf(PropTypes.string).isRequired,
   calibration: PropTypes.objectOf(PropTypes.string)
 };
 
 export default connect(
-  null,
+  mapStateToProps,
   mapDispatchToProps
 )(withStyles(styles)(Calibration));
