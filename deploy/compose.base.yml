@@ -24,6 +24,7 @@ services:
       - api-django-secret-key
       - postgres_password
       - mqtt-reading-key
+      - mqtt-writing-key
 
   frontend:
     image: 'unbrake/frontend:latest'
@@ -67,6 +68,8 @@ services:
 secrets:
   api-django-secret-key:
     file: secrets/API_DJANGO_SECRET_KEY
+  mqtt-writing-key:
+    file: secrets/MQTT_WRITING_KEY
   postgres_password:
     file: secrets/DB_PASSWORD
   mqtt-reading-key:

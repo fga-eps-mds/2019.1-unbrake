@@ -11,7 +11,7 @@ import { base10, MQTT_HOST, MQTT_PORT } from "../utils/Constants";
 const labelSecondary = name => {
   let nameLabel = "";
   switch (name) {
-    case "Vkm":
+    case "Vkmh":
       nameLabel = "Velocidade (Km/h)";
       break;
     case "Vms":
@@ -27,7 +27,7 @@ const labelSecondary = name => {
   return nameLabel;
 };
 
-const label = name => {
+export const labelSpeed = name => {
   let nameLabel = "";
   switch (name) {
     case "CHR1":
@@ -51,7 +51,7 @@ const label = name => {
 
 const renderField = (states, classes, handleChange) => {
   const type = states;
-  type.label = label(states.name);
+  type.label = labelSpeed(states.name);
   return <React.Fragment>{field(type, classes, handleChange)}</React.Fragment>;
 };
 
@@ -93,17 +93,17 @@ const allFields = (states, classes, handleChange) => {
 
 const renderDictionary = speed => {
   const directionary = [
-    [{ name: "CHR1", value: speed.CHA, disable: true }],
+    [{ name: "CHR1", value: speed.CHR1, disable: true }],
     [
       { name: "Fhz", value: speed.Fhz, disable: true },
-      { name: "Vkm", value: speed.Vkm, disable: true }
+      { name: "Vkmh", value: speed.Vkmh, disable: true }
     ],
     [
       { name: "Rrpm", value: speed.Rrpm, disable: true },
       { name: "Vms", value: speed.Vms, disable: true }
     ],
     [
-      { name: "RAP", value: speed.RPm, disable: false },
+      { name: "RAP", value: speed.RAP, disable: false },
       { name: "DPkm", value: speed.DPkm, disable: true }
     ]
   ];
@@ -115,11 +115,11 @@ class Speed extends React.Component {
     super(props);
     this.state = {
       speed: {
-        CHA: "", // canal de aquisição
+        CHR1: "", // canal de aquisição
         Fhz: "", // frequencia
+        Vkmh: "", // velocidade km/h
         Rrpm: "", // rotação
-        RPm: "", // raio pneu
-        Vkm: "", // velocidade km/h
+        RAP: "", // raio pneu
         Vms: "", // velocidade m/s
         DPkm: "" // distância percorrida
       }
@@ -166,7 +166,7 @@ class Speed extends React.Component {
         xs={12}
         item
         justify="center"
-        style={{ marginTop: "70px" }}
+        style={{ marginTop: "10px" }}
       >
         <Grid alignItems="center" justify="center" container>
           <form className={classes.container}>

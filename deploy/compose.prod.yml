@@ -15,6 +15,8 @@ services:
     volumes:
       - "./frontend/nginx.prod.conf:/etc/nginx/nginx.conf"
       - "./https_certificate.crt:/etc/nginx/ssl/https_certificate.crt"
+    ports:
+      - "443:443"
     secrets:
       - https_key
 

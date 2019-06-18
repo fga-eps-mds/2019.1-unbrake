@@ -6,7 +6,6 @@ import Paper from "@material-ui/core/Paper";
 import Typography from "@material-ui/core/Typography";
 import { withStyles } from "@material-ui/core/styles";
 import Cookies from "universal-cookie";
-// import history from "../utils/history";
 import { withRouter } from "react-router-dom";
 import { API_URL_GRAPHQL } from "../utils/Constants";
 import { messageSistem } from "../actions/NotificationActions";

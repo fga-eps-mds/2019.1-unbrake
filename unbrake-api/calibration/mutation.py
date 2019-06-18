@@ -3,6 +3,7 @@
 '''
 
 import graphene
+from graphql_jwt.decorators import login_required, superuser_required
 from calibration.models import (
     CalibrationVibration,
     CalibrationForce,
@@ -41,6 +42,7 @@ class CreateVibration(graphene.Mutation):
         conversion_factor = graphene.Float()
         vibration_offset = graphene.Float()
 
+    @login_required
     def mutate(self, info, acquisition_chanel,
                conversion_factor, vibration_offset):
         '''
@@ -74,6 +76,7 @@ class CreateForce(graphene.Mutation):
         conversion_factor = graphene.Float()
         force_offset = graphene.Float()
 
+    @login_required
     def mutate(self, info, acquisition_chanel,
                conversion_factor, force_offset):
         '''
@@ -106,6 +109,7 @@ class CreateSpeed(graphene.Mutation):
         acquisition_chanel = graphene.Int()
         tire_radius = graphene.Float()
 
+    @login_required
     def mutate(self, info, acquisition_chanel, tire_radius):
         '''
             Recive the parameters end save the object on database
@@ -140,6 +144,7 @@ class CreateRelations(graphene.Mutation):
         sheave_move_diameter = graphene.Int()
         sheave_motor_diameter = graphene.Int()
 
+    @login_required
     def mutate(self, info, transversal_selection_width, heigth_width_relation,
                rim_diameter, sync_motor_rodation, sheave_move_diameter,
                sheave_motor_diameter):
@@ -177,6 +182,7 @@ class CreateTemperature(graphene.Mutation):
         conversion_factor = graphene.Float()
         temperature_offset = graphene.Float()
 
+    @login_required
     def mutate(self, info, acquisition_chanel,
                conversion_factor, temperature_offset):
         '''
@@ -213,6 +219,7 @@ class CreateCommand(graphene.Mutation):
         actual_pression = graphene.Float()
         max_pression = graphene.Float()
 
+    @login_required
     def mutate(self, info, command_chanel_speed, actual_speed, max_speed,
                chanel_command_pression, actual_pression, max_pression):
         '''
@@ -255,6 +262,7 @@ class CreateCalibration(graphene.Mutation):
         id_second_temperature = graphene.Int()
         id_command = graphene.Int()
 
+    @login_required
     def mutate(
             self,
             info,
@@ -304,6 +312,78 @@ class CreateCalibration(graphene.Mutation):
         return CreateCalibration(calibration=calibration)
 
 
+class CreateDefaultCalibration(graphene.Mutation):
+    # pylint: disable =  unused-argument, no-self-use, too-many-arguments
+    # pylint: disable = too-many-locals
+    '''
+        Class to create a new Calibration object on bata base
+    '''
+    calibration = graphene.Field(CalibrationType)
+
+    class Arguments:
+        '''
+            Arguments required to create a new Calibration
+        '''
+        name = graphene.String()
+        id_vibration = graphene.Int()
+        id_first_force = graphene.Int()
+        id_second_force = graphene.Int()
+        id_speed = graphene.Int()
+        id_relations = graphene.Int()
+        id_first_temperature = graphene.Int()
+        id_second_temperature = graphene.Int()
+        id_command = graphene.Int()
+
+    @superuser_required
+    def mutate(
+            self,
+            info,
+            name,
+            id_vibration,
+            id_first_force,
+            id_second_force,
+            id_speed,
+            id_relations,
+            id_first_temperature,
+            id_second_temperature,
+            id_command):
+        '''
+            Define how the argumets are used to create the object on db
+        '''
+        vibration = CalibrationVibration.objects.get(id=id_vibration)
+        first_force = CalibrationForce.objects.get(id=id_first_force)
+        second_force = CalibrationForce.objects.get(id=id_second_force)
+        speed = CalibrationSpeed.objects.get(id=id_speed)
+        relations = CalibrationRelations.objects.get(id=id_relations)
+        first_temperature = CalibrationTemperature.objects.get(
+            id=id_first_temperature)
+        second_temperature = CalibrationTemperature.objects.get(
+            id=id_second_temperature)
+        command = CalibrationCommand.objects.get(id=id_command)
+
+        calibration = Calibration(
+            name=name,
+            is_default=True,
+            vibration=vibration,
+            speed=speed,
+            relations=relations,
+            command=command,
+        )
+
+        calibration.save()
+        calibration.calibrationforce_set.add(first_force)
+        calibration.calibrationforce_set.add(second_force)
+        calibration.calibrationtemperature_set.add(first_temperature)
+        calibration.calibrationtemperature_set.add(second_temperature)
+
+        first_force.calibration = calibration
+        second_force.calibration = calibration
+        first_temperature.calibration = calibration
+        second_temperature.calibration = calibration
+
+        return CreateDefaultCalibration(calibration=calibration)
+
+
 class Mutation(graphene.ObjectType):
 
     '''
@@ -317,3 +397,4 @@ class Mutation(graphene.ObjectType):
     create_temperature = CreateTemperature.Field()
     create_command = CreateCommand.Field()
     create_calibration = CreateCalibration.Field()
+    create_default_calibration = CreateDefaultCalibration.Field()

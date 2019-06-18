@@ -33,15 +33,12 @@ export async function verifyToken() {
   return response.data.verifyToken.payload.username !== null;
 }
 
-export function isAuthenticated(response) {
-  if (response.data !== undefined && response.data !== null) {
-    const stringfyCookie = String(cookies.get("token"));
-    return (
-      stringfyCookie !== "undefined" &&
-      stringfyCookie !== "null" &&
-      response !== false
-    );
+export function isAuthenticated() {
+  const stringfyCookie = String(cookies.get("token"));
+  if (stringfyCookie !== "undefined" && stringfyCookie !== "null") {
+    return true;
   }
+  localStorage.clear();
   return false;
 }
 

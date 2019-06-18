@@ -31,7 +31,7 @@ const labelSecondary = name => {
   return nameLabel;
 };
 
-const label = name => {
+export const labelCommand = name => {
   let nameLabel = "";
   switch (name) {
     case "MAVC":
@@ -61,7 +61,7 @@ const label = name => {
 
 const renderField = (states, classes, handleChange) => {
   const type = states;
-  type.label = label(states.name);
+  type.label = labelCommand(states.name);
   return <React.Fragment>{field(type, classes, handleChange)}</React.Fragment>;
 };
 
@@ -104,8 +104,8 @@ const allFields = (states, classes, handleChange) => {
 const renderDictionary = command => {
   const directionary = [
     [
-      { name: "CHVC", value: command.CCv, disable: true },
-      { name: "CHPC", value: command.CCp, disable: true }
+      { name: "CHVC", value: command.CHVC, disable: true },
+      { name: "CHPC", value: command.CHPC, disable: true }
     ],
     [
       { name: "Vdc", value: command.Vdc, disable: true },
@@ -116,12 +116,12 @@ const renderDictionary = command => {
       { name: "PCmv", value: command.PCmv, disable: true }
     ],
     [
-      { name: "CUVC", value: command.Vkmh, disable: false },
-      { name: "CUPC", value: command.Pb, disable: false }
+      { name: "CUVC", value: command.CUVC, disable: false },
+      { name: "CUPC", value: command.CUPC, disable: false }
     ],
     [
-      { name: "MAVC", value: command.VMkmh, disable: false },
-      { name: "MAPC", value: command.PMb, disable: false }
+      { name: "MAVC", value: command.MAVC, disable: false },
+      { name: "MAPC", value: command.MAPC, disable: false }
     ]
   ];
   return directionary;
@@ -132,12 +132,12 @@ class Command extends React.Component {
     super(props);
     this.state = {
       command: {
-        CCv: "", // Canal - comando / velocidade
-        CCp: "", // Canal - comando / pressão
-        Vkmh: "", // Velocidade (km/h)
-        Pb: "", // Pressão (Bar)
-        VMkmh: "", // Velocidade máxima (kmh)
-        PMb: "", // Pressão máxima (Bar)
+        CHVC: "", // Canal - comando / velocidade
+        CHPC: "", // Canal - comando / pressão
+        CUVC: "", // Velocidade (km/h)
+        CUPC: "", // Pressão (Bar)
+        MAVC: "", // Velocidade máxima (kmh)
+        MAPC: "", // Pressão máxima (Bar)
         Vdc: "", // Velocidade (Duty Cycle)
         Pdc: "", // Pressão (Duty Cycle)
         VCmv: "", // Velocidade comando (mV)
@@ -194,7 +194,7 @@ class Command extends React.Component {
         xs={12}
         item
         justify="center"
-        style={{ marginTop: "70px" }}
+        style={{ marginTop: "10px" }}
       >
         <Grid alignItems="center" justify="center" container>
           <form className={classes.container}>

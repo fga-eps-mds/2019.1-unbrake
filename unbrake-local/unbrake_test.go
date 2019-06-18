@@ -4,24 +4,6 @@ import (
 	"testing"
 )
 
-func TestHandleAcelerate(t *testing.T) {
-
-	snub := Snub{state: acelerate}
-	snub.handleAcelerate()
-
-	if snub.state != brake {
-		t.Errorf("Wrong state %v != %v\n", snub.state, brake)
-	}
-
-	snub.state = acelerateWater
-	snub.handleAcelerate()
-
-	if snub.state != brakeWater {
-		t.Errorf("Wrong state %v != %v\n", snub.state, brakeWater)
-	}
-
-}
-
 func TestUpdateStateWater(t *testing.T) {
 
 	snub := Snub{state: acelerateWater}

@@ -23,12 +23,6 @@ const labelSecondary = name => {
     case "OFT2":
       nameLabel = "Offset 2";
       break;
-    case "PT1":
-      nameLabel = "Plota Temperatura 1";
-      break;
-    case "PT2":
-      nameLabel = "Plota temperatura 2";
-      break;
     default:
       nameLabel = "";
       break;
@@ -36,7 +30,7 @@ const labelSecondary = name => {
   return nameLabel;
 };
 
-const label = name => {
+export const labelTemperature = name => {
   let nameLabel = "";
   switch (name) {
     case "CHT1":
@@ -51,10 +45,10 @@ const label = name => {
     case "Tmv2":
       nameLabel = "Temperatura 2 (mv)";
       break;
-    case "TC1":
+    case "Tc1":
       nameLabel = "Temperatura 1 (°C)";
       break;
-    case "TC2":
+    case "Tc2":
       nameLabel = "Temperatura 2 (°C)";
       break;
     case "FCT1":
@@ -72,7 +66,7 @@ const label = name => {
 
 const renderField = (states, classes, handleChange) => {
   const type = states;
-  type.label = label(states.name);
+  type.label = labelTemperature(states.name);
   return <React.Fragment>{field(type, classes, handleChange)}</React.Fragment>;
 };
 
@@ -112,39 +106,28 @@ const allFields = (states, classes, handleChange) => {
   return rowns;
 };
 
-const renderDictionary = force => {
-  const {
-    CHF1,
-    CHF2,
-    FCF1,
-    FCF2,
-    Fmv1,
-    Fmv2,
-    Fkgf1,
-    Fkgf2,
-    OFF1,
-    OFF2
-  } = force;
+const renderDictionary = temperature => {
+  const { CHT1, CHT2, Tmv1, Tmv2, Tc1, Tc2, FCT1, FCT2, OFT1, OFT2 } = temperature;
   const directionary = [
     [
-      { name: "CHT1", value: CHF1, disable: true },
-      { name: "CHT2", value: CHF2, disable: true }
+      { name: "CHT1", value: CHT1, disable: true },
+      { name: "CHT2", value: CHT2, disable: true }
     ],
     [
-      { name: "Tmv1", value: Fmv1, disable: true },
-      { name: "Tmv2", value: Fmv2, disable: true }
+      { name: "Tmv1", value: Tmv1, disable: true },
+      { name: "Tmv2", value: Tmv2, disable: true }
     ],
     [
-      { name: "TC1", value: Fkgf1, disable: true },
-      { name: "TC2", value: Fkgf2, disable: true }
+      { name: "Tc1", value: Tc1, disable: true },
+      { name: "Tc2", value: Tc2, disable: true }
     ],
     [
-      { name: "FCT1", value: FCF1, disable: false },
-      { name: "FCT2", value: FCF2, disable: false }
+      { name: "FCT1", value: FCT1, disable: false },
+      { name: "FCT2", value: FCT2, disable: false }
     ],
     [
-      { name: "OFT1", value: OFF1, disable: false },
-      { name: "OFT2", value: OFF2, disable: false }
+      { name: "OFT1", value: OFT1, disable: false },
+      { name: "OFT2", value: OFT2, disable: false }
     ]
   ];
   return directionary;
@@ -154,17 +137,17 @@ class Temperature extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
-      force: {
-        CHF1: "", // canal de aquisição 1
-        CHF2: "", // canal de aquisição 2
-        Fmv1: "100", // força (mv) 1
-        Fmv2: "", // força (mv) 2
-        Fkgf1: "", // força (kgf) 1
-        Fkgf2: "", // força (kgf) 2
-        FCF1: "", // fator de conversão 1
-        FCF2: "", // fator de conversão 2
-        OFF1: "", // offset de força 1
-        OFF2: "" // offset de força 2
+      temperature: {
+        CHT1: "", // canal de aquisição 1
+        CHT2: "", // canal de aquisição 2
+        Tmv1: "", // temperatura (mv) 1
+        Tmv2: "", // temperatura (mv) 2
+        Tc1: "", // temperatura (c) 1
+        Tc2: "", // temperatura (c) 2
+        FCT1: "", // fator de conversão 1
+        FCT2: "", // fator de conversão 2
+        OFT1: "", // offset de temperatura 1
+        OFT2: "" // offset de temperatura 2
       }
     };
     this.client = emitter.connect({
@@ -197,7 +180,7 @@ class Temperature extends React.Component {
         dispatch(
           change(
             "calibration",
-            "TC1",
+            "Tc1",
             conversionFunction(msg.asString(), FCT1, OFT1)
           )
         );
@@ -207,7 +190,7 @@ class Temperature extends React.Component {
         dispatch(
           change(
             "calibration",
-            "TC2",
+            "Tc2",
             conversionFunction(msg.asString(), FCT2, OFT2)
           )
         );
@@ -217,24 +200,24 @@ class Temperature extends React.Component {
 
   handleChange(event) {
     const { target } = event;
-    const value = target.type === "checkbox" ? target.checked : target.value;
-    const force = { [event.target.name]: value };
+    const value = target.value;
+    const temperature = { [event.target.name]: value };
     this.setState(prevState => ({
-      force: { ...prevState.force, ...force }
+      temperature: { ...prevState.temperature, ...temperature }
     }));
   }
 
   render() {
-    const { force } = this.state;
+    const { temperature } = this.state;
     const { classes } = this.props;
-    const states = renderDictionary(force);
+    const states = renderDictionary(temperature);
     return (
       <Grid
         container
         xs={12}
         item
         justify="center"
-        style={{ marginTop: "70px" }}
+        style={{ marginTop: "10px" }}
       >
         <Grid alignItems="center" justify="center" container>
           <form className={classes.container}>

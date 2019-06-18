@@ -22,16 +22,8 @@ class Config(models.Model):
     inferior_time = models.IntegerField()
     disable_shutdown = models.BooleanField()
     enable_output = models.BooleanField()
-    temperature = models.DecimalField(
-        blank=True,
-        null=True,
-        max_digits=10,
-        decimal_places=6)
-    time = models.DecimalField(
-        blank=True,
-        null=True,
-        max_digits=10,
-        decimal_places=6)
+    temperature = models.FloatField(default=1.0)
+    time = models.FloatField(default=1.0)
 
     def __str__(self):
         '''
