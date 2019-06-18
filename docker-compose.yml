@@ -29,6 +29,7 @@ services:
       - "8080:8080"
     secrets:
       - api-django-secret-key
+      - mqtt-writing-key
 
   codeclimate:
     container_name: 'codeclimate'
@@ -47,3 +48,5 @@ services:
 secrets:
   api-django-secret-key:
     file: ./unbrake-api/secrets/API_DJANGO_SECRET_KEY
+  mqtt-writing-key:
+    file: ./unbrake-api/secrets/MQTT_WRITING_KEY

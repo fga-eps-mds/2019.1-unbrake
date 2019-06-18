@@ -4,6 +4,7 @@
 
 import graphene
 from graphene_django.types import DjangoObjectType
+from graphql_jwt.decorators import login_required, superuser_required
 from configuration.models import Config
 
 # pylint: disable = too-few-public-methods
@@ -33,7 +34,6 @@ class CreateConfig(graphene.Mutation):
         Arguments required to create a new config
         '''
         name = graphene.String()
-        is_default = graphene.Boolean()
         number = graphene.Int()
         time_between_cycles = graphene.Int()
         upper_limit = graphene.Int()
@@ -45,6 +45,7 @@ class CreateConfig(graphene.Mutation):
         temperature = graphene.Float()
         time = graphene.Float()
 
+    @login_required
     def mutate(
             self,
             info,
@@ -88,6 +89,7 @@ class CreateDefaultConfig(graphene.Mutation):
     Class to create a new default Config object on db
     '''
     config = graphene.Field(ConfigType)
+    error = graphene.String()
 
     class Arguments:
         '''
@@ -106,6 +108,7 @@ class CreateDefaultConfig(graphene.Mutation):
         temperature = graphene.Float()
         time = graphene.Float()
 
+    @superuser_required
     def mutate(
             self,
             info,
@@ -124,42 +127,23 @@ class CreateDefaultConfig(graphene.Mutation):
             Set the othes default config as a ordinary Config
             and define a new default Config
         '''
-        last_default_config = Config.objects.exclude(is_default=False)
+        config = Config(
+            name=name,
+            is_default=True,
+            number=number,
+            time_between_cycles=time_between_cycles,
+            upper_limit=upper_limit,
+            inferior_limit=inferior_limit,
+            upper_time=upper_time,
+            inferior_time=inferior_time,
+            disable_shutdown=disable_shutdown,
+            enable_output=enable_output,
+            temperature=temperature,
+            time=time,
+        )
+        config.save()
 
-        if not last_default_config.exists():
-
-            config = Config(
-                name=name,
-                is_default=True,
-                number=number,
-                time_between_cycles=time_between_cycles,
-                upper_limit=upper_limit,
-                inferior_limit=inferior_limit,
-                upper_time=upper_time,
-                inferior_time=inferior_time,
-                disable_shutdown=disable_shutdown,
-                enable_output=enable_output,
-                temperature=temperature,
-                time=time,
-            )
-            config.save()
-
-            return CreateDefaultConfig(config=config)
-
-        last_default_config[0].name = name
-        last_default_config[0].is_default = True
-        last_default_config[0].number = number
-        last_default_config[0].time_between_cycles = time_between_cycles
-        last_default_config[0].upper_limit = upper_limit
-        last_default_config[0].inferior_limit = inferior_limit
-        last_default_config[0].upper_time = upper_time
-        last_default_config[0].inferior_time = inferior_time
-        last_default_config[0].disable_shutdown = disable_shutdown
-        last_default_config[0].enable_output = enable_output
-        last_default_config[0].temperature = temperature
-        last_default_config[0].time = time
-
-        return CreateDefaultConfig(config=last_default_config[0])
+        return CreateDefaultConfig(config=config)
 
 
 class Mutation(graphene.ObjectType):
@@ -214,12 +198,14 @@ class Query:
 
     config_not_default = graphene.List(ConfigType)
 
+    @login_required
     def resolve_all_config(self, info, **kwargs):
         '''
             Returning all CyclesConfig on db
         '''
         return Config.objects.all()
 
+    @login_required
     def resolve_config_at(self, info, **kwargs):
         '''
             Returning only one Config by id
@@ -228,6 +214,7 @@ class Query:
 
         return Config.objects.get(pk=pk)
 
+    @login_required
     def resolve_config(self, info, **kwargs):
         '''
             Return one config by name
@@ -236,12 +223,14 @@ class Query:
 
         return Config.objects.get(name=name)
 
+    @login_required
     def resolve_config_default(self, info):
         '''
         Return a list with all the Config objects with is_default equal true
         '''
         return Config.objects.exclude(is_default=False)
 
+    @login_required
     def resolve_config_not_default(self, info):
         '''
         Return a list with all the Config objects with is_default equal false

@@ -21,7 +21,7 @@ describe("isAuthenticated function", () => {
     });
 
     expect(isAuthenticated(response)).toBe(true);
-    expect(isAuthenticated(response1)).toBe(false);
+    expect(isAuthenticated(response1)).toBe(true);
   });
 });
 

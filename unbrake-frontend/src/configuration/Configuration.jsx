@@ -1,30 +1,33 @@
 import React from "react";
 import iniparser from "iniparser";
-import Paper from "@material-ui/core/Paper";
-import { Grid, Button, Dialog } from "@material-ui/core";
 import { withStyles } from "@material-ui/core/styles";
+import { Grid, Button, MenuItem, TextField } from "@material-ui/core";
 import PropTypes from "prop-types";
-import MenuItem from "@material-ui/core/MenuItem";
-import TextField from "@material-ui/core/TextField";
-import DialogActions from "@material-ui/core/DialogActions";
-import DialogContent from "@material-ui/core/DialogContent";
-import DialogContentText from "@material-ui/core/DialogContentText";
-import DialogTitle from "@material-ui/core/DialogTitle";
-import IconButton from "@material-ui/core/IconButton";
-import CloudUploadIcon from "@material-ui/icons/CloudUpload";
 import { connect } from "react-redux";
 import Request from "../utils/Request";
 import { API_URL_GRAPHQL } from "../utils/Constants";
 import ConfigurationForm from "./ConfigurationForm";
 import styles from "./Styles";
-import { createConfig, query, submit } from "./ConfigFunctions";
+import {
+  createConfig,
+  submitDefault,
+  query,
+  submit,
+  dialogName,
+  renderUploadField
+} from "./ConfigFunctions";
+import { redirectPage } from "../actions/RedirectActions";
 import NotificationContainer from "../components/Notification";
 import { messageSistem } from "../actions/NotificationActions";
+import { changeConfigTest } from "../actions/TestActions";
 
-const itensSelection = allConfiguration => {
+const positionVector = 1;
+
+export const itensSelectionConfig = allConfiguration => {
   let allConfig = [{ id: 0, name: "" }];
-  allConfig = allConfig.concat(allConfiguration);
-
+  if (allConfiguration !== "" && allConfiguration !== undefined) {
+    allConfig = allConfig.concat(allConfiguration);
+  }
   const itens = allConfig.map(value => {
     return (
       <MenuItem key={value.name + value.id} value={value.id}>
@@ -37,7 +40,7 @@ const itensSelection = allConfiguration => {
 
 const selectConfiguration = (handleChange, configStates, classes) => {
   return (
-    <Grid item xs={4} className={classes.title}>
+    <Grid item xs={3} justify="center" container className={classes.title}>
       <TextField
         id="outlined-select-currency"
         select
@@ -49,59 +52,42 @@ const selectConfiguration = (handleChange, configStates, classes) => {
         margin="normal"
         variant="outlined"
       >
-        {itensSelection(configStates[1])}
+        {itensSelectionConfig(configStates[1])}
       </TextField>
     </Grid>
   );
 };
 
-const dialogName = (functions, sendMessage, dialogStates) => {
+const defaultButton = handleUpDefault => {
   return (
-    <Dialog
-      open={dialogStates.open}
-      onClose={functions.handleClose}
-      aria-labelledby="form-dialog-title"
-    >
-      <DialogTitle id="form-dialog-title">Nome da Configuração</DialogTitle>
-      <DialogContent>
-        <DialogContentText>
-          Insira aqui o nome que você deseja dar para este arquivo de
-          configuração
-        </DialogContentText>
-        <TextField
-          autoFocus
-          margin="dense"
-          name="name"
-          label="Nome"
-          type="text"
-          onChange={functions.handleChange}
-          value={dialogStates.name}
-          fullWidth
-        />
-      </DialogContent>
-      <DialogActions>
-        <Button onClick={functions.handleClose} color="primary">
-          Cancelar
-        </Button>
-        <Button
-          onClick={() =>
-            submit(dialogStates.configuration, dialogStates.name, sendMessage)
-          }
-          color="primary"
-        >
-          Cadastrar
-        </Button>
-      </DialogActions>
-    </Dialog>
+    <Grid container justify="center" item alignItems="center" xs={3}>
+      <Button onClick={handleUpDefault} color="secondary" variant="contained">
+        Configuração Padrão
+      </Button>
+    </Grid>
   );
 };
 
-const defaultButton = handleUpDefault => {
+const nextButton = handleNext => {
   return (
-    <Button onClick={handleUpDefault} color="secondary" variant="contained">
-      Configuração Padrão
-    </Button>
+    <Grid container justify="center" item alignItems="center" xs={3}>
+      <Button onClick={handleNext} color="secondary" variant="contained">
+        Próxima etapa
+      </Button>
+    </Grid>
   );
+};
+
+const changeReduxConfig = (allConfiguration, dataBaseConfiguration) => {
+  const backIndex = 1;
+  if (
+    allConfiguration[dataBaseConfiguration - backIndex] !== null &&
+    allConfiguration[dataBaseConfiguration - backIndex] !== undefined
+  )
+    changeConfigTest({
+      configId: allConfiguration[dataBaseConfiguration - backIndex].id,
+      configName: allConfiguration[dataBaseConfiguration - backIndex].name
+    });
 };
 
 class Configuration extends React.Component {
@@ -123,6 +109,7 @@ class Configuration extends React.Component {
         },
         name: ""
       },
+      isDefault: false,
       fileName: "Upload do arquivo de configuração",
       dataBaseConfiguration: 0,
       allConfiguration: "",
@@ -132,9 +119,11 @@ class Configuration extends React.Component {
     this.handleUpDefault = this.handleUpDefault.bind(this);
     this.handleChange = this.handleChange.bind(this);
     this.fileUpload = this.fileUpload.bind(this);
-    this.handleClickOpen = this.handleClickOpen.bind(this);
     this.handleClose = this.handleClose.bind(this);
     this.handleClickSave = this.handleClickSave.bind(this);
+    this.handleSubmit = this.handleSubmit.bind(this);
+    this.handleIsDefault = this.handleIsDefault.bind(this);
+    this.handleNext = this.handleNext.bind(this);
   }
 
   componentDidMount() {
@@ -142,18 +131,19 @@ class Configuration extends React.Component {
     const method = "GET";
     Request(url, method).then(json => {
       const data = json.data.configNotDefault;
-      this.setState({ allConfiguration: data });
+      if (data !== null) this.setState({ allConfiguration: data });
     });
+  }
+
+  handleNext() {
+    const { redirect } = this.props;
+    redirect({ url: "/calibration" });
   }
 
   handleClickSave(state) {
     const CONFIG_ENSAIO = state.configuration;
     const newConfig = { CONFIG_ENSAIO };
     this.setState({ configuration: newConfig });
-    this.handleClickOpen();
-  }
-
-  handleClickOpen() {
     this.setState({ open: true });
   }
 
@@ -161,18 +151,35 @@ class Configuration extends React.Component {
     this.setState({ open: false });
   }
 
+  handleIsDefault(event) {
+    this.setState({ isDefault: event.target.checked });
+  }
+
+  handleSubmit() {
+    const { configuration, name, isDefault } = this.state;
+    const { sendMessage, redirect } = this.props;
+
+    if (isDefault) {
+      if (submitDefault(configuration.CONFIG_ENSAIO, name, sendMessage))
+        redirect({ url: "/calibration" });
+    } else if (submit(configuration.CONFIG_ENSAIO, name, sendMessage)) {
+      redirect({ url: "/calibration" });
+    }
+  }
+
   handleUpDefault() {
     const url = `${API_URL_GRAPHQL}?query=query{configDefault{${query}}}`;
 
     const method = "GET";
 
-    const VAZIO = 0;
+    const empty = 0;
 
     Request(url, method).then(response => {
-      if (response.data.configDefault.length === VAZIO) {
+      if (response.data.configDefault.length === empty) {
         return;
       }
-      const data = response.data.configDefault[0];
+      const position = response.data.configDefault.length - positionVector;
+      const data = response.data.configDefault[position];
       const configurationDefault = createConfig(data);
       this.setState({ configuration: configurationDefault });
     });
@@ -201,48 +208,8 @@ class Configuration extends React.Component {
     });
   }
 
-  uploadField(field) {
-    const { classes } = this.props;
-    const { fileName } = this.state;
-
-    let archive;
-
-    if (field === "calibration") archive = "Calibração";
-    else archive = "Configuração";
-
-    return (
-      <Grid container item xs={10} alignItems="center" justify="center">
-        <Grid item xs={4} className={classes.title}>
-          <h2>Upload arquivo de {archive}</h2>
-        </Grid>
-
-        <Grid item xs={4} className={classes.grid}>
-          <label htmlFor="contained-button-file">
-            <input
-              id="contained-button-file"
-              type="file"
-              name={field}
-              className={classes.input}
-              onChange={e => this.fileUpload(e.target.files[0], field)}
-            />
-            <Paper className={classes.rootUploadFile}>
-              <IconButton component="span">
-                <CloudUploadIcon style={{ color: "black" }} />
-              </IconButton>
-              <span
-                className={classes.input_file_name}
-                placeholder="Upload do arquivo de configuração"
-              >
-                {fileName}
-              </span>
-            </Paper>
-          </label>
-        </Grid>
-      </Grid>
-    );
-  }
-
   fileUpload(file, name) {
+    const { sendMessage } = this.props;
     this.setState({ fileName: file.name });
     const formData = new FormData();
     formData.append("file", name);
@@ -252,32 +219,55 @@ class Configuration extends React.Component {
     reader.onload = e => {
       const content = e.target.result;
       const fileUpload = iniparser.parseString(content);
-      scope.setState({ configuration: fileUpload });
+      if (fileUpload.CONFIG_ENSAIO !== undefined)
+        scope.setState({ configuration: fileUpload });
+      else {
+        sendMessage({
+          message: "Aquivo não se encontra no padrão .ini para configuração",
+          variante: "warning",
+          condition: true
+        });
+      }
     };
 
     reader.readAsText(file, "UTF-8");
   }
 
+  uploadField(field) {
+    const { classes } = this.props;
+    const { fileName } = this.state;
+    let archive;
+
+    if (field === "calibration") archive = "Calibração";
+    else archive = "Configuração";
+    const names = { field, fileName, archive };
+    return <div>{renderUploadField(classes, this.fileUpload, names)}</div>;
+  }
+
   render() {
-    const { classes, sendMessage } = this.props;
+    const { classes } = this.props;
     const {
       configuration,
       dataBaseConfiguration,
       allConfiguration,
       open,
-      name
+      name,
+      isDefault
     } = this.state;
     const functions = {
       handleChange: this.handleChange,
-      handleClose: this.handleClose
+      handleClose: this.handleClose,
+      handleSubmit: this.handleSubmit,
+      handleIsDefault: this.handleIsDefault
     };
     const configStates = [dataBaseConfiguration, allConfiguration];
     const dialogStates = {
       configuration: configuration.CONFIG_ENSAIO,
       open,
-      name
+      name,
+      isDefault
     };
-
+    changeReduxConfig(allConfiguration, dataBaseConfiguration);
     return (
       <Grid alignItems="center" container className={classes.configuration}>
         <div>
@@ -287,21 +277,16 @@ class Configuration extends React.Component {
           <Grid container justify="center" item alignItems="center" xs={12}>
             {selectConfiguration(this.handleChange, configStates, classes)}
             {defaultButton(this.handleUpDefault)}
+            {nextButton(this.handleNext)}
           </Grid>
-          <Grid
-            container
-            alignItems="center"
-            xs={12}
-            item
-            className={classes.form}
-          >
+          <Grid container xs={12} item className={classes.form}>
             <ConfigurationForm
               configuration={configuration}
               handleClickSave={this.handleClickSave}
             />
           </Grid>
         </div>
-        {dialogName(functions, sendMessage, dialogStates)}
+        {dialogName(functions, dialogStates)}
         <NotificationContainer />
       </Grid>
     );
@@ -310,11 +295,14 @@ class Configuration extends React.Component {
 
 Configuration.propTypes = {
   classes: PropTypes.objectOf(PropTypes.string).isRequired,
-  sendMessage: PropTypes.func.isRequired
+  sendMessage: PropTypes.func.isRequired,
+  redirect: PropTypes.func.isRequired
 };
 
 const mapDispatchToProps = dispatch => ({
-  sendMessage: payload => dispatch(messageSistem(payload))
+  sendMessage: payload => dispatch(messageSistem(payload)),
+  redirect: payload => dispatch(redirectPage(payload)),
+  changeConfigTest: payload => dispatch(changeConfigTest(payload))
 });
 
 export default connect(

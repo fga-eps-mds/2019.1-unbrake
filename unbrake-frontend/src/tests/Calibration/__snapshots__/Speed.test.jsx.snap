@@ -16,7 +16,7 @@ exports[`<Speed /> render() renders the component 1`] = `
       "textField": "ReduxForm-textField-2",
     }
   }
-  destroyOnUnmount={true}
+  destroyOnUnmount={false}
   enableReinitialize={false}
   forceUnregisterOnUnmount={false}
   form="calibration"

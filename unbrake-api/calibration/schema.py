@@ -4,6 +4,7 @@
 
 import graphene
 from graphene_django.types import DjangoObjectType
+from graphql_jwt.decorators import login_required
 from calibration.models import (
     CalibrationVibration,
     CalibrationForce,
@@ -173,12 +174,14 @@ class Query:
         id=graphene.ID()
     )
 
+    @login_required
     def resolve_all_calibration_vibration(self, info, **kwargs):
         '''
             Returning all CalibrationVibration on db
         '''
         return CalibrationVibration.objects.all()
 
+    @login_required
     def resolve_calibration_vibration(self, info, **kwargs):
         '''
             Returning only CalibrationVibration one by id
@@ -187,26 +190,29 @@ class Query:
 
         return CalibrationVibration.objects.get(pk=pk)
 
+    @login_required
     def resolve_all_calibration_force(self, info, **kwargs):
         '''
             Returning all CalibrationFoce on db
         '''
         return CalibrationForce.objects.all()
 
+    @login_required
     def resolve_calibration_force(self, info, **kwargs):
         '''
             Returning only one CalibrationForce by id
         '''
         pk = kwargs.get('id')
-
         return CalibrationForce.objects.get(pk=pk)
 
+    @login_required
     def resolve_all_calibration_speed(self, info, **kwargs):
         '''
             Returning all CalibrationSpeed on db
         '''
         return CalibrationSpeed.objects.all()
 
+    @login_required
     def resolve_calibration_speed(self, info, **kwargs):
         '''
             Returning only one CalibrationSpeed by id
@@ -215,12 +221,14 @@ class Query:
 
         return CalibrationSpeed.objects.get(pk=pk)
 
+    @login_required
     def resolve_all_calibration_relations(self, info, **kwargs):
         '''
             Returning all CalibrationRelations on db
         '''
         return CalibrationRelations.objects.all()
 
+    @login_required
     def resolve_calibration_relations(self, info, **kwargs):
         '''
             Returning only one CalibrationRelations by id
@@ -229,12 +237,14 @@ class Query:
 
         return CalibrationRelations.objects.get(pk=pk)
 
+    @login_required
     def resolve_all_calibration_temperature(self, info, **kwargs):
         '''
             Returning all CalibrationTemperature on db
         '''
         return CalibrationTemperature.objects.all()
 
+    @login_required
     def resolve_calibration_temperature(self, info, **kwargs):
         '''
             Returning only one CalibrationTemperature by id
@@ -243,12 +253,14 @@ class Query:
 
         return CalibrationTemperature.objects.get(pk=pk)
 
+    @login_required
     def resolve_all_calibration_command(self, info, **kwargs):
         '''
             Returning all CalibrationCommand on db
         '''
         return CalibrationCommand.objects.all()
 
+    @login_required
     def resolve_calibration_command(self, info, **kwargs):
         '''
             Returning only one CalibrationCommand by id
@@ -257,12 +269,14 @@ class Query:
 
         return CalibrationCommand.objects.get(pk=pk)
 
+    @login_required
     def resolve_all_calibration(self, info, **kwargs):
         '''
             Return all calibration objects on db
         '''
         return Calibration.objects.all()
 
+    @login_required
     def resolve_calibration(self, info, **kwargs):
         '''
             Retunr a Calibration by id
