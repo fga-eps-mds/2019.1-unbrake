@@ -6,11 +6,11 @@ import (
 
 func TestUpdateStateWater(t *testing.T) {
 
-	snub := Snub{state: acelerateWater}
+	snub := Snub{state: acelerating}
 	snub.state = currentToNextState[snub.state]
 
-	if snub.state != brakeWater {
-		t.Errorf("Wrong state %v != %v", snub.state, brakeWater)
+	if snub.state != brakingWater {
+		t.Errorf("Wrong state %v != %v", snub.state, brakingWater)
 	}
 
 	snub.state = currentToNextState[snub.state]
@@ -21,7 +21,7 @@ func TestUpdateStateWater(t *testing.T) {
 
 	snub.state = currentToNextState[snub.state]
 
-	if snub.state != acelerateWater {
-		t.Errorf("Wrong state %v != %v", snub.state, acelerateWater)
+	if snub.state != aceleratingWater {
+		t.Errorf("Wrong state %v != %v", snub.state, aceleratingWater)
 	}
 }

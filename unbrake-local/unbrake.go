@@ -6,7 +6,7 @@ and send it through network.
 It is also able to send commands in ascii format. We are working
 On a application which each ascii character represents a state
 where some things are on and others off. In our case acelerator,
-brake, etc.
+braking, etc.
 
 We also provide a simple GUI through systray in which users can
 interact with the application.
@@ -94,7 +94,7 @@ type Testing struct {
 			UpperLimit        int     `json:"upper_limit"`
 			InferiorLimit     int     `json:"inferior_limit"`
 			UpperTime         int     `json:"upper_time"`
-			InferiorTime      int     `json:"inferior_time"`
+			LowerTime         int     `json:"inferior_time"`
 			DisableShutdown   bool    `json:"disable_shutdown"`
 			EnableOutput      bool    `json:"enable_output"`
 			Temperature       float64 `json:"temperature"`
@@ -134,7 +134,7 @@ const (
 // Channels for controlling execution
 var (
 	wgGeneral            sync.WaitGroup
-	wgHandleSnubState    sync.WaitGroup
+	wgTesting            sync.WaitGroup
 	stopCollectingDataCh chan bool
 	sigsCh               chan os.Signal
 	serialPortNameCh     = make(chan string, 1)
@@ -160,69 +160,73 @@ var (
 
 // Flags with intermediary states
 var (
-	stabilizing              = false
-	enableWater              bool
-	isAvailable              bool
+	stabilizing = false
+	enableWater bool
+	isAvailable bool
+)
+
+// Status flags
+var (
 	mqttHasWritingPermission bool
 	mqttHasReadingPermission bool
 )
 
 // Global snub which represents state of running test
-var snub = Snub{state: acelerate}
+var snub = Snub{state: acelerating}
 
 // Possible states of a snub, value is ascii which
 // represents its state
 const (
-	cooldown            = string(iota + '$') //'$'
-	acelerate                                //'%'
-	brake                                    //'&'
-	acelerateBrake                           //'''
-	cooldownWater                            //'('
-	acelerateWater                           //')'
-	brakeWater                               //'*'
-	acelerateBrakeWater                      //'+'
+	cooldown                = string(iota + '$') //'$'
+	acelerating                                  //'%'
+	braking                                      //'&'
+	aceleratingBraking                           //'''
+	cooldownWater                                //'('
+	aceleratingWater                             //')'
+	brakingWater                                 //'*'
+	aceleratingBrakingWater                      //'+'
 )
 
 // Mapping current state to next state
 var currentToNextState = map[string]string{
-	acelerate:      brake,
-	brake:          cooldown,
-	cooldown:       acelerate,
-	acelerateWater: brakeWater,
-	brakeWater:     cooldownWater,
-	cooldownWater:  acelerateWater,
+	acelerating:      braking,
+	braking:          cooldown,
+	cooldown:         acelerating,
+	aceleratingWater: brakingWater,
+	brakingWater:     cooldownWater,
+	cooldownWater:    aceleratingWater,
 }
 
 // Regular state to matching state but throwing water
 var offToOnWater = map[string]string{
-	acelerate:      acelerateWater,
-	brake:          brakeWater,
-	cooldown:       cooldownWater,
-	acelerateWater: acelerateWater,
-	brakeWater:     brakeWater,
-	cooldownWater:  cooldownWater,
+	acelerating:      aceleratingWater,
+	braking:          brakingWater,
+	cooldown:         cooldownWater,
+	aceleratingWater: aceleratingWater,
+	brakingWater:     brakingWater,
+	cooldownWater:    cooldownWater,
 }
 
 // From a throwing water state to a regular state
 var onToOffWater = map[string]string{
-	acelerateWater: acelerate,
-	brakeWater:     brake,
-	cooldownWater:  cooldown,
-	acelerate:      acelerate,
-	brake:          brake,
-	cooldown:       cooldown,
+	aceleratingWater: acelerating,
+	brakingWater:     braking,
+	cooldownWater:    cooldown,
+	acelerating:      acelerating,
+	braking:          braking,
+	cooldown:         cooldown,
 }
 
 // Ascii character which represents state to state name
 var byteToStateName = map[string]string{
 	"$":  "cooldown",
-	"%":  "acelerate",
-	"&":  "brake",
-	"\"": "acelerateBrake",
+	"%":  "acelerating",
+	"&":  "braking",
+	"\"": "aceleratingBraking",
 	"(":  "cooldownWater",
-	")":  "acelerateWater",
-	"*":  "brakeWater",
-	"+":  "acelerateBrakeWater",
+	")":  "aceleratingWater",
+	"*":  "brakingWater",
+	"+":  "aceleratingBrakingWater",
 }
 
 var serialAttrs = make([]SerialAttribute, numSerialAttrs)
@@ -275,8 +279,9 @@ var (
 // Snub is a cycle of aceleration, braking and cooldown,
 // multiple snubs compose a test
 type Snub struct {
-	state string
-	mux   sync.Mutex
+	state     string
+	isWaterOn bool
+	mux       sync.Mutex
 }
 
 const checkedPrefix = "\u2713 "
@@ -330,12 +335,10 @@ func onReady() {
 	systray.SetTitle("UnBrake")
 	systray.SetTooltip("UnBrake")
 
-	statusTitle := systray.AddMenuItem("-Status-", "Seção para visualização do status da aplicação")
+	statusTitle := systray.AddMenuItem("Status", "Seção para visualização do status da aplicação")
 	statusTitle.Disable()
-	statusCollecting := systray.AddMenuItem("", "Status da aquisição")
-	statusCollecting.Disable()
+	statusCollecting := systray.AddMenuItem("Status de arquisição", "Não iniciada")
 	mqttKeyStatus := systray.AddMenuItem("Chave do MQTT: Não avaliada", "Status da chave do MQTT")
-	mqttKeyStatus.Disable()
 
 	go func() {
 		for {
@@ -382,22 +385,20 @@ func onReady() {
 	wgGeneral.Wait()
 }
 
-var teste = make(chan bool, 1)
-
 // Handle receiving of tests to be executed
 func handleTestingReceiving() {
-	var wgSubscribe sync.WaitGroup
-
 	if key := getMqttKey(); key != "" {
+		// Msg will must follow Testing format
 		client, _ := emitter.Connect(getMqttHost(), func(_ *emitter.Client, msg emitter.Message) {
 			log.Printf("Sent message: '%s' topic: '%s'\n", msg.Payload(), msg.Topic())
 		})
 
-		// Wait for tests
 		var channel = getMqttChannelPrefix() + "/testing"
 		client.OnError(func(_ *emitter.Client, err emitter.Error) {
 			mqttKeyStatusCh <- "Chave do MQTT: Sem permissão de leitura"
 		})
+
+		// Wait for tests
 		client.Subscribe(key, channel, func(_ *emitter.Client, msg emitter.Message) {
 			mqttHasReadingPermission = true
 			if mqttHasWritingPermission {
@@ -405,20 +406,21 @@ func handleTestingReceiving() {
 			} else {
 				mqttKeyStatusCh <- "Chave do MQTT: Válida apenas para leitura"
 			}
-			teste <- true
+
 			runTesting(string(msg.Payload()))
-			print("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@\n")
-			print("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@\n")
 		})
 
-		wgSubscribe.Add(1)
-		wgSubscribe.Wait()
+		wgGeneral.Wait()
 	} else {
 		log.Println("MQTT key not set!!! Not waiting for tests to arrive...")
 	}
 }
 
+var teste = make(chan bool, 1)
+
 func runTesting(s string) {
+	teste <- true
+
 	var data Testing
 	if err := json.Unmarshal([]byte(s), &data); err != nil {
 		log.Println("Wasn't possible to decode JSON, error: ", err)
@@ -429,7 +431,7 @@ func runTesting(s string) {
 	lowerSpeedLimit = 150 //data.Fields.Configuration.InferiorLimit
 	timeSleepWater = data.Fields.Configuration.Time
 	delayAcelerateToBrake = data.Fields.Configuration.UpperTime
-	timeCooldown = data.Fields.Configuration.InferiorTime
+	timeCooldown = data.Fields.Configuration.LowerTime
 	temperatureLimit = 400 //data.Fields.Configuration.Temperature
 	enableWater = false    //data.Fields.Configuration.EnableOutput
 	firstConversionFactorTemperature = data.Fields.Calibration.Temperature[0].ConversionFactor
@@ -447,18 +449,17 @@ func runTesting(s string) {
 	log.Printf("conversionFactorTemperature: %v\n", firstConversionFactorTemperature)
 	log.Printf("offsetTemperature: %v\n", firstOffsetTemperature)
 
+	wgTesting.Add(1)
 	isAvailable = false
 
-	wgHandleSnubState.Add(1)
-	handleSnubState()
-	wgHandleSnubState.Wait()
-
+	watchSnubState()
 	if _, err := port.Write([]byte(cooldown)); err != nil {
 		log.Fatal(err)
 	}
 	publishData(byteToStateName[snub.state], mqttSubchannelSnubState)
 
 	isAvailable = true
+	wgTesting.Wait()
 	<-teste
 }
 
@@ -553,107 +554,84 @@ func (port *serialPortGUI) uncheck() {
 	}
 }
 
-// Will update current state to its next, respecting timing and
-// critical regions
-func (snub *Snub) handleAcelerate() {
-	stabilizing = true
-	log.Println("Stabilizing...")
-	time.Sleep(time.Second * time.Duration(delayAcelerateToBrake))
+// Change state of snub to next corresponding in duty cycle
+func (snub *Snub) NextState() {
+	snub.mux.Lock()
+	defer snub.mux.Unlock()
 
+	snub.changeState()
+
+	switch snub.state {
+
+	case acelerating: // Next is Braking
+		stabilizing = true
+
+		log.Println("Stabilizing...")
+		time.Sleep(time.Second * time.Duration(delayAcelerateToBrake))
+
+		stabilizing = false
+
+	case braking: // Next is Cooldown
+		time.Sleep(time.Second * time.Duration(timeCooldown))
+
+	case cooldown: // Next is acelerate, end of a cycle
+		currentSnub++
+		publishData(strconv.Itoa(currentSnub), mqttSubchannelCurrentSnub)
+
+		log.Println("---> End of snub <---")
+
+		if currentSnub > totalOfSnubs {
+			handleTestingEnd()
+		}
+	}
+}
+
+func handleTestingEnd() {
+	currentSnub = 1
+	snub.state = cooldown
+
+	publishData(strconv.Itoa(currentSnub), mqttSubchannelCurrentSnub)
+	wgTesting.Done()
+}
+
+func (snub *Snub) changeState() {
+	oldState := snub.state
+	snub.state = currentToNextState[snub.state]
+
+	if _, err := port.Write([]byte(snub.state)); err != nil {
+		log.Println("Wasn't possible to write the state: ", err)
+	}
+
+	publishData(byteToStateName[snub.state], mqttSubchannelSnubState)
+	log.Printf("Change state: %v ---> %v\n", byteToStateName[oldState], byteToStateName[snub.state])
+}
+
+func (snub *Snub) changeStateWater() {
 	snub.mux.Lock()
 	defer snub.mux.Unlock()
 
 	oldState := snub.state
-	snub.state = currentToNextState[snub.state]
-	if _, err := port.Write([]byte(snub.state)); err != nil {
-		log.Fatal(err)
+
+	snub.isWaterOn = !snub.isWaterOn
+
+	if !snub.isWaterOn {
+		snub.state = offToOnWater[snub.state]
+		log.Printf("Turn on water(%vs): %v ---> %v\n", timeSleepWater, byteToStateName[oldState], byteToStateName[snub.state])
+	} else {
+		time.Sleep(time.Second * time.Duration(timeSleepWater))
+		snub.state = onToOffWater[snub.state]
+		log.Printf("Turn off water: %v ---> %v\n", byteToStateName[oldState], byteToStateName[snub.state])
 	}
-	publishData(byteToStateName[snub.state], mqttSubchannelSnubState)
 
-	log.Printf("Change state: %v ---> %v\n", byteToStateName[oldState], byteToStateName[snub.state])
-	stabilizing = false
-
-}
-
-// Will change from a regular state to a state with same
-// effects but throwing water
-func (snub *Snub) turnOnWater() {
-	snub.mux.Lock()
-
-	oldState := snub.state
-	snub.state = offToOnWater[snub.state]
 	if _, err := port.Write([]byte(snub.state)); err != nil {
-		log.Fatal(err)
+		log.Println("Wasn't possible to write the state: ", err)
 	}
-	publishData(byteToStateName[snub.state], mqttSubchannelSnubState)
 
+	publishData(byteToStateName[snub.state], mqttSubchannelSnubState)
 	log.Printf("Turn on water(%vs): %v ---> %v\n", timeSleepWater, byteToStateName[oldState], byteToStateName[snub.state])
-
-	snub.mux.Unlock()
-
-	time.Sleep(time.Second * time.Duration(timeSleepWater))
-
-	snub.mux.Lock()
-
-	oldState = snub.state
-	snub.state = onToOffWater[snub.state]
-	if _, err := port.Write([]byte(snub.state)); err != nil {
-		log.Fatal(err)
-	}
-	publishData(byteToStateName[snub.state], mqttSubchannelSnubState)
-
-	log.Printf("Turn off water: %v ---> %v\n", byteToStateName[oldState], byteToStateName[snub.state])
-
-	snub.mux.Unlock()
 }
 
-// Handle changing state from braking to cooldown, waiting the
-// cooldown and gettting back to acelerating
-func (snub *Snub) handleBrake() {
-	snub.mux.Lock()
-
-	oldState := snub.state
-	snub.state = currentToNextState[snub.state] // Brake to Cooldown
-	if _, err := port.Write([]byte(snub.state)); err != nil {
-		log.Fatal(err)
-	}
-	publishData(byteToStateName[snub.state], mqttSubchannelSnubState)
-
-	log.Printf("Change state: %v ---> %v\n", byteToStateName[oldState], byteToStateName[snub.state])
-
-	snub.mux.Unlock()
-
-	time.Sleep(time.Second * time.Duration(timeCooldown))
-
-	snub.mux.Lock()
-
-	oldState = snub.state
-	snub.state = currentToNextState[snub.state] // Cooldown to acelerate
-
-	handleSnubEnd()
-
-	if _, err := port.Write([]byte(snub.state)); err != nil {
-		log.Fatal(err)
-	}
-	publishData(byteToStateName[snub.state], mqttSubchannelSnubState)
-
-	log.Printf("Change state: %v ---> %v\n", byteToStateName[oldState], byteToStateName[snub.state])
-	log.Printf("Current snub: %v\n", currentSnub)
-
-	snub.mux.Unlock()
-}
-
-func handleSnubEnd() {
-	currentSnub++
-	publishData(strconv.Itoa(currentSnub), mqttSubchannelCurrentSnub)
-	if currentSnub > totalOfSnubs {
-		snub.state = cooldown
-		currentSnub = 1
-		wgHandleSnubState.Done()
-	}
-}
-
-func temperatureConversion(value float64, convertionFactor float64, offset float64) float64 {
+func convertTemperature(value float64, convertionFactor float64, offset float64) float64 {
 	return value*convertionFactor + offset
 }
 
@@ -851,47 +829,41 @@ func getMqttChannelPrefix() string {
 
 // Will manage the state of running snub, handling all state transitions,
 // synchronization, collecting needed data and writing needed commands
-func handleSnubState() {
-	snub.state = acelerate
+func watchSnubState() {
+	go watchSpeed()
+	go watchTemperature()
+}
 
-	publishData(strconv.Itoa(currentSnub), mqttSubchannelCurrentSnub)
-	publishData(byteToStateName[snub.state], mqttSubchannelSnubState)
+// Watchs speed, changing state when necessary
+func watchSpeed() {
+	for {
+		speed := <-serialAttrs[speedIdx].handleCh
 
-	if _, err := port.Write([]byte(snub.state)); err != nil {
-		log.Println(err)
-		wgHandleSnubState.Done()
+		if (snub.state == acelerating || snub.state == aceleratingWater) && !stabilizing {
+			if speed >= upperSpeedLimit {
+				snub.NextState()
+			}
+		} else if snub.state == braking || snub.state == brakingWater {
+			if speed < lowerSpeedLimit {
+				snub.NextState()
+			}
+		}
 	}
+}
 
-	go func() {
-		for {
-			speed := <-serialAttrs[speedIdx].handleCh
-			if (snub.state == acelerate || snub.state == acelerateWater) && !stabilizing {
-				if speed >= upperSpeedLimit {
-					snub.handleAcelerate()
+// Follow temperature and throw water if needed
+func watchTemperature() {
+	for {
+		temperature1 := convertTemperature(<-serialAttrs[temperature1Idx].handleCh, firstConversionFactorTemperature, firstOffsetTemperature)
+		temperature2 := convertTemperature(<-serialAttrs[temperature2Idx].handleCh, secondConversionFactorTemperature, secondOffsetTemperature)
 
-				}
-			}
-			if snub.state == brake || snub.state == brakeWater {
-				if speed < lowerSpeedLimit {
-					snub.handleBrake()
-				}
+		if (temperature1 > temperatureLimit || temperature2 > temperatureLimit) && enableWater {
+			if snub.state == acelerating || snub.state == braking || snub.state == cooldown {
+				snub.changeStateWater()
+				snub.changeStateWater()
 			}
 		}
-
-	}()
-
-	go func() {
-		for {
-			temperature1 := temperatureConversion(<-serialAttrs[temperature1Idx].handleCh, firstConversionFactorTemperature, firstOffsetTemperature)
-			temperature2 := temperatureConversion(<-serialAttrs[temperature2Idx].handleCh, secondConversionFactorTemperature, secondOffsetTemperature)
-
-			if (temperature1 > temperatureLimit || temperature2 > temperatureLimit) && enableWater {
-				if snub.state == acelerate || snub.state == brake || snub.state == cooldown {
-					snub.turnOnWater()
-				}
-			}
-		}
-	}()
+	}
 }
 
 // Based on current OS will create application folder
