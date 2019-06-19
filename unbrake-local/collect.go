@@ -57,9 +57,8 @@ type SerialAttribute struct {
 	handleCh       chan float64 // for handling values
 }
 
-// Will collect data from serial bus and distributes it
-// to others goroutines
-func collectData() {
+// CollectData will collect data from serial bus and distributes it to others goroutines
+func CollectData() {
 	defer wgGeneral.Done()
 
 	var ReadingDelay = time.Second / frequencyReading
@@ -98,10 +97,7 @@ func collectData() {
 			select {
 			case stop := <-stopCollectingDataCh:
 				if stop {
-					_, err := port.Write([]byte(cooldown))
-					if err != nil {
-						log.Fatal(err)
-					}
+					snub.SetState(cooldown)
 					continueCollecting = false
 				}
 			case sig := <-sigsCh:
@@ -110,7 +106,7 @@ func collectData() {
 				continueCollecting = false
 			case serialPortName = <-serialPortNameCh:
 				serialPortNameCh <- serialPortName
-				collectData()
+				CollectData()
 			default:
 				getData(port, "\"")
 				time.Sleep(ReadingDelay)

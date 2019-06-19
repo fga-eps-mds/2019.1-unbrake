@@ -5,18 +5,21 @@ import (
 	"log"
 	"strconv"
 	"sync"
-	"time"
 
 	emitter "github.com/emitter-io/go/v2"
 )
-
-// Global snub which represents state of running test
-var snub = Snub{state: acelerating}
 
 // Status flags
 var (
 	mqttHasWritingPermission bool
 	mqttHasReadingPermission bool
+)
+
+// Flags with intermediary states
+var (
+	stabilizing = false
+	enableWater bool
+	isAvailable bool
 )
 
 var (
@@ -100,153 +103,90 @@ type ExperimentData struct {
 	} `json:"fields"`
 }
 
-// Snub is a cycle of aceleration, braking and cooldown,
-// multiple snubs compose a test
-type Snub struct {
-	state     string
-	isWaterOn bool
-	mux       sync.Mutex
-}
-
-// Flags with intermediary states
-var (
-	stabilizing = false
-	enableWater bool
-	isAvailable bool
-)
-
-// Possible states of a snub, value is ascii which
-// represents its state
-const (
-	cooldown                = string(iota + '$') //'$'
-	acelerating                                  //'%'
-	braking                                      //'&'
-	aceleratingBraking                           //'''
-	cooldownWater                                //'('
-	aceleratingWater                             //')'
-	brakingWater                                 //'*'
-	aceleratingBrakingWater                      //'+'
-)
-
-// Mapping current state to next state
-var currentToNextState = map[string]string{
-	acelerating:      braking,
-	braking:          cooldown,
-	cooldown:         acelerating,
-	aceleratingWater: brakingWater,
-	brakingWater:     cooldownWater,
-	cooldownWater:    aceleratingWater,
-}
-
-// Regular state to matching state but throwing water
-var offToOnWater = map[string]string{
-	acelerating:      aceleratingWater,
-	braking:          brakingWater,
-	cooldown:         cooldownWater,
-	aceleratingWater: aceleratingWater,
-	brakingWater:     brakingWater,
-	cooldownWater:    cooldownWater,
-}
-
-// From a throwing water state to a regular state
-var onToOffWater = map[string]string{
-	aceleratingWater: acelerating,
-	brakingWater:     braking,
-	cooldownWater:    cooldown,
-	acelerating:      acelerating,
-	braking:          braking,
-	cooldown:         cooldown,
-}
-
-// Ascii character which represents state to state name
-var byteToStateName = map[string]string{
-	"$":  "cooldown",
-	"%":  "acelerating",
-	"&":  "braking",
-	"\"": "aceleratingBraking",
-	"(":  "cooldownWater",
-	")":  "aceleratingWater",
-	"*":  "brakingWater",
-	"+":  "aceleratingBrakingWater",
-}
-
-// NextState change state of snub to next corresponding in duty cycle
-func (snub *Snub) NextState() {
-	snub.mux.Lock()
-	defer snub.mux.Unlock()
-
-	snub.changeState()
-
-	switch snub.state {
-
-	case acelerating: // Next is Braking
-		stabilizing = true
-
-		log.Println("Stabilizing...")
-		time.Sleep(time.Second * time.Duration(delayAcelerateToBrake))
-
-		stabilizing = false
-
-	case braking: // Next is Cooldown
-		time.Sleep(time.Second * time.Duration(timeCooldown))
-
-	case cooldown: // Next is acelerate, end of a cycle
-		currentSnub++
-		publishData(strconv.Itoa(currentSnub), mqttSubchannelCurrentSnub)
-
-		log.Println("---> End of snub <---")
-
-		if currentSnub > totalOfSnubs {
-			handleExperimentEnd()
-		}
-	}
-}
-
 var teste = make(chan bool, 1)
 
-func runExperiment(s string) {
+// RunExperiment is composed of a collection of Snubs, it will perform
+// N Snubs based based on the given data
+func RunExperiment(data ExperimentData) {
 	teste <- true
-
-	var data ExperimentData
-	if err := json.Unmarshal([]byte(s), &data); err != nil {
-		log.Println("Wasn't possible to decode JSON, error: ", err)
-	}
-
-	totalOfSnubs = 2      //data.Fields.Configuration.Number
-	upperSpeedLimit = 150 //data.Fields.Configuration.UpperLimit
-	lowerSpeedLimit = 150 //data.Fields.Configuration.InferiorLimit
-	timeSleepWater = data.Fields.Configuration.Time
-	delayAcelerateToBrake = data.Fields.Configuration.UpperTime
-	timeCooldown = data.Fields.Configuration.LowerTime
-	temperatureLimit = 400 //data.Fields.Configuration.Temperature
-	enableWater = false    //data.Fields.Configuration.EnableOutput
-	firstConversionFactorTemperature = data.Fields.Calibration.Temperature[0].ConversionFactor
-	secondConversionFactorTemperature = data.Fields.Calibration.Temperature[1].ConversionFactor
-	firstOffsetTemperature = data.Fields.Calibration.Temperature[0].TemperatureOffset
-	secondOffsetTemperature = data.Fields.Calibration.Temperature[1].TemperatureOffset
-
-	log.Printf("totalOfSnubs: %v\n", totalOfSnubs)
-	log.Printf("upperSpeedLimit: %v\n", upperSpeedLimit)
-	log.Printf("lowerSpeedLimit: %v\n", lowerSpeedLimit)
-	log.Printf("timeSleepWater: %v\n", timeSleepWater)
-	log.Printf("delayAcelerateToBrake: %v\n", delayAcelerateToBrake)
-	log.Printf("timeCooldown: %v\n", timeCooldown)
-	log.Printf("temperatureLimit: %v\n", temperatureLimit)
-	log.Printf("conversionFactorTemperature: %v\n", firstConversionFactorTemperature)
-	log.Printf("offsetTemperature: %v\n", firstOffsetTemperature)
 
 	wgExperiment.Add(1)
 	isAvailable = false
 
 	watchSnubState()
-	if _, err := port.Write([]byte(cooldown)); err != nil {
-		log.Fatal(err)
-	}
-	publishData(byteToStateName[snub.state], mqttSubchannelSnubState)
+	snub.SetState(cooldown)
 
 	isAvailable = true
 	wgExperiment.Wait()
 	<-teste
+}
+
+// HandleExperimentsReceiving will wait for experiments to be published at a specific MQTT channel
+// currently the prefix + /experiment
+func HandleExperimentsReceiving() {
+	key := getMqttKey()
+	if key == "" {
+		log.Println("MQTT key not set!!! Not waiting for tests to arrive...")
+		return
+	}
+
+	// Msg will must follow ExperimentData format
+	client, _ := emitter.Connect(getMqttHost(), func(_ *emitter.Client, msg emitter.Message) {
+		log.Printf("Sent message: '%s' topic: '%s'\n", msg.Payload(), msg.Topic())
+	})
+
+	var channel = getMqttChannelPrefix() + "/experiment"
+	client.OnError(func(_ *emitter.Client, err emitter.Error) {
+		mqttKeyStatusCh <- "Chave do MQTT: Sem permissão de leitura"
+	})
+
+	// Wait for tests
+	client.Subscribe(key, channel, func(_ *emitter.Client, msg emitter.Message) {
+		mqttHasReadingPermission = true
+		if mqttHasWritingPermission {
+			mqttKeyStatusCh <- "Chave do MQTT: Válida"
+		} else {
+			mqttKeyStatusCh <- "Chave do MQTT: Válida apenas para leitura"
+		}
+
+		experimentData := decodeExperimentData(msg.Payload())
+		RunExperiment(experimentData)
+	})
+
+	wgGeneral.Wait()
+}
+
+func decodeExperimentData(data []byte) ExperimentData {
+	var decoded ExperimentData
+
+	if err := json.Unmarshal(data, &decoded); err != nil {
+		log.Println("Wasn't possible to decode JSON, error: ", err)
+	}
+
+	totalOfSnubs = 2      //decoded.Fields.Configuration.Number
+	upperSpeedLimit = 150 //decoded.Fields.Configuration.UpperLimit
+	lowerSpeedLimit = 150 //decoded.Fields.Configuration.InferiorLimit
+	timeSleepWater = decoded.Fields.Configuration.Time
+	delayAcelerateToBrake = decoded.Fields.Configuration.UpperTime
+	timeCooldown = decoded.Fields.Configuration.LowerTime
+	temperatureLimit = 400 //decoded.Fields.Configuration.Temperature
+	enableWater = false    //decoded.Fields.Configuration.EnableOutput
+	firstConversionFactorTemperature = decoded.Fields.Calibration.Temperature[0].ConversionFactor
+	secondConversionFactorTemperature = decoded.Fields.Calibration.Temperature[1].ConversionFactor
+	firstOffsetTemperature = decoded.Fields.Calibration.Temperature[0].TemperatureOffset
+	secondOffsetTemperature = decoded.Fields.Calibration.Temperature[1].TemperatureOffset
+
+	log.Println("totalOfSnubs: ", totalOfSnubs)
+	log.Println("upperSpeedLimit: ", upperSpeedLimit)
+	log.Println("lowerSpeedLimit: ", lowerSpeedLimit)
+	log.Println("timeSleepWater: ", timeSleepWater)
+	log.Println("delayAcelerateToBrake: ", delayAcelerateToBrake)
+	log.Println("timeCooldown: ", timeCooldown)
+	log.Println("temperatureLimit: ", temperatureLimit)
+	log.Println("conversionFactorTemperature: ", firstConversionFactorTemperature)
+	log.Println("offsetTemperature: ", firstOffsetTemperature)
+
+	return decoded
 }
 
 func handleExperimentEnd() {
@@ -255,43 +195,6 @@ func handleExperimentEnd() {
 
 	publishData(strconv.Itoa(currentSnub), mqttSubchannelCurrentSnub)
 	wgExperiment.Done()
-}
-
-func (snub *Snub) changeState() {
-	oldState := snub.state
-	snub.state = currentToNextState[snub.state]
-
-	if _, err := port.Write([]byte(snub.state)); err != nil {
-		log.Println("Wasn't possible to write the state: ", err)
-	}
-
-	publishData(byteToStateName[snub.state], mqttSubchannelSnubState)
-	log.Printf("Change state: %v ---> %v\n", byteToStateName[oldState], byteToStateName[snub.state])
-}
-
-func (snub *Snub) changeStateWater() {
-	snub.mux.Lock()
-	defer snub.mux.Unlock()
-
-	oldState := snub.state
-
-	snub.isWaterOn = !snub.isWaterOn
-
-	if !snub.isWaterOn {
-		snub.state = offToOnWater[snub.state]
-		log.Printf("Turn on water(%vs): %v ---> %v\n", timeSleepWater, byteToStateName[oldState], byteToStateName[snub.state])
-	} else {
-		time.Sleep(time.Second * time.Duration(timeSleepWater))
-		snub.state = onToOffWater[snub.state]
-		log.Printf("Turn off water: %v ---> %v\n", byteToStateName[oldState], byteToStateName[snub.state])
-	}
-
-	if _, err := port.Write([]byte(snub.state)); err != nil {
-		log.Println("Wasn't possible to write the state: ", err)
-	}
-
-	publishData(byteToStateName[snub.state], mqttSubchannelSnubState)
-	log.Printf("Turn on water(%vs): %v ---> %v\n", timeSleepWater, byteToStateName[oldState], byteToStateName[snub.state])
 }
 
 // Will manage the state of running snub, handling all state transitions,
@@ -330,36 +233,5 @@ func watchTemperature() {
 				snub.changeStateWater()
 			}
 		}
-	}
-}
-
-// Handle receiving of tests to be executed
-func handleExperimentReceiving() {
-	if key := getMqttKey(); key != "" {
-		// Msg will must follow ExperimentData format
-		client, _ := emitter.Connect(getMqttHost(), func(_ *emitter.Client, msg emitter.Message) {
-			log.Printf("Sent message: '%s' topic: '%s'\n", msg.Payload(), msg.Topic())
-		})
-
-		var channel = getMqttChannelPrefix() + "/experiment"
-		client.OnError(func(_ *emitter.Client, err emitter.Error) {
-			mqttKeyStatusCh <- "Chave do MQTT: Sem permissão de leitura"
-		})
-
-		// Wait for tests
-		client.Subscribe(key, channel, func(_ *emitter.Client, msg emitter.Message) {
-			mqttHasReadingPermission = true
-			if mqttHasWritingPermission {
-				mqttKeyStatusCh <- "Chave do MQTT: Válida"
-			} else {
-				mqttKeyStatusCh <- "Chave do MQTT: Válida apenas para leitura"
-			}
-
-			runExperiment(string(msg.Payload()))
-		})
-
-		wgGeneral.Wait()
-	} else {
-		log.Println("MQTT key not set!!! Not waiting for tests to arrive...")
 	}
 }

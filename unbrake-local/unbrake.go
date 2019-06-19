@@ -116,10 +116,10 @@ func onReady() {
 	}()
 
 	wgGeneral.Add(1)
-	go collectData()
-	go handleExperimentReceiving()
+	go CollectData()
+	go HandleExperimentsReceiving()
 
-	if _, collectEnv := os.LookupEnv(mqttKeyEnv); collectEnv {
+	if getMqttKey() != "" {
 		go publishSerialAttrs()
 	} else {
 		log.Println("MQTT key not set!!! Data will not be published...")
