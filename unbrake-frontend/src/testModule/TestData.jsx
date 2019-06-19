@@ -273,6 +273,7 @@ TestData.propTypes = {
   calibId: PropTypes.string.isRequired,
   configId: PropTypes.string.isRequired
 };
+
 const mapStateToProps = state => {
   return {
     configName: state.testReducer.configName,

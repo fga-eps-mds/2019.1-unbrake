@@ -110,7 +110,7 @@ export const itensSelection = allCalibration => {
   return itens;
 };
 
-const selectConfiguration = (handleChange, calibStates, classes) => {
+const selectCalibration = (handleChange, calibStates, classes) => {
   return (
     <Grid item xs={4} className={classes.title}>
       <TextField
@@ -290,7 +290,7 @@ class CalibrationUpload extends React.Component {
           xs={12}
           style={{ marginTop: "50px" }}
         >
-          {selectConfiguration(this.handleChange, calibStates, classes)}
+          {selectCalibration(this.handleChange, calibStates, classes)}
           {defaultButton(this.handleUpDefault)}
         </Grid>
       </Grid>
