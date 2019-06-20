@@ -3,9 +3,10 @@
 '''
 import json
 import graphene
-from emitter import Client
+from django.core.exceptions import ObjectDoesNotExist
 from django.core import serializers
 from graphene_django.types import DjangoObjectType
+from emitter import Client
 from graphql_jwt.decorators import login_required
 from testing.models import Testing
 from configuration.models import Config
@@ -86,9 +87,12 @@ class CreateTesting(graphene.Mutation):
         '''
             Define how the arguments are used to create a new Testing object
         '''
-
-        calibration = Calibration.objects.get(id=id_calibration)
-        configuration = Config.objects.get(id=id_configuration)
+        try:
+            calibration = Calibration.objects.get(id=id_calibration)
+            configuration = Config.objects.get(id=id_configuration)
+        except ObjectDoesNotExist:
+            return CreateTesting(
+                error="Calibration or Configuration does not exist")
 
         testing = Testing(
             create_by=create_by,
