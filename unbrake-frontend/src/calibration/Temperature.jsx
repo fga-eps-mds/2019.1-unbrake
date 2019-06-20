@@ -107,7 +107,18 @@ const allFields = (states, classes, handleChange) => {
 };
 
 const renderDictionary = temperature => {
-  const { CHT1, CHT2, Tmv1, Tmv2, Tc1, Tc2, FCT1, FCT2, OFT1, OFT2 } = temperature;
+  const {
+    CHT1,
+    CHT2,
+    Tmv1,
+    Tmv2,
+    Tc1,
+    Tc2,
+    FCT1,
+    FCT2,
+    OFT1,
+    OFT2
+  } = temperature;
   const directionary = [
     [
       { name: "CHT1", value: CHT1, disable: true },
@@ -200,7 +211,7 @@ class Temperature extends React.Component {
 
   handleChange(event) {
     const { target } = event;
-    const value = target.value;
+    const { value } = target;
     const temperature = { [event.target.name]: value };
     this.setState(prevState => ({
       temperature: { ...prevState.temperature, ...temperature }

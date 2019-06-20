@@ -2,13 +2,13 @@ import React from "react";
 import { connect } from "react-redux";
 import "../App.css";
 import { withStyles } from "@material-ui/core/styles";
-import { API_URL_GRAPHQL } from "../utils/Constants";
 import AppBar from "@material-ui/core/AppBar";
 import Tabs from "@material-ui/core/Tabs";
 import Tab from "@material-ui/core/Tab";
 import PropTypes from "prop-types";
 import Button from "@material-ui/core/Button";
 import Grid from "@material-ui/core/Grid";
+import { API_URL_GRAPHQL } from "../utils/Constants";
 import CalibrationUpload from "./CalibrationUpload";
 import Vibration from "./Vibration";
 import Force from "./Force";
@@ -17,8 +17,8 @@ import Command from "./Command";
 import Speed from "./Speed";
 import Relation from "./Relation";
 import { messageSistem } from "../actions/NotificationActions";
-import { createMutationUrl } from "../utils/Request";
-import Request from "../utils/Request";
+import Request, { createMutationUrl } from "../utils/Request";
+
 import { redirectPage } from "../actions/RedirectActions";
 import {
   allVariablesCalib,
@@ -139,7 +139,7 @@ const nextButton = handleNext => {
   );
 };
 
-const appBar = (functions, classes, value, mqttKey) => {
+const appBar = (functions, classes, value) => {
   return (
     <div className={classes.root}>
       <AppBar position="static" color="inherit" className={classes.appBar}>
@@ -176,11 +176,11 @@ const appBar = (functions, classes, value, mqttKey) => {
         </Grid>
       </Grid>
       {value === generalConfigsOption && GeneralConfigs()}
-      {value === temperatureOption && <Temperature mqttKey={mqttKey} />}
-      {value === forceOption && <Force mqttKey={mqttKey} />}
-      {value === speedOption && <Speed mqttKey={mqttKey} />}
-      {value === vibrationOption && <Vibration mqttKey={mqttKey} />}
-      {value === commandOption && <Command mqttKey={mqttKey} />}
+      {value === temperatureOption && <Temperature mqttKey={classes.mqttKey} />}
+      {value === forceOption && <Force mqttKey={classes.mqttKey} />}
+      {value === speedOption && <Speed mqttKey={classes.mqttKey} />}
+      {value === vibrationOption && <Vibration mqttKey={classes.mqttKey} />}
+      {value === commandOption && <Command mqttKey={classes.mqttKey} />}
       {value === relationOption && <Relation />}
     </div>
   );
@@ -205,6 +205,14 @@ class Calibration extends React.Component {
     this.handlePrevious = this.handlePrevious.bind(this);
   }
 
+  componentDidMount() {
+    const url = `${API_URL_GRAPHQL}/mqtt-reading-key`;
+    const method = "GET";
+    Request(url, method).then(json => {
+      this.setState({ mqttKey: json.key });
+    });
+  }
+
   handleNext() {
     const { redirect } = this.props;
     redirect({ url: "/test" });
@@ -221,14 +229,6 @@ class Calibration extends React.Component {
 
   handleClose() {
     this.setState({ open: false });
-  }
-
-  componentDidMount() {
-    const url = `${API_URL_GRAPHQL}/mqtt-reading-key`;
-    const method = "GET";
-    Request(url, method).then(json => {
-      this.setState({ mqttKey: json.key });
-    });
   }
 
   handleChange(event, value) {
@@ -285,11 +285,12 @@ class Calibration extends React.Component {
       handleNext: this.handleNext,
       handlePrevious: this.handlePrevious
     };
+    classes.mqttKey = mqttKey;
 
     return (
       <Grid item container xs={12} justify="center" alignItems="center">
         <Grid item container xs={11} justify="center" alignItems="center">
-          {appBar(functions, classes, value, mqttKey)}
+          {appBar(functions, classes, value)}
         </Grid>
         {dialogName(functions, states)}
       </Grid>
