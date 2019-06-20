@@ -8,6 +8,7 @@ import { connect } from "react-redux";
 import styles from "./Styles";
 import { API_URL_GRAPHQL } from "../utils/Constants";
 import Request from "../utils/Request";
+import { messageSistem } from "../actions/NotificationActions";
 
 const percentageTransformer = 100;
 
@@ -120,7 +121,7 @@ const infoSnub = (informations, classes) => {
   return render;
 };
 
-const submit = (configId, calibId) => {
+const submit = (configId, calibId, sendMessage) => {
   const urlUser = `${API_URL_GRAPHQL}?query=query{currentUser{username}}`;
   const method = "GET";
   if (configId !== "" && calibId !== "") {
@@ -133,6 +134,14 @@ const submit = (configId, calibId) => {
         const { createTesting } = data.createTesting;
         const { testing } = createTesting.testing;
         const { id } = testing.id;
+
+        if (data.error !== null)
+          sendMessage({
+            message: data.error,
+            variante: "success",
+            condition: true
+          });
+
         const urlSubmit = `${API_URL_GRAPHQL}?query=mutation{submitTesting(mqttHost:"unbrake.ml",mqttPort:8080,testingId:${id}){succes}}`;
         Request(urlSubmit, methodTest).then(() => {
           // Alertar usuario TODO
@@ -172,14 +181,14 @@ const testInformations = (informations, classes) => {
   );
 };
 
-const renderSubmitTest = (configId, calibId) => {
+const renderSubmitTest = (configId, calibId, sendMessage) => {
   const primalIndexStyle = 1;
   const firstDenominatorStyle = 2;
   const secondDenominatorStyle = 24;
   const thirdDenominatorStyle = 32;
   return (
     <Button
-      onClick={submit(configId, calibId)}
+      onClick={submit(configId, calibId, sendMessage)}
       color="secondary"
       variant="contained"
       style={{
@@ -218,6 +227,7 @@ class TestData extends React.Component {
   }
 
   render() {
+    const { sendMessage } = this.props;
     const { classes, configId, calibId } = this.props;
     const { data } = this.state;
     const { TES, TEI, TEC, SA, TS, DTE } = data;
@@ -259,7 +269,7 @@ class TestData extends React.Component {
             {testProgress(testPro, classes)}
           </Grid>
           <Grid container item justify="center" style={{ flex: 1 }}>
-            {renderSubmitTest(configId, calibId)}
+            {renderSubmitTest(configId, calibId, sendMessage)}
           </Grid>
         </Grid>
       </Grid>
@@ -268,11 +278,15 @@ class TestData extends React.Component {
 }
 
 TestData.propTypes = {
+  sendMessage: PropTypes.func.isRequired,
   classes: PropTypes.objectOf(PropTypes.string).isRequired,
   newData: PropTypes.oneOfType([PropTypes.object]).isRequired,
   calibId: PropTypes.string.isRequired,
   configId: PropTypes.string.isRequired
 };
+const mapDispatchToProps = dispatch => ({
+  sendMessage: payload => dispatch(messageSistem(payload))
+});
 const mapStateToProps = state => {
   return {
     configName: state.testReducer.configName,
@@ -288,5 +302,5 @@ const TestDataForm = reduxForm({
 
 export default connect(
   mapStateToProps,
-  null
+  mapDispatchToProps
 )(withStyles(styles)(TestDataForm));

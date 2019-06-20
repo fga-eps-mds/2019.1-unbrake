@@ -43,7 +43,8 @@ export const createMutationUrl = async (
 
   const response = await Request(url, "POST");
 
-  if (response.errors !== undefined) return invalidId;
+  if (response.errors !== undefined)
+    return { invalidId, error: response.error };
 
   return response.data[informations.mutation][informations.response][
     informations.variablesResponse
