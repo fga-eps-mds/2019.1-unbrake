@@ -7,12 +7,12 @@ import * as emitter from "emitter-io";
 import styles from "../components/Styles";
 import RealTimeChart from "../components/RealTimeChart";
 import { field } from "../components/ComponentsForm";
+import { MQTT_HOST, MQTT_PORT } from "../utils/Constants";
 import {
-  conversionFunction,
   base10,
-  MQTT_HOST,
-  MQTT_PORT
-} from "../utils/Constants";
+  linearEquation,
+  convertDigitalToAnalog
+} from "../utils/Equations";
 
 export const labelVibration = name => {
   let nameLabel = "";
@@ -104,15 +104,14 @@ class Vibration extends React.Component {
       const { calibration } = this.props;
       const { values } = calibration;
       const { FCVB, OFVB } = values;
+      const analogMsg = convertDigitalToAnalog(
+        parseInt(msg.asString(), base10)
+      );
       if (msg.channel === "unbrake/galpao/vibration/") {
-        this.sensor.push(parseInt(msg.asString(), base10));
-        dispatch(change("calibration", "Vmv", msg.asString()));
+        this.sensor.push(analogMsg);
+        dispatch(change("calibration", "Vmv", analogMsg));
         dispatch(
-          change(
-            "calibration",
-            "Vg",
-            conversionFunction(msg.asString(), FCVB, OFVB)
-          )
+          change("calibration", "Vg", linearEquation(analogMsg, FCVB, OFVB))
         );
       }
     });

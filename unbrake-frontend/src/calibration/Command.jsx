@@ -7,7 +7,8 @@ import * as emitter from "emitter-io";
 import styles from "../components/Styles";
 import RealTimeChart from "../components/RealTimeChart";
 import { field } from "../components/ComponentsForm";
-import { base10, MQTT_HOST, MQTT_PORT } from "../utils/Constants";
+import { MQTT_HOST, MQTT_PORT } from "../utils/Constants";
+import { base10, convertDigitalToAnalog } from "../utils/Equations";
 
 const labelSecondary = name => {
   let nameLabel = "";
@@ -165,12 +166,15 @@ class Command extends React.Component {
   componentDidMount() {
     const { dispatch } = this.props;
     this.client.on("message", msg => {
+      const analogMsg = convertDigitalToAnalog(
+        parseInt(msg.asString(), base10)
+      );
       if (msg.channel === "unbrake/galpao/speed/") {
-        this.sensor1.push(parseInt(msg.asString(), base10));
-        dispatch(change("calibration", "VCmv", msg.asString()));
+        this.sensor1.push(analogMsg);
+        dispatch(change("calibration", "VCmv", analogMsg));
       } else if (msg.channel === "unbrake/galpao/pressure/") {
-        this.sensor2.push(parseInt(msg.asString(), base10));
-        dispatch(change("calibration", "PCmv", msg.asString()));
+        this.sensor2.push(analogMsg);
+        dispatch(change("calibration", "PCmv", analogMsg));
       }
     });
   }

@@ -17,7 +17,7 @@ exports[`<RealTimeChart /> render() renders the component 1`] = `
     }
   }
   datasetKeyProvider={[Function]}
-  height={150}
+  height={500}
   legend={
     Object {
       "display": true,
@@ -26,6 +26,11 @@ exports[`<RealTimeChart /> render() renders the component 1`] = `
   }
   options={
     Object {
+      "elements": Object {
+        "point": Object {
+          "radius": 0,
+        },
+      },
       "legend": Object {
         "display": true,
       },
@@ -53,9 +58,9 @@ exports[`<RealTimeChart /> render() renders the component 1`] = `
               "labelString": "mv",
             },
             "ticks": Object {
-              "max": 500,
-              "min": 1,
-              "stepSize": 50,
+              "max": 5000,
+              "min": 0,
+              "stepSize": 500,
             },
           },
         ],

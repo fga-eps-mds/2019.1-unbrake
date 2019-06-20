@@ -14,9 +14,9 @@ const yAxesConfig = () => [
       labelString: "mv"
     },
     ticks: {
-      max: 500,
-      min: 1,
-      stepSize: 50
+      max: 5000,
+      min: 0,
+      stepSize: 500
     }
   }
 ];
@@ -75,6 +75,7 @@ class RealTimeChart extends React.Component {
     const { sensor1, sensor2 } = this.props;
     return (
       <Line
+        height={500}
         data={datasets(this.props)}
         options={{
           maintainAspectRatio: false,
@@ -111,7 +112,10 @@ class RealTimeChart extends React.Component {
             ],
             yAxes: yAxesConfig()
           },
-          tooltips: tooltipsConfig()
+          tooltips: tooltipsConfig(),
+          elements: {
+            point: { radius: 0 }
+          }
         }}
       />
     );

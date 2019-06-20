@@ -7,12 +7,12 @@ import * as emitter from "emitter-io";
 import styles from "../components/Styles";
 import RealTimeChart from "../components/RealTimeChart";
 import { field } from "../components/ComponentsForm";
+import { MQTT_HOST, MQTT_PORT } from "../utils/Constants";
 import {
-  conversionFunction,
   base10,
-  MQTT_HOST,
-  MQTT_PORT
-} from "../utils/Constants";
+  linearEquation,
+  convertDigitalToAnalog
+} from "../utils/Equations";
 
 const labelSecondary = name => {
   let nameLabel = "";
@@ -181,32 +181,41 @@ class Temperature extends React.Component {
 
   componentDidMount() {
     const { dispatch } = this.props;
+    let sensorNumber;
     this.client.on("message", msg => {
       const { calibration } = this.props;
       const { values } = calibration;
       const { FCT1, OFT1, FCT2, OFT2 } = values;
+      const analogMsg = convertDigitalToAnalog(
+        parseInt(msg.asString(), base10)
+      );
       if (msg.channel === "unbrake/galpao/temperature/sensor1/") {
-        this.sensor1.push(parseInt(msg.asString(), base10));
-        dispatch(change("calibration", "Tmv1", msg.asString()));
-        dispatch(
-          change(
-            "calibration",
-            "Tc1",
-            conversionFunction(msg.asString(), FCT1, OFT1)
-          )
-        );
+        sensorNumber = "1";
       } else if (msg.channel === "unbrake/galpao/temperature/sensor2/") {
-        this.sensor2.push(parseInt(msg.asString(), base10));
-        dispatch(change("calibration", "Tmv2", msg.asString()));
-        dispatch(
-          change(
-            "calibration",
-            "Tc2",
-            conversionFunction(msg.asString(), FCT2, OFT2)
-          )
-        );
+        sensorNumber = "2";
       }
+      this.appendSensor(sensorNumber, analogMsg);
+      dispatch(change("calibration", `Tmv${sensorNumber}`, analogMsg));
+      dispatch(
+        change(
+          "calibration",
+          `Tc${sensorNumber}`,
+          linearEquation(
+            analogMsg,
+            sensorNumber === "1" ? FCT1 : FCT2,
+            sensorNumber === "1" ? OFT1 : OFT2
+          )
+        )
+      );
     });
+  }
+
+  appendSensor(sensorNumber, analogMsg) {
+    if (sensorNumber === "1") {
+      this.sensor1.push(analogMsg);
+    } else if (sensorNumber === "2") {
+      this.sensor2.push(analogMsg);
+    }
   }
 
   handleChange(event) {

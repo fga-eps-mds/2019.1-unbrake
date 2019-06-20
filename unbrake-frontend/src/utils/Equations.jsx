@@ -14,13 +14,15 @@ const tireMultiplication = 0.0254;
 const completeTurn = tireDivision * Math.PI;
 const conversionSpeedFactor = 3.6;
 
-export const conversionFunction = (x, a, b) => {
+export const base10 = 10;
+
+export const linearEquation = (x, a, b) => {
   return parseFloat(a) * parseFloat(x) + parseFloat(b);
 };
 
 export const convertDigitalToAnalog = digitalSignal => {
   const analogSignal = (parseFloat(digitalSignal) * maximumVoltage) / megaByte;
-  return analogSignal;
+  return analogSignal.toFixed(decimalPlace);
 };
 
 export const frequencyEquation = analogSignal => {

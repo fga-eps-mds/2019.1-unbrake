@@ -7,12 +7,12 @@ import * as emitter from "emitter-io";
 import styles from "../components/Styles";
 import RealTimeChart from "../components/RealTimeChart";
 import { field } from "../components/ComponentsForm";
+import { MQTT_HOST, MQTT_PORT } from "../utils/Constants";
 import {
-  conversionFunction,
   base10,
-  MQTT_HOST,
-  MQTT_PORT
-} from "../utils/Constants";
+  linearEquation,
+  convertDigitalToAnalog
+} from "../utils/Equations";
 
 const labelSecondary = name => {
   let nameLabel = "";
@@ -169,32 +169,41 @@ class Force extends React.Component {
 
   componentDidMount() {
     const { dispatch } = this.props;
+    let sensorNumber;
     this.client.on("message", msg => {
       const { calibration } = this.props;
       const { values } = calibration;
       const { FCF1, OFF1, FCF2, OFF2 } = values;
+      const analogMsg = convertDigitalToAnalog(
+        parseInt(msg.asString(), base10)
+      );
       if (msg.channel === "unbrake/galpao/brakingForce/sensor1/") {
-        this.sensor1.push(parseInt(msg.asString(), base10));
-        dispatch(change("calibration", "Fmv1", msg.asString()));
-        dispatch(
-          change(
-            "calibration",
-            "Fkgf1",
-            conversionFunction(msg.asString(), FCF1, OFF1)
-          )
-        );
+        sensorNumber = "1";
       } else if (msg.channel === "unbrake/galpao/brakingForce/sensor2/") {
-        this.sensor2.push(parseInt(msg.asString(), base10));
-        dispatch(change("calibration", "Fmv2", msg.asString()));
-        dispatch(
-          change(
-            "calibration",
-            "Fkgf2",
-            conversionFunction(msg.asString(), FCF2, OFF2)
-          )
-        );
+        sensorNumber = "2";
       }
+      this.appendSensor(sensorNumber, analogMsg);
+      dispatch(change("calibration", `Fmv${sensorNumber}`, analogMsg));
+      dispatch(
+        change(
+          "calibration",
+          `Fkgf${sensorNumber}`,
+          linearEquation(
+            analogMsg,
+            sensorNumber === "1" ? FCF1 : FCF2,
+            sensorNumber === "1" ? OFF1 : OFF2
+          )
+        )
+      );
     });
+  }
+
+  appendSensor(sensorNumber, analogMsg) {
+    if (sensorNumber === "1") {
+      this.sensor1.push(analogMsg);
+    } else if (sensorNumber === "2") {
+      this.sensor2.push(analogMsg);
+    }
   }
 
   handleChange(event) {
