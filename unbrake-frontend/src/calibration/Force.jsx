@@ -1,10 +1,18 @@
 import React from "react";
 import PropTypes from "prop-types";
-import { reduxForm } from "redux-form";
+import { reduxForm, change } from "redux-form";
+import { connect } from "react-redux";
 import { withStyles, Grid } from "@material-ui/core";
+import * as emitter from "emitter-io";
 import styles from "../components/Styles";
 import RealTimeChart from "../components/RealTimeChart";
-import { checkbox, field } from "../components/ComponentsForm";
+import { field } from "../components/ComponentsForm";
+import { MQTT_HOST, MQTT_PORT } from "../utils/Constants";
+import {
+  base10,
+  linearEquation,
+  convertDigitalToAnalog
+} from "../utils/Equations";
 
 const labelSecondary = name => {
   let nameLabel = "";
@@ -14,12 +22,6 @@ const labelSecondary = name => {
       break;
     case "OFF2":
       nameLabel = "Offset 2";
-      break;
-    case "PFkgf1":
-      nameLabel = "Plota força 1(kgf)";
-      break;
-    case "PFkgf2":
-      nameLabel = "Plota força 2(kgf)";
       break;
     default:
       nameLabel = "";
@@ -53,7 +55,7 @@ export const labelForce = name => {
       nameLabel = "Fator de conversão 1";
       break;
     case "FCF2":
-      nameLabel = "Fator de conversão 1";
+      nameLabel = "Fator de conversão 2";
       break;
     default:
       nameLabel = labelSecondary(name);
@@ -104,27 +106,6 @@ const allFields = (states, classes, handleChange) => {
   return fields;
 };
 
-const allCheckbox = (selectsControl, classes, handleChange) => {
-  const checks = selectsControl.map(value => {
-    const type = value;
-    type.label = labelForce(value.name);
-    return (
-      <Grid
-        key={`checkbox ${value.name}`}
-        alignItems="center"
-        justify="center"
-        container
-        item
-        xs={12}
-        className={classes.checboxSize}
-      >
-        {checkbox(type, handleChange)}
-      </Grid>
-    );
-  });
-  return checks;
-};
-
 const renderDictionary = force => {
   const directionary = [
     [
@@ -158,10 +139,8 @@ class Force extends React.Component {
       force: {
         CHF1: "", // canal de aquisição 1
         CHF2: "", // canal de aquisição 2
-        PFkgf1: false, // plota força (kfg) 1
         Fmv1: "", // força (mv) 1
         Fmv2: "", // força (mv) 2
-        PFkgf2: false, // plota força (kfg) 1
         Fkgf1: "", // força (kgf) 1
         Fkgf2: "", // força (kgf) 2
         FCF1: "", // fator de conversão 1
@@ -170,7 +149,61 @@ class Force extends React.Component {
         OFF2: "" // offset de força 2
       }
     };
+    this.client = emitter.connect({
+      host: MQTT_HOST,
+      port: MQTT_PORT,
+      secure: false
+    });
+    this.client.subscribe({
+      key: props.mqttKey,
+      channel: "unbrake/galpao/brakingForce/sensor1"
+    });
+    this.client.subscribe({
+      key: props.mqttKey,
+      channel: "unbrake/galpao/brakingForce/sensor2"
+    });
+    this.sensor1 = [];
+    this.sensor2 = [];
     this.handleChange = this.handleChange.bind(this);
+  }
+
+  componentDidMount() {
+    const { dispatch } = this.props;
+    let sensorNumber;
+    this.client.on("message", msg => {
+      const { calibration } = this.props;
+      const { values } = calibration;
+      const { FCF1, OFF1, FCF2, OFF2 } = values;
+      const analogMsg = convertDigitalToAnalog(
+        parseInt(msg.asString(), base10)
+      );
+      if (msg.channel === "unbrake/galpao/brakingForce/sensor1/") {
+        sensorNumber = "1";
+      } else if (msg.channel === "unbrake/galpao/brakingForce/sensor2/") {
+        sensorNumber = "2";
+      }
+      this.appendSensor(sensorNumber, analogMsg);
+      dispatch(change("calibration", `Fmv${sensorNumber}`, analogMsg));
+      dispatch(
+        change(
+          "calibration",
+          `Fkgf${sensorNumber}`,
+          linearEquation(
+            analogMsg,
+            sensorNumber === "1" ? FCF1 : FCF2,
+            sensorNumber === "1" ? OFF1 : OFF2
+          )
+        )
+      );
+    });
+  }
+
+  appendSensor(sensorNumber, analogMsg) {
+    if (sensorNumber === "1") {
+      this.sensor1.push(analogMsg);
+    } else if (sensorNumber === "2") {
+      this.sensor2.push(analogMsg);
+    }
   }
 
   handleChange(event) {
@@ -184,13 +217,8 @@ class Force extends React.Component {
 
   render() {
     const { force } = this.state;
-    const { PFkgf1, PFkgf2 } = force;
     const { classes } = this.props;
     const states = renderDictionary(force);
-    const selectsControl = [
-      { name: "PFkgf1", value: PFkgf1, disable: false },
-      { name: "PFkgf2", value: PFkgf2, disable: false }
-    ];
     return (
       <Grid
         container
@@ -205,17 +233,6 @@ class Force extends React.Component {
             <Grid container item justify="center" xs={6}>
               {allFields(states, classes, this.handleChange)}
             </Grid>
-            <Grid
-              container
-              item
-              alignItems="flex-start"
-              justify="center"
-              xs={3}
-            >
-              <Grid container item alignItems="center" justify="center" xs={12}>
-                {allCheckbox(selectsControl, classes, this.handleChange)}
-              </Grid>
-            </Grid>
             <Grid item xs />
           </form>
         </Grid>
@@ -227,7 +244,14 @@ class Force extends React.Component {
           justify="center"
           className={classes.gridGraphic}
         >
-          <RealTimeChart />
+          <RealTimeChart
+            sensor1={this.sensor1}
+            sensor2={this.sensor2}
+            labelSensor1="Força 1"
+            colorSensor1="#133e79"
+            labelSensor2="Força 2"
+            colorSensor2="#348941"
+          />
         </Grid>
       </Grid>
     );
@@ -235,7 +259,10 @@ class Force extends React.Component {
 }
 
 Force.propTypes = {
-  classes: PropTypes.objectOf(PropTypes.string).isRequired
+  classes: PropTypes.objectOf(PropTypes.string).isRequired,
+  mqttKey: PropTypes.string.isRequired,
+  dispatch: PropTypes.func.isRequired,
+  calibration: PropTypes.objectOf(PropTypes.string).isRequired
 };
 
 const ForceForm = reduxForm({
@@ -243,4 +270,13 @@ const ForceForm = reduxForm({
   destroyOnUnmount: false
 })(Force);
 
-export default withStyles(styles)(ForceForm);
+export default connect(state => ({
+  calibration: {
+    values: {
+      FCF1: state.form.calibration.values.FCF1,
+      OFF1: state.form.calibration.values.OFF1,
+      FCF2: state.form.calibration.values.FCF2,
+      OFF2: state.form.calibration.values.OFF2
+    }
+  }
+}))(withStyles(styles)(ForceForm));

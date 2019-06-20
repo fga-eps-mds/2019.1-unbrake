@@ -1,10 +1,13 @@
 import React from "react";
 import PropTypes from "prop-types";
-import { reduxForm } from "redux-form";
+import { reduxForm, change } from "redux-form";
 import { withStyles, Grid } from "@material-ui/core";
+import * as emitter from "emitter-io";
 import styles from "../components/Styles";
 import RealTimeChart from "../components/RealTimeChart";
-import { checkbox, field } from "../components/ComponentsForm";
+import { field } from "../components/ComponentsForm";
+import { MQTT_HOST, MQTT_PORT } from "../utils/Constants";
+import { base10, convertDigitalToAnalog } from "../utils/Equations";
 
 const labelSecondary = name => {
   let nameLabel = "";
@@ -39,18 +42,6 @@ export const labelSpeed = name => {
       break;
     case "RAP":
       nameLabel = "Raio do pneu (m)";
-      break;
-    case "PRrpm":
-      nameLabel = "Plota rotação (rpm)";
-      break;
-    case "PVkmh":
-      nameLabel = "Plota velocidade (Km/h)";
-      break;
-    case "PDPkm":
-      nameLabel = "Plota distândia percorrida (Km)";
-      break;
-    case "ID":
-      nameLabel = "Inicializa Distancia";
       break;
     default:
       nameLabel = labelSecondary(name);
@@ -101,27 +92,6 @@ const allFields = (states, classes, handleChange) => {
   return fields;
 };
 
-const allCheckbox = (selectsControl, classes, handleChange) => {
-  const checks = selectsControl.map(value => {
-    const type = value;
-    type.label = labelSpeed(value.name);
-    return (
-      <Grid
-        key={`checkbox ${value.name}`}
-        alignItems="center"
-        justify="center"
-        container
-        item
-        xs={12}
-        className={classes.checboxSize}
-      >
-        {checkbox(type, handleChange)}
-      </Grid>
-    );
-  });
-  return checks;
-};
-
 const renderDictionary = speed => {
   const directionary = [
     [{ name: "CHR1", value: speed.CHR1, disable: true }],
@@ -141,16 +111,6 @@ const renderDictionary = speed => {
   return directionary;
 };
 
-const checkboxes = speed => {
-  const { PRrpm, PVkmh, PDPkm, ID } = speed;
-  return [
-    { name: "PRrpm", value: PRrpm, disable: false },
-    { name: "PVkmh", value: PVkmh, disable: false },
-    { name: "PDPkm", value: PDPkm, disable: false },
-    { name: "ID", value: ID, disable: false }
-  ];
-};
-
 class Speed extends React.Component {
   constructor(props) {
     super(props);
@@ -159,17 +119,36 @@ class Speed extends React.Component {
         CHR1: "", // canal de aquisição
         Fhz: "", // frequencia
         Vkmh: "", // velocidade km/h
-        PRrpm: false, // plota rotação
         Rrpm: "", // rotação
         RAP: "", // raio pneu
-        PVkmh: false, // plota velocidade
         Vms: "", // velocidade m/s
-        DPkm: "", // distância percorrida
-        PDPkm: false, // plota distância percorrida
-        ID: false // Inicializa distancia
+        DPkm: "" // distância percorrida
       }
     };
+    this.client = emitter.connect({
+      host: MQTT_HOST,
+      port: MQTT_PORT,
+      secure: false
+    });
+    this.client.subscribe({
+      key: props.mqttKey,
+      channel: "unbrake/galpao/frequency"
+    });
+    this.sensor = [];
     this.handleChange = this.handleChange.bind(this);
+  }
+
+  componentDidMount() {
+    const { dispatch } = this.props;
+    this.client.on("message", msg => {
+      const analogMsg = convertDigitalToAnalog(
+        parseInt(msg.asString(), base10)
+      );
+      if (msg.channel === "unbrake/galpao/frequency/") {
+        this.sensor.push(analogMsg);
+        dispatch(change("calibration", "Fhz", analogMsg));
+      }
+    });
   }
 
   handleChange(event) {
@@ -185,7 +164,6 @@ class Speed extends React.Component {
     const { speed } = this.state;
     const { classes } = this.props;
     const states = renderDictionary(speed);
-    const selectsControl = checkboxes(speed);
     return (
       <Grid
         container
@@ -200,17 +178,6 @@ class Speed extends React.Component {
             <Grid container item justify="center" xs={6}>
               {allFields(states, classes, this.handleChange)}
             </Grid>
-            <Grid
-              container
-              item
-              alignItems="flex-start"
-              justify="center"
-              xs={3}
-            >
-              <Grid container item alignItems="center" justify="center" xs={12}>
-                {allCheckbox(selectsControl, classes, this.handleChange)}
-              </Grid>
-            </Grid>
             <Grid item xs />
           </form>
         </Grid>
@@ -222,7 +189,11 @@ class Speed extends React.Component {
           justify="center"
           className={classes.gridGraphic}
         >
-          <RealTimeChart />
+          <RealTimeChart
+            sensor1={this.sensor}
+            labelSensor1="Frequência"
+            colorSensor1="#133e79"
+          />
         </Grid>
       </Grid>
     );
@@ -230,7 +201,9 @@ class Speed extends React.Component {
 }
 
 Speed.propTypes = {
-  classes: PropTypes.objectOf(PropTypes.string).isRequired
+  classes: PropTypes.objectOf(PropTypes.string).isRequired,
+  mqttKey: PropTypes.string.isRequired,
+  dispatch: PropTypes.func.isRequired
 };
 
 const SpeedForm = reduxForm({

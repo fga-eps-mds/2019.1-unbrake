@@ -1,10 +1,18 @@
 import React from "react";
 import PropTypes from "prop-types";
-import { reduxForm } from "redux-form";
+import { reduxForm, change } from "redux-form";
+import { connect } from "react-redux";
 import { withStyles, Grid } from "@material-ui/core";
+import * as emitter from "emitter-io";
 import styles from "../components/Styles";
 import RealTimeChart from "../components/RealTimeChart";
-import { checkbox, field } from "../components/ComponentsForm";
+import { field } from "../components/ComponentsForm";
+import { MQTT_HOST, MQTT_PORT } from "../utils/Constants";
+import {
+  base10,
+  linearEquation,
+  convertDigitalToAnalog
+} from "../utils/Equations";
 
 const labelSecondary = name => {
   let nameLabel = "";
@@ -14,12 +22,6 @@ const labelSecondary = name => {
       break;
     case "OFT2":
       nameLabel = "Offset 2";
-      break;
-    case "PT1":
-      nameLabel = "Plota Temperatura 1";
-      break;
-    case "PT2":
-      nameLabel = "Plota temperatura 2";
       break;
     default:
       nameLabel = "";
@@ -53,7 +55,7 @@ export const labelTemperature = name => {
       nameLabel = "Fator de conversão 1";
       break;
     case "FCT2":
-      nameLabel = "Fator de conversão 1";
+      nameLabel = "Fator de conversão 2";
       break;
     default:
       nameLabel = labelSecondary(name);
@@ -104,29 +106,19 @@ const allFields = (states, classes, handleChange) => {
   return rowns;
 };
 
-const allCheckbox = (selectsControl, classes, handleChange) => {
-  const checks = selectsControl.map(value => {
-    const type = value;
-    type.label = labelTemperature(value.name);
-    return (
-      <Grid
-        key={`checkbox ${value.name}`}
-        alignItems="center"
-        justify="center"
-        container
-        item
-        xs={12}
-        className={classes.checboxSize}
-      >
-        {checkbox(type, handleChange)}
-      </Grid>
-    );
-  });
-  return checks;
-};
-
-const renderDictionary = force => {
-  const { CHT1, CHT2, Tmv1, Tmv2, Tc1, Tc2, FCT1, FCT2, OFT1, OFT2 } = force;
+const renderDictionary = temperature => {
+  const {
+    CHT1,
+    CHT2,
+    Tmv1,
+    Tmv2,
+    Tc1,
+    Tc2,
+    FCT1,
+    FCT2,
+    OFT1,
+    OFT2
+  } = temperature;
   const directionary = [
     [
       { name: "CHT1", value: CHT1, disable: true },
@@ -159,10 +151,8 @@ class Temperature extends React.Component {
       temperature: {
         CHT1: "", // canal de aquisição 1
         CHT2: "", // canal de aquisição 2
-        PT1: false, // plota temperatura 1
         Tmv1: "", // temperatura (mv) 1
         Tmv2: "", // temperatura (mv) 2
-        PT2: false, // plota temperatura 2
         Tc1: "", // temperatura (c) 1
         Tc2: "", // temperatura (c) 2
         FCT1: "", // fator de conversão 1
@@ -171,27 +161,76 @@ class Temperature extends React.Component {
         OFT2: "" // offset de temperatura 2
       }
     };
+    this.client = emitter.connect({
+      host: MQTT_HOST,
+      port: MQTT_PORT,
+      secure: false
+    });
+    this.client.subscribe({
+      key: props.mqttKey,
+      channel: "unbrake/galpao/temperature/sensor1"
+    });
+    this.client.subscribe({
+      key: props.mqttKey,
+      channel: "unbrake/galpao/temperature/sensor2"
+    });
+    this.sensor1 = [];
+    this.sensor2 = [];
     this.handleChange = this.handleChange.bind(this);
+  }
+
+  componentDidMount() {
+    const { dispatch } = this.props;
+    let sensorNumber;
+    this.client.on("message", msg => {
+      const { calibration } = this.props;
+      const { values } = calibration;
+      const { FCT1, OFT1, FCT2, OFT2 } = values;
+      const analogMsg = convertDigitalToAnalog(
+        parseInt(msg.asString(), base10)
+      );
+      if (msg.channel === "unbrake/galpao/temperature/sensor1/") {
+        sensorNumber = "1";
+      } else if (msg.channel === "unbrake/galpao/temperature/sensor2/") {
+        sensorNumber = "2";
+      }
+      this.appendSensor(sensorNumber, analogMsg);
+      dispatch(change("calibration", `Tmv${sensorNumber}`, analogMsg));
+      dispatch(
+        change(
+          "calibration",
+          `Tc${sensorNumber}`,
+          linearEquation(
+            analogMsg,
+            sensorNumber === "1" ? FCT1 : FCT2,
+            sensorNumber === "1" ? OFT1 : OFT2
+          )
+        )
+      );
+    });
+  }
+
+  appendSensor(sensorNumber, analogMsg) {
+    if (sensorNumber === "1") {
+      this.sensor1.push(analogMsg);
+    } else if (sensorNumber === "2") {
+      this.sensor2.push(analogMsg);
+    }
   }
 
   handleChange(event) {
     const { target } = event;
-    const value = target.type === "checkbox" ? target.checked : target.value;
-    const force = { [event.target.name]: value };
+    const { value } = target;
+    const temperature = { [event.target.name]: value };
     this.setState(prevState => ({
-      force: { ...prevState.force, ...force }
+      temperature: { ...prevState.temperature, ...temperature }
     }));
   }
 
   render() {
     const { temperature } = this.state;
-    const { PT1, PT2 } = temperature;
     const { classes } = this.props;
     const states = renderDictionary(temperature);
-    const selectsControl = [
-      { name: "PT1", value: PT1, disable: false },
-      { name: "PT2", value: PT2, disable: false }
-    ];
     return (
       <Grid
         container
@@ -206,17 +245,6 @@ class Temperature extends React.Component {
             <Grid container item justify="center" xs={6}>
               {allFields(states, classes, this.handleChange)}
             </Grid>
-            <Grid
-              container
-              item
-              alignItems="flex-start"
-              justify="center"
-              xs={3}
-            >
-              <Grid container item alignItems="center" justify="center" xs={12}>
-                {allCheckbox(selectsControl, classes, this.handleChange)}
-              </Grid>
-            </Grid>
             <Grid item xs />
           </form>
         </Grid>
@@ -228,7 +256,14 @@ class Temperature extends React.Component {
           justify="center"
           className={classes.gridGraphic}
         >
-          <RealTimeChart />
+          <RealTimeChart
+            sensor1={this.sensor1}
+            sensor2={this.sensor2}
+            labelSensor1="Temperatura 1"
+            colorSensor1="#133e79"
+            labelSensor2="Temperatura 2"
+            colorSensor2="#348941"
+          />
         </Grid>
       </Grid>
     );
@@ -236,7 +271,10 @@ class Temperature extends React.Component {
 }
 
 Temperature.propTypes = {
-  classes: PropTypes.objectOf(PropTypes.string).isRequired
+  classes: PropTypes.objectOf(PropTypes.string).isRequired,
+  mqttKey: PropTypes.string.isRequired,
+  dispatch: PropTypes.func.isRequired,
+  calibration: PropTypes.objectOf(PropTypes.string).isRequired
 };
 
 const TemperatureForm = reduxForm({
@@ -244,4 +282,13 @@ const TemperatureForm = reduxForm({
   destroyOnUnmount: false
 })(Temperature);
 
-export default withStyles(styles)(TemperatureForm);
+export default connect(state => ({
+  calibration: {
+    values: {
+      FCT1: state.form.calibration.values.FCT1,
+      OFT1: state.form.calibration.values.OFT1,
+      FCT2: state.form.calibration.values.FCT2,
+      OFT2: state.form.calibration.values.OFT2
+    }
+  }
+}))(withStyles(styles)(TemperatureForm));
