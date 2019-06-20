@@ -2,12 +2,17 @@ const validNumber = 0;
 const decimalPlace = 4;
 const maximumVoltage = 5000;
 const megaByte = 1023;
+
 const frequencySubtractionFactor = 826;
 const frequencyDivisionFactor = 15;
 const minutes = 60;
+
 const tireDivisionFactor = 100000;
 const tireDivision = 2;
 const tireMultiplication = 0.0254;
+
+const completeTurn = tireDivision * Math.PI;
+const conversionSpeedFactor = 3.6;
 
 export const conversionFunction = (x, a, b) => {
   return parseFloat(a) * parseFloat(x) + parseFloat(b);
@@ -62,4 +67,12 @@ export const gearRatioEquation = (
     return gearRatio.toFixed(decimalPlace);
   }
   return undefined;
+};
+
+export const topSpeedEquation = (tireRadius, gearRatio) => {
+  const RDP = parseFloat(tireRadius);
+  const RDT = parseFloat(gearRatio);
+
+  const topSpeed = (RDP * conversionSpeedFactor * completeTurn * RDT) / minutes;
+  return topSpeed.toFixed(decimalPlace);
 };

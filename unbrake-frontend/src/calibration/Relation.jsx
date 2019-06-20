@@ -9,7 +9,11 @@ import completeTire from "../img/completeTire.png";
 import sideTire from "../img/sideTire.png";
 import tire from "../img/tire.png";
 import VBelt from "../img/Vbelt.png";
-import { tireRadiusEquation, gearRatioEquation } from "../utils/Equations";
+import {
+  tireRadiusEquation,
+  gearRatioEquation,
+  topSpeedEquation
+} from "../utils/Equations";
 
 const validNumber = 0;
 
@@ -201,9 +205,20 @@ class Relation extends React.Component {
         DPO: "", // Diametro da polia motora
         DPM: "", // Diametro da polia movida
         RDT: "" // Relação de transmissao
-      }
+      },
+      topSpeed: 0
     };
     this.handleChange = this.handleChange.bind(this);
+  }
+
+  static getDerivedStateFromProps(props, state) {
+    const { values } = props.calibration;
+    const topSpeed = topSpeedEquation(values.RDP, values.RDT, values.RSM);
+
+    return {
+      relation: { ...state.relation },
+      topSpeed
+    };
   }
 
   shouldComponentUpdate(nextProps) {
@@ -232,7 +247,7 @@ class Relation extends React.Component {
   }
 
   render() {
-    const { relation } = this.state;
+    const { relation, topSpeed } = this.state;
     const { classes } = this.props;
     const statesTire = tireDictionary(relation);
     const statesVbelt = vbeltDictionary(relation);
@@ -264,7 +279,9 @@ class Relation extends React.Component {
                 xs={12}
                 style={{ marginTop: "100px" }}
               >
-                <h2 styles={{ height: "22px" }}>Velocidade máxima</h2>
+                <h2 styles={{ height: "22px" }}>
+                  Velocidade máxima: {topSpeed} Km/h
+                </h2>
                 {tireFields(statesVbelt, classes, this.handleChange)}
               </Grid>
             </form>
