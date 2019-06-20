@@ -19,6 +19,7 @@ import {
   allVariablesCalib,
   calibrationJSON,
   empty,
+  fieldsDisabledes,
   styles
 } from "./CalibrationVariables";
 import { messageSistem } from "../actions/NotificationActions";
@@ -157,24 +158,18 @@ class CalibrationUpload extends React.Component {
   }
 
   componentDidMount() {
-    const { calibration } = this.props;
+    const { dispatch } = this.props;
 
     const url = `${API_URL_GRAPHQL}?query=query{allCalibration{id, name, isDefault}}`;
     const method = "GET";
-    Request(url, method)
-      .then(json => {
-        const data = json.data.allCalibration;
-        if (data !== null) {
-          this.setState({ allCalibration: data });
-        }
-      })
-      .then(() => {
-        if (calibration.values !== undefined) {
-          if (Object.keys(calibration.values).length === empty) {
-            this.handleUpDefault();
-          }
-        }
-      });
+    Request(url, method).then(json => {
+      const data = json.data.allCalibration;
+      if (data !== null) {
+        this.setState({ allCalibration: data });
+      }
+    });
+
+    dispatch(initialize("calibration", fieldsDisabledes));
   }
 
   handleChange(event) {
@@ -301,8 +296,7 @@ class CalibrationUpload extends React.Component {
 
 CalibrationUpload.defaultProps = {
   filename: "",
-  calibId: "",
-  calibration: { values: {} }
+  calibId: ""
 };
 
 CalibrationUpload.propTypes = {
@@ -310,7 +304,6 @@ CalibrationUpload.propTypes = {
   addFileName: PropTypes.func.isRequired,
   dispatch: PropTypes.func.isRequired,
   filename: PropTypes.string,
-  calibration: PropTypes.objectOf(PropTypes.string),
   sendMessage: PropTypes.func.isRequired,
   changeCalib: PropTypes.func.isRequired,
   calibId: PropTypes.number

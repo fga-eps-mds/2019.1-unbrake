@@ -235,6 +235,17 @@ export const labels = name => {
   return "";
 };
 
+export const fieldsDisabledes = {
+  CHT1: 1,
+  CHT2: 2,
+  CHF1: 3,
+  CHF2: 4,
+  CHR1: 5,
+  CHVB: 6,
+  CHVC: 7,
+  CHPC: 8
+};
+
 export const dialogName = (functions, states) => {
   let isDisabled = true;
   if (localStorage.getItem("isSuperuser") === "true") isDisabled = false;
