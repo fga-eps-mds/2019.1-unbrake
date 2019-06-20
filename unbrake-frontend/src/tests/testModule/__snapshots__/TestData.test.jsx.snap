@@ -1,7 +1,7 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
 exports[`<TestData /> render() renders the component 1`] = `
-<Connect(WithStyles(ReduxForm))
+<WithStyles(ReduxForm)
   context={
     Object {
       "$$typeof": Symbol(react.context),

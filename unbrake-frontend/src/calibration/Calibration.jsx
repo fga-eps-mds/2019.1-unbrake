@@ -42,7 +42,7 @@ const sizeMessageDefault = 14;
 const invalidID = -1;
 let createMessage = "";
 
-const validadeFields = (calibration, sendMessage) => {
+export const validateFields = (calibration, sendMessage) => {
   createMessage = allVariablesCalib.reduce((prevMessage, newDictionary) => {
     const newMessage = newDictionary.reduce((prevMessageTwo, newField) => {
       if (
@@ -140,6 +140,23 @@ const nextButton = handleNext => {
 const appBar = (functions, classes, value) => {
   return (
     <div className={classes.root}>
+      <Grid
+        item
+        xs={12}
+        container
+        justify="center"
+        style={{ marginBottom: "15px" }}
+      >
+        <Grid item xs={3} container justify="center" alignItems="center">
+          {previousButton(functions.handlePrevious)}
+        </Grid>
+        <Grid item xs={4} container justify="center" alignItems="center">
+          {registerButton(functions.handleValidate)}
+        </Grid>
+        <Grid item xs={4} container justify="center" alignItems="center">
+          {nextButton(functions.handleNext)}
+        </Grid>
+      </Grid>
       <AppBar position="static" color="inherit" className={classes.appBar}>
         <Tabs
           value={value}
@@ -156,23 +173,6 @@ const appBar = (functions, classes, value) => {
           <Tab label="Relações" />
         </Tabs>
       </AppBar>
-      <Grid
-        item
-        xs={12}
-        container
-        justify="center"
-        style={{ marginTop: "15px" }}
-      >
-        <Grid item xs={3} container justify="center" alignItems="center">
-          {previousButton(functions.handlePrevious)}
-        </Grid>
-        <Grid item xs={4} container justify="center" alignItems="center">
-          {registerButton(functions.handleValidate)}
-        </Grid>
-        <Grid item xs={4} container justify="center" alignItems="center">
-          {nextButton(functions.handleNext)}
-        </Grid>
-      </Grid>
       {value === generalConfigsOption && GeneralConfigs()}
       {value === temperatureOption && <Temperature />}
       {value === forceOption && <Force />}
@@ -232,7 +232,7 @@ class Calibration extends React.Component {
   handleValidate() {
     const { calibration, sendMessage } = this.props;
 
-    const validate = validadeFields(calibration.values, sendMessage);
+    const validate = validateFields(calibration.values, sendMessage);
     if (validate === false) return;
 
     const inserName = { open: true, isDefault: false, name: "" };

@@ -130,12 +130,16 @@ class Configuration extends React.Component {
   }
 
   componentDidMount() {
+    const { configId } = this.props;
+
     const url = `${API_URL_GRAPHQL}?query=query{configNotDefault{id, name}}`;
     const method = "GET";
     Request(url, method).then(json => {
       const data = json.data.configNotDefault;
       if (data !== null) this.setState({ allConfiguration: data });
     });
+
+    if (configId > invalidId) this.handleSelectConfig(configId);
   }
 
   handleNext() {
@@ -253,7 +257,6 @@ class Configuration extends React.Component {
   }
 
   render() {
-    // console.log("props",this.props)
     const { classes, configId } = this.props;
     const {
       configuration,

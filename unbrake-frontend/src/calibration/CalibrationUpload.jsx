@@ -62,7 +62,7 @@ const createCalibration = (data, dispatch) => {
   dispatch(initialize("calibration", newCalibraiton));
 };
 
-const getSelectCalibration = (id, dispatch, sendMessage) => {
+export const getSelectCalibration = (id, dispatch, sendMessage) => {
   let message = "";
 
   const query = createQuery();
@@ -158,7 +158,7 @@ class CalibrationUpload extends React.Component {
   }
 
   componentDidMount() {
-    const { dispatch } = this.props;
+    const { dispatch, calibId, sendMessage } = this.props;
 
     const url = `${API_URL_GRAPHQL}?query=query{allCalibration{id, name, isDefault}}`;
     const method = "GET";
@@ -170,6 +170,9 @@ class CalibrationUpload extends React.Component {
     });
 
     dispatch(initialize("calibration", fieldsDisabledes));
+
+    if (calibId > invalidId)
+      getSelectCalibration(calibId, dispatch, sendMessage);
   }
 
   handleChange(event) {
@@ -266,7 +269,6 @@ class CalibrationUpload extends React.Component {
   }
 
   render() {
-    // console.log("props calib upload",this.props, this.props.calibId)
     const { filename, classes, calibId } = this.props;
     const { allCalibration } = this.state;
 

@@ -5,14 +5,10 @@ import Tabs from "@material-ui/core/Tabs";
 import Tab from "@material-ui/core/Tab";
 // import Typography from "@material-ui/core/Typography";
 import PropTypes from "prop-types";
-import TextField from "@material-ui/core/TextField";
 import { connect } from "react-redux";
 import RealTimeChart from "../components/RealTimeChart";
-import { itensSelectionConfig } from "../configuration/Configuration";
-import { itensSelection } from "../calibration/CalibrationUpload";
-import { API_URL_GRAPHQL } from "../utils/Constants";
-import Request from "../utils/Request";
 import { changeConfigTest, changeCalibTest } from "../actions/TestActions";
+import General from "./General";
 
 const margin = 1.5;
 const zeroTab = 0;
@@ -35,99 +31,15 @@ const styles = theme => ({
   }
 });
 
-/*
- * const submitCalib = (test, allCalibration) => {
- *   const moveIndexBack = 1;
- *   const { value } = test.target.value;
- *   const calib = allCalibration[value - moveIndexBack];
- *   if (calib !== undefined) {
- *     const { id } = calib.id;
- *     const { name } = calib.name;
- *     changeCalibTest({ calibId: id, calibName: name });
- *   }
- * };
- */
-
-/*
- * const submitConfig = (test, allConfiguration) => {
- *   const { value } = test.target.value;
- *   const moveIndexBack = 1;
- *   const conditionCompare = 0;
- *   if (value - moveIndexBack >= conditionCompare) {
- *     const config = allConfiguration[value - moveIndexBack];
- *     const configId = config.id;
- *     const configName = config.name;
- *     changeConfigTest({ configId, configName });
- *   }
- * };
- */
-
 class TabMenuComponent extends React.Component {
   constructor(props) {
     super(props);
 
     this.state = {
-      value: 0,
-      allCalibration: "",
-      allConfiguration: ""
+      value: 0
     };
     this.handleChange = this.handleChange.bind(this);
     this.handleChangeSelect = this.handleChangeSelect.bind(this);
-  }
-
-  componentDidMount() {
-    const urlCalib = `${API_URL_GRAPHQL}?query=query{allCalibration{id, name, isDefault}}`;
-    const method = "GET";
-    Request(urlCalib, method).then(json => {
-      const data = json.data.allCalibration;
-      if (data !== null) {
-        this.setState({ allCalibration: data });
-      }
-    });
-
-    const urlConfig = `${API_URL_GRAPHQL}?query=query{configNotDefault{id, name}}`;
-
-    Request(urlConfig, method).then(json => {
-      const data = json.data.configNotDefault;
-      if (data !== null) this.setState({ allConfiguration: data });
-    });
-  }
-
-  selectDefault() {
-    const { classes, calibId, configId } = this.props;
-    const { allCalibration, allConfiguration } = this.state;
-    return (
-      <div style={{ flex: 1 }}>
-        <TextField
-          id="outlined-select-currency"
-          select
-          label="Calibrações"
-          value={calibId}
-          name="calibId"
-          className={classes.formControl}
-          margin="normal"
-          variant="outlined"
-          style={{ width: "100%" }}
-          onChange={this.handleChangeSelect}
-        >
-          {itensSelection(allCalibration)}
-        </TextField>
-        <TextField
-          id="outlined-select-currency"
-          select
-          label="Configurações"
-          value={configId}
-          name="configId"
-          className={classes.formControl}
-          margin="normal"
-          variant="outlined"
-          style={{ width: "100%" }}
-          onChange={this.handleChangeSelect}
-        >
-          {itensSelectionConfig(allConfiguration)}
-        </TextField>
-      </div>
-    );
   }
 
   handleChange(event, newValue) {
@@ -142,15 +54,6 @@ class TabMenuComponent extends React.Component {
 
     if (name === "configId") changeConfig({ configId: id });
     else if (name === "calibId") changeCalib({ calibId: id });
-
-    /*
-     * const invalidId = 0;
-     * if (
-     *   event.target.name === "dataBaseCalibration" &&
-     *   event.target.value > invalidId
-     * )
-     * getSelectCalibration(event.target.value, dispatch, sendMessage);
-     */
   }
 
   render() {
@@ -172,7 +75,7 @@ class TabMenuComponent extends React.Component {
             position="relative"
           >
             <Tabs centered value={value} onChange={this.handleChange}>
-              <Tab label="Configurações" />
+              <Tab label="Gerais" />
               <Tab label="Temperatura" />
               <Tab label="Força" />
               <Tab label="Rotação" />
@@ -189,9 +92,7 @@ class TabMenuComponent extends React.Component {
           alignItems="center"
           style={{ paddingTop: "15px" }}
         >
-          {value === zeroTab && (
-            <div style={{ flex: 1 }}>{this.selectDefault()}</div>
-          )}
+          {value === zeroTab && <General />}
           {value === firstTab && <RealTimeChart />}
           {value === secondTab && <RealTimeChart />}
           {value === thirdTab && <RealTimeChart />}
@@ -203,15 +104,8 @@ class TabMenuComponent extends React.Component {
   }
 }
 
-TabMenuComponent.defaultProps = {
-  calibId: "",
-  configId: ""
-};
-
 TabMenuComponent.propTypes = {
   classes: PropTypes.objectOf(PropTypes.string).isRequired,
-  configId: PropTypes.number,
-  calibId: PropTypes.number,
   changeCalib: PropTypes.func.isRequired,
   changeConfig: PropTypes.func.isRequired
 };
