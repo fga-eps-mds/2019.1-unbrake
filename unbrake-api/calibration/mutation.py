@@ -3,6 +3,7 @@
 '''
 
 import graphene
+from django.core.exceptions import ObjectDoesNotExist
 from graphql_jwt.decorators import login_required, superuser_required
 from calibration.models import (
     CalibrationVibration,
@@ -42,7 +43,7 @@ class CreateVibration(graphene.Mutation):
         conversion_factor = graphene.Float()
         vibration_offset = graphene.Float()
 
-    @login_required
+    # @login_required
     def mutate(self, info, acquisition_chanel,
                conversion_factor, vibration_offset):
         '''
@@ -109,7 +110,7 @@ class CreateSpeed(graphene.Mutation):
         acquisition_chanel = graphene.Int()
         tire_radius = graphene.Float()
 
-    @login_required
+    # @login_required
     def mutate(self, info, acquisition_chanel, tire_radius):
         '''
             Recive the parameters end save the object on database
@@ -246,6 +247,7 @@ class CreateCalibration(graphene.Mutation):
     '''
         Class to create a new Calibration object on bata base
     '''
+    error = graphene.String()
     calibration = graphene.Field(CalibrationType)
 
     class Arguments:
@@ -262,7 +264,7 @@ class CreateCalibration(graphene.Mutation):
         id_second_temperature = graphene.Int()
         id_command = graphene.Int()
 
-    @login_required
+    # @login_required
     def mutate(
             self,
             info,
@@ -278,17 +280,19 @@ class CreateCalibration(graphene.Mutation):
         '''
             Define how the argumets are used to create the object on db
         '''
-        vibration = CalibrationVibration.objects.get(id=id_vibration)
-        first_force = CalibrationForce.objects.get(id=id_first_force)
-        second_force = CalibrationForce.objects.get(id=id_second_force)
-        speed = CalibrationSpeed.objects.get(id=id_speed)
-        relations = CalibrationRelations.objects.get(id=id_relations)
-        first_temperature = CalibrationTemperature.objects.get(
-            id=id_first_temperature)
-        second_temperature = CalibrationTemperature.objects.get(
-            id=id_second_temperature)
-        command = CalibrationCommand.objects.get(id=id_command)
-
+        try:
+            vibration = CalibrationVibration.objects.get(id=id_vibration)
+            first_force = CalibrationForce.objects.get(id=id_first_force)
+            second_force = CalibrationForce.objects.get(id=id_second_force)
+            speed = CalibrationSpeed.objects.get(id=id_speed)
+            relations = CalibrationRelations.objects.get(id=id_relations)
+            first_temperature = CalibrationTemperature.objects.get(
+                id=id_first_temperature)
+            second_temperature = CalibrationTemperature.objects.get(
+                id=id_second_temperature)
+            command = CalibrationCommand.objects.get(id=id_command)
+        except ObjectDoesNotExist:
+            return CreateCalibration(error="Some Objects does not exist")
         calibration = Calibration(
             name=name,
             is_default=False,
@@ -318,6 +322,7 @@ class CreateDefaultCalibration(graphene.Mutation):
     '''
         Class to create a new Calibration object on bata base
     '''
+    error = graphene.String()
     calibration = graphene.Field(CalibrationType)
 
     class Arguments:
@@ -350,16 +355,20 @@ class CreateDefaultCalibration(graphene.Mutation):
         '''
             Define how the argumets are used to create the object on db
         '''
-        vibration = CalibrationVibration.objects.get(id=id_vibration)
-        first_force = CalibrationForce.objects.get(id=id_first_force)
-        second_force = CalibrationForce.objects.get(id=id_second_force)
-        speed = CalibrationSpeed.objects.get(id=id_speed)
-        relations = CalibrationRelations.objects.get(id=id_relations)
-        first_temperature = CalibrationTemperature.objects.get(
-            id=id_first_temperature)
-        second_temperature = CalibrationTemperature.objects.get(
-            id=id_second_temperature)
-        command = CalibrationCommand.objects.get(id=id_command)
+        try:
+            vibration = CalibrationVibration.objects.get(id=id_vibration)
+            first_force = CalibrationForce.objects.get(id=id_first_force)
+            second_force = CalibrationForce.objects.get(id=id_second_force)
+            speed = CalibrationSpeed.objects.get(id=id_speed)
+            relations = CalibrationRelations.objects.get(id=id_relations)
+            first_temperature = CalibrationTemperature.objects.get(
+                id=id_first_temperature)
+            second_temperature = CalibrationTemperature.objects.get(
+                id=id_second_temperature)
+            command = CalibrationCommand.objects.get(id=id_command)
+        except ObjectDoesNotExist:
+            return CreateDefaultCalibration(
+                error="Some Objects does not exist")
 
         calibration = Calibration(
             name=name,
