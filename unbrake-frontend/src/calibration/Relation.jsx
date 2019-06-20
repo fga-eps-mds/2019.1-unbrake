@@ -1,14 +1,17 @@
 import React from "react";
 import PropTypes from "prop-types";
 import { reduxForm, initialize } from "redux-form";
-import { connect } from "react-redux";
 import { withStyles, Grid } from "@material-ui/core";
+import { connect } from "react-redux";
 import styles from "../components/Styles";
 import { field } from "../components/ComponentsForm";
 import completeTire from "../img/completeTire.png";
 import sideTire from "../img/sideTire.png";
 import tire from "../img/tire.png";
 import VBelt from "../img/Vbelt.png";
+import { changeCalibTest } from "../actions/TestActions";
+
+const invalidId = 0;
 
 const double = 2;
 const percentage = 100;
@@ -189,12 +192,16 @@ class Relation extends React.Component {
   }
 
   handleChange(event) {
+    const { calibId, changeCalib } = this.props;
     const { target } = event;
+
     const value = target.type === "checkbox" ? target.checked : target.value;
     const relation = { [event.target.name]: value };
     this.setState(prevState => ({
       relation: { ...prevState.relation, ...relation }
     }));
+
+    if (calibId > invalidId) changeCalib({ calibId: "" });
   }
 
   render() {
@@ -242,20 +249,26 @@ class Relation extends React.Component {
   }
 }
 
-function mapStateToProps(state) {
-  return {
-    calibration: state.form.calibration
-  };
-}
+const mapDispatchToProps = dispatch => ({
+  changeCalib: payload => dispatch(changeCalibTest(payload))
+});
+
+const mapStateToProps = state => ({
+  calibId: state.testReducer.calibId,
+  calibration: state.form.calibration
+});
 
 Relation.defaultProps = {
-  calibration: { values: {} }
+  calibration: { values: {} },
+  calibId: ""
 };
 
 Relation.propTypes = {
   classes: PropTypes.objectOf(PropTypes.string).isRequired,
   dispatch: PropTypes.func.isRequired,
-  calibration: PropTypes.objectOf(PropTypes.string)
+  calibration: PropTypes.objectOf(PropTypes.string),
+  calibId: PropTypes.number,
+  changeCalib: PropTypes.func.isRequired
 };
 
 const RelationForm = reduxForm({
@@ -263,4 +276,7 @@ const RelationForm = reduxForm({
   destroyOnUnmount: false
 })(Relation);
 
-export default connect(mapStateToProps)(withStyles(styles)(RelationForm));
+export default connect(
+  mapStateToProps,
+  mapDispatchToProps
+)(withStyles(styles)(RelationForm));

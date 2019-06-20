@@ -275,7 +275,6 @@ class Calibration extends React.Component {
       handleNext: this.handleNext,
       handlePrevious: this.handlePrevious
     };
-
     return (
       <Grid item container xs={12} justify="center" alignItems="center">
         <Grid item container xs={11} justify="center" alignItems="center">
@@ -303,7 +302,8 @@ const mapDispatchToProps = dispatch => ({
 
 function mapStateToProps(state) {
   return {
-    calibration: state.form.calibration
+    calibration: state.form.calibration,
+    calibId: state.testReducer.calibId
   };
 }
 

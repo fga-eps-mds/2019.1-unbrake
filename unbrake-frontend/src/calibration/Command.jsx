@@ -2,9 +2,13 @@ import React from "react";
 import PropTypes from "prop-types";
 import { reduxForm } from "redux-form";
 import { withStyles, Grid } from "@material-ui/core";
+import { connect } from "react-redux";
 import styles from "../components/Styles";
 import RealTimeChart from "../components/RealTimeChart";
 import { checkbox, field } from "../components/ComponentsForm";
+import { changeCalibTest } from "../actions/TestActions";
+
+const invalidId = 0;
 
 const labelSecondary = name => {
   let nameLabel = "";
@@ -174,12 +178,16 @@ class Command extends React.Component {
   }
 
   handleChange(event) {
+    const { calibId, changeCalib } = this.props;
     const { target } = event;
+
     const value = target.type === "checkbox" ? target.checked : target.value;
     const command = { [event.target.name]: value };
     this.setState(prevState => ({
       command: { ...prevState.command, ...command }
     }));
+
+    if (calibId > invalidId) changeCalib({ calibId: "" });
   }
 
   render() {
@@ -234,8 +242,22 @@ class Command extends React.Component {
   }
 }
 
+const mapDispatchToProps = dispatch => ({
+  changeCalib: payload => dispatch(changeCalibTest(payload))
+});
+
+const mapStateToProps = state => ({
+  calibId: state.testReducer.calibId
+});
+
+Command.defaultProps = {
+  calibId: ""
+};
+
 Command.propTypes = {
-  classes: PropTypes.objectOf(PropTypes.string).isRequired
+  classes: PropTypes.objectOf(PropTypes.string).isRequired,
+  calibId: PropTypes.number,
+  changeCalib: PropTypes.func.isRequired
 };
 
 const CommandForm = reduxForm({
@@ -243,4 +265,7 @@ const CommandForm = reduxForm({
   destroyOnUnmount: false
 })(Command);
 
-export default withStyles(styles)(CommandForm);
+export default connect(
+  mapStateToProps,
+  mapDispatchToProps
+)(withStyles(styles)(CommandForm));

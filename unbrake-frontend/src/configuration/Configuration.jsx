@@ -321,7 +321,6 @@ const mapDispatchToProps = dispatch => ({
 
 function mapStateToProps(state) {
   return {
-    configuration: state.form.configuration,
     configId: state.testReducer.configId
   };
 }

@@ -21,6 +21,7 @@ const secondTab = 2;
 const thirdTab = 3;
 const fourthTab = 4;
 const fifthTab = 5;
+const invalidId = 0;
 
 const styles = theme => ({
   root: {
@@ -67,8 +68,6 @@ class TabMenuComponent extends React.Component {
 
     this.state = {
       value: 0,
-      calibrationSelect: 0,
-      configurationSelect: 0,
       allCalibration: "",
       allConfiguration: ""
     };
@@ -95,21 +94,16 @@ class TabMenuComponent extends React.Component {
   }
 
   selectDefault() {
-    const { classes } = this.props;
-    const {
-      allCalibration,
-      allConfiguration,
-      calibrationSelect,
-      configurationSelect
-    } = this.state;
+    const { classes, calibId, configId } = this.props;
+    const { allCalibration, allConfiguration } = this.state;
     return (
       <div style={{ flex: 1 }}>
         <TextField
           id="outlined-select-currency"
           select
           label="Calibrações"
-          value={calibrationSelect}
-          name="calibrationSelect"
+          value={calibId}
+          name="calibId"
           className={classes.formControl}
           margin="normal"
           variant="outlined"
@@ -122,8 +116,8 @@ class TabMenuComponent extends React.Component {
           id="outlined-select-currency"
           select
           label="Configurações"
-          value={configurationSelect}
-          name="configurationSelect"
+          value={configId}
+          name="configId"
           className={classes.formControl}
           margin="normal"
           variant="outlined"
@@ -141,9 +135,13 @@ class TabMenuComponent extends React.Component {
   }
 
   handleChangeSelect(event) {
-    // const { sendMessage } = this.props;
+    const { changeCalib, changeConfig } = this.props;
+    const { name, value } = event.target;
 
-    this.setState({ [event.target.name]: event.target.value });
+    const id = value === invalidId ? "" : value;
+
+    if (name === "configId") changeConfig({ configId: id });
+    else if (name === "calibId") changeCalib({ calibId: id });
 
     /*
      * const invalidId = 0;
@@ -205,30 +203,29 @@ class TabMenuComponent extends React.Component {
   }
 }
 
+TabMenuComponent.defaultProps = {
+  calibId: "",
+  configId: ""
+};
+
 TabMenuComponent.propTypes = {
-  classes: PropTypes.objectOf(PropTypes.string).isRequired
-  /*
-   * configId: PropTypes.string.isRequired,
-   * calibId: PropTypes.string.isRequired
-   */
-  /*
-   * changeCalibTest: PropTypes.func.isRequired,
-   * changeConfigTest: PropTypes.func.isRequired
-   */
+  classes: PropTypes.objectOf(PropTypes.string).isRequired,
+  configId: PropTypes.number,
+  calibId: PropTypes.number,
+  changeCalib: PropTypes.func.isRequired,
+  changeConfig: PropTypes.func.isRequired
 };
 
 const mapStateToProps = state => {
   return {
-    configName: state.testReducer.configName,
     configId: state.testReducer.configId,
-    calibName: state.testReducer.calibName,
     calibId: state.testReducer.calibId
   };
 };
 
 const mapDispatchToProps = dispatch => ({
-  changeCalibTest: payload => dispatch(changeCalibTest(payload)),
-  changeConfigTest: payload => dispatch(changeConfigTest(payload))
+  changeCalib: payload => dispatch(changeCalibTest(payload)),
+  changeConfig: payload => dispatch(changeConfigTest(payload))
 });
 
 export default connect(
