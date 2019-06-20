@@ -14,7 +14,8 @@ import {
   query,
   submit,
   dialogName,
-  renderUploadField
+  renderUploadField,
+  emptyConfig
 } from "./ConfigFunctions";
 import { redirectPage } from "../actions/RedirectActions";
 import NotificationContainer from "../components/Notification";
@@ -22,6 +23,7 @@ import { messageSistem } from "../actions/NotificationActions";
 import { changeConfigTest } from "../actions/TestActions";
 
 const positionVector = 1;
+const invalidId = 0;
 
 export const itensSelectionConfig = allConfiguration => {
   let allConfig = [{ id: 0, name: "" }];
@@ -47,7 +49,7 @@ const selectConfiguration = (handleChange, configStates, classes) => {
         label="Configurações"
         value={configStates[0]}
         onChange={handleChange}
-        name="dataBaseConfiguration"
+        name="configId"
         className={classes.formControl}
         margin="normal"
         variant="outlined"
@@ -78,17 +80,19 @@ const nextButton = handleNext => {
   );
 };
 
-const changeReduxConfig = (allConfiguration, dataBaseConfiguration) => {
-  const backIndex = 1;
-  if (
-    allConfiguration[dataBaseConfiguration - backIndex] !== null &&
-    allConfiguration[dataBaseConfiguration - backIndex] !== undefined
-  )
-    changeConfigTest({
-      configId: allConfiguration[dataBaseConfiguration - backIndex].id,
-      configName: allConfiguration[dataBaseConfiguration - backIndex].name
-    });
-};
+/*
+ * const changeReduxConfig = (allConfiguration, dataBaseConfiguration) => {
+ *   const backIndex = 1;
+ *   if (
+ *     allConfiguration[dataBaseConfiguration - backIndex] !== null &&
+ *     allConfiguration[dataBaseConfiguration - backIndex] !== undefined
+ *   )
+ *   changeConfig({
+ *       configId: allConfiguration[dataBaseConfiguration - backIndex].id,
+ *       configName: allConfiguration[dataBaseConfiguration - backIndex].name
+ *     });
+ * };
+ */
 
 class Configuration extends React.Component {
   constructor(props) {
@@ -111,7 +115,6 @@ class Configuration extends React.Component {
       },
       isDefault: false,
       fileName: "Upload do arquivo de configuração",
-      dataBaseConfiguration: 0,
       allConfiguration: "",
       open: false
     };
@@ -186,26 +189,31 @@ class Configuration extends React.Component {
   }
 
   handleChange(event) {
-    this.setState({ [event.target.name]: event.target.value });
-    const invalidId = 0;
-    if (
-      event.target.name === "dataBaseConfiguration" &&
-      event.target.value > invalidId
-    )
-      this.handleSelectConfig(event.target.value);
+    const { changeConfig } = this.props;
+    const { target } = event;
+
+    const idSelect = target.value === invalidId ? "" : target.value;
+
+    changeConfig({ configId: idSelect });
+    this.handleSelectConfig(event.target.value);
   }
 
   handleSelectConfig(id) {
-    const url = `${API_URL_GRAPHQL}?query=query{configAt(id:${id}){${query}}}`;
+    if (id > invalidId) {
+      const url = `${API_URL_GRAPHQL}?query=query{configAt(id:${id}){${query}}}`;
 
-    const method = "GET";
+      const method = "GET";
 
-    Request(url, method).then(response => {
-      const data = response.data.configAt;
+      Request(url, method).then(response => {
+        const data = response.data.configAt;
 
-      const configurationDefault = createConfig(data);
-      this.setState({ configuration: configurationDefault });
-    });
+        const configuration = createConfig(data);
+        this.setState({ configuration });
+      });
+    } else {
+      const configuration = emptyConfig;
+      this.setState({ configuration });
+    }
   }
 
   fileUpload(file, name) {
@@ -245,10 +253,10 @@ class Configuration extends React.Component {
   }
 
   render() {
-    const { classes } = this.props;
+    // console.log("props",this.props)
+    const { classes, configId } = this.props;
     const {
       configuration,
-      dataBaseConfiguration,
       allConfiguration,
       open,
       name,
@@ -260,14 +268,14 @@ class Configuration extends React.Component {
       handleSubmit: this.handleSubmit,
       handleIsDefault: this.handleIsDefault
     };
-    const configStates = [dataBaseConfiguration, allConfiguration];
+    const configStates = [configId, allConfiguration];
     const dialogStates = {
       configuration: configuration.CONFIG_ENSAIO,
       open,
       name,
       isDefault
     };
-    changeReduxConfig(allConfiguration, dataBaseConfiguration);
+    // changeReduxConfig(allConfiguration, dataBaseConfiguration);
     return (
       <Grid alignItems="center" container className={classes.configuration}>
         <div>
@@ -293,19 +301,32 @@ class Configuration extends React.Component {
   }
 }
 
+Configuration.defaultProps = {
+  configId: ""
+};
+
 Configuration.propTypes = {
   classes: PropTypes.objectOf(PropTypes.string).isRequired,
   sendMessage: PropTypes.func.isRequired,
-  redirect: PropTypes.func.isRequired
+  redirect: PropTypes.func.isRequired,
+  changeConfig: PropTypes.func.isRequired,
+  configId: PropTypes.number
 };
 
 const mapDispatchToProps = dispatch => ({
   sendMessage: payload => dispatch(messageSistem(payload)),
   redirect: payload => dispatch(redirectPage(payload)),
-  changeConfigTest: payload => dispatch(changeConfigTest(payload))
+  changeConfig: payload => dispatch(changeConfigTest(payload))
 });
 
+function mapStateToProps(state) {
+  return {
+    configuration: state.form.configuration,
+    configId: state.testReducer.configId
+  };
+}
+
 export default connect(
-  null,
+  mapStateToProps,
   mapDispatchToProps
 )(withStyles(styles)(Configuration));

@@ -25,6 +25,7 @@ import { messageSistem } from "../actions/NotificationActions";
 import { changeCalibTest } from "../actions/TestActions";
 
 const positionVector = 1;
+const invalidId = 0;
 
 const createCalibration = (data, dispatch) => {
   const nextPosition = 1;
@@ -76,8 +77,6 @@ const getSelectCalibration = (id, dispatch, sendMessage) => {
         message = "Calibração padrão carregada com sucesso";
       else message = `Calibração "${data.name}" carregada com sucesso`;
 
-      changeCalibTest({ calibId: id, calibName: data.name });
-
       sendMessage({
         message,
         variante: "success",
@@ -99,7 +98,14 @@ const getSelectCalibration = (id, dispatch, sendMessage) => {
 export const itensSelection = allCalibration => {
   let allCalib = [{ id: 0, name: "" }];
 
-  if (allCalibration !== "") allCalib = allCalib.concat(allCalibration);
+  let notDefaultCalib;
+  if (allCalibration !== "")
+    notDefaultCalib = allCalibration.filter(calibration => {
+      return calibration.isDefault === false;
+    });
+
+  if (allCalibration !== "") allCalib = allCalib.concat(notDefaultCalib);
+
   const itens = allCalib.map(value => {
     return (
       <MenuItem key={value.name + value.id} value={value.id}>
@@ -117,14 +123,14 @@ const selectCalibration = (handleChange, calibStates, classes) => {
         id="outlined-select-currency"
         select
         label="Calibrações"
-        value={calibStates[0]}
+        value={calibStates.calibId}
         onChange={handleChange}
         name="dataBaseCalibration"
         className={classes.formControl}
         margin="normal"
         variant="outlined"
       >
-        {itensSelection(calibStates[1])}
+        {itensSelection(calibStates.allCalibration)}
       </TextField>
     </Grid>
   );
@@ -142,7 +148,6 @@ class CalibrationUpload extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
-      dataBaseCalibration: 0,
       allCalibration: ""
     };
 
@@ -173,10 +178,13 @@ class CalibrationUpload extends React.Component {
   }
 
   handleChange(event) {
-    const { dispatch, sendMessage } = this.props;
+    const { dispatch, sendMessage, changeCalib } = this.props;
+    const { target } = event;
 
-    this.setState({ [event.target.name]: event.target.value });
-    const invalidId = 0;
+    const idSelect = target.value === invalidId ? "" : target.value;
+
+    changeCalib({ calibId: idSelect });
+
     if (
       event.target.name === "dataBaseCalibration" &&
       event.target.value > invalidId
@@ -184,22 +192,8 @@ class CalibrationUpload extends React.Component {
       getSelectCalibration(event.target.value, dispatch, sendMessage);
   }
 
-  handleSelectCalibration(id) {
-    const { dispatch } = this.props;
-
-    const query = createQuery();
-    const url = `${API_URL_GRAPHQL}?query=query{calibration(id:${id}){${query}}}`;
-    const method = "GET";
-
-    Request(url, method).then(response => {
-      const data = response.data.calibration;
-
-      createCalibration(data, dispatch);
-    });
-  }
-
   handleUpDefault() {
-    const { dispatch, sendMessage } = this.props;
+    const { dispatch, sendMessage, changeCalib } = this.props;
     const { allCalibration } = this.state;
 
     if (allCalibration === "") return;
@@ -208,7 +202,10 @@ class CalibrationUpload extends React.Component {
     });
     if (defaultsCalib.length > empty) {
       const position = defaultsCalib.length - positionVector;
-      getSelectCalibration(defaultsCalib[position].id, dispatch, sendMessage);
+      const { id } = defaultsCalib[position];
+
+      changeCalib({ calibId: id });
+      getSelectCalibration(id, dispatch, sendMessage);
     }
   }
 
@@ -274,10 +271,14 @@ class CalibrationUpload extends React.Component {
   }
 
   render() {
-    const { filename, classes } = this.props;
-    const { dataBaseCalibration, allCalibration } = this.state;
+    // console.log("props calib upload",this.props, this.props.calibId)
+    const { filename, classes, calibId } = this.props;
+    const { allCalibration } = this.state;
 
-    const calibStates = [dataBaseCalibration, allCalibration];
+    const calibStates = {
+      allCalibration,
+      calibId
+    };
 
     return (
       <Grid alignItems="center" justify="center" container>
@@ -300,6 +301,7 @@ class CalibrationUpload extends React.Component {
 
 CalibrationUpload.defaultProps = {
   filename: "",
+  calibId: "",
   calibration: { values: {} }
 };
 
@@ -309,19 +311,20 @@ CalibrationUpload.propTypes = {
   dispatch: PropTypes.func.isRequired,
   filename: PropTypes.string,
   calibration: PropTypes.objectOf(PropTypes.string),
-  sendMessage: PropTypes.func.isRequired
+  sendMessage: PropTypes.func.isRequired,
+  changeCalib: PropTypes.func.isRequired,
+  calibId: PropTypes.number
 };
 
 const mapDispatchToProps = dispatch => ({
   addFileName: value => dispatch(addFile(value)),
   sendMessage: payload => dispatch(messageSistem(payload)),
-  changeCalibTest: payload => dispatch(changeCalibTest(payload))
+  changeCalib: payload => dispatch(changeCalibTest(payload))
 });
 
 const mapStateToProps = state => ({
   calibration: state.form.calibration,
   filename: state.fileReducer.filename,
-  configId: state.testReducer.configId,
   calibId: state.testReducer.calibId
 });
 

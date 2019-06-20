@@ -193,4 +193,19 @@ export const renderUploadField = (classes, fileUpload, names) => {
   );
 };
 
+export const emptyConfig = {
+  CONFIG_ENSAIO: {
+    LSL: "",
+    LWT: "",
+    NOS: "",
+    TAO: false,
+    TAS: "",
+    TAT: "",
+    TBS: "",
+    TMO: false,
+    USL: "",
+    UWT: ""
+  }
+};
+
 export default createConfig;
