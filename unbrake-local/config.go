@@ -71,7 +71,7 @@ func getLogFile() *os.File {
 func loadConfigFile() {
 	data, err := ioutil.ReadFile(path.Join(aplicationFolderPath, configFileName))
 	if err != nil {
-		log.Println("Not possible to read configuration file, default will be used, or from enviroment variables")
+		log.Println("Not possible to read configuration file, default will be used, or from environment variables")
 	}
 	err = json.Unmarshal(data, &configFile)
 	if err != nil {

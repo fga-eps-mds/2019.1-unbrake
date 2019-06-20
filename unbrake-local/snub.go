@@ -68,9 +68,15 @@ var byteToStateName = map[string]string{
 // Snub is a cycle of aceleration, braking and cooldown,
 // multiple snubs compose a test
 type Snub struct {
-	state     string
-	isWaterOn bool
-	mux       sync.Mutex
+	counter               int
+	state                 string
+	delayAcelerateToBrake int
+	upperSpeedLimit       float64
+	lowerSpeedLimit       float64
+	isWaterOn             bool
+	isStabilizing         bool
+	timeCooldown          int
+	mux                   sync.Mutex
 }
 
 // NextState change state of snub to next corresponding in duty cycle
@@ -82,26 +88,24 @@ func (snub *Snub) NextState() {
 
 	switch snub.state {
 
-	case acelerating: // Next is Braking
-		stabilizing = true
+	case acelerating, aceleratingWater: // Next is Braking
+		snub.isStabilizing = true
 
 		log.Println("Stabilizing...")
-		time.Sleep(time.Second * time.Duration(delayAcelerateToBrake))
+		time.Sleep(time.Second * time.Duration(snub.delayAcelerateToBrake))
 
-		stabilizing = false
+		snub.isStabilizing = false
 
-	case braking: // Next is Cooldown
-		time.Sleep(time.Second * time.Duration(timeCooldown))
+	case braking, brakingWater: // Next is Cooldown
+		time.Sleep(time.Second * time.Duration(snub.timeCooldown))
+		snub.changeState()
 
-	case cooldown: // Next is acelerate, end of a cycle
-		currentSnub++
-		publishData(strconv.Itoa(currentSnub), mqttSubchannelCurrentSnub)
+	case cooldown, cooldownWater: // Next is acelerate, end of a cycle
+		snub.counter += 1
+		publishData(strconv.Itoa(snub.counter), mqttSubchannelCurrentSnub)
 
 		log.Println("---> End of snub <---")
-
-		if currentSnub > totalOfSnubs {
-			handleExperimentEnd()
-		}
+	default:
 	}
 }
 
@@ -110,6 +114,10 @@ func (snub *Snub) SetState(state string) {
 	snub.mux.Lock()
 	defer snub.mux.Unlock()
 
+	snub.setStateNonExclusion(state)
+}
+
+func (snub *Snub) setStateNonExclusion(state string) {
 	snub.state = currentToNextState[snub.state]
 
 	if _, err := port.Write([]byte(snub.state)); err != nil {
@@ -119,33 +127,8 @@ func (snub *Snub) SetState(state string) {
 
 func (snub *Snub) changeState() {
 	oldState := snub.state
-	snub.SetState(snub.state)
+	snub.setStateNonExclusion(snub.state)
 
 	publishData(byteToStateName[snub.state], mqttSubchannelSnubState)
 	log.Printf("Change state: %v ---> %v\n", byteToStateName[oldState], byteToStateName[snub.state])
-}
-
-func (snub *Snub) changeStateWater() {
-	snub.mux.Lock()
-	defer snub.mux.Unlock()
-
-	oldState := snub.state
-
-	snub.isWaterOn = !snub.isWaterOn
-
-	if !snub.isWaterOn {
-		snub.state = offToOnWater[snub.state]
-		log.Printf("Turn on water(%vs): %v ---> %v\n", timeSleepWater, byteToStateName[oldState], byteToStateName[snub.state])
-	} else {
-		time.Sleep(time.Second * time.Duration(timeSleepWater))
-		snub.state = onToOffWater[snub.state]
-		log.Printf("Turn off water: %v ---> %v\n", byteToStateName[oldState], byteToStateName[snub.state])
-	}
-
-	if _, err := port.Write([]byte(snub.state)); err != nil {
-		log.Println("Wasn't possible to write the state: ", err)
-	}
-
-	publishData(byteToStateName[snub.state], mqttSubchannelSnubState)
-	log.Printf("Turn on water(%vs): %v ---> %v\n", timeSleepWater, byteToStateName[oldState], byteToStateName[snub.state])
 }

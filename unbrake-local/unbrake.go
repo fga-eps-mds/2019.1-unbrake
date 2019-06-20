@@ -55,9 +55,9 @@ func main() {
 	}
 
 	go func() {
-		isAvailable = true
+		IsAvailable = true
 		for {
-			publishData(strconv.FormatBool(isAvailable), mqttSubchannelIsAvailable)
+			publishData(strconv.FormatBool(IsAvailable), mqttSubchannelIsAvailable)
 			time.Sleep(time.Millisecond * 500)
 		}
 	}()
