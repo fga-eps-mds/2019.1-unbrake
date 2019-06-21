@@ -12,7 +12,7 @@ class Config(models.Model):
     '''
     This class is based on the configuration file, and describe an entire test
     '''
-    name = models.CharField(max_length=15, null=False, blank=False)
+    name = models.CharField(max_length=15, null=False, blank=True)
     is_default = models.BooleanField(null=False, blank=False)
     number = models.PositiveIntegerField()
     time_between_cycles = models.PositiveIntegerField()

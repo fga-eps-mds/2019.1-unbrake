@@ -2,9 +2,13 @@ import React from "react";
 import PropTypes from "prop-types";
 import { reduxForm } from "redux-form";
 import { withStyles, Grid } from "@material-ui/core";
+import { connect } from "react-redux";
 import styles from "../components/Styles";
 import RealTimeChart from "../components/RealTimeChart";
 import { checkbox, field } from "../components/ComponentsForm";
+import { changeCalibTest } from "../actions/TestActions";
+
+const invalidId = 0;
 
 export const labelVibration = name => {
   let nameLabel = "";
@@ -105,13 +109,17 @@ class Vibration extends React.Component {
   }
 
   handleChange(event) {
+    const { calibId, changeCalib } = this.props;
     const { name, type, value, checked } = event;
+
     const newValue = type === "checkbox" ? checked : value;
     const vibration = { [name]: newValue };
 
     this.setState(prevState => ({
       vibration: { ...prevState.vibration, ...vibration }
     }));
+
+    if (calibId > invalidId) changeCalib({ calibId: "" });
   }
 
   render() {
@@ -158,8 +166,22 @@ class Vibration extends React.Component {
   }
 }
 
+const mapDispatchToProps = dispatch => ({
+  changeCalib: payload => dispatch(changeCalibTest(payload))
+});
+
+const mapStateToProps = state => ({
+  calibId: state.testReducer.calibId
+});
+
+Vibration.defaultProps = {
+  calibId: ""
+};
+
 Vibration.propTypes = {
-  classes: PropTypes.objectOf(PropTypes.string).isRequired
+  classes: PropTypes.objectOf(PropTypes.string).isRequired,
+  calibId: PropTypes.number,
+  changeCalib: PropTypes.func.isRequired
 };
 
 const VibrationForm = reduxForm({
@@ -167,4 +189,7 @@ const VibrationForm = reduxForm({
   destroyOnUnmount: false
 })(Vibration);
 
-export default withStyles(styles)(VibrationForm);
+export default connect(
+  mapStateToProps,
+  mapDispatchToProps
+)(withStyles(styles)(VibrationForm));
