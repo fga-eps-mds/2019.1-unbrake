@@ -51,14 +51,6 @@ export const styles = theme => ({
   }
 });
 
-export const sendMessageFunction = (sendMessage, message, variante) => {
-  sendMessage({
-    message,
-    variante,
-    condition: true
-  });
-};
-
 export const calibrationJSON = [
   "calibrationtemperatureSet",
   "calibrationtemperatureSet",

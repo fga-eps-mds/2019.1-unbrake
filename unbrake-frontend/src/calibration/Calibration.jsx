@@ -18,6 +18,7 @@ import Relation from "./Relation";
 import { messageSistem } from "../actions/NotificationActions";
 import { createMutationUrl } from "../utils/Request";
 import { redirectPage } from "../actions/RedirectActions";
+import { changeCalibTest } from "../actions/TestActions";
 import {
   allVariablesCalib,
   createAllCalibrations,
@@ -26,7 +27,6 @@ import {
   createDefaultCalibration,
   empty,
   labels,
-  sendMessageFunction,
   styles,
   dialogName
 } from "./CalibrationVariables";
@@ -61,7 +61,11 @@ export const validateFields = (calibration, sendMessage) => {
 
   if (createMessage.length > sizeMessageDefault) {
     createMessage += " está(ão) vazios";
-    sendMessageFunction(sendMessage, createMessage, "error");
+    sendMessage({
+      message: createMessage,
+      variante: "error",
+      condition: true
+    });
     return false;
   }
   return true;
@@ -85,7 +89,9 @@ const firstRequests = async values => {
   return calibration;
 };
 
-const saveCalibration = async (values, sendMessage, redirect) => {
+export const saveCalibration = async (values, dispatchs) => {
+  const { sendMessage, redirect, changeCalib } = dispatchs;
+
   const idsCalibration = await firstRequests(values);
   idsCalibration.name = values.name;
 
@@ -96,13 +102,23 @@ const saveCalibration = async (values, sendMessage, redirect) => {
   );
 
   if (responseSaved === invalidID) {
-    createMessage = "Falha no cadastro da calibração";
-    sendMessageFunction(sendMessage, createMessage, "error");
+    sendMessage({
+      message: "Falha no cadastro da calibração",
+      variante: "error",
+      condition: true
+    });
   } else {
-    createMessage = "Calibração cadastrada com sucesso";
-    sendMessageFunction(sendMessage, createMessage, "success");
+    sendMessage({
+      message: "Calibração cadastrada com sucesso",
+      variante: "success",
+      condition: true
+    });
     redirect({ url: "/test" });
   }
+
+  changeCalib({ calibId: responseSaved });
+
+  return responseSaved;
 };
 
 const GeneralConfigs = () => (
@@ -240,16 +256,17 @@ class Calibration extends React.Component {
   }
 
   handleSubmit() {
-    const { calibration, sendMessage, redirect } = this.props;
+    const { calibration, sendMessage, redirect, changeCalib } = this.props;
     const { name, isDefault } = this.state;
+    const dispatchs = { sendMessage, redirect, changeCalib };
     const values = { calibration: calibration.values, name, createCalibration };
 
     if (name === "") {
-      sendMessageFunction(
-        sendMessage,
-        "O nome é obrigatório para cadastrar a calibração",
-        "error"
-      );
+      sendMessage({
+        message: "O nome é obrigatório para cadastrar a calibração",
+        variante: "error",
+        condition: true
+      });
 
       return;
     }
@@ -258,7 +275,7 @@ class Calibration extends React.Component {
     if (isDefault === true) values.createCalibration = createDefaultCalibration;
     else values.createCalibration = createCalibration;
 
-    saveCalibration(values, sendMessage, redirect);
+    saveCalibration(values, dispatchs);
   }
 
   render() {
@@ -288,7 +305,8 @@ class Calibration extends React.Component {
 
 Calibration.propTypes = {
   sendMessage: PropTypes.func.isRequired,
-  redirect: PropTypes.func.isRequired
+  redirect: PropTypes.func.isRequired,
+  changeCalib: PropTypes.func.isRequired
 };
 
 Calibration.defaultProps = {
@@ -297,7 +315,8 @@ Calibration.defaultProps = {
 
 const mapDispatchToProps = dispatch => ({
   sendMessage: payload => dispatch(messageSistem(payload)),
-  redirect: payload => dispatch(redirectPage(payload))
+  redirect: payload => dispatch(redirectPage(payload)),
+  changeCalib: payload => dispatch(changeCalibTest(payload))
 });
 
 function mapStateToProps(state) {

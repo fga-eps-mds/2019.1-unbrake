@@ -12,7 +12,7 @@ import {
   createConfig,
   submitDefault,
   query,
-  submit,
+  saveConfiguration,
   dialogName,
   renderUploadField,
   emptyConfig
@@ -27,9 +27,14 @@ const invalidId = 0;
 
 export const itensSelectionConfig = allConfiguration => {
   let allConfig = [{ id: 0, name: "" }];
-  if (allConfiguration !== "" && allConfiguration !== undefined) {
-    allConfig = allConfig.concat(allConfiguration);
-  }
+
+  let notDefaultConfig;
+  if (allConfiguration !== "")
+    notDefaultConfig = allConfiguration.filter(configuration => {
+      return configuration.name !== "";
+    });
+
+  if (allConfiguration !== "") allConfig = allConfig.concat(notDefaultConfig);
   const itens = allConfig.map(value => {
     return (
       <MenuItem key={value.name + value.id} value={value.id}>
@@ -79,20 +84,6 @@ const nextButton = handleNext => {
     </Grid>
   );
 };
-
-/*
- * const changeReduxConfig = (allConfiguration, dataBaseConfiguration) => {
- *   const backIndex = 1;
- *   if (
- *     allConfiguration[dataBaseConfiguration - backIndex] !== null &&
- *     allConfiguration[dataBaseConfiguration - backIndex] !== undefined
- *   )
- *   changeConfig({
- *       configId: allConfiguration[dataBaseConfiguration - backIndex].id,
- *       configName: allConfiguration[dataBaseConfiguration - backIndex].name
- *     });
- * };
- */
 
 class Configuration extends React.Component {
   constructor(props) {
@@ -164,12 +155,24 @@ class Configuration extends React.Component {
 
   handleSubmit() {
     const { configuration, name, isDefault } = this.state;
-    const { sendMessage, redirect } = this.props;
+    const { sendMessage, redirect, changeConfig } = this.props;
+    const dispatchs = { sendMessage, changeConfig };
+
+    if (name === "" || name === undefined) {
+      sendMessage({
+        message: "O nome é obrigatório para cadastrar a configuração",
+        variante: "error",
+        condition: true
+      });
+      return;
+    }
 
     if (isDefault) {
-      if (submitDefault(configuration.CONFIG_ENSAIO, name, sendMessage))
+      if (submitDefault(configuration.CONFIG_ENSAIO, name, dispatchs))
         redirect({ url: "/calibration" });
-    } else if (submit(configuration.CONFIG_ENSAIO, name, sendMessage)) {
+    } else if (
+      saveConfiguration(configuration.CONFIG_ENSAIO, name, dispatchs)
+    ) {
       redirect({ url: "/calibration" });
     }
   }
@@ -196,6 +199,10 @@ class Configuration extends React.Component {
     const { changeConfig } = this.props;
     const { target } = event;
 
+    if (target.name === "name") {
+      this.setState({ [event.target.name]: event.target.value });
+      return;
+    }
     const idSelect = target.value === invalidId ? "" : target.value;
 
     changeConfig({ configId: idSelect });

@@ -102,7 +102,7 @@ export const itensSelection = allCalibration => {
   let notDefaultCalib;
   if (allCalibration !== "")
     notDefaultCalib = allCalibration.filter(calibration => {
-      return calibration.isDefault === false;
+      return calibration.isDefault === false && calibration.name !== "";
     });
 
   if (allCalibration !== "") allCalib = allCalib.concat(notDefaultCalib);
@@ -158,7 +158,7 @@ class CalibrationUpload extends React.Component {
   }
 
   componentDidMount() {
-    const { dispatch, calibId, sendMessage } = this.props;
+    const { dispatch, calibId, sendMessage, calibration } = this.props;
 
     const url = `${API_URL_GRAPHQL}?query=query{allCalibration{id, name, isDefault}}`;
     const method = "GET";
@@ -169,10 +169,12 @@ class CalibrationUpload extends React.Component {
       }
     });
 
-    dispatch(initialize("calibration", fieldsDisabledes));
+    if (Object.keys(calibration.values).length === empty)
+      dispatch(initialize("calibration", fieldsDisabledes));
 
-    if (calibId > invalidId)
+    if (calibId > invalidId) {
       getSelectCalibration(calibId, dispatch, sendMessage);
+    }
   }
 
   handleChange(event) {
@@ -298,7 +300,8 @@ class CalibrationUpload extends React.Component {
 
 CalibrationUpload.defaultProps = {
   filename: "",
-  calibId: ""
+  calibId: "",
+  calibration: { values: {} }
 };
 
 CalibrationUpload.propTypes = {
@@ -308,7 +311,8 @@ CalibrationUpload.propTypes = {
   filename: PropTypes.string,
   sendMessage: PropTypes.func.isRequired,
   changeCalib: PropTypes.func.isRequired,
-  calibId: PropTypes.number
+  calibId: PropTypes.number,
+  calibration: PropTypes.string
 };
 
 const mapDispatchToProps = dispatch => ({

@@ -10,8 +10,11 @@ import { itensSelection } from "../calibration/CalibrationUpload";
 import { API_URL_GRAPHQL } from "../utils/Constants";
 import Request from "../utils/Request";
 import { changeConfigTest, changeCalibTest } from "../actions/TestActions";
-import { validateFields } from "../calibration/Calibration";
+import { validateFields, saveCalibration } from "../calibration/Calibration";
+import { createCalibration } from "../calibration/CalibrationVariables";
 import { messageSistem } from "../actions/NotificationActions";
+import { redirectPage } from "../actions/RedirectActions";
+import { saveConfiguration } from "../configuration/ConfigFunctions";
 
 const margin = 1.5;
 const invalidId = 0;
@@ -41,7 +44,7 @@ const configFields = [
   { front: "TAT", label: "Tempo (s)(AUX1)" }
 ];
 
-const validateFieldsConfig = (configuration, sendMessage) => {
+const validateConfig = (configuration, sendMessage) => {
   let createMessage = configFields.reduce((prevMessage, newField) => {
     if (
       configuration[newField.front] === undefined ||
@@ -66,42 +69,53 @@ const validateFieldsConfig = (configuration, sendMessage) => {
   return true;
 };
 
-const submit = (states, sendMessage) => {
-  if (states.calibId === "")
-    if (!validateFields(states.calibration.values, sendMessage)) return;
+const submit = (states, dispatchs) => {
+  const values = {
+    calibration: states.calibration.values,
+    name: "",
+    createCalibration
+  };
 
-  if (states.configId === "")
-    if (!validateFieldsConfig(states.configuration.values, sendMessage)) return;
+  if (states.calibId === "") {
+    if (!validateFields(states.calibration.values, dispatchs.sendMessage))
+      return;
+    saveCalibration(values, dispatchs);
+  }
+
+  if (states.configId === "") {
+    if (!validateConfig(states.configuration.values, dispatchs.sendMessage))
+      return;
+    saveConfiguration(states.configuration.values, "", dispatchs);
+  }
 
   const urlUser = `${API_URL_GRAPHQL}?query=query{currentUser{username}}`;
-  const method = "GET";
   if (states.configId !== "" && states.calibId !== "") {
-    Request(urlUser, method).then(username => {
+    Request(urlUser, "GET").then(username => {
       const urlTesting = `${API_URL_GRAPHQL}?query=mutation{createTesting(createBy:"${username}",
         idCalibration:${states.calibId},idConfiguration:${
         states.configId
       }){testing{id},error}}`;
-      const methodTest = "POST";
-      Request(urlTesting, methodTest).then(response => {
+
+      Request(urlTesting, "POST").then(response => {
         const { createTesting } = response.data;
         const { id } = createTesting.testing;
         const urlSubmit = `${API_URL_GRAPHQL}?query=mutation{submitTesting(mqttHost:"unbrake.ml",mqttPort:8080,testingId:${id}){succes}}`;
-        Request(urlSubmit, methodTest).then(() => {
-          // Faz todos os processo do ensaio
+        Request(urlSubmit, "POST").then(() => {
+          // Faz todos os processos do ensaio
         });
       });
     });
   }
 };
 
-const renderSubmitTest = (states, sendMessage) => {
+const renderSubmitTest = (states, dispatchs) => {
   const primalIndexStyle = 1;
   const firstDenominatorStyle = 2;
   const secondDenominatorStyle = 24;
   const thirdDenominatorStyle = 32;
   return (
     <Button
-      onClick={() => submit(states, sendMessage)}
+      onClick={() => submit(states, dispatchs)}
       color="secondary"
       variant="contained"
       style={{
@@ -166,14 +180,17 @@ class General extends React.Component {
       configId,
       sendMessage,
       calibration,
-      configuration
+      configuration,
+      redirect,
+      changeCalib,
+      changeConfig
     } = this.props;
     const { allCalibration, allConfiguration } = this.state;
     const states = { calibId, configId, calibration, configuration };
+    const dispatchs = { sendMessage, redirect, changeCalib, changeConfig };
     return (
       <div style={{ flex: 1 }}>
         <TextField
-          id="outlined-select-currency"
           select
           label="Calibrações"
           value={calibId}
@@ -187,7 +204,6 @@ class General extends React.Component {
           {itensSelection(allCalibration)}
         </TextField>
         <TextField
-          id="outlined-select-currency"
           select
           label="Configurações"
           value={configId}
@@ -201,7 +217,7 @@ class General extends React.Component {
           {itensSelectionConfig(allConfiguration)}
         </TextField>
         <Grid container item justify="center" style={{ flex: 1 }}>
-          {renderSubmitTest(states, sendMessage)}
+          {renderSubmitTest(states, dispatchs)}
         </Grid>
       </div>
     );
@@ -223,14 +239,15 @@ General.propTypes = {
   changeConfig: PropTypes.func.isRequired,
   sendMessage: PropTypes.func.isRequired,
   calibration: PropTypes.string,
-  configuration: PropTypes.string
+  configuration: PropTypes.string,
+  redirect: PropTypes.func.isRequired
 };
 
 const mapDispatchToProps = dispatch => ({
   sendMessage: payload => dispatch(messageSistem(payload)),
   changeCalib: payload => dispatch(changeCalibTest(payload)),
-  changeConfig: payload => dispatch(changeConfigTest(payload))
-  // dispatchF: () => dispatch
+  changeConfig: payload => dispatch(changeConfigTest(payload)),
+  redirect: payload => dispatch(redirectPage(payload))
 });
 
 const mapStateToProps = state => {
