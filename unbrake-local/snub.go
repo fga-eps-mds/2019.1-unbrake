@@ -102,6 +102,8 @@ func (snub *Snub) NextState() {
 		snub.changeState()
 		counter, isOpen := <-snub.counterCh
 
+		log.Printf("@@@@@@@@@@@@##############$$$$$$$$$$ ----->> %v <<----- $$$$$$$$###########@@@@@@@@@@@@", counter)
+
 		if isOpen {
 			snub.counterCh <- counter + 1
 			publishData(strconv.Itoa(counter), mqttSubchannelCurrentSnub)
@@ -128,10 +130,13 @@ func (snub *Snub) setStateNonExclusion(state string) {
 	oldState := snub.state
 	snub.state = state
 
-	if _, err := port.Write([]byte(snub.state)); err != nil {
-		log.Println("Wasn't possible to write the state: ", err)
+	if port != nil {
+		if _, err := port.Write([]byte(snub.state)); err != nil {
+			log.Println("Wasn't possible to write the state: ", err)
+		}
+	} else {
+		log.Println("Not selected port")
 	}
-
 	publishData(byteToStateName[snub.state], mqttSubchannelSnubState)
 	log.Printf("Change state: %v ---> %v\n", byteToStateName[oldState], byteToStateName[snub.state])
 }

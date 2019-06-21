@@ -17,7 +17,9 @@ import (
 	"log"
 	"os"
 	"os/signal"
+	"strconv"
 	"sync"
+	"time"
 
 	emitter "github.com/emitter-io/go/v2"
 	"github.com/getlantern/systray"
@@ -115,6 +117,12 @@ func onReady() {
 		log.Println("Finished systray")
 	}()
 
+	go func() {
+		for {
+			publishData(strconv.FormatBool(isAvailable), mqttSubchannelIsAvailable)
+			time.Sleep(time.Millisecond * 500)
+		}
+	}()
 	wgGeneral.Add(1)
 	go CollectData()
 	go HandleExperimentsReceiving()

@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"log"
-	"strconv"
+	"runtime"
 	"strings"
 	"sync"
 	"time"
@@ -24,6 +24,7 @@ type Experiment struct {
 	mux                               sync.Mutex
 	waterMux                          sync.Mutex
 	snub                              Snub
+	id                                int
 	continueRunning                   bool
 	timeSleepWater                    float64
 	temperatureLimit                  float64
@@ -34,6 +35,8 @@ type Experiment struct {
 	secondOffsetTemperature           float64
 	doEnableWater                     bool
 }
+
+var isAvailable = true
 
 // experimentData represents data needed for performing a experiment
 type experimentData struct {
@@ -102,12 +105,12 @@ type experimentData struct {
 // Run an experiment
 func (experiment *Experiment) Run() {
 
-	log.Println("¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨")
-
+	isAvailable = false
 	experiment.snub.SetState(acelerating)
 	experiment.continueRunning = true
 	go experiment.watchSnubState()
 	experiment.snub.counterCh = make(chan int)
+	log.Println("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@")
 	experiment.snub.counterCh <- 1
 
 	log.Println("¬¬¬¬¬¬¬¬¬¬¬¬¬¬¬¬¬¬¬¬¬¬¬¬¬¬¬¬")
@@ -130,16 +133,24 @@ func HandleExperimentsReceiving() {
 	// Wait for tests
 	var channel = getMqttChannelPrefix() + "/experiment"
 	clientReading.Subscribe(key, channel, func(_ *emitter.Client, msg emitter.Message) {
-		mqttHasReadingPermission = true
-		if mqttHasWritingPermission {
-			mqttKeyStatusCh <- "Chave do MQTT: Válida"
-		} else {
-			mqttKeyStatusCh <- "Chave do MQTT: Válida apenas para leitura"
-		}
-
 		experiment := ExperimentFromJSON(msg.Payload())
-		log.Printf("Experiment received: %s", experiment)
-		experiment.Run()
+		if isAvailable {
+			mqttHasReadingPermission = true
+			if mqttHasWritingPermission {
+				mqttKeyStatusCh <- "Chave do MQTT: Válida"
+			} else {
+				mqttKeyStatusCh <- "Chave do MQTT: Válida apenas para leitura"
+			}
+
+			log.Printf("Experiment received: %s", experiment)
+			if port != nil {
+				experiment.Run()
+			} else {
+				log.Println("Tried to run an experiment, but serial port not selected")
+			}
+		} else {
+			log.Printf("Alredy running an experiment but one was submitted(id: %v)", experiment.id)
+		}
 	})
 
 	wgGeneral.Wait()
@@ -154,7 +165,8 @@ func ExperimentFromJSON(data []byte) *Experiment {
 		log.Println("Wasn't possible to decode JSON, error: ", err)
 	}
 
-	experiment.totalOfSnubs = 2     //decoded.Fields.Configuration.Number
+	experiment.id = decoded.Pk
+	experiment.totalOfSnubs = 0     //decoded.Fields.Configuration.Number
 	experiment.timeSleepWater = 3   //decoded.Fields.Configuration.Time
 	experiment.doEnableWater = true //decoded.Fields.Configuration.EnableOutput
 	experiment.firstConversionFactorTemperature = decoded.Fields.Calibration.Temperature[0].ConversionFactor
@@ -190,15 +202,9 @@ func (experiment *Experiment) String() string {
 // synchronization, collecting needed data and writing needed commands
 func (experiment *Experiment) watchSnubState() {
 
-	go func() {
-		for {
-			publishData(strconv.FormatBool(!experiment.continueRunning), mqttSubchannelIsAvailable)
-			time.Sleep(time.Millisecond * 500)
-		}
-	}()
+	go experiment.watchEnd()
 	go experiment.watchSpeed()
 	go experiment.watchTemperature()
-	go experiment.watchEnd()
 }
 
 func (experiment *Experiment) watch(watchFunction func()) {
@@ -211,14 +217,22 @@ func (experiment *Experiment) watch(watchFunction func()) {
 func (experiment *Experiment) watchEnd() {
 
 	experiment.watch(func() {
-		if counter := <-experiment.snub.counterCh; counter > experiment.totalOfSnubs {
+
+		time.Sleep(time.Millisecond)
+		counter := <-experiment.snub.counterCh
+
+		if counter > experiment.totalOfSnubs {
+			log.Printf("©©©©©©©©©©©©©©©©©© %v ©©©©©©©©©©©©©©©", counter)
 			experiment.snub.SetState(cooldown)
 			close(experiment.snub.counterCh)
 
 			log.Println("---> End of an experiment <---")
+			log.Println(runtime.NumGoroutine())
 			experiment.continueRunning = false
+			isAvailable = true
 
 		} else {
+			log.Printf("©©©©©©©©©©©©©©©©©© %v ©©©©©©©©©©©©©©©", counter)
 			experiment.snub.counterCh <- counter
 		}
 	})
@@ -279,8 +293,12 @@ func (experiment *Experiment) changeStateWater() {
 		log.Printf("Turn off water: %v ---> %v\n", byteToStateName[oldState], byteToStateName[experiment.snub.state])
 	}
 
-	if _, err := port.Write([]byte(experiment.snub.state)); err != nil {
-		log.Println("Wasn't possible to write the state: ", err)
+	if port != nil {
+		if _, err := port.Write([]byte(experiment.snub.state)); err != nil {
+			log.Println("Wasn't possible to write the state: ", err)
+		}
+	} else {
+		log.Println("Port not selected")
 	}
 
 	publishData(byteToStateName[experiment.snub.state], mqttSubchannelSnubState)
