@@ -74,7 +74,6 @@ func main() {
 	}()
 
 	onExit := func() {
-		snub.state = cooldown
 		log.Println("Exiting...")
 	}
 	systray.Run(onReady, onExit)

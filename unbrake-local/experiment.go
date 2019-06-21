@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"log"
-	"strconv"
 	"strings"
 	"sync"
 	"time"
@@ -108,7 +107,9 @@ func (experiment *Experiment) Run() {
 
 	IsAvailable = false
 	experiment.snub.SetState(acelerating)
-	experiment.watchSnubState()
+	go experiment.watchSnubState()
+	experiment.snub.counterCh = make(chan int)
+	experiment.snub.counterCh <- 1
 	IsAvailable = true
 
 	wgExperiment.Wait()
@@ -186,26 +187,30 @@ func (experiment *Experiment) String() string {
 	return strings.Join(printedAttrs, ", ")
 }
 
-func (experiment *Experiment) handleEnd() {
-	experiment.snub.counter = 1
-	experiment.snub.SetState(cooldown)
+func (experiment *Experiment) watchEnd() {
 
-	log.Println("!!!!!!!!!!@@@@@@@@@@@@################¨¨¨¨¨¨¨¨¨¨¨¨¨¨")
+	for {
+		if counter := <-experiment.snub.counterCh; counter > experiment.totalOfSnubs {
 
-	publishData(strconv.Itoa(experiment.snub.counter), mqttSubchannelCurrentSnub)
-	wgExperiment.Done()
+			experiment.snub.SetState(cooldown)
+
+			close(experiment.snub.counterCh)
+			log.Println("---> End of an experiment <---")
+			wgExperiment.Done()
+			break
+		} else {
+			experiment.snub.counterCh <- counter
+		}
+	}
 }
 
 // Will manage the state of running experiment.snub, handling all state transitions,
 // synchronization, collecting needed data and writing needed commands
 func (experiment *Experiment) watchSnubState() {
 
-	if snub.counter > experiment.totalOfSnubs {
-		experiment.handleEnd()
-	}
-
 	go experiment.watchSpeed()
 	go experiment.watchTemperature()
+	go experiment.watchEnd()
 }
 
 // Watchs speed, changing state when necessary
@@ -242,23 +247,23 @@ func (experiment *Experiment) watchTemperature() {
 }
 
 func (experiment *Experiment) changeStateWater() {
-	oldState := snub.state
+	oldState := experiment.snub.state
 
-	snub.isWaterOn = !snub.isWaterOn
+	experiment.snub.isWaterOn = !experiment.snub.isWaterOn
 
-	if !snub.isWaterOn {
-		snub.state = offToOnWater[snub.state]
-		log.Printf("Turn on water(%vs): %v ---> %v\n", experiment.timeSleepWater, byteToStateName[oldState], byteToStateName[snub.state])
+	if !experiment.snub.isWaterOn {
+		experiment.snub.state = offToOnWater[experiment.snub.state]
+		log.Printf("Turn on water(%vs): %v ---> %v\n", experiment.timeSleepWater, byteToStateName[oldState], byteToStateName[experiment.snub.state])
 	} else {
 		time.Sleep(time.Second * time.Duration(experiment.timeSleepWater))
-		snub.state = onToOffWater[snub.state]
-		log.Printf("Turn off water: %v ---> %v\n", byteToStateName[oldState], byteToStateName[snub.state])
+		experiment.snub.state = onToOffWater[experiment.snub.state]
+		log.Printf("Turn off water: %v ---> %v\n", byteToStateName[oldState], byteToStateName[experiment.snub.state])
 	}
 
-	if _, err := port.Write([]byte(snub.state)); err != nil {
+	if _, err := port.Write([]byte(experiment.snub.state)); err != nil {
 		log.Println("Wasn't possible to write the state: ", err)
 	}
 
-	publishData(byteToStateName[snub.state], mqttSubchannelSnubState)
-	log.Printf("Turn on water(%vs): %v ---> %v\n", experiment.timeSleepWater, byteToStateName[oldState], byteToStateName[snub.state])
+	publishData(byteToStateName[experiment.snub.state], mqttSubchannelSnubState)
+	log.Printf("Turn on water(%vs): %v ---> %v\n", experiment.timeSleepWater, byteToStateName[oldState], byteToStateName[experiment.snub.state])
 }

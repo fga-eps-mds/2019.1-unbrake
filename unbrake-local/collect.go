@@ -97,7 +97,7 @@ func CollectData() {
 			select {
 			case stop := <-stopCollectingDataCh:
 				if stop {
-					snub.SetState(cooldown)
+					wgExperiment.Done()
 					continueCollecting = false
 				}
 			case sig := <-sigsCh:

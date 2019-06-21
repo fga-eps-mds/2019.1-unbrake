@@ -7,9 +7,6 @@ import (
 	"time"
 )
 
-// Global snub which represents state of running test
-var snub = Snub{state: acelerating}
-
 // Possible states of a snub, value is ascii which
 // represents its state
 const (
@@ -68,7 +65,7 @@ var byteToStateName = map[string]string{
 // Snub is a cycle of aceleration, braking and cooldown,
 // multiple snubs compose a test
 type Snub struct {
-	counter               int
+	counterCh             chan int
 	state                 string
 	delayAcelerateToBrake int
 	upperSpeedLimit       float64
@@ -101,11 +98,14 @@ func (snub *Snub) NextState() {
 		time.Sleep(time.Second * time.Duration(snub.timeCooldown))
 
 	case cooldown, cooldownWater: // Next is acelerate, end of a cycle
-		snub.counter++
-		publishData(strconv.Itoa(snub.counter), mqttSubchannelCurrentSnub)
-		snub.changeState()
-
 		log.Println("---> End of snub <---")
+		snub.changeState()
+		counter, isOpen := <-snub.counterCh
+
+		if isOpen {
+			snub.counterCh <- counter + 1
+			publishData(strconv.Itoa(counter), mqttSubchannelCurrentSnub)
+		}
 
 	default:
 		log.Printf("Invalid state: %v", snub.state)
@@ -121,17 +121,17 @@ func (snub *Snub) SetState(state string) {
 }
 
 func (snub *Snub) changeState() {
-	oldState := snub.state
 	snub.setStateNonExclusion(currentToNextState[snub.state])
-
-	publishData(byteToStateName[snub.state], mqttSubchannelSnubState)
-	log.Printf("Change state: %v ---> %v\n", byteToStateName[oldState], byteToStateName[snub.state])
 }
 
 func (snub *Snub) setStateNonExclusion(state string) {
+	oldState := snub.state
 	snub.state = state
 
 	if _, err := port.Write([]byte(snub.state)); err != nil {
 		log.Println("Wasn't possible to write the state: ", err)
 	}
+
+	publishData(byteToStateName[snub.state], mqttSubchannelSnubState)
+	log.Printf("Change state: %v ---> %v\n", byteToStateName[oldState], byteToStateName[snub.state])
 }
