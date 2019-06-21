@@ -17,9 +17,7 @@ import (
 	"log"
 	"os"
 	"os/signal"
-	"strconv"
 	"sync"
-	"time"
 
 	emitter "github.com/emitter-io/go/v2"
 	"github.com/getlantern/systray"
@@ -64,14 +62,6 @@ func main() {
 	clientReading, _ = emitter.Connect(getMqttHost(), func(_ *emitter.Client, msg emitter.Message) {
 		log.Printf("Sent message: '%s' topic: '%s'\n", msg.Payload(), msg.Topic())
 	})
-
-	go func() {
-		IsAvailable = true
-		for {
-			publishData(strconv.FormatBool(IsAvailable), mqttSubchannelIsAvailable)
-			time.Sleep(time.Millisecond * 500)
-		}
-	}()
 
 	onExit := func() {
 		log.Println("Exiting...")

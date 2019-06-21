@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"log"
+	"strconv"
 	"strings"
 	"sync"
 	"time"
@@ -17,13 +18,13 @@ var (
 	mqttHasReadingPermission bool
 )
 
-var wgExperiment sync.WaitGroup
-
 // Experiment is composed of a collection of Snubs, it will perform
 // N Snubs based based on the given data
 type Experiment struct {
 	mux                               sync.Mutex
+	waterMux                          sync.Mutex
 	snub                              Snub
+	continueRunning                   bool
 	timeSleepWater                    float64
 	temperatureLimit                  float64
 	totalOfSnubs                      int
@@ -33,9 +34,6 @@ type Experiment struct {
 	secondOffsetTemperature           float64
 	doEnableWater                     bool
 }
-
-// IsAvailable if no experiments are running
-var IsAvailable bool
 
 // experimentData represents data needed for performing a experiment
 type experimentData struct {
@@ -103,16 +101,17 @@ type experimentData struct {
 
 // Run an experiment
 func (experiment *Experiment) Run() {
-	wgExperiment.Add(1)
 
-	IsAvailable = false
+	log.Println("¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨")
+
 	experiment.snub.SetState(acelerating)
+	experiment.continueRunning = true
 	go experiment.watchSnubState()
 	experiment.snub.counterCh = make(chan int)
 	experiment.snub.counterCh <- 1
-	IsAvailable = true
 
-	wgExperiment.Wait()
+	log.Println("¬¬¬¬¬¬¬¬¬¬¬¬¬¬¬¬¬¬¬¬¬¬¬¬¬¬¬¬")
+
 }
 
 // HandleExperimentsReceiving will wait for experiments to be published at a specific MQTT channel
@@ -155,14 +154,14 @@ func ExperimentFromJSON(data []byte) *Experiment {
 		log.Println("Wasn't possible to decode JSON, error: ", err)
 	}
 
-	experiment.totalOfSnubs = 2 //decoded.Fields.Configuration.Number
-	experiment.timeSleepWater = decoded.Fields.Configuration.Time
-	experiment.doEnableWater = false //decoded.Fields.Configuration.EnableOutput
+	experiment.totalOfSnubs = 2     //decoded.Fields.Configuration.Number
+	experiment.timeSleepWater = 3   //decoded.Fields.Configuration.Time
+	experiment.doEnableWater = true //decoded.Fields.Configuration.EnableOutput
 	experiment.firstConversionFactorTemperature = decoded.Fields.Calibration.Temperature[0].ConversionFactor
 	experiment.secondConversionFactorTemperature = decoded.Fields.Calibration.Temperature[1].ConversionFactor
 	experiment.firstOffsetTemperature = decoded.Fields.Calibration.Temperature[0].TemperatureOffset
 	experiment.secondOffsetTemperature = decoded.Fields.Calibration.Temperature[1].TemperatureOffset
-	experiment.temperatureLimit = 400 //decoded.Fields.Configuration.Temperature
+	experiment.temperatureLimit = 85 //decoded.Fields.Configuration.Temperature
 
 	experiment.snub.delayAcelerateToBrake = decoded.Fields.Configuration.UpperTime
 	experiment.snub.upperSpeedLimit = 150 //decoded.Fields.Configuration.UpperLimit
@@ -187,35 +186,49 @@ func (experiment *Experiment) String() string {
 	return strings.Join(printedAttrs, ", ")
 }
 
-func (experiment *Experiment) watchEnd() {
-
-	for {
-		if counter := <-experiment.snub.counterCh; counter > experiment.totalOfSnubs {
-
-			experiment.snub.SetState(cooldown)
-
-			close(experiment.snub.counterCh)
-			log.Println("---> End of an experiment <---")
-			wgExperiment.Done()
-			break
-		} else {
-			experiment.snub.counterCh <- counter
-		}
-	}
-}
-
 // Will manage the state of running experiment.snub, handling all state transitions,
 // synchronization, collecting needed data and writing needed commands
 func (experiment *Experiment) watchSnubState() {
 
+	go func() {
+		for {
+			publishData(strconv.FormatBool(!experiment.continueRunning), mqttSubchannelIsAvailable)
+			time.Sleep(time.Millisecond * 500)
+		}
+	}()
 	go experiment.watchSpeed()
 	go experiment.watchTemperature()
 	go experiment.watchEnd()
 }
 
+func (experiment *Experiment) watch(watchFunction func()) {
+
+	for experiment.continueRunning {
+		watchFunction()
+	}
+}
+
+func (experiment *Experiment) watchEnd() {
+
+	experiment.watch(func() {
+		if counter := <-experiment.snub.counterCh; counter > experiment.totalOfSnubs {
+			experiment.snub.SetState(cooldown)
+			close(experiment.snub.counterCh)
+
+			log.Println("---> End of an experiment <---")
+			experiment.continueRunning = false
+
+		} else {
+			experiment.snub.counterCh <- counter
+		}
+	})
+}
+
 // Watchs speed, changing state when necessary
 func (experiment *Experiment) watchSpeed() {
-	for {
+
+	experiment.watch(func() {
+
 		speed := <-serialAttrs[speedIdx].handleCh
 
 		if (experiment.snub.state == acelerating || experiment.snub.state == aceleratingWater) && !experiment.snub.isStabilizing {
@@ -228,14 +241,18 @@ func (experiment *Experiment) watchSpeed() {
 				experiment.snub.NextState() // Braking to
 			}
 		}
-	}
+	})
 }
 
 // Follow temperature and throw water if needed
 func (experiment *Experiment) watchTemperature() {
-	for {
-		temperature1 := convertTemperature(<-serialAttrs[temperature1Idx].handleCh, experiment.firstConversionFactorTemperature, experiment.firstOffsetTemperature)
-		temperature2 := convertTemperature(<-serialAttrs[temperature2Idx].handleCh, experiment.secondConversionFactorTemperature, experiment.secondOffsetTemperature)
+	experiment.watch(func() {
+
+		temperature1 := <-serialAttrs[temperature1Idx].handleCh
+		temperature2 := <-serialAttrs[temperature2Idx].handleCh
+
+		temperature1 = convertTemperature(temperature1, experiment.firstConversionFactorTemperature, experiment.firstOffsetTemperature)
+		temperature2 = convertTemperature(temperature2, experiment.secondConversionFactorTemperature, experiment.secondOffsetTemperature)
 
 		if (temperature1 > experiment.temperatureLimit || temperature2 > experiment.temperatureLimit) && experiment.doEnableWater {
 			if experiment.snub.state == acelerating || experiment.snub.state == braking || experiment.snub.state == cooldown {
@@ -243,13 +260,15 @@ func (experiment *Experiment) watchTemperature() {
 				experiment.changeStateWater()
 			}
 		}
-	}
+	})
 }
 
 func (experiment *Experiment) changeStateWater() {
-	oldState := experiment.snub.state
 
-	experiment.snub.isWaterOn = !experiment.snub.isWaterOn
+	experiment.waterMux.Lock()
+	defer experiment.waterMux.Unlock()
+
+	oldState := experiment.snub.state
 
 	if !experiment.snub.isWaterOn {
 		experiment.snub.state = offToOnWater[experiment.snub.state]
@@ -265,5 +284,5 @@ func (experiment *Experiment) changeStateWater() {
 	}
 
 	publishData(byteToStateName[experiment.snub.state], mqttSubchannelSnubState)
-	log.Printf("Turn on water(%vs): %v ---> %v\n", experiment.timeSleepWater, byteToStateName[oldState], byteToStateName[experiment.snub.state])
+	experiment.snub.isWaterOn = !experiment.snub.isWaterOn
 }
