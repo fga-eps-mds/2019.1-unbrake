@@ -170,17 +170,13 @@ func publishSerialAttrs() {
 // Publish data to MQTT broker
 func publishData(data string, subChannel string) {
 	if key := getMqttKey(); key != "" {
-		channel, data := getMqttChannelPrefix()+subChannel, data
 
-		client, _ := emitter.Connect(getMqttHost(), func(_ *emitter.Client, msg emitter.Message) {
-			log.Printf("Sent message: '%s' topic: '%s'\n", msg.Payload(), msg.Topic())
-		})
-
-		client.OnError(func(_ *emitter.Client, err emitter.Error) {
+		clientWriting.OnError(func(_ *emitter.Client, err emitter.Error) {
 			mqttKeyStatusCh <- "Chave do MQTT: Sem permissão de escrita"
 		})
 
-		client.Publish(key, channel, data)
+		channel, data := getMqttChannelPrefix()+subChannel, data
+		clientWriting.Publish(key, channel, data)
 
 	} else {
 		log.Println("MQTT key not set!!! Not publishing any data...")

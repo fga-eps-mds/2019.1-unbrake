@@ -18,10 +18,11 @@ var (
 	mqttHasReadingPermission bool
 )
 
+var wgExperiment sync.WaitGroup
+
 // Experiment is composed of a collection of Snubs, it will perform
 // N Snubs based based on the given data
 type Experiment struct {
-	wg                                sync.WaitGroup
 	mux                               sync.Mutex
 	snub                              Snub
 	timeSleepWater                    float64
@@ -34,7 +35,7 @@ type Experiment struct {
 	doEnableWater                     bool
 }
 
-// Is available if no experiments are running
+// IsAvailable if no experiments are running
 var IsAvailable bool
 
 // experimentData represents data needed for performing a experiment
@@ -101,14 +102,16 @@ type experimentData struct {
 	} `json:"fields"`
 }
 
+// Run an experiment
 func (experiment *Experiment) Run() {
-	experiment.wg.Add(1)
+	wgExperiment.Add(1)
 
 	IsAvailable = false
+	experiment.snub.SetState(acelerating)
 	experiment.watchSnubState()
 	IsAvailable = true
 
-	experiment.wg.Wait()
+	wgExperiment.Wait()
 }
 
 // HandleExperimentsReceiving will wait for experiments to be published at a specific MQTT channel
@@ -120,18 +123,13 @@ func HandleExperimentsReceiving() {
 		return
 	}
 
-	// Msg will must follow experimentData format
-	client, _ := emitter.Connect(getMqttHost(), func(_ *emitter.Client, msg emitter.Message) {
-		log.Printf("Sent message: '%s' topic: '%s'\n", msg.Payload(), msg.Topic())
-	})
-
-	client.OnError(func(_ *emitter.Client, err emitter.Error) {
+	clientReading.OnError(func(_ *emitter.Client, err emitter.Error) {
 		mqttKeyStatusCh <- "Chave do MQTT: Sem permissão de leitura"
 	})
 
 	// Wait for tests
 	var channel = getMqttChannelPrefix() + "/experiment"
-	client.Subscribe(key, channel, func(_ *emitter.Client, msg emitter.Message) {
+	clientReading.Subscribe(key, channel, func(_ *emitter.Client, msg emitter.Message) {
 		mqttHasReadingPermission = true
 		if mqttHasWritingPermission {
 			mqttKeyStatusCh <- "Chave do MQTT: Válida"
@@ -139,7 +137,7 @@ func HandleExperimentsReceiving() {
 			mqttKeyStatusCh <- "Chave do MQTT: Válida apenas para leitura"
 		}
 
-		experiment := ExperimentFromJson(msg.Payload())
+		experiment := ExperimentFromJSON(msg.Payload())
 		log.Printf("Experiment received: %s", experiment)
 		experiment.Run()
 	})
@@ -147,8 +145,8 @@ func HandleExperimentsReceiving() {
 	wgGeneral.Wait()
 }
 
-// ExperimentFromJson takes a json as an array of bytes and returns an experiment
-func ExperimentFromJson(data []byte) Experiment {
+// ExperimentFromJSON takes a json as an array of bytes and returns an experiment
+func ExperimentFromJSON(data []byte) *Experiment {
 	var experiment Experiment
 
 	var decoded experimentData
@@ -170,10 +168,10 @@ func ExperimentFromJson(data []byte) Experiment {
 	experiment.snub.lowerSpeedLimit = 150 //decoded.Fields.Configuration.InferiorLimit
 	experiment.snub.timeCooldown = decoded.Fields.Configuration.LowerTime
 
-	return experiment
+	return &experiment
 }
 
-func (experiment Experiment) String() string {
+func (experiment *Experiment) String() string {
 	printedAttrs := []string{
 		fmt.Sprintf("timeSleepWater: %v", experiment.timeSleepWater),
 		fmt.Sprintf("totalOfSnubs: %v", experiment.totalOfSnubs),
@@ -192,13 +190,16 @@ func (experiment *Experiment) handleEnd() {
 	experiment.snub.counter = 1
 	experiment.snub.SetState(cooldown)
 
+	log.Println("!!!!!!!!!!@@@@@@@@@@@@################¨¨¨¨¨¨¨¨¨¨¨¨¨¨")
+
 	publishData(strconv.Itoa(experiment.snub.counter), mqttSubchannelCurrentSnub)
-	experiment.wg.Done()
+	wgExperiment.Done()
 }
 
 // Will manage the state of running experiment.snub, handling all state transitions,
 // synchronization, collecting needed data and writing needed commands
 func (experiment *Experiment) watchSnubState() {
+
 	if snub.counter > experiment.totalOfSnubs {
 		experiment.handleEnd()
 	}
@@ -214,11 +215,12 @@ func (experiment *Experiment) watchSpeed() {
 
 		if (experiment.snub.state == acelerating || experiment.snub.state == aceleratingWater) && !experiment.snub.isStabilizing {
 			if speed >= experiment.snub.upperSpeedLimit {
-				experiment.snub.NextState()
+				experiment.snub.NextState() // Acelerating to Braking
 			}
 		} else if experiment.snub.state == braking || experiment.snub.state == brakingWater {
 			if speed < experiment.snub.lowerSpeedLimit {
-				experiment.snub.NextState()
+				experiment.snub.NextState() // Braking to Cooldown
+				experiment.snub.NextState() // Braking to
 			}
 		}
 	}

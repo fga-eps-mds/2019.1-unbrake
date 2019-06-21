@@ -21,6 +21,7 @@ import (
 	"sync"
 	"time"
 
+	emitter "github.com/emitter-io/go/v2"
 	"github.com/getlantern/systray"
 )
 
@@ -34,6 +35,8 @@ var (
 var (
 	aplicationStatusCh = make(chan string)
 	mqttKeyStatusCh    = make(chan string)
+	clientWriting      *emitter.Client
+	clientReading      *emitter.Client
 )
 
 func main() {
@@ -53,6 +56,14 @@ func main() {
 		serialAttrs[i].publishCh = make(chan string)
 		serialAttrs[i].handleCh = make(chan float64)
 	}
+
+	clientWriting, _ = emitter.Connect(getMqttHost(), func(_ *emitter.Client, msg emitter.Message) {
+		log.Printf("Sent message: '%s' topic: '%s'\n", msg.Payload(), msg.Topic())
+	})
+
+	clientReading, _ = emitter.Connect(getMqttHost(), func(_ *emitter.Client, msg emitter.Message) {
+		log.Printf("Sent message: '%s' topic: '%s'\n", msg.Payload(), msg.Topic())
+	})
 
 	go func() {
 		IsAvailable = true

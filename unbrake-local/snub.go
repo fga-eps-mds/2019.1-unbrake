@@ -84,8 +84,6 @@ func (snub *Snub) NextState() {
 	snub.mux.Lock()
 	defer snub.mux.Unlock()
 
-	snub.changeState()
-
 	switch snub.state {
 
 	case acelerating, aceleratingWater: // Next is Braking
@@ -93,19 +91,24 @@ func (snub *Snub) NextState() {
 
 		log.Println("Stabilizing...")
 		time.Sleep(time.Second * time.Duration(snub.delayAcelerateToBrake))
+		snub.changeState() // Acelerate ---> braking
 
 		snub.isStabilizing = false
 
 	case braking, brakingWater: // Next is Cooldown
+
+		snub.changeState() // Brake ---> Cooldown
 		time.Sleep(time.Second * time.Duration(snub.timeCooldown))
-		snub.changeState()
 
 	case cooldown, cooldownWater: // Next is acelerate, end of a cycle
-		snub.counter += 1
+		snub.counter++
 		publishData(strconv.Itoa(snub.counter), mqttSubchannelCurrentSnub)
+		snub.changeState()
 
 		log.Println("---> End of snub <---")
+
 	default:
+		log.Printf("Invalid state: %v", snub.state)
 	}
 }
 
@@ -117,18 +120,18 @@ func (snub *Snub) SetState(state string) {
 	snub.setStateNonExclusion(state)
 }
 
+func (snub *Snub) changeState() {
+	oldState := snub.state
+	snub.setStateNonExclusion(currentToNextState[snub.state])
+
+	publishData(byteToStateName[snub.state], mqttSubchannelSnubState)
+	log.Printf("Change state: %v ---> %v\n", byteToStateName[oldState], byteToStateName[snub.state])
+}
+
 func (snub *Snub) setStateNonExclusion(state string) {
-	snub.state = currentToNextState[snub.state]
+	snub.state = state
 
 	if _, err := port.Write([]byte(snub.state)); err != nil {
 		log.Println("Wasn't possible to write the state: ", err)
 	}
-}
-
-func (snub *Snub) changeState() {
-	oldState := snub.state
-	snub.setStateNonExclusion(snub.state)
-
-	publishData(byteToStateName[snub.state], mqttSubchannelSnubState)
-	log.Printf("Change state: %v ---> %v\n", byteToStateName[oldState], byteToStateName[snub.state])
 }
