@@ -12,27 +12,26 @@
 
 |Nome da issue|Pontos|Situação|
 |-----|-----|------|
-|[Criar Documento de visão](https://github.com/fga-eps-mds/2019.1-unbrake/issues/91)|3|29Fechada|
+|[Criar Documento de visão](https://github.com/fga-eps-mds/2019.1-unbrake/issues/91)|3|Fechada|
 |[Criar comunicação do servidor Go com um canal de comunicação serial](https://github.com/fga-eps-mds/2019.1-unbrake/issues/97)|8|Não fechada|
-|[Preparar ambiente de produção da api](https://github.com/fga-eps-mds/2019.1-unbrake/issues/114)|3|25Fechada|
-|[Preparar ambiente de produção do frontend](https://github.com/fga-eps-mds/2019.1-unbrake/issues/116)|2|29Fechada|
-|[Ajustar o layout dos formulários](https://github.com/fga-eps-mds/2019.1-unbrake/issues/117)|3|25Fechada|
-|[Reservar domínio e integrar no projeto](https://github.com/fga-eps-mds/2019.1-unbrake/issues/119)|2|25Fechada|
-|[Telas de login e cadastro não estão acessíveis a um usuário](https://github.com/fga-eps-mds/2019.1-unbrake/issues/120)|1|28Fechada|
-|[Todas as requisições do frontend estão sendo feitas no localhost](https://github.com/fga-eps-mds/2019.1-unbrake/issues/123)|1|28Fechada|
-|[Criar documento de protótipo](https://github.com/fga-eps-mds/2019.1-unbrake/issues/125)|2|29Fechada|
-|[Adequar documento de arquitetura](https://github.com/fga-eps-mds/2019.1-unbrake/issues/128)|3|30Fechada|
-|[Criar roadmap de Scrum Master](https://github.com/fga-eps-mds/2019.1-unbrake/issues/129)|1|30Fechada|
-|[Redirecionamento do gh-pages não funciona](https://github.com/fga-eps-mds/2019.1-unbrake/issues/131)|1|29Fechada|
-|[Criar Roadmap do engenheiro de produto](https://github.com/fga-eps-mds/2019.1-unbrake/issues/132)|1|30Fechada|
-|[Integrar build de homologação ao CI](https://github.com/fga-eps-mds/2019.1-unbrake/issues/133)|2|30Fechada|
-|[Realizar deploy contínuo do ambiente de homologação](https://github.com/fga-eps-mds/2019.1-unbrake/issues/135)|2|30Fechada|
-|[Consertar fluxo das rotas](https://github.com/fga-eps-mds/2019.1-unbrake/issues/136)|3|30Fechada|
-|[Melhorar a estrutura do código do frontend](https://github.com/fga-eps-mds/2019.1-unbrake/issues/138)|2|30Fechada|
-|[Ajustar o tema do frontend](https://github.com/fga-eps-mds/2019.1-unbrake/issues/139)|1|30Fechada|
-|[Realizar deploy contínuo do ambiente de produção](https://github.com/fga-eps-mds/2019.1-unbrake/issues/142)|1|30Fechada|
-|[Criar documento de Identidade Visual](https://github.com/fga-eps-mds/2019.1-unbrake/issues/144)|1|30Fechada|
-
+|[Preparar ambiente de produção da api](https://github.com/fga-eps-mds/2019.1-unbrake/issues/114)|3|Fechada|
+|[Preparar ambiente de produção do frontend](https://github.com/fga-eps-mds/2019.1-unbrake/issues/116)|2|Fechada|
+|[Ajustar o layout dos formulários](https://github.com/fga-eps-mds/2019.1-unbrake/issues/117)|3|Fechada|
+|[Reservar domínio e integrar no projeto](https://github.com/fga-eps-mds/2019.1-unbrake/issues/119)|2|Fechada|
+|[Telas de login e cadastro não estão acessíveis a um usuário](https://github.com/fga-eps-mds/2019.1-unbrake/issues/120)|1|Fechada|
+|[Todas as requisições do frontend estão sendo feitas no localhost](https://github.com/fga-eps-mds/2019.1-unbrake/issues/123)|1|Fechada|
+|[Criar documento de protótipo](https://github.com/fga-eps-mds/2019.1-unbrake/issues/125)|2|Fechada|
+|[Adequar documento de arquitetura](https://github.com/fga-eps-mds/2019.1-unbrake/issues/128)|3|Fechada|
+|[Criar roadmap de Scrum Master](https://github.com/fga-eps-mds/2019.1-unbrake/issues/129)|1|Fechada|
+|[Redirecionamento do gh-pages não funciona](https://github.com/fga-eps-mds/2019.1-unbrake/issues/131)|1|Fechada|
+|[Criar Roadmap do engenheiro de produto](https://github.com/fga-eps-mds/2019.1-unbrake/issues/132)|1|Fechada|
+|[Integrar build de homologação ao CI](https://github.com/fga-eps-mds/2019.1-unbrake/issues/133)|2|Fechada|
+|[Realizar deploy contínuo do ambiente de homologação](https://github.com/fga-eps-mds/2019.1-unbrake/issues/135)|2|Fechada|
+|[Consertar fluxo das rotas](https://github.com/fga-eps-mds/2019.1-unbrake/issues/136)|3|Fechada|
+|[Melhorar a estrutura do código do frontend](https://github.com/fga-eps-mds/2019.1-unbrake/issues/138)|2|Fechada|
+|[Ajustar o tema do frontend](https://github.com/fga-eps-mds/2019.1-unbrake/issues/139)|1|Fechada|
+|[Realizar deploy contínuo do ambiente de produção](https://github.com/fga-eps-mds/2019.1-unbrake/issues/142)|1|Fechada|
+|[Criar documento de Identidade Visual](https://github.com/fga-eps-mds/2019.1-unbrake/issues/144)|1|Fechada|
 
 
 ## Burndown
@@ -82,7 +81,7 @@
 
 ## Quadro de conhecimentos
 
-![conhecimento3](images/conhecimento3.png)
+![conhecimento3](images/conhecimento5.png)
 </br>
 </br>
 </br>

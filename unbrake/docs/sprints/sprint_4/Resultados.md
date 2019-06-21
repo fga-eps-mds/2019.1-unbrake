@@ -86,7 +86,7 @@
 
 ## Quadro de conhecimentos
 
-![conhecimento3](images/conhecimento3.png)
+![conhecimento3](images/conhecimento4.png)
 </br>
 </br>
 </br>
