@@ -7,13 +7,11 @@ import (
 	"time"
 
 	emitter "github.com/emitter-io/go/v2"
-	"github.com/tarm/serial"
 )
 
 var (
-	port             *serial.Port
+	port             Port
 	serialPortNameCh = make(chan string, 1)
-	serialPortCh     = make(chan *serial.Port)
 	serialAttrs      = make([]SerialAttribute, numSerialAttrs)
 )
 
@@ -69,17 +67,9 @@ func CollectData() {
 		log.Println("Waiting for valid serial port selection...")
 		serialPortName := <-serialPortNameCh
 
-		configuration := &serial.Config{
-			Name:        serialPortName,
-			Baud:        baudRate,
-			ReadTimeout: time.Second,
-		}
+		err := port.Open(serialPortName)
 
-		port, err := serial.OpenPort(configuration)
-
-		if err == nil {
-			serialPortCh <- port
-		} else {
+		if err != nil {
 			log.Println(err)
 			continue
 		}
@@ -92,7 +82,6 @@ func CollectData() {
 		log.Printf("Baud rate = %d", baudRate)
 		log.Printf("Reading delay = %v", ReadingDelay)
 
-		port.Flush()
 		for {
 			select {
 			case stop := <-stopCollectingDataCh:
@@ -107,7 +96,7 @@ func CollectData() {
 				serialPortNameCh <- serialPortName
 				CollectData()
 			default:
-				getData(port, "\"")
+				getData("\"")
 				time.Sleep(ReadingDelay)
 			}
 		}
@@ -116,14 +105,15 @@ func CollectData() {
 
 // Will get the data from the bus and returns it as an
 // array of bytes
-func getData(port *serial.Port, command string) []byte {
-	n, err := port.Write([]byte(command))
-	if err != nil {
-		log.Println("Error writing to serial ", err, ". Is this the right port?")
+func getData(command string) []byte {
+	n := port.Write([]byte(command))
+	if n == -1 {
+		log.Println("Error writing to serial. Is this the right port?")
 	}
 
 	buf := make([]byte, bufferSize)
-	if n, err = port.Read(buf); err != nil {
+	n, err := port.Read(buf)
+	if err != nil {
 		log.Println("Error reading from serial ", err, ". Is this the right port?")
 	} else if n == 0 {
 		log.Println("Error reading from serial: timeout waiting for bytes. Is this the right port?")

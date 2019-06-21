@@ -54,12 +54,6 @@ func handlePortsSectionGUI() {
 		ports[selected].check()
 	}
 
-	go func() {
-		for {
-			port = <-serialPortCh
-		}
-	}()
-
 	// Handle serial ports checking/unchecking
 	for i, port := range ports {
 		go func(selected int, portLocal serialPortGUI) {

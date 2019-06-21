@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"log"
-	"runtime"
 	"strings"
 	"sync"
 	"time"
@@ -110,10 +109,7 @@ func (experiment *Experiment) Run() {
 	experiment.continueRunning = true
 	go experiment.watchSnubState()
 	experiment.snub.counterCh = make(chan int)
-	log.Println("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@")
 	experiment.snub.counterCh <- 1
-
-	log.Println("¬¬¬¬¬¬¬¬¬¬¬¬¬¬¬¬¬¬¬¬¬¬¬¬¬¬¬¬")
 
 }
 
@@ -143,11 +139,13 @@ func HandleExperimentsReceiving() {
 			}
 
 			log.Printf("Experiment received: %s", experiment)
-			if port != nil {
+
+			if port.IsOpen() {
 				experiment.Run()
 			} else {
-				log.Println("Tried to run an experiment, but serial port not selected")
+				log.Println("Tried to begin an experiment without select a serial port")
 			}
+
 		} else {
 			log.Printf("Alredy running an experiment but one was submitted(id: %v)", experiment.id)
 		}
@@ -166,7 +164,7 @@ func ExperimentFromJSON(data []byte) *Experiment {
 	}
 
 	experiment.id = decoded.Pk
-	experiment.totalOfSnubs = 0     //decoded.Fields.Configuration.Number
+	experiment.totalOfSnubs = 2     //decoded.Fields.Configuration.Number
 	experiment.timeSleepWater = 3   //decoded.Fields.Configuration.Time
 	experiment.doEnableWater = true //decoded.Fields.Configuration.EnableOutput
 	experiment.firstConversionFactorTemperature = decoded.Fields.Calibration.Temperature[0].ConversionFactor
@@ -222,17 +220,14 @@ func (experiment *Experiment) watchEnd() {
 		counter := <-experiment.snub.counterCh
 
 		if counter > experiment.totalOfSnubs {
-			log.Printf("©©©©©©©©©©©©©©©©©© %v ©©©©©©©©©©©©©©©", counter)
 			experiment.snub.SetState(cooldown)
 			close(experiment.snub.counterCh)
 
 			log.Println("---> End of an experiment <---")
-			log.Println(runtime.NumGoroutine())
 			experiment.continueRunning = false
 			isAvailable = true
 
 		} else {
-			log.Printf("©©©©©©©©©©©©©©©©©© %v ©©©©©©©©©©©©©©©", counter)
 			experiment.snub.counterCh <- counter
 		}
 	})
@@ -293,13 +288,7 @@ func (experiment *Experiment) changeStateWater() {
 		log.Printf("Turn off water: %v ---> %v\n", byteToStateName[oldState], byteToStateName[experiment.snub.state])
 	}
 
-	if port != nil {
-		if _, err := port.Write([]byte(experiment.snub.state)); err != nil {
-			log.Println("Wasn't possible to write the state: ", err)
-		}
-	} else {
-		log.Println("Port not selected")
-	}
+	port.Write([]byte(experiment.snub.state))
 
 	publishData(byteToStateName[experiment.snub.state], mqttSubchannelSnubState)
 	experiment.snub.isWaterOn = !experiment.snub.isWaterOn

@@ -107,8 +107,10 @@ func onReady() {
 		select {
 		case <-mQuitOrig.ClickedCh:
 			log.Println("Quitting request by interface")
+			port.Write([]byte(cooldown))
 		case <-sigsCh:
 			log.Println("Quitting request by signal")
+			port.Write([]byte(cooldown))
 		}
 
 		stopCollectingDataCh <- true

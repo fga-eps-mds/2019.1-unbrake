@@ -130,13 +130,8 @@ func (snub *Snub) setStateNonExclusion(state string) {
 	oldState := snub.state
 	snub.state = state
 
-	if port != nil {
-		if _, err := port.Write([]byte(snub.state)); err != nil {
-			log.Println("Wasn't possible to write the state: ", err)
-		}
-	} else {
-		log.Println("Not selected port")
-	}
+	port.Write([]byte(snub.state))
+
 	publishData(byteToStateName[snub.state], mqttSubchannelSnubState)
 	log.Printf("Change state: %v ---> %v\n", byteToStateName[oldState], byteToStateName[snub.state])
 }
