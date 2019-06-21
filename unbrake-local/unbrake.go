@@ -33,10 +33,12 @@ var (
 )
 
 var (
-	aplicationStatusCh = make(chan string)
-	mqttKeyStatusCh    = make(chan string)
-	clientWriting      *emitter.Client
-	clientReading      *emitter.Client
+	aplicationStatusCh     = make(chan string)
+	mqttKeyStatusCh        = make(chan string)
+	quitExperimentEnableCh = make(chan bool)
+	quitExperimentCh       = make(chan bool)
+	clientWriting          *emitter.Client
+	clientReading          *emitter.Client
 )
 
 func main() {
@@ -85,6 +87,13 @@ func onReady() {
 	statusCollecting := systray.AddMenuItem("Status de arquisição", "Não iniciada")
 	mqttKeyStatus := systray.AddMenuItem("Chave do MQTT: Não avaliada", "Status da chave do MQTT")
 
+	handlePortsSectionGUI()
+
+	quitExperiment := systray.AddMenuItem("Encerrar ensaio", "Finaliza o ensaio atual")
+	quitExperiment.Disable()
+
+	mQuitOrig := systray.AddMenuItem("Sair", "Fechar UnBrake")
+
 	go func() {
 		for {
 			select {
@@ -92,13 +101,20 @@ func onReady() {
 				statusCollecting.SetTitle(collectingStatusAux)
 			case mqttKeyStatusChAux := <-mqttKeyStatusCh:
 				mqttKeyStatus.SetTitle(mqttKeyStatusChAux)
+			case quitExperimentAux := <-quitExperimentEnableCh:
+				if quitExperimentAux {
+					quitExperiment.Disable()
+				} else {
+					quitExperiment.Enable()
+				}
+			case <-quitExperiment.ClickedCh:
+				quitExperimentCh <- true
+				quitExperiment.Disable()
+				isAvailable = true
+				log.Println("Experiment finished by user")
 			}
 		}
 	}()
-
-	handlePortsSectionGUI()
-
-	mQuitOrig := systray.AddMenuItem("Sair", "Fechar UnBrake")
 
 	stopCollectingDataCh = make(chan bool, 1)
 

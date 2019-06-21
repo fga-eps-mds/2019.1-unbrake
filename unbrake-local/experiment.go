@@ -105,6 +105,7 @@ type experimentData struct {
 func (experiment *Experiment) Run() {
 
 	isAvailable = false
+	quitExperimentEnableCh <- false
 	experiment.snub.SetState(acelerating)
 	experiment.continueRunning = true
 	go experiment.watchSnubState()
@@ -208,7 +209,14 @@ func (experiment *Experiment) watchSnubState() {
 func (experiment *Experiment) watch(watchFunction func()) {
 
 	for experiment.continueRunning {
-		watchFunction()
+		select {
+		case <-quitExperimentCh:
+			experiment.continueRunning = false
+			experiment.snub.SetState(cooldown)
+		default:
+
+			watchFunction()
+		}
 	}
 }
 
@@ -226,6 +234,7 @@ func (experiment *Experiment) watchEnd() {
 			log.Println("---> End of an experiment <---")
 			experiment.continueRunning = false
 			isAvailable = true
+			quitExperimentEnableCh <- true
 
 		} else {
 			experiment.snub.counterCh <- counter
