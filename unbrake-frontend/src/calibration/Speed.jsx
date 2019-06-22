@@ -2,9 +2,13 @@ import React from "react";
 import PropTypes from "prop-types";
 import { reduxForm } from "redux-form";
 import { withStyles, Grid } from "@material-ui/core";
+import { connect } from "react-redux";
 import styles from "../components/Styles";
 import RealTimeChart from "../components/RealTimeChart";
 import { checkbox, field } from "../components/ComponentsForm";
+import { changeCalibTest } from "../actions/TestActions";
+
+const invalidId = 0;
 
 const labelSecondary = name => {
   let nameLabel = "";
@@ -173,12 +177,16 @@ class Speed extends React.Component {
   }
 
   handleChange(event) {
+    const { calibId, changeCalib } = this.props;
     const { target } = event;
+
     const value = target.type === "checkbox" ? target.checked : target.value;
     const force = { [event.target.name]: value };
     this.setState(prevState => ({
       force: { ...prevState.force, ...force }
     }));
+
+    if (calibId > invalidId) changeCalib({ calibId: "" });
   }
 
   render() {
@@ -229,8 +237,22 @@ class Speed extends React.Component {
   }
 }
 
+const mapDispatchToProps = dispatch => ({
+  changeCalib: payload => dispatch(changeCalibTest(payload))
+});
+
+const mapStateToProps = state => ({
+  calibId: state.testReducer.calibId
+});
+
+Speed.defaultProps = {
+  calibId: ""
+};
+
 Speed.propTypes = {
-  classes: PropTypes.objectOf(PropTypes.string).isRequired
+  classes: PropTypes.objectOf(PropTypes.string).isRequired,
+  calibId: PropTypes.number,
+  changeCalib: PropTypes.func.isRequired
 };
 
 const SpeedForm = reduxForm({
@@ -238,4 +260,7 @@ const SpeedForm = reduxForm({
   destroyOnUnmount: false
 })(Speed);
 
-export default withStyles(styles)(SpeedForm);
+export default connect(
+  mapStateToProps,
+  mapDispatchToProps
+)(withStyles(styles)(SpeedForm));

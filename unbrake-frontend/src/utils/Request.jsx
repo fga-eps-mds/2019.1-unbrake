@@ -28,12 +28,18 @@ export const createMutationUrl = async (
 
   let url = variableNames.reduce((prevMessage, newField) => {
     if (prevMessage.length === initialUrl.length) {
-      if (Number.isNaN(Number(values[newField.front]))) {
+      if (
+        values[newField.front] === "" ||
+        Number.isNaN(Number(values[newField.front]))
+      ) {
         return `${prevMessage}${newField.back}:"${values[newField.front]}"`;
       }
       return `${prevMessage}${newField.back}:${values[newField.front]}`;
     }
-    if (Number.isNaN(Number(values[newField.front]))) {
+    if (
+      values[newField.front] === "" ||
+      Number.isNaN(Number(values[newField.front]))
+    ) {
       return `${prevMessage},${newField.back}:"${values[newField.front]}"`;
     }
     return `${prevMessage},${newField.back}:${values[newField.front]}`;

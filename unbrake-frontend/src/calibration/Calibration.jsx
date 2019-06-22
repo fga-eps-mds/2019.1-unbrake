@@ -18,6 +18,7 @@ import Relation from "./Relation";
 import { messageSistem } from "../actions/NotificationActions";
 import { createMutationUrl } from "../utils/Request";
 import { redirectPage } from "../actions/RedirectActions";
+import { changeCalibTest } from "../actions/TestActions";
 import {
   allVariablesCalib,
   createAllCalibrations,
@@ -26,7 +27,6 @@ import {
   createDefaultCalibration,
   empty,
   labels,
-  sendMessageFunction,
   styles,
   dialogName
 } from "./CalibrationVariables";
@@ -42,7 +42,7 @@ const sizeMessageDefault = 14;
 const invalidID = -1;
 let createMessage = "";
 
-const validadeFields = (calibration, sendMessage) => {
+export const validateFields = (calibration, sendMessage) => {
   createMessage = allVariablesCalib.reduce((prevMessage, newDictionary) => {
     const newMessage = newDictionary.reduce((prevMessageTwo, newField) => {
       if (
@@ -61,7 +61,11 @@ const validadeFields = (calibration, sendMessage) => {
 
   if (createMessage.length > sizeMessageDefault) {
     createMessage += " está(ão) vazios";
-    sendMessageFunction(sendMessage, createMessage, "error");
+    sendMessage({
+      message: createMessage,
+      variante: "error",
+      condition: true
+    });
     return false;
   }
   return true;
@@ -85,7 +89,9 @@ const firstRequests = async values => {
   return calibration;
 };
 
-const saveCalibration = async (values, sendMessage, redirect) => {
+export const saveCalibration = async (values, dispatchs) => {
+  const { sendMessage, redirect, changeCalib } = dispatchs;
+
   const idsCalibration = await firstRequests(values);
   idsCalibration.name = values.name;
 
@@ -97,11 +103,24 @@ const saveCalibration = async (values, sendMessage, redirect) => {
 
   if (responseSaved.invalidID === invalidID) {
     sendMessageFunction(responseSaved.error, createMessage, "error");
+  if (responseSaved === invalidID) {
+    sendMessage({
+      message: "Falha no cadastro da calibração",
+      variante: "error",
+      condition: true
+    });
   } else {
-    createMessage = "Calibração cadastrada com sucesso";
-    sendMessageFunction(sendMessage, createMessage, "success");
+    sendMessage({
+      message: "Calibração cadastrada com sucesso",
+      variante: "success",
+      condition: true
+    });
     redirect({ url: "/test" });
   }
+
+  changeCalib({ calibId: responseSaved });
+
+  return responseSaved;
 };
 
 const GeneralConfigs = () => (
@@ -139,6 +158,23 @@ const nextButton = handleNext => {
 const appBar = (functions, classes, value) => {
   return (
     <div className={classes.root}>
+      <Grid
+        item
+        xs={12}
+        container
+        justify="center"
+        style={{ marginBottom: "15px" }}
+      >
+        <Grid item xs={3} container justify="center" alignItems="center">
+          {previousButton(functions.handlePrevious)}
+        </Grid>
+        <Grid item xs={4} container justify="center" alignItems="center">
+          {registerButton(functions.handleValidate)}
+        </Grid>
+        <Grid item xs={4} container justify="center" alignItems="center">
+          {nextButton(functions.handleNext)}
+        </Grid>
+      </Grid>
       <AppBar position="static" color="inherit" className={classes.appBar}>
         <Tabs
           value={value}
@@ -155,23 +191,6 @@ const appBar = (functions, classes, value) => {
           <Tab label="Relações" />
         </Tabs>
       </AppBar>
-      <Grid
-        item
-        xs={12}
-        container
-        justify="center"
-        style={{ marginTop: "15px" }}
-      >
-        <Grid item xs={3} container justify="center" alignItems="center">
-          {previousButton(functions.handlePrevious)}
-        </Grid>
-        <Grid item xs={4} container justify="center" alignItems="center">
-          {registerButton(functions.handleValidate)}
-        </Grid>
-        <Grid item xs={4} container justify="center" alignItems="center">
-          {nextButton(functions.handleNext)}
-        </Grid>
-      </Grid>
       {value === generalConfigsOption && GeneralConfigs()}
       {value === temperatureOption && <Temperature />}
       {value === forceOption && <Force />}
@@ -231,7 +250,7 @@ class Calibration extends React.Component {
   handleValidate() {
     const { calibration, sendMessage } = this.props;
 
-    const validate = validadeFields(calibration.values, sendMessage);
+    const validate = validateFields(calibration.values, sendMessage);
     if (validate === false) return;
 
     const inserName = { open: true, isDefault: false, name: "" };
@@ -239,16 +258,17 @@ class Calibration extends React.Component {
   }
 
   handleSubmit() {
-    const { calibration, sendMessage, redirect } = this.props;
+    const { calibration, sendMessage, redirect, changeCalib } = this.props;
     const { name, isDefault } = this.state;
+    const dispatchs = { sendMessage, redirect, changeCalib };
     const values = { calibration: calibration.values, name, createCalibration };
 
     if (name === "") {
-      sendMessageFunction(
-        sendMessage,
-        "O nome é obrigatório para cadastrar a calibração",
-        "error"
-      );
+      sendMessage({
+        message: "O nome é obrigatório para cadastrar a calibração",
+        variante: "error",
+        condition: true
+      });
 
       return;
     }
@@ -257,7 +277,7 @@ class Calibration extends React.Component {
     if (isDefault === true) values.createCalibration = createDefaultCalibration;
     else values.createCalibration = createCalibration;
 
-    saveCalibration(values, sendMessage, redirect);
+    saveCalibration(values, dispatchs);
   }
 
   render() {
@@ -274,7 +294,6 @@ class Calibration extends React.Component {
       handleNext: this.handleNext,
       handlePrevious: this.handlePrevious
     };
-
     return (
       <Grid item container xs={12} justify="center" alignItems="center">
         <Grid item container xs={11} justify="center" alignItems="center">
@@ -288,7 +307,8 @@ class Calibration extends React.Component {
 
 Calibration.propTypes = {
   sendMessage: PropTypes.func.isRequired,
-  redirect: PropTypes.func.isRequired
+  redirect: PropTypes.func.isRequired,
+  changeCalib: PropTypes.func.isRequired
 };
 
 Calibration.defaultProps = {
@@ -297,12 +317,14 @@ Calibration.defaultProps = {
 
 const mapDispatchToProps = dispatch => ({
   sendMessage: payload => dispatch(messageSistem(payload)),
-  redirect: payload => dispatch(redirectPage(payload))
+  redirect: payload => dispatch(redirectPage(payload)),
+  changeCalib: payload => dispatch(changeCalibTest(payload))
 });
 
 function mapStateToProps(state) {
   return {
-    calibration: state.form.calibration
+    calibration: state.form.calibration,
+    calibId: state.testReducer.calibId
   };
 }
 
