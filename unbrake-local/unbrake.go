@@ -21,8 +21,8 @@ import (
 	"sync"
 	"time"
 
-	emitter "github.com/emitter-io/go/v2"
 	"github.com/getlantern/systray"
+	emitter "github.com/icaropires/go/v2"
 )
 
 // Channels general for controlling execution

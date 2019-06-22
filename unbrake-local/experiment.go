@@ -8,7 +8,7 @@ import (
 	"sync"
 	"time"
 
-	emitter "github.com/emitter-io/go/v2"
+	emitter "github.com/icaropires/go/v2"
 )
 
 // Status flags
