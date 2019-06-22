@@ -13,6 +13,9 @@ import {
   convertDigitalToAnalog,
   dutyCycleEquation
 } from "../utils/Equations";
+import { changeCalibTest } from "../actions/TestActions";
+
+const invalidId = 0;
 
 const labelSecondary = name => {
   let nameLabel = "";
@@ -199,12 +202,16 @@ class Command extends React.Component {
   }
 
   handleChange(event) {
+    const { calibId, changeCalib } = this.props;
     const { target } = event;
+
     const value = target.type === "checkbox" ? target.checked : target.value;
     const command = { [event.target.name]: value };
     this.setState(prevState => ({
       command: { ...prevState.command, ...command }
     }));
+
+    if (calibId > invalidId) changeCalib({ calibId: "" });
   }
 
   render() {
@@ -252,19 +259,26 @@ class Command extends React.Component {
 
 function mapStateToProps(state) {
   return {
-    calibration: state.form.calibration
+    calibration: state.form.calibration,
+    calibId: state.testReducer.calibId
   };
 }
 
 Command.defaultProps = {
-  calibration: { values: {} }
-};
+  calibration: { values: {} }, calibId: ""
+}
+
+const mapDispatchToProps = dispatch => ({
+  changeCalib: payload => dispatch(changeCalibTest(payload))
+});
 
 Command.propTypes = {
   classes: PropTypes.objectOf(PropTypes.string).isRequired,
   mqttKey: PropTypes.string.isRequired,
   dispatch: PropTypes.func.isRequired,
-  calibration: PropTypes.objectOf(PropTypes.string)
+  calibration: PropTypes.objectOf(PropTypes.string),
+  calibId: PropTypes.number,
+  changeCalib: PropTypes.func.isRequired
 };
 
 const CommandForm = reduxForm({
@@ -272,4 +286,7 @@ const CommandForm = reduxForm({
   destroyOnUnmount: false
 })(Command);
 
-export default connect(mapStateToProps)(withStyles(styles)(CommandForm));
+export default connect(
+  mapStateToProps,
+  mapDispatchToProps
+)(withStyles(styles)(CommandForm));

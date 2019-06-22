@@ -14,15 +14,9 @@ import { API_URL_GRAPHQL } from "../utils/Constants";
 export const query =
   "id, name, number, time, temperature, timeBetweenCycles, upperLimit, inferiorLimit, upperTime, inferiorTime, disableShutdown, enableOutput";
 
-export async function submit(configuration, name, sendMessage) {
-  if (name === "" || name === undefined) {
-    sendMessage({
-      message: "O nome é obrigatório para cadastrar a configuração",
-      variante: "error",
-      condition: true
-    });
-    return;
-  }
+export async function saveConfiguration(configuration, name, dispatchs) {
+  const { sendMessage, changeConfig } = dispatchs;
+
   const url = `${API_URL_GRAPHQL}?query=mutation{createConfig(name:"${name}",number:${
     configuration.NOS
   },timeBetweenCycles:${configuration.TBS},upperLimit:${
@@ -33,15 +27,19 @@ export async function submit(configuration, name, sendMessage) {
     configuration.TMO
   },enableOutput:${configuration.TAO},temperature:${configuration.TAS},time:${
     configuration.TAT
-  }){config{number, timeBetweenCycles,upperLimit,inferiorLimit}}}`;
+  }){config{id, number, timeBetweenCycles,upperLimit,inferiorLimit}}}`;
   const method = "POST";
   Request(url, method).then(response => {
     if (response.errors === undefined) {
+      const { createConfig } = response.data;
+
       sendMessage({
-        message: "Arquivo cadastrado com sucesso",
+        message: "Configuração cadastrado com sucesso",
         variante: "success",
         condition: true
       });
+
+      changeConfig({ configId: createConfig.config.id });
       return true;
     }
     sendMessage({
@@ -53,15 +51,9 @@ export async function submit(configuration, name, sendMessage) {
   });
 }
 
-export async function submitDefault(configuration, name, sendMessage) {
-  if (name === "" || name === undefined) {
-    sendMessage({
-      message: "O nome é obrigatório para cadastrar a configuração",
-      variante: "error",
-      condition: true
-    });
-    return;
-  }
+export async function submitDefault(configuration, name, dispatchs) {
+  const { sendMessage, changeConfig } = dispatchs;
+
   const url = `${API_URL_GRAPHQL}?query=mutation{createDefaultConfig(name:"${name}",number:${
     configuration.NOS
   },timeBetweenCycles:${configuration.TBS},upperLimit:${
@@ -72,15 +64,19 @@ export async function submitDefault(configuration, name, sendMessage) {
     configuration.TMO
   },enableOutput:${configuration.TAO},temperature:${configuration.TAS},time:${
     configuration.TAT
-  }){config{number, timeBetweenCycles,upperLimit,inferiorLimit}}}`;
+  }){config{id, number, timeBetweenCycles,upperLimit,inferiorLimit}}}`;
   const method = "POST";
   Request(url, method).then(response => {
     if (response.errors === undefined) {
+      const { createDefaultConfig } = response.data;
+
       sendMessage({
-        message: "Arquivo cadastrado com sucesso",
+        message: "Configuração padrão cadastrado com sucesso",
         variante: "success",
         condition: true
       });
+
+      changeConfig({ configId: createDefaultConfig.config.id });
       return true;
     }
     sendMessage({
@@ -191,6 +187,21 @@ export const renderUploadField = (classes, fileUpload, names) => {
       </Grid>
     </Grid>
   );
+};
+
+export const emptyConfig = {
+  CONFIG_ENSAIO: {
+    LSL: "",
+    LWT: "",
+    NOS: "",
+    TAO: false,
+    TAS: "",
+    TAT: "",
+    TBS: "",
+    TMO: false,
+    USL: "",
+    UWT: ""
+  }
 };
 
 export default createConfig;

@@ -16,6 +16,9 @@ import {
   rotationToSpeed,
   travelledDistanceEquation
 } from "../utils/Equations";
+import { changeCalibTest } from "../actions/TestActions";
+
+const invalidId = 0;
 
 const labelSecondary = name => {
   let nameLabel = "";
@@ -177,12 +180,16 @@ class Speed extends React.Component {
   }
 
   handleChange(event) {
+    const { calibId, changeCalib } = this.props;
     const { target } = event;
+
     const value = target.type === "checkbox" ? target.checked : target.value;
     const force = { [event.target.name]: value };
     this.setState(prevState => ({
       force: { ...prevState.force, ...force }
     }));
+
+    if (calibId > invalidId) changeCalib({ calibId: "" });
   }
 
   render() {
@@ -225,11 +232,30 @@ class Speed extends React.Component {
   }
 }
 
+const mapDispatchToProps = dispatch => ({
+  changeCalib: payload => dispatch(changeCalibTest(payload))
+});
+
+const mapStateToProps = state => ({
+  calibId: state.testReducer.calibId,
+  calibration: {
+    values: {
+      RAP: state.form.calibration.values.RAP
+    }
+  }
+});
+
+Speed.defaultProps = {
+  calibId: ""
+};
+
 Speed.propTypes = {
   classes: PropTypes.objectOf(PropTypes.string).isRequired,
   mqttKey: PropTypes.string.isRequired,
   dispatch: PropTypes.func.isRequired,
-  calibration: PropTypes.objectOf(PropTypes.string).isRequired
+  calibration: PropTypes.objectOf(PropTypes.string).isRequired,
+  calibId: PropTypes.number,
+  changeCalib: PropTypes.func.isRequired
 };
 
 const SpeedForm = reduxForm({
@@ -237,10 +263,7 @@ const SpeedForm = reduxForm({
   destroyOnUnmount: false
 })(Speed);
 
-export default connect(state => ({
-  calibration: {
-    values: {
-      RAP: state.form.calibration.values.RAP
-    }
-  }
-}))(withStyles(styles)(SpeedForm));
+export default connect(
+  mapStateToProps,
+  mapDispatchToProps
+)(withStyles(styles)(SpeedForm));

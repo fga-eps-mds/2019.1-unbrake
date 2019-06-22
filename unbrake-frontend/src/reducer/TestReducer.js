@@ -12,15 +12,13 @@ export default (state = INITIAL_STATE, action) => {
     case CHANGE_CONFIG_TEST:
       return {
         ...state,
-        configId: action.payload.configId,
-        configName: action.payload.configName
+        configId: action.payload.configId
       };
 
     case CHANGE_CALIB_TEST:
       return {
         ...state,
-        calibId: action.payload.calibId,
-        calibName: action.payload.calibName
+        calibId: action.payload.calibId
       };
     default:
       return state;

@@ -78,7 +78,7 @@ class Calibration(models.Model):
         This class has all the information of a calibration definition.
     '''
 
-    name = models.CharField(max_length=15, null=False, blank=False)
+    name = models.CharField(max_length=15, null=False, blank=True)
     is_default = models.BooleanField(null=False, blank=False)
     vibration = models.OneToOneField(
         CalibrationVibration, on_delete=models.CASCADE)

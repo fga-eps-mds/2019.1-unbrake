@@ -13,6 +13,9 @@ import {
   linearEquation,
   convertDigitalToAnalog
 } from "../utils/Equations";
+import { changeCalibTest } from "../actions/TestActions";
+
+const invalidId = 0;
 
 const labelSecondary = name => {
   let nameLabel = "";
@@ -207,12 +210,16 @@ class Force extends React.Component {
   }
 
   handleChange(event) {
+    const { calibId, changeCalib } = this.props;
     const { target } = event;
+
     const value = target.type === "checkbox" ? target.checked : target.value;
     const force = { [event.target.name]: value };
     this.setState(prevState => ({
       force: { ...prevState.force, ...force }
     }));
+
+    if (calibId > invalidId) changeCalib({ calibId: "" });
   }
 
   render() {
@@ -258,19 +265,25 @@ class Force extends React.Component {
   }
 }
 
+Force.defaultProps = {
+  calibId: ""
+};
+
 Force.propTypes = {
   classes: PropTypes.objectOf(PropTypes.string).isRequired,
   mqttKey: PropTypes.string.isRequired,
   dispatch: PropTypes.func.isRequired,
-  calibration: PropTypes.objectOf(PropTypes.string).isRequired
+  calibration: PropTypes.objectOf(PropTypes.string).isRequired,
+  calibId: PropTypes.number,
+  changeCalib: PropTypes.func.isRequired
 };
 
-const ForceForm = reduxForm({
-  form: "calibration",
-  destroyOnUnmount: false
-})(Force);
+const mapDispatchToProps = dispatch => ({
+  changeCalib: payload => dispatch(changeCalibTest(payload))
+});
 
-export default connect(state => ({
+const mapStateToProps = state => ({
+  calibId: state.testReducer.calibId,
   calibration: {
     values: {
       FCF1: state.form.calibration.values.FCF1,
@@ -279,4 +292,14 @@ export default connect(state => ({
       OFF2: state.form.calibration.values.OFF2
     }
   }
-}))(withStyles(styles)(ForceForm));
+});
+
+const ForceForm = reduxForm({
+  form: "calibration",
+  destroyOnUnmount: false
+})(Force);
+
+export default connect(
+  mapStateToProps,
+  mapDispatchToProps
+)(withStyles(styles)(ForceForm));

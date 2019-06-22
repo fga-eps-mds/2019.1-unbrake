@@ -3,7 +3,11 @@ import PropTypes from "prop-types";
 import { initialize, Field, reduxForm } from "redux-form";
 import { TextField, Checkbox } from "redux-form-material-ui";
 import { withStyles, Button, FormControlLabel, Grid } from "@material-ui/core";
+import { connect } from "react-redux";
+import { changeConfigTest } from "../actions/TestActions";
 import styles from "./Styles";
+
+const invalidId = 0;
 
 const limits = (value, allValues) => {
   return parseInt(allValues.LSL, 10) >= parseInt(allValues.USL, 10)
@@ -253,6 +257,7 @@ class ConfigurationForm extends React.Component {
   }
 
   handleChange(event) {
+    const { configId, changeConfig } = this.props;
     const { target } = event;
     const value = target.type === "checkbox" ? target.checked : target.value;
     const configurations = { [event.target.name]: value };
@@ -260,6 +265,8 @@ class ConfigurationForm extends React.Component {
     this.setState(prevState => ({
       configuration: { ...prevState.configuration, ...configurations }
     }));
+
+    if (configId > invalidId) changeConfig({ configId: "" });
   }
 
   render() {
@@ -301,17 +308,36 @@ class ConfigurationForm extends React.Component {
   }
 }
 
+ConfigurationForm.defaultProps = {
+  configId: ""
+};
+
 ConfigurationForm.propTypes = {
   classes: PropTypes.objectOf(PropTypes.string).isRequired,
   handleSubmit: PropTypes.func.isRequired,
   configuration: PropTypes.oneOfType([PropTypes.object]).isRequired,
   dispatch: PropTypes.func.isRequired,
-  handleClickSave: PropTypes.func.isRequired
+  handleClickSave: PropTypes.func.isRequired,
+  configId: PropTypes.number,
+  changeConfig: PropTypes.func.isRequired
 };
 
-const Configurationa = reduxForm({
+function mapStateToProps(state) {
+  return {
+    configId: state.testReducer.configId
+  };
+}
+
+const mapDispatchToProps = dispatch => ({
+  changeConfig: payload => dispatch(changeConfigTest(payload))
+});
+
+const Configurations = reduxForm({
   form: "configuration",
   destroyOnUnmount: false
 })(ConfigurationForm);
 
-export default withStyles(styles)(Configurationa);
+export default connect(
+  mapStateToProps,
+  mapDispatchToProps
+)(withStyles(styles)(Configurations));
