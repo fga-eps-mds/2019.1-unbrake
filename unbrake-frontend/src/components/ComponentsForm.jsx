@@ -40,6 +40,7 @@ export const field = (type, classes, handleChange) => {
         margin="normal"
         variant="outlined"
         style={{ width: "250px" }}
+        validate={Array.isArray(type.validate) ? type.validate : []}
       />
     </Grid>
   );
