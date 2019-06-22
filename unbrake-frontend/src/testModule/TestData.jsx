@@ -1,6 +1,6 @@
 import React from "react";
 import PropTypes from "prop-types";
-import { reduxForm } from "redux-form";
+import { reduxForm, change } from "redux-form";
 import { withStyles, Grid } from "@material-ui/core";
 import LinearProgress from "@material-ui/core/LinearProgress";
 import Button from "@material-ui/core/Button";
@@ -8,6 +8,13 @@ import { connect } from "react-redux";
 import styles from "./Styles";
 import { API_URL_GRAPHQL } from "../utils/Constants";
 import Request from "../utils/Request";
+import * as emitter from "emitter-io";
+import { MQTT_HOST, MQTT_PORT } from "../utils/Constants";
+import {
+    base10,
+    linearEquation,
+    convertDigitalToAnalog
+  } from "../utils/Equations";
 
 const percentageTransformer = 100;
 
@@ -208,8 +215,32 @@ class TestData extends React.Component {
         DTE: "" // Duração total do ensaio
       }
     };
+    this.client = emitter.connect({
+       host: MQTT_HOST,
+       port: MQTT_PORT,
+       secure: false
+     });
+     this.client.subscribe({
+       key: props.mqttKey,
+       channel: "unbrake/galpao/currentSnub"
+     });
+     this.currentSnubSensor = 0; 
   }
 
+  componentDidMount(){
+    const { dispatch } = this.props;
+     let sensorNumber;
+     this.client.on("message", msg => {
+       const { testData } = this.props;
+       const { values } = testData;
+       const { currentSnubSensor } = values;
+       const analogMsg = convertDigitalToAnalog(
+         parseInt(msg.asString(), base10)
+       );
+       dispatch(change("SA", `Tmv${sensorNumber}`, analogMsg));
+
+  });
+}
   static getDerivedStateFromProps(props, state) {
     if (props.newData !== state.data) {
       return { data: props.newData };
@@ -218,7 +249,7 @@ class TestData extends React.Component {
   }
 
   render() {
-    const { classes, configId, calibId } = this.props;
+    const { classes, configId, calibId, mqttKey } = this.props;
     const { data } = this.state;
     const { TES, TEI, TEC, SA, TS, DTE } = data;
 
@@ -271,7 +302,8 @@ TestData.propTypes = {
   classes: PropTypes.objectOf(PropTypes.string).isRequired,
   newData: PropTypes.oneOfType([PropTypes.object]).isRequired,
   calibId: PropTypes.string.isRequired,
-  configId: PropTypes.string.isRequired
+  configId: PropTypes.string.isRequired,
+  mqttKey: PropTypes.string.isRequired
 };
 const mapStateToProps = state => {
   return {
