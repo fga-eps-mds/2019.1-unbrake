@@ -286,3 +286,19 @@ export const dialogName = (functions, states) => {
     </Dialog>
   );
 };
+
+export const previousButton = handlePrevious => {
+  return (
+    <Button onClick={handlePrevious} color="secondary" variant="contained">
+      Etapa anterior
+    </Button>
+  );
+};
+
+export const nextButton = handleNext => {
+  return (
+    <Button onClick={handleNext} color="secondary" variant="contained">
+      Próxima etapa
+    </Button>
+  );
+};
