@@ -109,25 +109,58 @@ const submit = (states, dispatchs) => {
 };
 
 const renderSubmitTest = (states, dispatchs) => {
-  const primalIndexStyle = 1;
-  const firstDenominatorStyle = 2;
-  const secondDenominatorStyle = 24;
-  const thirdDenominatorStyle = 32;
+  const { isAvaileble, isPower } = states;
+  const color = isAvaileble ? "#2e7d32" : "#d32f2f";
+
   return (
-    <Button
-      onClick={() => submit(states, dispatchs)}
-      color="secondary"
-      variant="contained"
-      style={{
-        flex:
-          primalIndexStyle / firstDenominatorStyle +
-          primalIndexStyle / secondDenominatorStyle +
-          primalIndexStyle / thirdDenominatorStyle,
-        backgroundColor: "#0cb85c"
-      }}
-    >
-      Iniciar Ensaio
-    </Button>
+    <Grid container xs={4} justify="center" alignItems="center">
+      <Button
+        onClick={() => submit(states, dispatchs)}
+        color="secondary"
+        variant="contained"
+        disabled={!isPower}
+        style={isPower ? { backgroundColor: color } : {}}
+      >
+        {isPower && !isAvaileble ? "Cancelar Ensaio" : "Iniciar Ensaio"}
+      </Button>
+    </Grid>
+  );
+};
+
+const allFields = (states, dispatchs, functions) => {
+  const { handleChangeSelect, classes } = functions;
+  return (
+    <div style={{ flex: 1 }}>
+      <TextField
+        select
+        label="Calibrações"
+        value={states.calibId}
+        name="calibId"
+        className={classes.formControl}
+        margin="normal"
+        variant="outlined"
+        style={{ width: "100%" }}
+        onChange={handleChangeSelect}
+      >
+        {itensSelection(states.allCalibration)}
+      </TextField>
+      <TextField
+        select
+        label="Configurações"
+        value={states.configId}
+        name="configId"
+        className={classes.formControl}
+        margin="normal"
+        variant="outlined"
+        style={{ width: "100%" }}
+        onChange={handleChangeSelect}
+      >
+        {itensSelectionConfig(states.allConfiguration)}
+      </TextField>
+      <Grid container item justify="center" style={{ flex: 1 }}>
+        {renderSubmitTest(states, dispatchs)}
+      </Grid>
+    </div>
   );
 };
 
@@ -137,7 +170,9 @@ class General extends React.Component {
 
     this.state = {
       allCalibration: "",
-      allConfiguration: ""
+      allConfiguration: "",
+      isAvaileble: true,
+      isPower: false
     };
     this.handleChangeSelect = this.handleChangeSelect.bind(this);
   }
@@ -185,41 +220,26 @@ class General extends React.Component {
       changeCalib,
       changeConfig
     } = this.props;
-    const { allCalibration, allConfiguration } = this.state;
-    const states = { calibId, configId, calibration, configuration };
+    const {
+      allCalibration,
+      allConfiguration,
+      isAvaileble,
+      isPower
+    } = this.state;
+    const states = {
+      calibId,
+      configId,
+      calibration,
+      configuration,
+      isAvaileble,
+      isPower,
+      allCalibration,
+      allConfiguration
+    };
     const dispatchs = { sendMessage, redirect, changeCalib, changeConfig };
+    const functions = { handleChangeSelect: this.handleChangeSelect, classes };
     return (
-      <div style={{ flex: 1 }}>
-        <TextField
-          select
-          label="Calibrações"
-          value={calibId}
-          name="calibId"
-          className={classes.formControl}
-          margin="normal"
-          variant="outlined"
-          style={{ width: "100%" }}
-          onChange={this.handleChangeSelect}
-        >
-          {itensSelection(allCalibration)}
-        </TextField>
-        <TextField
-          select
-          label="Configurações"
-          value={configId}
-          name="configId"
-          className={classes.formControl}
-          margin="normal"
-          variant="outlined"
-          style={{ width: "100%" }}
-          onChange={this.handleChangeSelect}
-        >
-          {itensSelectionConfig(allConfiguration)}
-        </TextField>
-        <Grid container item justify="center" style={{ flex: 1 }}>
-          {renderSubmitTest(states, dispatchs)}
-        </Grid>
-      </div>
+      <div style={{ flex: 1 }}>{allFields(states, dispatchs, functions)}</div>
     );
   }
 }

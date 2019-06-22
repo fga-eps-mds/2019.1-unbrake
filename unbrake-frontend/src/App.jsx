@@ -11,8 +11,8 @@ import Routes from "./routes/Routes";
 const theme = createMuiTheme({
   palette: {
     secondary: {
-      light: "#3F403F",
-      main: "#3F403F"
+      // light: "#FFFFFF",
+      main: "#59666D"
     }
   },
   typography: {
