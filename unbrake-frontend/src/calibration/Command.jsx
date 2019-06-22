@@ -8,7 +8,14 @@ import styles from "../components/Styles";
 import RealTimeChart from "../components/RealTimeChart";
 import { field } from "../components/ComponentsForm";
 import { MQTT_HOST, MQTT_PORT } from "../utils/Constants";
-import { base10, convertDigitalToAnalog } from "../utils/Equations";
+import {
+  base10,
+  convertDigitalToAnalog,
+  dutyCycleEquation
+} from "../utils/Equations";
+import { changeCalibTest } from "../actions/TestActions";
+
+const invalidId = 0;
 
 const labelSecondary = name => {
   let nameLabel = "";
@@ -163,6 +170,21 @@ class Command extends React.Component {
     this.handleChange = this.handleChange.bind(this);
   }
 
+  static getDerivedStateFromProps(props, state) {
+    const { values } = props.calibration;
+    const dutyCycleSpeed = dutyCycleEquation(values.CUVC, values.MAVC);
+    const dutyCyclePressure = dutyCycleEquation(values.CUPC, values.MAPC);
+
+    props.dispatch(change("calibration", "Vdc", dutyCycleSpeed));
+    props.dispatch(change("calibration", "Pdc", dutyCyclePressure));
+    return {
+      relation: {
+        ...state.relation,
+        ...{ Vdc: dutyCycleSpeed, Pdc: dutyCyclePressure }
+      }
+    };
+  }
+
   componentDidMount() {
     const { dispatch } = this.props;
     this.client.on("message", msg => {
@@ -180,12 +202,16 @@ class Command extends React.Component {
   }
 
   handleChange(event) {
+    const { calibId, changeCalib } = this.props;
     const { target } = event;
+
     const value = target.type === "checkbox" ? target.checked : target.value;
     const command = { [event.target.name]: value };
     this.setState(prevState => ({
       command: { ...prevState.command, ...command }
     }));
+
+    if (calibId > invalidId) changeCalib({ calibId: "" });
   }
 
   render() {
@@ -231,10 +257,29 @@ class Command extends React.Component {
   }
 }
 
+function mapStateToProps(state) {
+  return {
+    calibration: state.form.calibration,
+    calibId: state.testReducer.calibId
+  };
+}
+
+Command.defaultProps = {
+  calibration: { values: {} },
+  calibId: ""
+};
+
+const mapDispatchToProps = dispatch => ({
+  changeCalib: payload => dispatch(changeCalibTest(payload))
+});
+
 Command.propTypes = {
   classes: PropTypes.objectOf(PropTypes.string).isRequired,
   mqttKey: PropTypes.string.isRequired,
-  dispatch: PropTypes.func.isRequired
+  dispatch: PropTypes.func.isRequired,
+  calibration: PropTypes.objectOf(PropTypes.string),
+  calibId: PropTypes.number,
+  changeCalib: PropTypes.func.isRequired
 };
 
 const CommandForm = reduxForm({
@@ -242,11 +287,7 @@ const CommandForm = reduxForm({
   destroyOnUnmount: false
 })(Command);
 
-export default connect(state => ({
-  calibration: {
-    values: {
-      FCT1: state.form.calibration.values.FCT1,
-      OFT1: state.form.calibration.values.OFT1
-    }
-  }
-}))(withStyles(styles)(CommandForm));
+export default connect(
+  mapStateToProps,
+  mapDispatchToProps
+)(withStyles(styles)(CommandForm));

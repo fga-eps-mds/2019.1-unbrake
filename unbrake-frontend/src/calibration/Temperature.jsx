@@ -13,6 +13,9 @@ import {
   linearEquation,
   convertDigitalToAnalog
 } from "../utils/Equations";
+import { changeCalibTest } from "../actions/TestActions";
+
+const invalidId = 0;
 
 const labelSecondary = name => {
   let nameLabel = "";
@@ -219,12 +222,15 @@ class Temperature extends React.Component {
   }
 
   handleChange(event) {
+    const { calibId, changeCalib } = this.props;
     const { target } = event;
     const { value } = target;
     const temperature = { [event.target.name]: value };
     this.setState(prevState => ({
       temperature: { ...prevState.temperature, ...temperature }
     }));
+
+    if (calibId > invalidId) changeCalib({ calibId: "" });
   }
 
   render() {
@@ -270,19 +276,12 @@ class Temperature extends React.Component {
   }
 }
 
-Temperature.propTypes = {
-  classes: PropTypes.objectOf(PropTypes.string).isRequired,
-  mqttKey: PropTypes.string.isRequired,
-  dispatch: PropTypes.func.isRequired,
-  calibration: PropTypes.objectOf(PropTypes.string).isRequired
-};
+const mapDispatchToProps = dispatch => ({
+  changeCalib: payload => dispatch(changeCalibTest(payload))
+});
 
-const TemperatureForm = reduxForm({
-  form: "calibration",
-  destroyOnUnmount: false
-})(Temperature);
-
-export default connect(state => ({
+const mapStateToProps = state => ({
+  calibId: state.testReducer.calibId,
   calibration: {
     values: {
       FCT1: state.form.calibration.values.FCT1,
@@ -291,4 +290,27 @@ export default connect(state => ({
       OFT2: state.form.calibration.values.OFT2
     }
   }
-}))(withStyles(styles)(TemperatureForm));
+});
+
+Temperature.defaultProps = {
+  calibId: ""
+};
+
+Temperature.propTypes = {
+  classes: PropTypes.objectOf(PropTypes.string).isRequired,
+  mqttKey: PropTypes.string.isRequired,
+  dispatch: PropTypes.func.isRequired,
+  calibration: PropTypes.objectOf(PropTypes.string).isRequired,
+  calibId: PropTypes.number,
+  changeCalib: PropTypes.func.isRequired
+};
+
+const TemperatureForm = reduxForm({
+  form: "calibration",
+  destroyOnUnmount: false
+})(Temperature);
+
+export default connect(
+  mapStateToProps,
+  mapDispatchToProps
+)(withStyles(styles)(TemperatureForm));

@@ -14,8 +14,10 @@ import {
   gearRatioEquation,
   topSpeedEquation
 } from "../utils/Equations";
+import { greaterThanZero } from "../utils/Constants";
+import { changeCalibTest } from "../actions/TestActions";
 
-const validNumber = 0;
+const invalidId = 0;
 
 export const labelRelation = name => {
   let nameLabel = "";
@@ -49,11 +51,6 @@ export const labelRelation = name => {
   }
   return nameLabel;
 };
-
-const greaterThanZero = value =>
-  value && parseInt(value, 10) <= validNumber
-    ? "Deve ser maior que 0"
-    : undefined;
 
 const renderField = (states, classes, handleChange) => {
   const type = states;
@@ -238,12 +235,15 @@ class Relation extends React.Component {
   }
 
   handleChange(event) {
+    const { calibId, changeCalib } = this.props;
     const { target } = event;
     const { value } = target;
     const relation = { [event.target.name]: value };
     this.setState(prevState => ({
       relation: { ...prevState.relation, ...relation }
     }));
+
+    if (calibId > invalidId) changeCalib({ calibId: "" });
   }
 
   render() {
@@ -293,20 +293,26 @@ class Relation extends React.Component {
   }
 }
 
-function mapStateToProps(state) {
-  return {
-    calibration: state.form.calibration
-  };
-}
+const mapDispatchToProps = dispatch => ({
+  changeCalib: payload => dispatch(changeCalibTest(payload))
+});
+
+const mapStateToProps = state => ({
+  calibId: state.testReducer.calibId,
+  calibration: state.form.calibration
+});
 
 Relation.defaultProps = {
-  calibration: { values: {} }
+  calibration: { values: {} },
+  calibId: ""
 };
 
 Relation.propTypes = {
   classes: PropTypes.objectOf(PropTypes.string).isRequired,
   dispatch: PropTypes.func.isRequired,
-  calibration: PropTypes.objectOf(PropTypes.string)
+  calibration: PropTypes.objectOf(PropTypes.string),
+  calibId: PropTypes.number,
+  changeCalib: PropTypes.func.isRequired
 };
 
 const RelationForm = reduxForm({
@@ -314,4 +320,7 @@ const RelationForm = reduxForm({
   destroyOnUnmount: false
 })(Relation);
 
-export default connect(mapStateToProps)(withStyles(styles)(RelationForm));
+export default connect(
+  mapStateToProps,
+  mapDispatchToProps
+)(withStyles(styles)(RelationForm));

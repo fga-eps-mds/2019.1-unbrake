@@ -13,6 +13,9 @@ const tireMultiplication = 0.0254;
 
 const completeTurn = tireDivision * Math.PI;
 const conversionSpeedFactor = 3.6;
+const hoursToMiliseconds = 3600000;
+const serialReadRate = 0.01;
+const decimalToPercentage = 100;
 
 export const base10 = 10;
 
@@ -29,12 +32,27 @@ export const frequencyEquation = analogSignal => {
   const frequency =
     (parseFloat(analogSignal) - frequencySubtractionFactor) /
     frequencyDivisionFactor;
-  return frequency;
+  return frequency.toFixed(decimalPlace);
 };
 
 export const rotationsPerMinuteEquation = frequency => {
   const rotationsPerMinute = parseFloat(frequency * minutes);
-  return rotationsPerMinute;
+  return rotationsPerMinute.toFixed(decimalPlace);
+};
+
+export const rotationToSpeed = (rotationsPerMinute, tireRadius, unity) => {
+  const speedMetersSecond =
+    (parseFloat(rotationsPerMinute) * parseFloat(tireRadius)) / minutes;
+  if (unity === "km/h") {
+    return (speedMetersSecond * conversionSpeedFactor).toFixed(decimalPlace);
+  }
+  return speedMetersSecond.toFixed(decimalPlace);
+};
+
+export const travelledDistanceEquation = speedKmh => {
+  const travelledDistance =
+    (parseFloat(speedKmh) * serialReadRate) / hoursToMiliseconds;
+  return travelledDistance.toFixed(decimalPlace);
 };
 
 export const tireRadiusEquation = (
@@ -77,4 +95,14 @@ export const topSpeedEquation = (tireRadius, gearRatio) => {
 
   const topSpeed = (RDP * conversionSpeedFactor * completeTurn * RDT) / minutes;
   return topSpeed.toFixed(decimalPlace);
+};
+
+export const dutyCycleEquation = (currentSpeed, maximumSpeed) => {
+  if (maximumSpeed > validNumber && currentSpeed > validNumber) {
+    const dutyCycle =
+      (parseFloat(currentSpeed) / parseFloat(maximumSpeed)) *
+      decimalToPercentage;
+    return dutyCycle.toFixed(decimalPlace);
+  }
+  return validNumber;
 };

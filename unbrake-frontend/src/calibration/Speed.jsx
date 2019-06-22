@@ -1,13 +1,24 @@
 import React from "react";
 import PropTypes from "prop-types";
 import { reduxForm, change } from "redux-form";
+import { connect } from "react-redux";
 import { withStyles, Grid } from "@material-ui/core";
 import * as emitter from "emitter-io";
 import styles from "../components/Styles";
 import RealTimeChart from "../components/RealTimeChart";
 import { field } from "../components/ComponentsForm";
 import { MQTT_HOST, MQTT_PORT } from "../utils/Constants";
-import { base10, convertDigitalToAnalog } from "../utils/Equations";
+import {
+  base10,
+  convertDigitalToAnalog,
+  frequencyEquation,
+  rotationsPerMinuteEquation,
+  rotationToSpeed,
+  travelledDistanceEquation
+} from "../utils/Equations";
+import { changeCalibTest } from "../actions/TestActions";
+
+const invalidId = 0;
 
 const labelSecondary = name => {
   let nameLabel = "";
@@ -111,6 +122,20 @@ const renderDictionary = speed => {
   return directionary;
 };
 
+const updateFields = (analogMsg, dispatch, tireRadius) => {
+  const frequency = frequencyEquation(analogMsg);
+  const rotationsPerMinute = rotationsPerMinuteEquation(frequency);
+  const speedMS = rotationToSpeed(rotationsPerMinute, tireRadius, "m/s");
+  const speedKmh = rotationToSpeed(rotationsPerMinute, tireRadius, "km/h");
+  const travelledDistance = travelledDistanceEquation(speedKmh);
+
+  dispatch(change("calibration", "Fhz", frequency));
+  dispatch(change("calibration", "Rrpm", rotationsPerMinute));
+  dispatch(change("calibration", "Vms", speedMS));
+  dispatch(change("calibration", "Vkmh", speedKmh));
+  dispatch(change("calibration", "DPkm", travelledDistance));
+};
+
 class Speed extends React.Component {
   constructor(props) {
     super(props);
@@ -141,23 +166,30 @@ class Speed extends React.Component {
   componentDidMount() {
     const { dispatch } = this.props;
     this.client.on("message", msg => {
+      const { calibration } = this.props;
+      const { values } = calibration;
+      const { RAP } = values;
       const analogMsg = convertDigitalToAnalog(
         parseInt(msg.asString(), base10)
       );
       if (msg.channel === "unbrake/galpao/frequency/") {
         this.sensor.push(analogMsg);
-        dispatch(change("calibration", "Fhz", analogMsg));
+        updateFields(analogMsg, dispatch, RAP);
       }
     });
   }
 
   handleChange(event) {
+    const { calibId, changeCalib } = this.props;
     const { target } = event;
+
     const value = target.type === "checkbox" ? target.checked : target.value;
     const force = { [event.target.name]: value };
     this.setState(prevState => ({
       force: { ...prevState.force, ...force }
     }));
+
+    if (calibId > invalidId) changeCalib({ calibId: "" });
   }
 
   render() {
@@ -200,10 +232,30 @@ class Speed extends React.Component {
   }
 }
 
+const mapDispatchToProps = dispatch => ({
+  changeCalib: payload => dispatch(changeCalibTest(payload))
+});
+
+const mapStateToProps = state => ({
+  calibId: state.testReducer.calibId,
+  calibration: {
+    values: {
+      RAP: state.form.calibration.values.RAP
+    }
+  }
+});
+
+Speed.defaultProps = {
+  calibId: ""
+};
+
 Speed.propTypes = {
   classes: PropTypes.objectOf(PropTypes.string).isRequired,
   mqttKey: PropTypes.string.isRequired,
-  dispatch: PropTypes.func.isRequired
+  dispatch: PropTypes.func.isRequired,
+  calibration: PropTypes.objectOf(PropTypes.string).isRequired,
+  calibId: PropTypes.number,
+  changeCalib: PropTypes.func.isRequired
 };
 
 const SpeedForm = reduxForm({
@@ -211,4 +263,7 @@ const SpeedForm = reduxForm({
   destroyOnUnmount: false
 })(Speed);
 
-export default withStyles(styles)(SpeedForm);
+export default connect(
+  mapStateToProps,
+  mapDispatchToProps
+)(withStyles(styles)(SpeedForm));

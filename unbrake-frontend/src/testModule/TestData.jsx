@@ -1,20 +1,12 @@
 import React from "react";
 import PropTypes from "prop-types";
-import { reduxForm, change } from "redux-form";
+import { reduxForm } from "redux-form";
 import { withStyles, Grid } from "@material-ui/core";
 import LinearProgress from "@material-ui/core/LinearProgress";
-import Button from "@material-ui/core/Button";
+import * as emitter from "emitter-io";
 import { connect } from "react-redux";
 import styles from "./Styles";
-import { API_URL_GRAPHQL } from "../utils/Constants";
-import Request from "../utils/Request";
-import * as emitter from "emitter-io";
 import { MQTT_HOST, MQTT_PORT } from "../utils/Constants";
-import {
-    base10,
-    linearEquation,
-    convertDigitalToAnalog
-  } from "../utils/Equations";
 
 const percentageTransformer = 100;
 
@@ -127,28 +119,6 @@ const infoSnub = (informations, classes) => {
   return render;
 };
 
-const submit = (configId, calibId) => {
-  const urlUser = `${API_URL_GRAPHQL}?query=query{currentUser{username}}`;
-  const method = "GET";
-  if (configId !== "" && calibId !== "") {
-    Request(urlUser, method).then(username => {
-      const urlTesting = `${API_URL_GRAPHQL}?query=mutation{createTesting(createBy:"${username}",
-      idCalibration:${calibId},idConfiguration:${configId}){testing{id},error}}`;
-      const methodTest = "POST";
-      Request(urlTesting, methodTest).then(response => {
-        const { data } = response.data;
-        const { createTesting } = data.createTesting;
-        const { testing } = createTesting.testing;
-        const { id } = testing.id;
-        const urlSubmit = `${API_URL_GRAPHQL}?query=mutation{submitTesting(mqttHost:"unbrake.ml",mqttPort:8080,testingId:${id}){succes}}`;
-        Request(urlSubmit, methodTest).then(() => {
-          // Alertar usuario TODO
-        });
-      });
-    });
-  }
-};
-
 const testInformations = (informations, classes) => {
   return (
     <Grid
@@ -179,29 +149,6 @@ const testInformations = (informations, classes) => {
   );
 };
 
-const renderSubmitTest = (configId, calibId) => {
-  const primalIndexStyle = 1;
-  const firstDenominatorStyle = 2;
-  const secondDenominatorStyle = 24;
-  const thirdDenominatorStyle = 32;
-  return (
-    <Button
-      onClick={submit(configId, calibId)}
-      color="secondary"
-      variant="contained"
-      style={{
-        flex:
-          primalIndexStyle / firstDenominatorStyle +
-          primalIndexStyle / secondDenominatorStyle +
-          primalIndexStyle / thirdDenominatorStyle,
-        backgroundColor: "#0cb85c"
-      }}
-    >
-      Iniciar Ensaio
-    </Button>
-  );
-};
-
 class TestData extends React.Component {
   constructor(props) {
     super(props);
@@ -216,32 +163,25 @@ class TestData extends React.Component {
       }
     };
     this.client = emitter.connect({
-       host: MQTT_HOST,
-       port: MQTT_PORT,
-       secure: false
-     });
-     this.client.subscribe({
-       key: props.mqttKey,
-       channel: "unbrake/galpao/currentSnub"
-     });
-     this.currentSnubSensor = 0; 
+      host: MQTT_HOST,
+      port: MQTT_PORT,
+      secure: false
+    });
+    this.client.subscribe({
+      key: props.mqttKey,
+      channel: "unbrake/galpao/currentSnub"
+    });
+    this.currentSnubSensor = 0;
   }
 
-  componentDidMount(){
-    const { dispatch } = this.props;
-    let { data } = this.state;
-    const { SA } = data;
-     let sensorNumber;
-     this.client.on("message", msg => {
-       const { mqttKey } = this.props;
-       const analogMsg = convertDigitalToAnalog(
-         parseInt(msg.asString(), base10)
-       );
-       data.SA = msg.asString()
-       this.setState({data: data})
+  componentDidMount() {
+    const { data } = this.state;
+    this.client.on("message", msg => {
+      data.SA = msg.asString();
+      this.setState({ data });
+    });
+  }
 
-  });
-}
   static getDerivedStateFromProps(props, state) {
     if (props.newData !== state.data) {
       return { data: props.newData };
@@ -250,8 +190,8 @@ class TestData extends React.Component {
   }
 
   render() {
+    const { classes } = this.props;
 
-    const { classes, configId, calibId, qttKey } = this.props;
     const { data } = this.state;
     const { TES, TEI, TEC, SA, TS, DTE } = data;
 
@@ -291,9 +231,6 @@ class TestData extends React.Component {
           <Grid container item alignItems="center" justify="center" xs={12}>
             {testProgress(testPro, classes)}
           </Grid>
-          <Grid container item justify="center" style={{ flex: 1 }}>
-            {renderSubmitTest(configId, calibId)}
-          </Grid>
         </Grid>
       </Grid>
     );
@@ -303,8 +240,6 @@ class TestData extends React.Component {
 TestData.propTypes = {
   classes: PropTypes.objectOf(PropTypes.string).isRequired,
   newData: PropTypes.oneOfType([PropTypes.object]).isRequired,
-  calibId: PropTypes.string.isRequired,
-  configId: PropTypes.string.isRequired,
   mqttKey: PropTypes.string.isRequired
 };
 const mapStateToProps = state => {

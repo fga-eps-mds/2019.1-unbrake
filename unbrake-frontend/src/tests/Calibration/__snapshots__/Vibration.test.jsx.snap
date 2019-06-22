@@ -1,3 +1,26 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`<Vibration /> render() renders the component 1`] = `<Connect(WithStyles(ReduxForm)) />`;
+exports[`<Vibration /> render() renders the component 1`] = `
+<Connect(WithStyles(ReduxForm))
+  context={
+    Object {
+      "$$typeof": Symbol(react.context),
+      "Consumer": Object {
+        "$$typeof": Symbol(react.context),
+        "_calculateChangedBits": null,
+        "_context": [Circular],
+      },
+      "Provider": Object {
+        "$$typeof": Symbol(react.provider),
+        "_context": [Circular],
+      },
+      "_calculateChangedBits": null,
+      "_currentRenderer": null,
+      "_currentRenderer2": null,
+      "_currentValue": undefined,
+      "_currentValue2": undefined,
+      "_threadCount": 0,
+    }
+  }
+/>
+`;

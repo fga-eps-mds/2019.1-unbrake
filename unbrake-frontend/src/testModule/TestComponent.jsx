@@ -1,9 +1,9 @@
 import React from "react";
 import { Grid } from "@material-ui/core";
+import { connect } from "react-redux";
 import { API_URL_GRAPHQL } from "../utils/Constants";
 import Request from "../utils/Request";
 // import Button from "@material-ui/core/Button"
-import { connect } from "react-redux";
 import AquisitionsAndCommand from "./AquisitionsAndCommand";
 import TestData from "./TestData";
 import TabMenuComponent from "./TabMenuComponent";
@@ -39,16 +39,17 @@ class Test extends React.Component {
           TS: "", // Total de Snubs
           DTE: "" // Duração total do ensaio
         },
-        mqttKey: ''
-      },
+        mqttKey: ""
+      }
     };
 
     this.handleClick = this.handleClick.bind(this);
   }
-  componentDidMount(){
+
+  componentDidMount() {
     const url = `${API_URL_GRAPHQL}/mqtt-reading-key`;
     const method = "GET";
-    Request(url, method).then((json, value=value) => {
+    Request(url, method).then(json => {
       this.setState(prevState => ({
         test: {
           aquisition: {
@@ -58,11 +59,10 @@ class Test extends React.Component {
             ...prevState.test.data
           },
           mqttKey: json.key
-        },
+        }
       }));
-    })
+    });
   }
-
 
   handleClick() {
     const newAquisition = {
@@ -110,8 +110,9 @@ class Test extends React.Component {
           <AquisitionsAndCommand newAquisition={aquisition} />
         </Grid>
         <Grid container item justify="center" xs={6}>
-        {test.mqttKey !== '' && 
-          <TestData newData={data} mqttKey={test.mqttKey} />}
+          {test.mqttKey !== "" && (
+            <TestData newData={data} mqttKey={test.mqttKey} />
+          )}
         </Grid>
         <Grid container item xs={3}>
           {/* <Button
