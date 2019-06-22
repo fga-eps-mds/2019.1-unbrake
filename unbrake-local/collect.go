@@ -9,6 +9,8 @@ import (
 	emitter "github.com/emitter-io/go/v2"
 )
 
+var teste = true
+
 var (
 	port             Port
 	serialPortNameCh = make(chan string, 1)
@@ -63,7 +65,7 @@ func CollectData() {
 
 	continueCollecting := true
 	for continueCollecting {
-		aplicationStatusCh <- "Waiting for port selection"
+		aplicationStatusCh <- "Esperando seleção de porta válida"
 		log.Println("Waiting for valid serial port selection...")
 		serialPortName := <-serialPortNameCh
 
@@ -74,7 +76,7 @@ func CollectData() {
 			continue
 		}
 
-		aplicationStatusCh <- "Collecting data"
+		aplicationStatusCh <- "Coletando dados"
 
 		log.Println("Initializing collectData routine...")
 		log.Printf("Simulator Port = %s", serialPortName)
@@ -158,10 +160,11 @@ func publishSerialAttrs() {
 
 // Publish data to MQTT broker
 func publishData(data string, subChannel string) {
+
 	if key := getMqttKey(); key != "" {
 
 		clientWriting.OnError(func(_ *emitter.Client, err emitter.Error) {
-			mqttKeyStatusCh <- "Chave do MQTT: Sem permissão de escrita"
+			mqttHasWritingPermission = false
 		})
 
 		channel, data := getMqttChannelPrefix()+subChannel, data
@@ -172,4 +175,38 @@ func publishData(data string, subChannel string) {
 		mqttKeyStatusCh <- "Chave do MQTT: Ausente"
 		return
 	}
+}
+
+func testKeys() {
+
+	log.Println("Testing MQTT keys...")
+
+	key := getMqttKey()
+	var channel = getMqttChannelPrefix() + "/testingKeys"
+
+	clientReading.OnError(func(_ *emitter.Client, err emitter.Error) {
+		mqttHasReadingPermission = false
+	})
+
+	clientReading.Subscribe(key, channel, func(_ *emitter.Client, msg emitter.Message) {
+		mqttHasReadingPermission = true
+	})
+
+	publishData("testing", "/testingKeys")
+
+	if mqttHasWritingPermission {
+		if mqttHasReadingPermission {
+			mqttKeyStatusCh <- "Chave de acesso: Válida"
+		} else {
+			mqttKeyStatusCh <- "Chave de acesso: Válida apenas para escrita"
+		}
+	} else {
+		if mqttHasReadingPermission {
+			mqttKeyStatusCh <- "Chave de acesso: Válida apenas para leitura"
+		} else {
+			mqttKeyStatusCh <- "Chave de acesso: Inválida"
+		}
+	}
+	return
+
 }

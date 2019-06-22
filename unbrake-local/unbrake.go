@@ -86,7 +86,7 @@ func onReady() {
 	statusTitle := systray.AddMenuItem("Status", "Seção para visualização do status da aplicação")
 	statusTitle.Disable()
 	statusCollecting := systray.AddMenuItem("Status de arquisição", "Não iniciada")
-	mqttKeyStatus := systray.AddMenuItem("Chave do MQTT: Não avaliada", "Status da chave do MQTT")
+	mqttKeyStatus := systray.AddMenuItem("Chave de acesso: Não avaliada", "Status da chave do MQTT")
 
 	handlePortsSectionGUI()
 
@@ -98,8 +98,8 @@ func onReady() {
 	go func() {
 		for {
 			select {
-			case collectingStatusAux := <-aplicationStatusCh:
-				statusCollecting.SetTitle(collectingStatusAux)
+			case aplicationStatusAux := <-aplicationStatusCh:
+				statusCollecting.SetTitle(aplicationStatusAux)
 			case mqttKeyStatusChAux := <-mqttKeyStatusCh:
 				mqttKeyStatus.SetTitle(mqttKeyStatusChAux)
 			case quitExperimentAux := <-quitExperimentEnableCh:
@@ -116,6 +116,8 @@ func onReady() {
 			}
 		}
 	}()
+
+	go testKeys()
 
 	stopCollectingDataCh = make(chan bool, 1)
 

@@ -13,8 +13,8 @@ import (
 
 // Status flags
 var (
-	mqttHasWritingPermission bool
-	mqttHasReadingPermission bool
+	mqttHasWritingPermission = true
+	mqttHasReadingPermission = true
 )
 
 // Experiment is composed of a collection of Snubs, it will perform
@@ -106,6 +106,7 @@ func (experiment *Experiment) Run() {
 
 	isAvailable = false
 	quitExperimentEnableCh <- false
+	aplicationStatusCh <- "Colentando dados e executando ensaio"
 	experiment.snub.SetState(acelerating)
 	experiment.continueRunning = true
 	go experiment.watchSnubState()
@@ -123,21 +124,11 @@ func HandleExperimentsReceiving() {
 		return
 	}
 
-	clientReading.OnError(func(_ *emitter.Client, err emitter.Error) {
-		mqttKeyStatusCh <- "Chave do MQTT: Sem permissão de leitura"
-	})
-
 	// Wait for tests
 	var channel = getMqttChannelPrefix() + "/experiment"
 	clientReading.Subscribe(key, channel, func(_ *emitter.Client, msg emitter.Message) {
 		experiment := ExperimentFromJSON(msg.Payload())
 		if isAvailable {
-			mqttHasReadingPermission = true
-			if mqttHasWritingPermission {
-				mqttKeyStatusCh <- "Chave do MQTT: Válida"
-			} else {
-				mqttKeyStatusCh <- "Chave do MQTT: Válida apenas para leitura"
-			}
 
 			log.Printf("Experiment received: %s", experiment)
 
@@ -213,6 +204,7 @@ func (experiment *Experiment) watch(watchFunction func()) {
 		select {
 		case <-quitExperimentCh:
 			experiment.continueRunning = false
+			aplicationStatusCh <- "Coletando dados"
 		default:
 
 			watchFunction()
@@ -244,6 +236,7 @@ func (experiment *Experiment) watchEnd() {
 			experiment.continueRunning = false
 			isAvailable = true
 			quitExperimentEnableCh <- true
+			aplicationStatusCh <- "Coletando dados"
 
 		} else {
 			experiment.snub.counterCh <- counter
