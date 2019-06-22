@@ -107,3 +107,22 @@ Sendo assim, o custo total $ct$ to projeto fica:
 > $$ct = (cp + ce + ci) * (1 + 0.2 + 0.45)$$
 > $$ct = (38.168,00 + 1.370,79 + 346,50) * (1,65)$$
 > $$ct = 65.810,73$$
+
+
+## 5. EVM
+
+Tabela com valor planejado por sprint
+
+![valor planejado](images/valor_planejado_por_sprint.png)
+
+----
+
+Tabela com valor agregado por sprint
+
+![valor agregado](images/valor_agregado_sprint.png)
+
+----
+
+Tabela com gráfico do EVM
+
+![gráfico](images/grafico_evm.png)

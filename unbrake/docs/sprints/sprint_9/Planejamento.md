@@ -22,7 +22,7 @@
 |[Acesso a página Sign up para todos os usuários](https://github.com/fga-eps-mds/2019.1-unbrake/issues/195)|1|29
 |[Sempre é possível acessar a página de Login](https://github.com/fga-eps-mds/2019.1-unbrake/issues/196)|1|29
 |[Refatorar o módulo calibração do frontend](https://github.com/fga-eps-mds/2019.1-unbrake/issues/199)|3|8
-|[Criar página de relações de calibração](https://github.com/fga-eps-mds/2019.1-unbrake/issues/203)|3|8
+|[https://github.com/fga-eps-mds/2019.1-unbrake/issues/203](https://github.com/fga-eps-mds/2019.1-unbrake/issues/203)|3|8
 |[Refatorar o módulo calibração do frontend](https://github.com/fga-eps-mds/2019.1-unbrake/issues/199)|3|8
 |[Criar página de relações de calibração](https://github.com/fga-eps-mds/2019.1-unbrake/issues/203)|8|10
 |[Refazer formulário de Comando](https://github.com/fga-eps-mds/2019.1-unbrake/issues/205)|5|30
@@ -44,7 +44,7 @@
 
 
 |Papel|Responsável|
------|-----|
+|-----|-----|
 |DevOps|[@icaropires](https://github.com/icaropires)|
 |Product Owner|[@ViniciusBernardo](https://github.com/ViniciusBernardo)|
 |Scrum Master|[@joaorobson](https://github.com/joaorobson)|
