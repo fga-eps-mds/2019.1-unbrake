@@ -1,10 +1,11 @@
 import React from "react";
 import { Grid } from "@material-ui/core";
-// import Button from "@material-ui/core/Button"
 import { connect } from "react-redux";
 import AquisitionsAndCommand from "./AquisitionsAndCommand";
 import TestData from "./TestData";
 import TabMenuComponent from "./TabMenuComponent";
+import { API_URL_GRAPHQL } from "../utils/Constants";
+import Request from "../utils/Request";
 
 const percentageTransformer = 100;
 
@@ -36,11 +37,23 @@ class Test extends React.Component {
           SA: "", // Snub atual
           TS: "", // Total de Snubs
           DTE: "" // Duração total do ensaio
-        }
+        },
+        mqttKey: ""
       }
     };
 
     this.handleClick = this.handleClick.bind(this);
+  }
+
+  componentDidMount() {
+    const url = `${API_URL_GRAPHQL}/mqtt-reading-key`;
+    const method = "GET";
+    Request(url, method).then(() => {
+      /*
+       * console.log("teste mqtt-reading-key", json);
+       * this.setState({ mqttKey: json.key });
+       */
+    });
   }
 
   handleClick() {
