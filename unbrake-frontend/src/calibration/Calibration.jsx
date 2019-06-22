@@ -101,8 +101,6 @@ export const saveCalibration = async (values, dispatchs) => {
     idsCalibration
   );
 
-  if (responseSaved.invalidID === invalidID) {
-    sendMessageFunction(responseSaved.error, createMessage, "error");
   if (responseSaved === invalidID) {
     sendMessage({
       message: "Falha no cadastro da calibração",
