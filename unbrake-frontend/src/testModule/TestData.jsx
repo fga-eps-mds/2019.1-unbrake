@@ -7,6 +7,8 @@ import styles from "./Styles";
 import { API_URL_GRAPHQL } from "../utils/Constants";
 import Request from "../utils/Request";
 import { messageSistem } from "../actions/NotificationActions";
+import { connect } from "react-redux"
+import Button from '@material-ui/core/Button';
 
 const percentageTransformer = 100;
 
