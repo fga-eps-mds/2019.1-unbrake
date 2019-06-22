@@ -29,6 +29,7 @@ services:
       - "8080:8080"
     secrets:
       - api-django-secret-key
+      - mqtt-reading-key
       - mqtt-writing-key
 
   codeclimate:
@@ -48,5 +49,7 @@ services:
 secrets:
   api-django-secret-key:
     file: ./unbrake-api/secrets/API_DJANGO_SECRET_KEY
+  mqtt-reading-key:
+    file: ./unbrake-api/secrets/MQTT_READING_KEY
   mqtt-writing-key:
     file: ./unbrake-api/secrets/MQTT_WRITING_KEY
