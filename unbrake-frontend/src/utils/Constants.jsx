@@ -7,3 +7,10 @@ export const base10 = 10;
 export const conversionFunction = (x, a, b) => {
   return parseFloat(a) * parseFloat(x) + parseFloat(b);
 };
+
+const validNumber = 0;
+
+export const greaterThanZero = value =>
+  value && parseInt(value, 10) <= validNumber
+    ? "Deve ser maior que 0"
+    : undefined;

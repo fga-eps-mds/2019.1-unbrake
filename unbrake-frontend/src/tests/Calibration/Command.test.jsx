@@ -3,12 +3,9 @@ import { createStore } from "redux";
 import { Provider } from "react-redux";
 import Enzyme, { shallow } from "enzyme";
 import Adapter from "enzyme-adapter-react-16";
-import { Provider } from "react-redux";
-import { createStore } from "redux";
 import reducers from "../../reducer/index";
 import Command from "../../calibration/Command";
 import ComponentTest from "../ComponentTest";
-import reducers from "../../reducer/index";
 
 Enzyme.configure({ adapter: new Adapter() });
 

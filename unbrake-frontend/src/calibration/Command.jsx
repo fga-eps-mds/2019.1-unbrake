@@ -265,8 +265,9 @@ function mapStateToProps(state) {
 }
 
 Command.defaultProps = {
-  calibration: { values: {} }, calibId: ""
-}
+  calibration: { values: {} },
+  calibId: ""
+};
 
 const mapDispatchToProps = dispatch => ({
   changeCalib: payload => dispatch(changeCalibTest(payload))

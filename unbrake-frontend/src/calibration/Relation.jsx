@@ -3,7 +3,6 @@ import PropTypes from "prop-types";
 import { reduxForm, change } from "redux-form";
 import { connect } from "react-redux";
 import { withStyles, Grid } from "@material-ui/core";
-import { connect } from "react-redux";
 import styles from "../components/Styles";
 import { field } from "../components/ComponentsForm";
 import completeTire from "../img/completeTire.png";
@@ -15,10 +14,10 @@ import {
   gearRatioEquation,
   topSpeedEquation
 } from "../utils/Equations";
+import { greaterThanZero } from "../utils/Constants";
 import { changeCalibTest } from "../actions/TestActions";
 
 const invalidId = 0;
-const validNumber = 0;
 
 export const labelRelation = name => {
   let nameLabel = "";
@@ -52,11 +51,6 @@ export const labelRelation = name => {
   }
   return nameLabel;
 };
-
-const greaterThanZero = value =>
-  value && parseInt(value, 10) <= validNumber
-    ? "Deve ser maior que 0"
-    : undefined;
 
 const renderField = (states, classes, handleChange) => {
   const type = states;

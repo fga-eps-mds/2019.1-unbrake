@@ -179,17 +179,17 @@ class Vibration extends React.Component {
 }
 
 const mapDispatchToProps = dispatch => ({
-  changeCalib: payload => dispatch(changeCalibTest(payload)),
+  changeCalib: payload => dispatch(changeCalibTest(payload))
+});
+
+const mapStateToProps = state => ({
+  calibId: state.testReducer.calibId,
   calibration: {
     values: {
       FCVB: state.form.calibration.values.FCVB,
       OFVB: state.form.calibration.values.OFVB
     }
   }
-});
-
-const mapStateToProps = state => ({
-  calibId: state.testReducer.calibId
 });
 
 Vibration.defaultProps = {

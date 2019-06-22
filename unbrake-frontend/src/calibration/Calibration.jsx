@@ -30,7 +30,9 @@ import {
   empty,
   labels,
   styles,
-  dialogName
+  dialogName,
+  previousButton,
+  nextButton
 } from "./CalibrationVariables";
 
 const generalConfigsOption = 0;
@@ -131,26 +133,10 @@ const GeneralConfigs = () => (
   </div>
 );
 
-const previousButton = handlePrevious => {
-  return (
-    <Button onClick={handlePrevious} color="secondary" variant="contained">
-      Etapa anterior
-    </Button>
-  );
-};
-
 const registerButton = handleValidate => {
   return (
     <Button color="secondary" variant="contained" onClick={handleValidate}>
       Cadastrar
-    </Button>
-  );
-};
-
-const nextButton = handleNext => {
-  return (
-    <Button onClick={handleNext} color="secondary" variant="contained">
-      Próxima etapa
     </Button>
   );
 };
@@ -331,12 +317,10 @@ const mapDispatchToProps = dispatch => ({
   changeCalib: payload => dispatch(changeCalibTest(payload))
 });
 
-function mapStateToProps(state) {
-  return {
-    calibration: state.form.calibration,
-    calibId: state.testReducer.calibId
-  };
-}
+const mapStateToProps = state => ({
+  calibration: state.form.calibration,
+  calibId: state.testReducer.calibId
+});
 
 Calibration.propTypes = {
   classes: PropTypes.objectOf(PropTypes.string).isRequired,

@@ -277,7 +277,11 @@ class Temperature extends React.Component {
 }
 
 const mapDispatchToProps = dispatch => ({
-  changeCalib: payload => dispatch(changeCalibTest(payload)),
+  changeCalib: payload => dispatch(changeCalibTest(payload))
+});
+
+const mapStateToProps = state => ({
+  calibId: state.testReducer.calibId,
   calibration: {
     values: {
       FCT1: state.form.calibration.values.FCT1,
@@ -286,10 +290,6 @@ const mapDispatchToProps = dispatch => ({
       OFT2: state.form.calibration.values.OFT2
     }
   }
-});
-
-const mapStateToProps = state => ({
-  calibId: state.testReducer.calibId
 });
 
 Temperature.defaultProps = {
