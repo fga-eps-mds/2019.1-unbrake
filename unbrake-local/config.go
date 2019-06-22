@@ -17,7 +17,7 @@ const (
 	bufferSize       = 48
 	serialPortEnv    = "SERIAL_PORT"
 	baudRate         = 115200
-	frequencyReading = 5
+	frequencyReading = 100
 	numSerialAttrs   = 11 // number of attributes read simultaneously from serial device
 
 )

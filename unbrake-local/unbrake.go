@@ -27,6 +27,7 @@ import (
 
 // Channels general for controlling execution
 var (
+	wgQuit               sync.WaitGroup
 	wgGeneral            sync.WaitGroup
 	stopCollectingDataCh chan bool
 	sigsCh               chan os.Signal
@@ -132,6 +133,27 @@ func onReady() {
 	}()
 
 	go testKeys()
+
+	go func() {
+		for {
+			wgQuit.Add(1)
+			key := getMqttKey()
+
+			channel := getMqttChannelPrefix() + "/quitExperiment"
+
+			clientReading.Subscribe(key, channel, func(_ *emitter.Client, msg emitter.Message) {
+				if !isAvailable {
+					log.Println("Experiment finished by user")
+
+					quitExperimentCh <- true
+					quitExperiment.Disable()
+					isAvailable = true
+					wgQuit.Done()
+				}
+			})
+			wgQuit.Wait()
+		}
+	}()
 
 	stopCollectingDataCh = make(chan bool, 1)
 

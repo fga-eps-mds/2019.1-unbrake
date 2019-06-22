@@ -9,8 +9,6 @@ import (
 	emitter "github.com/emitter-io/go/v2"
 )
 
-var teste = true
-
 var (
 	port             Port
 	serialPortNameCh = make(chan string, 1)
@@ -29,6 +27,8 @@ const (
 	pressureIdx
 	currentSnubIdx
 )
+
+var data [][]string
 
 // Subchannels for each information sent to MQTT, same index rules
 // as the original data string from serial
@@ -108,6 +108,9 @@ func CollectData() {
 // Will get the data from the bus and returns it as an
 // array of bytes
 func getData(command string) []byte {
+
+	numberOfDataToFilter := 50
+
 	n := port.Write([]byte(command))
 	if n == -1 {
 		log.Println("Error writing to serial. Is this the right port?")
@@ -121,22 +124,34 @@ func getData(command string) []byte {
 		log.Println("Error reading from serial: timeout waiting for bytes. Is this the right port?")
 	}
 
-	log.Printf("%s\n", strings.TrimSpace(string(buf[:n])))
 	split := strings.Split(string(buf[:n]), ",")
 
 	if len(split) == numSerialAttrs { // Was a complete read
-		for i, attr := range split {
-			attrValue, _ := strconv.ParseFloat(attr, 64)
 
-			select {
-			case serialAttrs[i].handleCh <- attrValue:
-			default:
-			}
+		data = append(data, split)
 
-			select {
-			case serialAttrs[i].publishCh <- attr:
-			default:
+		if len(data) == numberOfDataToFilter {
+
+			split = dataFilter(data)
+
+			out := strings.Join(split, ", ")
+
+			log.Println(out)
+
+			for i, attr := range split {
+				attrValue, _ := strconv.ParseFloat(attr, 64)
+
+				select {
+				case serialAttrs[i].handleCh <- attrValue:
+				default:
+				}
+
+				select {
+				case serialAttrs[i].publishCh <- attr:
+				default:
+				}
 			}
+			data = data[:0]
 		}
 	}
 
@@ -160,6 +175,27 @@ func convertSpeed(value float64, tireRadius float64) float64 {
 
 	value = (value * milliVots) / maxDigitalSignalValue
 	return value * tireRadius
+}
+
+func dataFilter(data [][]string) []string {
+
+	var (
+		out         []string
+		counter     int
+		intValue    int
+		stringValue string
+	)
+
+	for i := 0; i < numSerialAttrs; i++ {
+		for j := 0; j < len(data); j++ {
+			intValue, _ = strconv.Atoi(data[j][i])
+			counter += intValue
+		}
+		stringValue = strconv.Itoa(counter / len(data))
+		out = append(out, stringValue)
+		counter = 0
+	}
+	return out
 }
 
 func tireRadius(transversalSelectionWidth int, heightWidthRelation int, rimDiameter int) float64 {
