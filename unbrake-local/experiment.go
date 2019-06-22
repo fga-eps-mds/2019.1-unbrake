@@ -204,6 +204,7 @@ func (experiment *Experiment) watchSnubState() {
 	go experiment.watchEnd()
 	go experiment.watchSpeed()
 	go experiment.watchTemperature()
+	go experiment.watchIsAvailable()
 }
 
 func (experiment *Experiment) watch(watchFunction func()) {
@@ -212,12 +213,20 @@ func (experiment *Experiment) watch(watchFunction func()) {
 		select {
 		case <-quitExperimentCh:
 			experiment.continueRunning = false
-			experiment.snub.SetState(cooldown)
 		default:
 
 			watchFunction()
 		}
 	}
+	experiment.snub.SetState(cooldown)
+}
+
+func (experiment *Experiment) watchIsAvailable() {
+
+	experiment.watch(func() {
+		idRunningExperiment <- experiment.id
+		time.Sleep(time.Millisecond * 500)
+	})
 }
 
 func (experiment *Experiment) watchEnd() {
@@ -256,7 +265,9 @@ func (experiment *Experiment) watchSpeed() {
 		} else if experiment.snub.state == braking || experiment.snub.state == brakingWater {
 			if speed < experiment.snub.lowerSpeedLimit {
 				experiment.snub.NextState() // Braking to Cooldown
-				experiment.snub.NextState() // Braking to
+				if experiment.continueRunning {
+					experiment.snub.NextState() // Braking to
+				}
 			}
 		}
 	})

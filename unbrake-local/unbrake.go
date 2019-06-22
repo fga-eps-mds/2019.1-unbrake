@@ -37,6 +37,7 @@ var (
 	mqttKeyStatusCh        = make(chan string)
 	quitExperimentEnableCh = make(chan bool)
 	quitExperimentCh       = make(chan bool)
+	idRunningExperiment    = make(chan int)
 	clientWriting          *emitter.Client
 	clientReading          *emitter.Client
 )
@@ -137,8 +138,19 @@ func onReady() {
 
 	go func() {
 		for {
-			publishData(strconv.FormatBool(isAvailable), mqttSubchannelIsAvailable)
-			time.Sleep(time.Millisecond * 500)
+			select {
+			case idAux := <-idRunningExperiment:
+
+				if !isAvailable {
+					publishData("false: "+strconv.Itoa(idAux), mqttSubchannelIsAvailable)
+				}
+			default:
+
+				if isAvailable {
+					publishData("true", mqttSubchannelIsAvailable)
+					time.Sleep(time.Millisecond * 500)
+				}
+			}
 		}
 	}()
 	wgGeneral.Add(1)
