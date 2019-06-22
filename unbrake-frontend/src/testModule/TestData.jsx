@@ -191,7 +191,6 @@ class TestData extends React.Component {
 
   render() {
     const { classes } = this.props;
-
     const { data } = this.state;
     const { TES, TEI, TEC, SA, TS, DTE } = data;
 
