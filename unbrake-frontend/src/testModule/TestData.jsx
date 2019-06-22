@@ -229,15 +229,16 @@ class TestData extends React.Component {
 
   componentDidMount(){
     const { dispatch } = this.props;
+    let { data } = this.state;
+    const { SA } = data;
      let sensorNumber;
      this.client.on("message", msg => {
-       const { testData } = this.props;
-       const { values } = testData;
-       const { currentSnubSensor } = values;
+       const { mqttKey } = this.props;
        const analogMsg = convertDigitalToAnalog(
          parseInt(msg.asString(), base10)
        );
-       dispatch(change("SA", `Tmv${sensorNumber}`, analogMsg));
+       data.SA = msg.asString()
+       this.setState({data: data})
 
   });
 }
@@ -249,7 +250,8 @@ class TestData extends React.Component {
   }
 
   render() {
-    const { classes, configId, calibId, mqttKey } = this.props;
+
+    const { classes, configId, calibId, qttKey } = this.props;
     const { data } = this.state;
     const { TES, TEI, TEC, SA, TS, DTE } = data;
 

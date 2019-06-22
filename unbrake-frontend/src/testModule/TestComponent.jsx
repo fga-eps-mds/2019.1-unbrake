@@ -40,19 +40,29 @@ class Test extends React.Component {
           DTE: "" // Duração total do ensaio
         },
         mqttKey: ''
-      }
+      },
     };
 
     this.handleClick = this.handleClick.bind(this);
   }
+  componentDidMount(){
+    const url = `${API_URL_GRAPHQL}/mqtt-reading-key`;
+    const method = "GET";
+    Request(url, method).then((json, value=value) => {
+      this.setState(prevState => ({
+        test: {
+          aquisition: {
+            ...prevState.test.aquisition
+          },
+          data: {
+            ...prevState.test.data
+          },
+          mqttKey: json.key
+        },
+      }));
+    })
+  }
 
-  componentDidMount() {
-     const url = `${API_URL_GRAPHQL}/mqtt-reading-key`;
-     const method = "GET";
-     Request(url, method).then(json => {
-       this.setState({ mqttKey: json.key });
-     });
-   }
 
   handleClick() {
     const newAquisition = {
@@ -86,7 +96,7 @@ class Test extends React.Component {
   }
 
   render() {
-    const { test, mqttKey } = this.state;
+    const { test } = this.state;
     const { aquisition, data } = test;
     return (
       <Grid
@@ -100,7 +110,8 @@ class Test extends React.Component {
           <AquisitionsAndCommand newAquisition={aquisition} />
         </Grid>
         <Grid container item justify="center" xs={6}>
-          <TestData newData={data} mqttKey={mqttKey} />
+        {test.mqttKey !== '' && 
+          <TestData newData={data} mqttKey={test.mqttKey} />}
         </Grid>
         <Grid container item xs={3}>
           {/* <Button
