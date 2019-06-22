@@ -32,6 +32,7 @@ type Experiment struct {
 	secondConversionFactorTemperature float64
 	firstOffsetTemperature            float64
 	secondOffsetTemperature           float64
+	tireRadius                        float64
 	doEnableWater                     bool
 }
 
@@ -164,6 +165,11 @@ func ExperimentFromJSON(data []byte) *Experiment {
 	experiment.firstOffsetTemperature = decoded.Fields.Calibration.Temperature[0].TemperatureOffset
 	experiment.secondOffsetTemperature = decoded.Fields.Calibration.Temperature[1].TemperatureOffset
 	experiment.temperatureLimit = 85 //decoded.Fields.Configuration.Temperature
+	experiment.tireRadius = tireRadius(
+		decoded.Fields.Calibration.Relations.TransversalSelectionWidth,
+		decoded.Fields.Calibration.Relations.HeigthWidthRelation,
+		decoded.Fields.Calibration.Relations.RimDiameter,
+	)
 
 	experiment.snub.delayAcelerateToBrake = decoded.Fields.Configuration.UpperTime
 	experiment.snub.upperSpeedLimit = 150 //decoded.Fields.Configuration.UpperLimit
@@ -250,6 +256,7 @@ func (experiment *Experiment) watchSpeed() {
 	experiment.watch(func() {
 
 		speed := <-serialAttrs[speedIdx].handleCh
+		speed = convertSpeed(speed, experiment.tireRadius)
 
 		if (experiment.snub.state == acelerating || experiment.snub.state == aceleratingWater) && !experiment.snub.isStabilizing {
 			if speed >= experiment.snub.upperSpeedLimit {

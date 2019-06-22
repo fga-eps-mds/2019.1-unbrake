@@ -144,7 +144,26 @@ func getData(command string) []byte {
 }
 
 func convertTemperature(value float64, convertionFactor float64, offset float64) float64 {
+	const (
+		maxDigitalSignalValue = 1023
+		milliVots             = 5000
+	)
+	value = (value * milliVots) / maxDigitalSignalValue
 	return value*convertionFactor + offset
+}
+
+func convertSpeed(value float64, tireRadius float64) float64 {
+	const (
+		maxDigitalSignalValue = 1023
+		milliVots             = 5000
+	)
+
+	value = (value * milliVots) / maxDigitalSignalValue
+	return value * tireRadius
+}
+
+func tireRadius(transversalSelectionWidth int, heightWidthRelation int, rimDiameter int) float64 {
+	return float64((transversalSelectionWidth*heightWidthRelation)/100000) + (0.0254*float64(rimDiameter))/2
 }
 
 // Publish to MQTT broker the whole current state of local application

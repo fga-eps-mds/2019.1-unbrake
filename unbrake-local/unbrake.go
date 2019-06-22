@@ -33,6 +33,7 @@ var (
 )
 
 var (
+	connectStatusCh        = make(chan string, 1)
 	aplicationStatusCh     = make(chan string)
 	mqttKeyStatusCh        = make(chan string)
 	quitExperimentEnableCh = make(chan bool)
@@ -60,13 +61,22 @@ func main() {
 		serialAttrs[i].handleCh = make(chan float64)
 	}
 
-	clientWriting, _ = emitter.Connect(getMqttHost(), func(_ *emitter.Client, msg emitter.Message) {
-		log.Printf("Sent message: '%s' topic: '%s'\n", msg.Payload(), msg.Topic())
-	})
+	clientWriting, _ = emitter.Connect(getMqttHost(), func(_ *emitter.Client, msg emitter.Message) {}, emitter.WithConnectTimeout(time.Second*2))
 
 	clientReading, _ = emitter.Connect(getMqttHost(), func(_ *emitter.Client, msg emitter.Message) {
 		log.Printf("Sent message: '%s' topic: '%s'\n", msg.Payload(), msg.Topic())
-	})
+	}, emitter.WithConnectTimeout(time.Second*2))
+
+	go func() {
+		for {
+			if clientWriting.IsConnected() {
+				connectStatusCh <- "Conectado"
+			} else {
+				connectStatusCh <- "Desconectado"
+			}
+			time.Sleep(time.Second * 10)
+		}
+	}()
 
 	onExit := func() {
 		log.Println("Exiting...")
@@ -88,6 +98,8 @@ func onReady() {
 	statusCollecting := systray.AddMenuItem("Status de arquisição", "Não iniciada")
 	mqttKeyStatus := systray.AddMenuItem("Chave de acesso: Não avaliada", "Status da chave do MQTT")
 
+	connectStatus := systray.AddMenuItem("Deconectado", "Status de conecção")
+
 	handlePortsSectionGUI()
 
 	quitExperiment := systray.AddMenuItem("Encerrar ensaio", "Finaliza o ensaio atual")
@@ -98,6 +110,8 @@ func onReady() {
 	go func() {
 		for {
 			select {
+			case connectStatusAux := <-connectStatusCh:
+				connectStatus.SetTitle(connectStatusAux)
 			case aplicationStatusAux := <-aplicationStatusCh:
 				statusCollecting.SetTitle(aplicationStatusAux)
 			case mqttKeyStatusChAux := <-mqttKeyStatusCh:
