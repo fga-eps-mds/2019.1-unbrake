@@ -3,12 +3,14 @@ import PropTypes from "prop-types";
 import { reduxForm } from "redux-form";
 import { withStyles, Grid } from "@material-ui/core";
 import LinearProgress from "@material-ui/core/LinearProgress";
-import { connect } from "react-redux";
 import Button from "@material-ui/core/Button";
-import styles from "./Styles";
 import { API_URL_GRAPHQL } from "../utils/Constants";
 import Request from "../utils/Request";
 import { messageSistem } from "../actions/NotificationActions";
+import * as emitter from "emitter-io";
+import { connect } from "react-redux";
+import styles from "./Styles";
+import { MQTT_HOST, MQTT_PORT } from "../utils/Constants";
 
 const percentageTransformer = 100;
 
@@ -217,6 +219,24 @@ class TestData extends React.Component {
         DTE: "" // Duração total do ensaio
       }
     };
+    this.client = emitter.connect({
+      host: MQTT_HOST,
+      port: MQTT_PORT,
+      secure: false
+    });
+    this.client.subscribe({
+      key: props.mqttKey,
+      channel: "unbrake/galpao/currentSnub"
+    });
+    this.currentSnubSensor = 0;
+  }
+
+  componentDidMount() {
+    const { data } = this.state;
+    this.client.on("message", msg => {
+      data.SA = msg.asString();
+      this.setState({ data });
+    });
   }
 
   static getDerivedStateFromProps(props, state) {
@@ -282,11 +302,15 @@ TestData.propTypes = {
   classes: PropTypes.objectOf(PropTypes.string).isRequired,
   newData: PropTypes.oneOfType([PropTypes.object]).isRequired,
   calibId: PropTypes.string.isRequired,
-  configId: PropTypes.string.isRequired
+  configId: PropTypes.string.isRequired,
+  mqttKey: PropTypes.string.isRequired
 };
+
 const mapDispatchToProps = dispatch => ({
   sendMessage: payload => dispatch(messageSistem(payload))
 });
+
+
 const mapStateToProps = state => {
   return {
     configName: state.testReducer.configName,
