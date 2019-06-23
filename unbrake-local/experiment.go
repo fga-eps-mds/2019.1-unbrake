@@ -177,7 +177,7 @@ func ExperimentFromJSON(data []byte) *Experiment {
 	experiment.snub.delayAcelerateToBrake = decoded.Fields.Configuration.UpperTime
 	experiment.snub.upperSpeedLimit = 150 //decoded.Fields.Configuration.UpperLimit
 	experiment.snub.lowerSpeedLimit = 150 //decoded.Fields.Configuration.InferiorLimit
-	experiment.snub.timeCooldown = decoded.Fields.Configuration.LowerTime
+	experiment.snub.timeCooldown = decoded.Fields.Configuration.TimeBetweenCycles
 
 	return &experiment
 }

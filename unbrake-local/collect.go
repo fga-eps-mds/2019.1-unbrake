@@ -114,14 +114,17 @@ func getData(command string) []byte {
 	n := port.Write([]byte(command))
 	if n == -1 {
 		log.Println("Error writing to serial. Is this the right port?")
+		aplicationStatusCh <- "Selecione a porta correta"
 	}
 
 	buf := make([]byte, bufferSize)
 	n, err := port.Read(buf)
 	if err != nil {
 		log.Println("Error reading from serial ", err, ". Is this the right port?")
+		aplicationStatusCh <- "Selecione a porta correta"
 	} else if n == 0 {
 		log.Println("Error reading from serial: timeout waiting for bytes. Is this the right port?")
+		aplicationStatusCh <- "Selecione a porta correta"
 	}
 
 	split := strings.Split(string(buf[:n]), ",")
