@@ -3,7 +3,10 @@ import PropTypes from "prop-types";
 import { reduxForm } from "redux-form";
 import { withStyles, Grid } from "@material-ui/core";
 import LinearProgress from "@material-ui/core/LinearProgress";
+import * as emitter from "emitter-io";
+import { connect } from "react-redux";
 import styles from "./Styles";
+import { MQTT_HOST, MQTT_PORT } from "../utils/Constants";
 
 const percentageTransformer = 100;
 
@@ -159,6 +162,24 @@ class TestData extends React.Component {
         DTE: "" // Duração total do ensaio
       }
     };
+    this.client = emitter.connect({
+      host: MQTT_HOST,
+      port: MQTT_PORT,
+      secure: false
+    });
+    this.client.subscribe({
+      key: props.mqttKey,
+      channel: "unbrake/galpao/currentSnub"
+    });
+    this.currentSnubSensor = 0;
+  }
+
+  componentDidMount() {
+    const { data } = this.state;
+    this.client.on("message", msg => {
+      data.SA = msg.asString();
+      this.setState({ data });
+    });
   }
 
   static getDerivedStateFromProps(props, state) {
@@ -217,11 +238,23 @@ class TestData extends React.Component {
 
 TestData.propTypes = {
   classes: PropTypes.objectOf(PropTypes.string).isRequired,
-  newData: PropTypes.oneOfType([PropTypes.object]).isRequired
+  newData: PropTypes.oneOfType([PropTypes.object]).isRequired,
+  mqttKey: PropTypes.string.isRequired
+};
+const mapStateToProps = state => {
+  return {
+    configName: state.testReducer.configName,
+    configId: state.testReducer.configId,
+    calibName: state.testReducer.calibName,
+    calibId: state.testReducer.calibId
+  };
 };
 
 const TestDataForm = reduxForm({
   form: "testData"
 })(TestData);
 
-export default withStyles(styles)(TestDataForm);
+export default connect(
+  mapStateToProps,
+  null
+)(withStyles(styles)(TestDataForm));

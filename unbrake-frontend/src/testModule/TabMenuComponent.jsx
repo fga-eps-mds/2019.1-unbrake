@@ -5,7 +5,10 @@ import Tabs from "@material-ui/core/Tabs";
 import Tab from "@material-ui/core/Tab";
 // import Typography from "@material-ui/core/Typography";
 import PropTypes from "prop-types";
+import { connect } from "react-redux";
 import RealTimeChart from "../components/RealTimeChart";
+import { changeConfigTest, changeCalibTest } from "../actions/TestActions";
+import General from "./General";
 
 const margin = 1.5;
 const zeroTab = 0;
@@ -14,6 +17,7 @@ const secondTab = 2;
 const thirdTab = 3;
 const fourthTab = 4;
 const fifthTab = 5;
+const invalidId = 0;
 
 const styles = theme => ({
   root: {
@@ -35,16 +39,26 @@ class TabMenuComponent extends React.Component {
       value: 0
     };
     this.handleChange = this.handleChange.bind(this);
+    this.handleChangeSelect = this.handleChangeSelect.bind(this);
   }
 
   handleChange(event, newValue) {
     this.setState({ value: newValue });
   }
 
+  handleChangeSelect(event) {
+    const { changeCalib, changeConfig } = this.props;
+    const { name, value } = event.target;
+
+    const id = value === invalidId ? "" : value;
+
+    if (name === "configId") changeConfig({ configId: id });
+    else if (name === "calibId") changeCalib({ calibId: id });
+  }
+
   render() {
     const { classes } = this.props;
     const { value } = this.state;
-
     return (
       <Grid
         item
@@ -61,7 +75,7 @@ class TabMenuComponent extends React.Component {
             position="relative"
           >
             <Tabs centered value={value} onChange={this.handleChange}>
-              <Tab label="Configurações" />
+              <Tab label="Gerais" />
               <Tab label="Temperatura" />
               <Tab label="Força" />
               <Tab label="Rotação" />
@@ -78,7 +92,7 @@ class TabMenuComponent extends React.Component {
           alignItems="center"
           style={{ paddingTop: "15px" }}
         >
-          {value === zeroTab && <h1>Formulário de Configuração</h1>}
+          {value === zeroTab && <General />}
           {value === firstTab && <RealTimeChart />}
           {value === secondTab && <RealTimeChart />}
           {value === thirdTab && <RealTimeChart />}
@@ -91,7 +105,24 @@ class TabMenuComponent extends React.Component {
 }
 
 TabMenuComponent.propTypes = {
-  classes: PropTypes.objectOf(PropTypes.string).isRequired
+  classes: PropTypes.objectOf(PropTypes.string).isRequired,
+  changeCalib: PropTypes.func.isRequired,
+  changeConfig: PropTypes.func.isRequired
 };
 
-export default withStyles(styles)(TabMenuComponent);
+const mapStateToProps = state => {
+  return {
+    configId: state.testReducer.configId,
+    calibId: state.testReducer.calibId
+  };
+};
+
+const mapDispatchToProps = dispatch => ({
+  changeCalib: payload => dispatch(changeCalibTest(payload)),
+  changeConfig: payload => dispatch(changeConfigTest(payload))
+});
+
+export default connect(
+  mapStateToProps,
+  mapDispatchToProps
+)(withStyles(styles)(TabMenuComponent));

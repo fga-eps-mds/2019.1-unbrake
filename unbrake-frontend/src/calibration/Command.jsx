@@ -1,10 +1,21 @@
 import React from "react";
 import PropTypes from "prop-types";
-import { reduxForm } from "redux-form";
+import { reduxForm, change } from "redux-form";
+import { connect } from "react-redux";
 import { withStyles, Grid } from "@material-ui/core";
+import * as emitter from "emitter-io";
 import styles from "../components/Styles";
 import RealTimeChart from "../components/RealTimeChart";
-import { checkbox, field } from "../components/ComponentsForm";
+import { field } from "../components/ComponentsForm";
+import { MQTT_HOST, MQTT_PORT } from "../utils/Constants";
+import {
+  base10,
+  convertDigitalToAnalog,
+  dutyCycleEquation
+} from "../utils/Equations";
+import { changeCalibTest } from "../actions/TestActions";
+
+const invalidId = 0;
 
 const labelSecondary = name => {
   let nameLabel = "";
@@ -48,12 +59,6 @@ export const labelCommand = name => {
       break;
     case "PCmv":
       nameLabel = "Pressão comando (mV)";
-      break;
-    case "PVc":
-      nameLabel = "Plota velocidade (comando)";
-      break;
-    case "PPc":
-      nameLabel = "Plota pressão (comando)";
       break;
     default:
       nameLabel = labelSecondary(name);
@@ -104,27 +109,6 @@ const allFields = (states, classes, handleChange) => {
   return fields;
 };
 
-const allCheckbox = (selectsControl, classes, handleChange) => {
-  const checks = selectsControl.map(value => {
-    const type = value;
-    type.label = labelCommand(value.name);
-    return (
-      <Grid
-        key={`checkbox ${value.name}`}
-        alignItems="center"
-        justify="center"
-        container
-        item
-        xs={12}
-        className={classes.checboxSize}
-      >
-        {checkbox(type, handleChange)}
-      </Grid>
-    );
-  });
-  return checks;
-};
-
 const renderDictionary = command => {
   const directionary = [
     [
@@ -165,32 +149,75 @@ class Command extends React.Component {
         Vdc: "", // Velocidade (Duty Cycle)
         Pdc: "", // Pressão (Duty Cycle)
         VCmv: "", // Velocidade comando (mV)
-        PCmv: "", // Pressão comando (mV)
-        PVc: false, // Plota velocidade (comando)
-        PPc: false // Plota pressão (comando)
+        PCmv: "" // Pressão comando (mV)
       }
     };
+    this.client = emitter.connect({
+      host: MQTT_HOST,
+      port: MQTT_PORT,
+      secure: false
+    });
+    this.client.subscribe({
+      key: props.mqttKey,
+      channel: "unbrake/galpao/speed"
+    });
+    this.client.subscribe({
+      key: props.mqttKey,
+      channel: "unbrake/galpao/pressure"
+    });
+    this.sensor1 = [];
+    this.sensor2 = [];
     this.handleChange = this.handleChange.bind(this);
   }
 
+  static getDerivedStateFromProps(props, state) {
+    const { values } = props.calibration;
+    const dutyCycleSpeed = dutyCycleEquation(values.CUVC, values.MAVC);
+    const dutyCyclePressure = dutyCycleEquation(values.CUPC, values.MAPC);
+
+    props.dispatch(change("calibration", "Vdc", dutyCycleSpeed));
+    props.dispatch(change("calibration", "Pdc", dutyCyclePressure));
+    return {
+      relation: {
+        ...state.relation,
+        ...{ Vdc: dutyCycleSpeed, Pdc: dutyCyclePressure }
+      }
+    };
+  }
+
+  componentDidMount() {
+    const { dispatch } = this.props;
+    this.client.on("message", msg => {
+      const analogMsg = convertDigitalToAnalog(
+        parseInt(msg.asString(), base10)
+      );
+      if (msg.channel === "unbrake/galpao/speed/") {
+        this.sensor1.push(analogMsg);
+        dispatch(change("calibration", "VCmv", analogMsg));
+      } else if (msg.channel === "unbrake/galpao/pressure/") {
+        this.sensor2.push(analogMsg);
+        dispatch(change("calibration", "PCmv", analogMsg));
+      }
+    });
+  }
+
   handleChange(event) {
+    const { calibId, changeCalib } = this.props;
     const { target } = event;
+
     const value = target.type === "checkbox" ? target.checked : target.value;
     const command = { [event.target.name]: value };
     this.setState(prevState => ({
       command: { ...prevState.command, ...command }
     }));
+
+    if (calibId > invalidId) changeCalib({ calibId: "" });
   }
 
   render() {
     const { classes } = this.props;
     const { command } = this.state;
     const states = renderDictionary(command);
-    const { PVc, PPc } = command;
-    const selectsControl = [
-      { name: "PVc", value: PVc, disable: false },
-      { name: "PPc", value: PPc, disable: false }
-    ];
     return (
       <Grid
         container
@@ -205,17 +232,6 @@ class Command extends React.Component {
             <Grid container item justify="center" xs={6}>
               {allFields(states, classes, this.handleChange)}
             </Grid>
-            <Grid
-              container
-              item
-              alignItems="flex-start"
-              justify="center"
-              xs={3}
-            >
-              <Grid container item alignItems="center" justify="center" xs={12}>
-                {allCheckbox(selectsControl, classes, this.handleChange)}
-              </Grid>
-            </Grid>
             <Grid item xs />
           </form>
         </Grid>
@@ -227,15 +243,43 @@ class Command extends React.Component {
           justify="center"
           className={classes.gridGraphic}
         >
-          <RealTimeChart />
+          <RealTimeChart
+            sensor1={this.sensor1}
+            sensor2={this.sensor2}
+            labelSensor1="Velocidade"
+            colorSensor1="#133e79"
+            labelSensor2="Pressão"
+            colorSensor2="#348941"
+          />
         </Grid>
       </Grid>
     );
   }
 }
 
+function mapStateToProps(state) {
+  return {
+    calibration: state.form.calibration,
+    calibId: state.testReducer.calibId
+  };
+}
+
+Command.defaultProps = {
+  calibration: { values: {} },
+  calibId: ""
+};
+
+const mapDispatchToProps = dispatch => ({
+  changeCalib: payload => dispatch(changeCalibTest(payload))
+});
+
 Command.propTypes = {
-  classes: PropTypes.objectOf(PropTypes.string).isRequired
+  classes: PropTypes.objectOf(PropTypes.string).isRequired,
+  mqttKey: PropTypes.string.isRequired,
+  dispatch: PropTypes.func.isRequired,
+  calibration: PropTypes.objectOf(PropTypes.string),
+  calibId: PropTypes.number,
+  changeCalib: PropTypes.func.isRequired
 };
 
 const CommandForm = reduxForm({
@@ -243,4 +287,7 @@ const CommandForm = reduxForm({
   destroyOnUnmount: false
 })(Command);
 
-export default withStyles(styles)(CommandForm);
+export default connect(
+  mapStateToProps,
+  mapDispatchToProps
+)(withStyles(styles)(CommandForm));

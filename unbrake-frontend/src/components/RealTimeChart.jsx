@@ -1,10 +1,11 @@
 import React from "react";
+import PropTypes from "prop-types";
 import { Line } from "react-chartjs-2";
-
 import "chartjs-plugin-streaming";
-import io from "socket.io-client";
 
 const indexPadding = 1;
+
+const sensorInitialValue = -1;
 
 const yAxesConfig = () => [
   {
@@ -13,9 +14,9 @@ const yAxesConfig = () => [
       labelString: "mv"
     },
     ticks: {
-      max: 5,
-      min: 1,
-      stepSize: 0.5
+      max: 5000,
+      min: 0,
+      stepSize: 500
     }
   }
 ];
@@ -26,49 +27,63 @@ const tooltipsConfig = () => ({
   intersect: false
 });
 
-const datasetsConfig = () => ({
-  label: "Depth",
+const sensorConfig = (label, color) => ({
+  label,
   fill: false,
   cubicInterpolationMode: "monotone",
-  backgroundColor: "#305c8a",
-  borderColor: "#305c8a"
+  backgroundColor: color,
+  borderColor: color
 });
 
-class RealTimeChart extends React.Component {
-  constructor(props) {
-    super(props);
-    this.socket = io("http://mock_server:5000/test");
-    this.data = [{ uv: 0 }];
+const datasets = props => {
+  const {
+    labelSensor1,
+    labelSensor2,
+    colorSensor1,
+    colorSensor2,
+    sensor2
+  } = props;
+  if (sensor2[0] === sensorInitialValue) {
+    return {
+      datasets: [
+        {
+          ...sensorConfig(labelSensor1, colorSensor1),
+          data: []
+        }
+      ]
+    };
   }
-
-  componentDidMount() {
-    /*
-     *setInterval(() => this.forceUpdate(), 1000);
-     *this.socket.on('connect', function(){console.log("oi")});
-     */
+  return {
+    datasets: [
+      {
+        ...sensorConfig(labelSensor1, colorSensor1),
+        data: []
+      },
+      {
+        ...sensorConfig(labelSensor2, colorSensor2),
+        data: []
+      }
+    ]
+  };
+};
+class RealTimeChart extends React.Component {
+  shouldComponentUpdate() {
+    return false;
   }
 
   render() {
-    this.socket.on("temperature", newdata => {
-      this.data.push(newdata);
-    });
+    const { sensor1, sensor2 } = this.props;
     return (
       <Line
-        data={{
-          datasets: [
-            {
-              ...datasetsConfig(),
-              data: []
-            }
-          ]
-        }}
+        height={500}
+        data={datasets(this.props)}
         options={{
           maintainAspectRatio: false,
           title: {
             display: false
           },
           legend: {
-            display: false
+            display: true
           },
           scales: {
             xAxes: [
@@ -81,11 +96,15 @@ class RealTimeChart extends React.Component {
                 realtime: {
                   duration: 20000,
                   delay: 1000,
-                  refresh: 1000,
+                  refresh: 500,
                   onRefresh: chart => {
-                    chart.data.datasets[0].data.push({
-                      x: Date.now(),
-                      y: this.data[this.data.length - indexPadding].uv
+                    chart.data.datasets.forEach((dataset, index) => {
+                      dataset.data.push({
+                        x: Date.now(),
+                        y: index
+                          ? sensor2[sensor2.length - indexPadding]
+                          : sensor1[sensor1.length - indexPadding]
+                      });
                     });
                   }
                 }
@@ -93,11 +112,24 @@ class RealTimeChart extends React.Component {
             ],
             yAxes: yAxesConfig()
           },
-          tooltips: tooltipsConfig()
+          tooltips: tooltipsConfig(),
+          elements: {
+            point: { radius: 0 }
+          }
         }}
       />
     );
   }
 }
+
+RealTimeChart.propTypes = {
+  sensor1: PropTypes.arrayOf(PropTypes.number),
+  sensor2: PropTypes.arrayOf(PropTypes.number)
+};
+
+RealTimeChart.defaultProps = {
+  sensor1: [sensorInitialValue],
+  sensor2: [sensorInitialValue]
+};
 
 export default RealTimeChart;

@@ -8,11 +8,9 @@ export const toggleMessage = payload => {
 };
 
 export const messageSistem = payload => {
-  return dispatch => {
-    dispatch({
-      type: MESSAGE_USER,
-      payload
-    });
+  return {
+    type: MESSAGE_USER,
+    payload
   };
 };
 

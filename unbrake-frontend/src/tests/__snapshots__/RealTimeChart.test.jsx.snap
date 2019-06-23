@@ -6,18 +6,18 @@ exports[`<RealTimeChart /> render() renders the component 1`] = `
     Object {
       "datasets": Array [
         Object {
-          "backgroundColor": "#305c8a",
-          "borderColor": "#305c8a",
+          "backgroundColor": undefined,
+          "borderColor": undefined,
           "cubicInterpolationMode": "monotone",
           "data": Array [],
           "fill": false,
-          "label": "Depth",
+          "label": undefined,
         },
       ],
     }
   }
   datasetKeyProvider={[Function]}
-  height={150}
+  height={500}
   legend={
     Object {
       "display": true,
@@ -26,8 +26,13 @@ exports[`<RealTimeChart /> render() renders the component 1`] = `
   }
   options={
     Object {
+      "elements": Object {
+        "point": Object {
+          "radius": 0,
+        },
+      },
       "legend": Object {
-        "display": false,
+        "display": true,
       },
       "maintainAspectRatio": false,
       "scales": Object {
@@ -41,7 +46,7 @@ exports[`<RealTimeChart /> render() renders the component 1`] = `
               "delay": 1000,
               "duration": 20000,
               "onRefresh": [Function],
-              "refresh": 1000,
+              "refresh": 500,
             },
             "type": "realtime",
           },
@@ -53,9 +58,9 @@ exports[`<RealTimeChart /> render() renders the component 1`] = `
               "labelString": "mv",
             },
             "ticks": Object {
-              "max": 5,
-              "min": 1,
-              "stepSize": 0.5,
+              "max": 5000,
+              "min": 0,
+              "stepSize": 500,
             },
           },
         ],

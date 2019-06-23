@@ -16,8 +16,10 @@ Including another URLconf
 from django.conf.urls import url
 from django.views.decorators.csrf import csrf_exempt
 from graphene_django.views import GraphQLView
+from .views import get_mqtt_reading_key
 
 
 urlpatterns = [
+    url(r'^graphql/mqtt-reading-key', get_mqtt_reading_key),
     url(r'^graphql', csrf_exempt(GraphQLView.as_view(graphiql=True))),
 ]

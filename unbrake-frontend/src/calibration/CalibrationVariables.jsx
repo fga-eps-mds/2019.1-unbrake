@@ -1,3 +1,12 @@
+import React from "react";
+import FormControlLabel from "@material-ui/core/FormControlLabel";
+import Checkbox from "@material-ui/core/Checkbox";
+import TextField from "@material-ui/core/TextField";
+import DialogActions from "@material-ui/core/DialogActions";
+import DialogContent from "@material-ui/core/DialogContent";
+import DialogContentText from "@material-ui/core/DialogContentText";
+import DialogTitle from "@material-ui/core/DialogTitle";
+import { Button, Dialog } from "@material-ui/core";
 import { labelCommand } from "./Command";
 import { labelForce } from "./Force";
 import { labelRelation } from "./Relation";
@@ -6,6 +15,7 @@ import { labelTemperature } from "./Temperature";
 import { labelVibration } from "./Vibration";
 
 export const empty = 0;
+const borderRadius = 1.5;
 
 export const styles = theme => ({
   title: {
@@ -30,6 +40,14 @@ export const styles = theme => ({
   formControl: {
     margin: theme.spacing.unit,
     minWidth: 200
+  },
+  root: {
+    flexGrow: 1,
+    width: "100%",
+    marginTop: "90px"
+  },
+  appBar: {
+    borderRadius: theme.spacing.unit * borderRadius
   }
 });
 
@@ -193,6 +211,12 @@ export const createCalibration = {
   variablesResponse: "id"
 };
 
+export const createDefaultCalibration = {
+  mutation: "createDefaultCalibration",
+  response: "calibration",
+  variablesResponse: "id"
+};
+
 export const labels = name => {
   if (labelCommand(name) !== "") return labelCommand(name);
   if (labelForce(name) !== "") return labelForce(name);
@@ -201,4 +225,80 @@ export const labels = name => {
   if (labelTemperature(name) !== "") return labelTemperature(name);
   if (labelVibration(name) !== "") return labelVibration(name);
   return "";
+};
+
+export const fieldsDisabledes = {
+  CHT1: 1,
+  CHT2: 2,
+  CHF1: 3,
+  CHF2: 4,
+  CHR1: 5,
+  CHVB: 6,
+  CHVC: 7,
+  CHPC: 8
+};
+
+export const dialogName = (functions, states) => {
+  let isDisabled = true;
+  if (localStorage.getItem("isSuperuser") === "true") isDisabled = false;
+  return (
+    <Dialog
+      open={states.open}
+      onClose={functions.handleClose}
+      aria-labelledby="form-dialog-title"
+    >
+      <DialogTitle id="form-dialog-title">Nome da Calibração</DialogTitle>
+      <DialogContent>
+        <DialogContentText>
+          Insira aqui o nome que você deseja dar para este arquivo de Calibração
+        </DialogContentText>
+        <TextField
+          autoFocus
+          margin="dense"
+          name="name"
+          label="Nome"
+          type="text"
+          onChange={functions.handleChangeStates}
+          value={states.name}
+          fullWidth
+        />
+        <FormControlLabel
+          control={
+            <Checkbox
+              disabled={isDisabled}
+              checked={states.isDefault}
+              onChange={functions.handleIsDefault}
+              value="isDefault"
+              name="isDefault"
+            />
+          }
+          label="Calibração padrão"
+        />
+      </DialogContent>
+      <DialogActions>
+        <Button onClick={functions.handleClose} color="primary">
+          Cancelar
+        </Button>
+        <Button onClick={() => functions.handleSubmit()} color="primary">
+          Cadastrar
+        </Button>
+      </DialogActions>
+    </Dialog>
+  );
+};
+
+export const previousButton = handlePrevious => {
+  return (
+    <Button onClick={handlePrevious} color="secondary" variant="contained">
+      Etapa anterior
+    </Button>
+  );
+};
+
+export const nextButton = handleNext => {
+  return (
+    <Button onClick={handleNext} color="secondary" variant="contained">
+      Próxima etapa
+    </Button>
+  );
 };
