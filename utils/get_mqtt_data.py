@@ -19,7 +19,7 @@ client.connect(
 )
 client.on_message = lambda m: print(str(m.channel) + m.as_string())
 client.on_error = lambda m: print(e)
-client.subscribe(environ.get("MQTT_KEY") , "unbrake/galpao/+/")
+client.subscribe(environ.get("MQTT_KEY") , "unbrake/galpao/a/")
 
 while True:
     client.loop_start()
