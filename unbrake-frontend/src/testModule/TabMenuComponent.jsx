@@ -9,6 +9,8 @@ import { connect } from "react-redux";
 import RealTimeChart from "../components/RealTimeChart";
 import { changeConfigTest, changeCalibTest } from "../actions/TestActions";
 import General from "./General";
+import { API_URL_GRAPHQL } from "../utils/Constants";
+import Request from "../utils/Request";
 
 const margin = 1.5;
 const zeroTab = 0;
@@ -31,15 +33,27 @@ const styles = theme => ({
   }
 });
 
+const generalComponent = mqttKey => {
+  return <Grid xs>{mqttKey !== "" && <General mqttKey={mqttKey} />}</Grid>;
+};
+
 class TabMenuComponent extends React.Component {
   constructor(props) {
     super(props);
 
     this.state = {
-      value: 0
+      value: 0,
+      mqttKey: ""
     };
     this.handleChange = this.handleChange.bind(this);
     this.handleChangeSelect = this.handleChangeSelect.bind(this);
+  }
+
+  componentDidMount() {
+    const url = `${API_URL_GRAPHQL}/mqtt-reading-key`;
+    Request(url, "GET").then(json => {
+      this.setState({ mqttKey: json.key });
+    });
   }
 
   handleChange(event, newValue) {
@@ -58,7 +72,7 @@ class TabMenuComponent extends React.Component {
 
   render() {
     const { classes } = this.props;
-    const { value } = this.state;
+    const { value, mqttKey } = this.state;
     return (
       <Grid
         item
@@ -92,7 +106,7 @@ class TabMenuComponent extends React.Component {
           alignItems="center"
           style={{ paddingTop: "15px" }}
         >
-          {value === zeroTab && <General />}
+          {value === zeroTab && generalComponent(mqttKey)}
           {value === firstTab && <RealTimeChart />}
           {value === secondTab && <RealTimeChart />}
           {value === thirdTab && <RealTimeChart />}

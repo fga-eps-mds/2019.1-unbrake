@@ -5,21 +5,24 @@ import Button from "@material-ui/core/Button";
 import PropTypes from "prop-types";
 import TextField from "@material-ui/core/TextField";
 import { connect } from "react-redux";
+import * as emitter from "emitter-io";
 import { itensSelectionConfig } from "../configuration/Configuration";
 import { itensSelection } from "../calibration/CalibrationUpload";
-import { API_URL_GRAPHQL } from "../utils/Constants";
+import { API_URL_GRAPHQL, MQTT_HOST, MQTT_PORT } from "../utils/Constants";
 import Request from "../utils/Request";
-import { changeConfigTest, changeCalibTest } from "../actions/TestActions";
-import { validateFields, saveCalibration } from "../calibration/Calibration";
-import { createCalibration } from "../calibration/CalibrationVariables";
+import {
+  changeConfigTest,
+  changeCalibTest,
+  changePowerTest,
+  changeAvailableTest
+} from "../actions/TestActions";
+
 import { messageSistem } from "../actions/NotificationActions";
 import { redirectPage } from "../actions/RedirectActions";
-import { saveConfiguration } from "../configuration/ConfigFunctions";
+import { quitExperiment, submit } from "./TestFunctions";
 
 const margin = 1.5;
 const invalidId = 0;
-const empty = 0;
-const sizeMessageDefault = 14;
 
 const styles = theme => ({
   root: {
@@ -33,95 +36,21 @@ const styles = theme => ({
   }
 });
 
-const configFields = [
-  { front: "NOS", label: "Numero de Snubs" },
-  { front: "USL", label: "Limite Superior (km/h)" },
-  { front: "UWT", label: "Tempo de Espera (s)" },
-  { front: "LSL", label: "Limite inferior (km/h)" },
-  { front: "LWT", label: "Tempo de espera (s)" },
-  { front: "TBS", label: "Tempo entre ciclos" },
-  { front: "TAS", label: "Temperatura(˚C)(AUX1)" },
-  { front: "TAT", label: "Tempo (s)(AUX1)" }
-];
-
-const validateConfig = (configuration, sendMessage) => {
-  let createMessage = configFields.reduce((prevMessage, newField) => {
-    if (
-      configuration[newField.front] === undefined ||
-      configuration[newField.front].length === empty
-    ) {
-      if (prevMessage.length === sizeMessageDefault)
-        return `${prevMessage} "${newField.label}"`;
-      return `${prevMessage}, "${newField.label}"`;
-    }
-    return prevMessage;
-  }, "O(s) campo(s) ");
-
-  if (createMessage.length > sizeMessageDefault) {
-    createMessage += " está(ão) vazios";
-    sendMessage({
-      message: createMessage,
-      variante: "error",
-      condition: true
-    });
-    return false;
-  }
-  return true;
-};
-
-const submit = (states, dispatchs) => {
-  const values = {
-    calibration: states.calibration.values,
-    name: "",
-    createCalibration
-  };
-
-  if (states.calibId === "") {
-    if (!validateFields(states.calibration.values, dispatchs.sendMessage))
-      return;
-    saveCalibration(values, dispatchs);
-  }
-
-  if (states.configId === "") {
-    if (!validateConfig(states.configuration.values, dispatchs.sendMessage))
-      return;
-    saveConfiguration(states.configuration.values, "", dispatchs);
-  }
-
-  const urlUser = `${API_URL_GRAPHQL}?query=query{currentUser{username}}`;
-  if (states.configId !== "" && states.calibId !== "") {
-    Request(urlUser, "GET").then(username => {
-      const urlTesting = `${API_URL_GRAPHQL}?query=mutation{createTesting(createBy:"${username}",
-        idCalibration:${states.calibId},idConfiguration:${
-        states.configId
-      }){testing{id},error}}`;
-
-      Request(urlTesting, "POST").then(response => {
-        const { createTesting } = response.data;
-        const { id } = createTesting.testing;
-        const urlSubmit = `${API_URL_GRAPHQL}?query=mutation{submitTesting(mqttHost:"unbrake.ml",mqttPort:8080,testingId:${id}){succes}}`;
-        Request(urlSubmit, "POST").then(() => {
-          // Faz todos os processos do ensaio
-        });
-      });
-    });
-  }
-};
-
-const renderSubmitTest = (states, dispatchs) => {
-  const { isAvaileble, isPower } = states;
-  const color = isAvaileble ? "#2e7d32" : "#d32f2f";
-
+const renderSubmitTest = (states, dispatchs, functions) => {
+  const { available, power } = states;
+  const color = available ? "#2e7d32" : "#d32f2f";
+  const fun = available ? submit : quitExperiment;
   return (
     <Grid container xs={4} justify="center" alignItems="center">
       <Button
-        onClick={() => submit(states, dispatchs)}
+        onClick={() => fun(states, functions, dispatchs)}
         color="secondary"
         variant="contained"
-        disabled={!isPower}
-        style={isPower ? { backgroundColor: color } : {}}
+        name="available"
+        disabled={!power}
+        style={power ? { backgroundColor: color } : {}}
       >
-        {isPower && !isAvaileble ? "Cancelar Ensaio" : "Iniciar Ensaio"}
+        {power && !available ? "Cancelar Ensaio" : "Iniciar Ensaio"}
       </Button>
     </Grid>
   );
@@ -158,7 +87,7 @@ const allFields = (states, dispatchs, functions) => {
         {itensSelectionConfig(states.allConfiguration)}
       </TextField>
       <Grid container item justify="center" style={{ flex: 1 }}>
-        {renderSubmitTest(states, dispatchs)}
+        {renderSubmitTest(states, dispatchs, functions)}
       </Grid>
     </div>
   );
@@ -171,13 +100,27 @@ class General extends React.Component {
     this.state = {
       allCalibration: "",
       allConfiguration: "",
-      isAvaileble: true,
-      isPower: false
+      testeId: ""
     };
+
+    this.client = emitter.connect({
+      host: MQTT_HOST,
+      port: MQTT_PORT,
+      secure: false
+    });
+
+    this.client.subscribe({
+      key: props.mqttKey,
+      channel: "unbrake/galpao/isAvailable/" // isAvailable
+    });
+
     this.handleChangeSelect = this.handleChangeSelect.bind(this);
+    this.handleChange = this.handleChange.bind(this);
   }
 
   componentDidMount() {
+    const { changeAvailable, changePower } = this.props;
+
     const urlCalib = `${API_URL_GRAPHQL}?query=query{allCalibration{id, name, isDefault}}`;
     const method = "GET";
     Request(urlCalib, method).then(json => {
@@ -188,11 +131,21 @@ class General extends React.Component {
     });
 
     const urlConfig = `${API_URL_GRAPHQL}?query=query{configNotDefault{id, name}}`;
-
     Request(urlConfig, method).then(json => {
       const data = json.data.configNotDefault;
       if (data !== null) this.setState({ allConfiguration: data });
     });
+
+    this.client.on("message", msg => {
+      changePower({ power: true });
+      const state = msg.asString() === "true";
+
+      changeAvailable({ available: state });
+    });
+  }
+
+  handleChange(event) {
+    this.setState({ testeId: event.value });
   }
 
   handleChangeSelect(event) {
@@ -218,26 +171,28 @@ class General extends React.Component {
       configuration,
       redirect,
       changeCalib,
-      changeConfig
+      changeConfig,
+      available,
+      power
     } = this.props;
-    const {
-      allCalibration,
-      allConfiguration,
-      isAvaileble,
-      isPower
-    } = this.state;
+    const { allCalibration, allConfiguration, testeId } = this.state;
     const states = {
       calibId,
       configId,
       calibration,
       configuration,
-      isAvaileble,
-      isPower,
       allCalibration,
-      allConfiguration
+      allConfiguration,
+      power,
+      available,
+      testeId
     };
     const dispatchs = { sendMessage, redirect, changeCalib, changeConfig };
-    const functions = { handleChangeSelect: this.handleChangeSelect, classes };
+    const functions = {
+      handleChangeSelect: this.handleChangeSelect,
+      handleChange: this.handleChange,
+      classes
+    };
     return (
       <div style={{ flex: 1 }}>{allFields(states, dispatchs, functions)}</div>
     );
@@ -247,6 +202,8 @@ class General extends React.Component {
 General.defaultProps = {
   calibId: "",
   configId: "",
+  power: false,
+  available: true,
   calibration: { values: {} },
   configuration: { values: {} }
 };
@@ -260,14 +217,21 @@ General.propTypes = {
   sendMessage: PropTypes.func.isRequired,
   calibration: PropTypes.string,
   configuration: PropTypes.string,
-  redirect: PropTypes.func.isRequired
+  redirect: PropTypes.func.isRequired,
+  mqttKey: PropTypes.string.isRequired,
+  power: PropTypes.bool,
+  available: PropTypes.bool,
+  changeAvailable: PropTypes.func.isRequired,
+  changePower: PropTypes.func.isRequired
 };
 
 const mapDispatchToProps = dispatch => ({
   sendMessage: payload => dispatch(messageSistem(payload)),
   changeCalib: payload => dispatch(changeCalibTest(payload)),
   changeConfig: payload => dispatch(changeConfigTest(payload)),
-  redirect: payload => dispatch(redirectPage(payload))
+  redirect: payload => dispatch(redirectPage(payload)),
+  changeAvailable: payload => dispatch(changeAvailableTest(payload)),
+  changePower: payload => dispatch(changePowerTest(payload))
 });
 
 const mapStateToProps = state => {
@@ -275,7 +239,9 @@ const mapStateToProps = state => {
     configId: state.testReducer.configId,
     calibId: state.testReducer.calibId,
     calibration: state.form.calibration,
-    configuration: state.form.configuration
+    configuration: state.form.configuration,
+    available: state.testReducer.available,
+    power: state.testReducer.power
   };
 };
 

@@ -1,23 +1,23 @@
 import React from "react";
 import PropTypes from "prop-types";
-import { reduxForm, initialize } from "redux-form";
-import { withStyles, Grid } from "@material-ui/core";
+import { reduxForm, change } from "redux-form";
 import { connect } from "react-redux";
+import { withStyles, Grid } from "@material-ui/core";
 import styles from "../components/Styles";
 import { field } from "../components/ComponentsForm";
 import completeTire from "../img/completeTire.png";
 import sideTire from "../img/sideTire.png";
 import tire from "../img/tire.png";
 import VBelt from "../img/Vbelt.png";
+import {
+  tireRadiusEquation,
+  gearRatioEquation,
+  topSpeedEquation
+} from "../utils/Equations";
+import { greaterThanZero } from "../utils/Constants";
 import { changeCalibTest } from "../actions/TestActions";
 
 const invalidId = 0;
-
-const double = 2;
-const percentage = 100;
-const inch = 15.4;
-const decimalPlace = 2;
-const validNumber = 0;
 
 export const labelRelation = name => {
   let nameLabel = "";
@@ -44,7 +44,7 @@ export const labelRelation = name => {
       nameLabel = "Relação de transmissão (rpm)";
       break;
     case "RDP":
-      nameLabel = "Raio do pneu (mm)";
+      nameLabel = "Raio do pneu (m)";
       break;
     default:
       break;
@@ -97,12 +97,32 @@ const tireFields = (states, classes, handleChange) => {
 const tireDictionary = relation => {
   const dictionary = [
     [
-      { name: "LST", value: relation.LST, disable: false },
-      { name: "RAL", value: relation.RAL, disable: false }
+      {
+        name: "LST",
+        value: relation.LST,
+        disable: false,
+        validate: [greaterThanZero]
+      },
+      {
+        name: "RAL",
+        value: relation.RAL,
+        disable: false,
+        validate: [greaterThanZero]
+      }
     ],
     [
-      { name: "DIA", value: relation.DIA, disable: false },
-      { name: "RDP", value: relation.RDP, disable: true }
+      {
+        name: "DIA",
+        value: relation.DIA,
+        disable: false,
+        validate: [greaterThanZero]
+      },
+      {
+        name: "RDP",
+        value: relation.RDP,
+        disable: true,
+        validate: [greaterThanZero]
+      }
     ]
   ];
   return dictionary;
@@ -111,12 +131,32 @@ const tireDictionary = relation => {
 const vbeltDictionary = relation => {
   const dictionary = [
     [
-      { name: "DPO", value: relation.DPO, disable: false },
-      { name: "RSM", value: relation.RSM, disable: false }
+      {
+        name: "DPO",
+        value: relation.DPO,
+        disable: false,
+        validate: [greaterThanZero]
+      },
+      {
+        name: "RSM",
+        value: relation.RSM,
+        disable: false,
+        validate: [greaterThanZero]
+      }
     ],
     [
-      { name: "DPM", value: relation.DPM, disable: false },
-      { name: "RDT", value: relation.RDT, disable: true }
+      {
+        name: "DPM",
+        value: relation.DPM,
+        disable: false,
+        validate: [greaterThanZero]
+      },
+      {
+        name: "RDT",
+        value: relation.RDT,
+        disable: true,
+        validate: [greaterThanZero]
+      }
     ]
   ];
   return dictionary;
@@ -149,17 +189,6 @@ const images = () => {
   );
 };
 
-const generatorVariables = values => {
-  const newVariables = {};
-  const valueRDT = (values.RSM * values.DPO) / values.DPM;
-  if (valueRDT > validNumber) newVariables.RDT = valueRDT.toFixed(decimalPlace);
-
-  const valueRDP =
-    ((values.LST * values.RAL) / percentage) * double + values.DIA * inch;
-  if (valueRDP > validNumber) newVariables.RDP = valueRDP.toFixed(decimalPlace);
-  return newVariables;
-};
-
 class Relation extends React.Component {
   constructor(props) {
     super(props);
@@ -173,29 +202,42 @@ class Relation extends React.Component {
         DPO: "", // Diametro da polia motora
         DPM: "", // Diametro da polia movida
         RDT: "" // Relação de transmissao
-      }
+      },
+      topSpeed: 0
     };
     this.handleChange = this.handleChange.bind(this);
+  }
+
+  static getDerivedStateFromProps(props, state) {
+    const { values } = props.calibration;
+    const topSpeed = topSpeedEquation(values.RDP, values.RDT, values.RSM);
+
+    return {
+      relation: { ...state.relation },
+      topSpeed
+    };
   }
 
   shouldComponentUpdate(nextProps) {
     const { dispatch } = this.props;
     const { values } = nextProps.calibration;
+    const gearRatio = gearRatioEquation(values.RSM, values.DPO, values.DPM);
+    const tireRadius = tireRadiusEquation(values.LST, values.RAL, values.DIA);
 
-    if (values !== undefined) {
-      const newVariables = generatorVariables(values);
-      dispatch(initialize("calibration", { ...values, ...newVariables }));
+    if (gearRatio || tireRadius) {
+      dispatch(change("calibration", "RDT", gearRatio));
+      dispatch(change("calibration", "RDP", tireRadius));
 
       return true;
     }
+
     return false;
   }
 
   handleChange(event) {
     const { calibId, changeCalib } = this.props;
     const { target } = event;
-
-    const value = target.type === "checkbox" ? target.checked : target.value;
+    const { value } = target;
     const relation = { [event.target.name]: value };
     this.setState(prevState => ({
       relation: { ...prevState.relation, ...relation }
@@ -205,7 +247,7 @@ class Relation extends React.Component {
   }
 
   render() {
-    const { relation } = this.state;
+    const { relation, topSpeed } = this.state;
     const { classes } = this.props;
     const statesTire = tireDictionary(relation);
     const statesVbelt = vbeltDictionary(relation);
@@ -237,7 +279,9 @@ class Relation extends React.Component {
                 xs={12}
                 style={{ marginTop: "100px" }}
               >
-                <h2 styles={{ height: "22px" }}>Velocidade máxima</h2>
+                <h2 styles={{ height: "22px" }}>
+                  Velocidade máxima: {topSpeed} Km/h
+                </h2>
                 {tireFields(statesVbelt, classes, this.handleChange)}
               </Grid>
             </form>
