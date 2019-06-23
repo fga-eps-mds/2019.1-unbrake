@@ -78,6 +78,8 @@ func CollectData() {
 
 		aplicationStatusCh <- "Coletando dados"
 
+		testSerialConnection()
+
 		log.Println("Initializing collectData routine...")
 		log.Printf("Simulator Port = %s", serialPortName)
 		log.Printf("Buffer size = %d", bufferSize)
@@ -233,6 +235,35 @@ func publishData(data string, subChannel string) {
 		mqttKeyStatusCh <- "Chave do MQTT: Ausente"
 		return
 	}
+}
+
+func testSerialConnection() {
+
+	firmware := "Braketestbench"
+
+	n := port.Write([]byte(" "))
+	if n == -1 {
+		log.Println("Error writing to serial. Is this the rigth port?")
+		aplicationStatusCh <- "Selecione a porta correta"
+	}
+
+	buf := make([]byte, bufferSize)
+	n, err := port.Read(buf)
+	if err != nil {
+		log.Println("Error reading from serial ", err, ". Is this the right port?")
+		aplicationStatusCh <- "Selecione a porta correta"
+	} else if n == 0 {
+		log.Println("Error reading from serial: timeout waiting for bytes. Is this the right port?")
+		aplicationStatusCh <- "Selecione a porta correta"
+	}
+
+	buf = buf[2:16]
+
+	if string(buf) != firmware {
+		log.Println("Wrong serial port selected")
+		aplicationStatusCh <- "Selecione a porta correta"
+	}
+
 }
 
 func testKeys() {

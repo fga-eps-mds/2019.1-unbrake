@@ -175,8 +175,9 @@ func ExperimentFromJSON(data []byte) *Experiment {
 	)
 
 	experiment.snub.delayAcelerateToBrake = decoded.Fields.Configuration.UpperTime
-	experiment.snub.upperSpeedLimit = 150 //decoded.Fields.Configuration.UpperLimit
-	experiment.snub.lowerSpeedLimit = 150 //decoded.Fields.Configuration.InferiorLimit
+	experiment.snub.delayBrakeToCooldown = decoded.Fields.Configuration.LowerTime
+	experiment.snub.upperSpeedLimit = 175 //decoded.Fields.Configuration.UpperLimit
+	experiment.snub.lowerSpeedLimit = 100 //decoded.Fields.Configuration.InferiorLimit
 	experiment.snub.timeCooldown = decoded.Fields.Configuration.TimeBetweenCycles
 
 	return &experiment
@@ -266,7 +267,7 @@ func (experiment *Experiment) watchSpeed() {
 			if speed >= experiment.snub.upperSpeedLimit {
 				experiment.snub.NextState() // Acelerating to Braking
 			}
-		} else if experiment.snub.state == braking || experiment.snub.state == brakingWater {
+		} else if (experiment.snub.state == braking || experiment.snub.state == brakingWater) && !experiment.snub.isStabilizing {
 			if speed < experiment.snub.lowerSpeedLimit {
 				experiment.snub.NextState() // Braking to Cooldown
 				if experiment.continueRunning {
