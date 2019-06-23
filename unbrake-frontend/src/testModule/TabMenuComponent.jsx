@@ -16,7 +16,11 @@ import Request from "../utils/Request";
 import {
   base10,
   linearEquation,
-  convertDigitalToAnalog
+  convertDigitalToAnalog,
+  frequencyEquation,
+  rotationsPerMinuteEquation,
+  rotationToSpeed,
+  travelledDistanceEquation
 } from "../utils/Equations";
 
 const margin = 1.5;
@@ -44,8 +48,37 @@ const generalComponent = mqttKey => {
   return <Grid xs>{mqttKey !== "" && <General mqttKey={mqttKey} />}</Grid>;
 };
 
+const calculeSeed = (states, vector) => {
+  const { RAP } = states.calibration.values;
+  const { dispatch, msg } = states;
+
+  const analogMesg = convertDigitalToAnalog(parseInt(msg.asString(), base10));
+  vector.push(analogMesg);
+
+  const frequency = frequencyEquation(analogMesg);
+  const rotationsPerMinute = rotationsPerMinuteEquation(frequency);
+  const speedKmh = rotationToSpeed(rotationsPerMinute, RAP, "km/h");
+
+  dispatch(change("testAquisition", "Rrpm", frequency));
+  dispatch(change("testAquisition", "Vkmg", speedKmh));
+};
+
+const calculeForce = (states, vector, sensorNumber) => {
+  const { FCF1, OFF1, FCF2, OFF2 } = states.calibration.values;
+  const { dispatch, msg } = states;
+
+  const analogMesg = convertDigitalToAnalog(parseInt(msg.asString(), base10));
+  vector.push(analogMesg);
+
+  const linear = linearEquation(
+    analogMesg,
+    sensorNumber === 1 ? FCF1 : FCF2,
+    sensorNumber === 1 ? OFF1 : OFF2
+  );
+  dispatch(change("testAquisition", `Fkgf${sensorNumber}`, linear));
+};
+
 const calculeTemperature = (states, vector, sensorNumber) => {
-  console.log("ENTROU AQUI", states, vector);
   const { FCT1, OFT1, FCT2, OFT2 } = states.calibration.values;
   const { dispatch, msg } = states;
 
@@ -57,6 +90,7 @@ const calculeTemperature = (states, vector, sensorNumber) => {
     sensorNumber === 1 ? FCT1 : FCT2,
     sensorNumber === 1 ? OFT1 : OFT2
   );
+  console.log(linear, analogMesg, FCT1, OFT1, sensorNumber, states)
   dispatch(change("testAquisition", `Tc${sensorNumber}`, linear));
 };
 
@@ -67,7 +101,6 @@ class TabMenuComponent extends React.Component {
       value: 0,
       mqttKey: ""
     };
-    console.log(props, this.props);
     this.client = emitter.connect({
       host: MQTT_HOST,
       port: MQTT_PORT,
@@ -104,6 +137,9 @@ class TabMenuComponent extends React.Component {
 
     this.sensorTemperature1 = [];
     this.sensorTemperature2 = [];
+    this.sensorForce1 = [];
+    this.sensorForce2 = [];
+    this.sensorSpeed = [];
 
     this.handleChange = this.handleChange.bind(this);
     this.handleChangeSelect = this.handleChangeSelect.bind(this);
@@ -119,17 +155,21 @@ class TabMenuComponent extends React.Component {
       if (msg.channel === "unbrake/galpao/temperature/sensor1/") {
         calculeTemperature(states, this.sensorTemperature1, 1);
       }
-      if (msg.channel === "unbrake/galpao/temperature/sensor2/") {
+      else if (msg.channel === "unbrake/galpao/temperature/sensor2/") {
         calculeTemperature(states, this.sensorTemperature2, 2);
       }
-      /*
-       * if (msg.channel === "unbrake/galpao/brakingForce/sensor1/"){
-       *   calculeTemperature(states, this.sensorTemperature1, 1);
-       * }
-       * if (msg.channel === "unbrake/galpao/brakingForce/sensor2/"){
-       *   calculeTemperature(states, this.sensorTemperature2, 2);
-       * }
-       */
+    
+      else if (msg.channel === "unbrake/galpao/brakingForce/sensor1/"){
+        calculeForce(states, this.sensorForce1, 1);
+      }
+      else if (msg.channel === "unbrake/galpao/brakingForce/sensor2/"){
+        calculeForce(states, this.sensorForce2, 2);
+      }
+
+      else if (msg.channel = "unbrake/galpao/frequency") {
+        calculeSeed(states, this.sensorSpeed);
+      }
+      
     });
   }
 
@@ -225,20 +265,6 @@ const mapDispatchToProps = dispatch => ({
 const MenuComponent = reduxForm({
   form: "calibration",
   destroyOnUnmount: false
-  /*
-   * initialValues: {
-   *   OFT1: 0,
-   *   FCT1: 0,
-   *   OFT2: 0,
-   *   FCT2: 0,
-   *   OFF1: 0,
-   *   FCF1: 0,
-   *   OFF2: 0,
-   *   FCF2: 0,
-   *   FCVB: 0,
-   *   OFVB: 0
-   * }
-   */
 })(TabMenuComponent);
 
 export default connect(
