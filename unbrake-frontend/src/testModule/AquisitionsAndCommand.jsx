@@ -191,6 +191,7 @@ class AquisitionsAndCommand extends React.Component {
         In3: false
       }
     };
+
     this.handleChange = this.handleChange.bind(this);
     this.handlePrevious = this.handlePrevious.bind(this);
   }
@@ -221,6 +222,7 @@ class AquisitionsAndCommand extends React.Component {
   }
 
   render() {
+    console.log(this.props);
     const { aquisition } = this.state;
     const { classes } = this.props;
     const states = renderDictionary(aquisition);
@@ -243,11 +245,23 @@ class AquisitionsAndCommand extends React.Component {
 }
 
 AquisitionsAndCommand.propTypes = {
+  testAquisition: { values: {} },
+  calibration: { values: {} }
+};
+
+AquisitionsAndCommand.propTypes = {
   classes: PropTypes.objectOf(PropTypes.string).isRequired,
   dispatch: PropTypes.func.isRequired,
   newAquisition: PropTypes.oneOfType([PropTypes.object]).isRequired,
-  redirect: PropTypes.func.isRequired
+  redirect: PropTypes.func.isRequired,
+  testAquisition: PropTypes.string,
+  calibration: PropTypes.string
 };
+
+const mapStateToProps = state => ({
+  testAquisition: state.form.testAquisition,
+  calibration: state.form.calibration
+});
 
 const mapDispatchToProps = dispatch => ({
   redirect: payload => dispatch(redirectPage(payload))
@@ -258,6 +272,6 @@ const AquisitionsAndCommandForm = reduxForm({
 })(AquisitionsAndCommand);
 
 export default connect(
-  null,
+  mapStateToProps,
   mapDispatchToProps
 )(withStyles(styles)(AquisitionsAndCommandForm));

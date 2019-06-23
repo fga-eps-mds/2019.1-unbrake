@@ -65,18 +65,25 @@ class Test extends React.Component {
     const { aquisition, data } = test;
     return (
       <Grid container xs={12} item style={{ marginTop: "80px" }}>
-        <Grid container item justify="center" xs={6}>
-          <AquisitionsAndCommand newAquisition={aquisition} />
-        </Grid>
-        <Grid container item justify="center" xs={6}>
-          {test.mqttKey !== "" && (
+        {test.mqttKey !== "" && (
+          <Grid container item justify="center" xs={6}>
+            <AquisitionsAndCommand
+              newAquisition={aquisition}
+              mqttKey={test.mqttKey}
+            />
+          </Grid>
+        )}
+        {test.mqttKey !== "" && (
+          <Grid container item justify="center" xs={6}>
             <TestData newData={data} mqttKey={test.mqttKey} />
-          )}
-        </Grid>
+          </Grid>
+        )}
         <Grid container item xs={3} />
-        <Grid item container xs={12} justify="center">
-          <TabMenuComponent />
-        </Grid>
+        {test.mqttKey !== "" && (
+          <Grid item container xs={12} justify="center">
+            <TabMenuComponent mqttKey={test.mqttKey} />
+          </Grid>
+        )}
       </Grid>
     );
   }

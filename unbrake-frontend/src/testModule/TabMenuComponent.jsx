@@ -5,11 +5,19 @@ import Tabs from "@material-ui/core/Tabs";
 import Tab from "@material-ui/core/Tab";
 import PropTypes from "prop-types";
 import { connect } from "react-redux";
+import { initialize, reduxForm, change } from "redux-form";
+import * as emitter from "emitter-io";
 import RealTimeChart from "../components/RealTimeChart";
 import { changeConfigTest, changeCalibTest } from "../actions/TestActions";
 import General from "./General";
-import { API_URL_GRAPHQL } from "../utils/Constants";
+import { API_URL_GRAPHQL, MQTT_HOST, MQTT_PORT } from "../utils/Constants";
 import Request from "../utils/Request";
+
+import {
+  base10,
+  linearEquation,
+  convertDigitalToAnalog
+} from "../utils/Equations";
 
 const margin = 1.5;
 const zeroTab = 0;
@@ -36,22 +44,92 @@ const generalComponent = mqttKey => {
   return <Grid xs>{mqttKey !== "" && <General mqttKey={mqttKey} />}</Grid>;
 };
 
+const calculeTemperature = (states, vector, sensorNumber) => {
+  console.log("ENTROU AQUI", states, vector);
+  const { FCT1, OFT1, FCT2, OFT2 } = states.calibration.values;
+  const { dispatch, msg } = states;
+
+  const analogMesg = convertDigitalToAnalog(parseInt(msg.asString(), base10));
+  vector.push(analogMesg);
+
+  const linear = linearEquation(
+    analogMesg,
+    sensorNumber === 1 ? FCT1 : FCT2,
+    sensorNumber === 1 ? OFT1 : OFT2
+  );
+  dispatch(change("testAquisition", `Tc${sensorNumber}`, linear));
+};
+
 class TabMenuComponent extends React.Component {
   constructor(props) {
     super(props);
-
     this.state = {
       value: 0,
       mqttKey: ""
     };
+    console.log(props, this.props);
+    this.client = emitter.connect({
+      host: MQTT_HOST,
+      port: MQTT_PORT,
+      secure: false
+    });
+    this.client.subscribe({
+      key: props.mqttKey,
+      channel: "unbrake/galpao/temperature/sensor1"
+    });
+    this.client.subscribe({
+      key: props.mqttKey,
+      channel: "unbrake/galpao/temperature/sensor2"
+    });
+    this.client.subscribe({
+      key: props.mqttKey,
+      channel: "unbrake/galpao/brakingForce/sensor1"
+    });
+    this.client.subscribe({
+      key: props.mqttKey,
+      channel: "unbrake/galpao/brakingForce/sensor2"
+    });
+    this.client.subscribe({
+      key: props.mqttKey,
+      channel: "unbrake/galpao/frequency"
+    });
+    this.client.subscribe({
+      key: props.mqttKey,
+      channel: "unbrake/galpao/speed"
+    });
+    this.client.subscribe({
+      key: props.mqttKey,
+      channel: "unbrake/galpao/pressure"
+    });
+
+    this.sensorTemperature1 = [];
+    this.sensorTemperature2 = [];
+
     this.handleChange = this.handleChange.bind(this);
     this.handleChangeSelect = this.handleChangeSelect.bind(this);
   }
 
   componentDidMount() {
-    const url = `${API_URL_GRAPHQL}/mqtt-reading-key`;
-    Request(url, "GET").then(json => {
-      this.setState({ mqttKey: json.key });
+    const { dispatch } = this.props;
+
+    this.client.on("message", msg => {
+      const { calibration, testAquisition } = this.props;
+      const states = { calibration, dispatch, msg, testAquisition };
+
+      if (msg.channel === "unbrake/galpao/temperature/sensor1/") {
+        calculeTemperature(states, this.sensorTemperature1, 1);
+      }
+      if (msg.channel === "unbrake/galpao/temperature/sensor2/") {
+        calculeTemperature(states, this.sensorTemperature2, 2);
+      }
+      /*
+       * if (msg.channel === "unbrake/galpao/brakingForce/sensor1/"){
+       *   calculeTemperature(states, this.sensorTemperature1, 1);
+       * }
+       * if (msg.channel === "unbrake/galpao/brakingForce/sensor2/"){
+       *   calculeTemperature(states, this.sensorTemperature2, 2);
+       * }
+       */
     });
   }
 
@@ -70,8 +148,8 @@ class TabMenuComponent extends React.Component {
   }
 
   render() {
-    const { classes } = this.props;
-    const { value, mqttKey } = this.state;
+    const { classes, mqttKey } = this.props;
+    const { value } = this.state;
     return (
       <Grid
         item
@@ -117,16 +195,25 @@ class TabMenuComponent extends React.Component {
   }
 }
 
+TabMenuComponent.defaultProps = {
+  calibration: { values: {} },
+  testAquisition: { values: {} }
+};
+
 TabMenuComponent.propTypes = {
   classes: PropTypes.objectOf(PropTypes.string).isRequired,
   changeCalib: PropTypes.func.isRequired,
-  changeConfig: PropTypes.func.isRequired
+  changeConfig: PropTypes.func.isRequired,
+  calibration: PropTypes.string,
+  testAquisition: PropTypes.string
 };
 
 const mapStateToProps = state => {
   return {
     configId: state.testReducer.configId,
-    calibId: state.testReducer.calibId
+    calibId: state.testReducer.calibId,
+    calibration: state.form.calibration,
+    testAquisition: state.form.testAquisition
   };
 };
 
@@ -135,7 +222,26 @@ const mapDispatchToProps = dispatch => ({
   changeConfig: payload => dispatch(changeConfigTest(payload))
 });
 
+const MenuComponent = reduxForm({
+  form: "calibration",
+  destroyOnUnmount: false
+  /*
+   * initialValues: {
+   *   OFT1: 0,
+   *   FCT1: 0,
+   *   OFT2: 0,
+   *   FCT2: 0,
+   *   OFF1: 0,
+   *   FCF1: 0,
+   *   OFF2: 0,
+   *   FCF2: 0,
+   *   FCVB: 0,
+   *   OFVB: 0
+   * }
+   */
+})(TabMenuComponent);
+
 export default connect(
   mapStateToProps,
   mapDispatchToProps
-)(withStyles(styles)(TabMenuComponent));
+)(withStyles(styles)(MenuComponent));
