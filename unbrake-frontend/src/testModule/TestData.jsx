@@ -4,13 +4,13 @@ import { reduxForm } from "redux-form";
 import { withStyles, Grid } from "@material-ui/core";
 import LinearProgress from "@material-ui/core/LinearProgress";
 import Button from "@material-ui/core/Button";
-import { API_URL_GRAPHQL } from "../utils/Constants";
-import Request from "../utils/Request";
-import { messageSistem } from "../actions/NotificationActions";
 import * as emitter from "emitter-io";
 import { connect } from "react-redux";
+import { API_URL_GRAPHQL, MQTT_HOST, MQTT_PORT } from "../utils/Constants";
+import Request from "../utils/Request";
+import { messageSistem } from "../actions/NotificationActions";
 import styles from "./Styles";
-import { MQTT_HOST, MQTT_PORT } from "../utils/Constants";
+import allPower from "./ProgressBar";
 
 const percentageTransformer = 100;
 
@@ -48,38 +48,6 @@ const progress = (value, classes) => {
       </div>
     </div>
   );
-};
-
-const heigthProgress = (value, classes) => {
-  return (
-    <div>
-      <div>
-        <LinearProgress
-          className={classes.progressHeight}
-          variant="determinate"
-          value={value}
-        />
-      </div>
-    </div>
-  );
-};
-
-const allPower = (powerStates, classes) => {
-  const render = powerStates.map(value => {
-    return (
-      <Grid
-        container
-        item
-        justify="center"
-        xs={4}
-        className={classes.gridAllPower}
-      >
-        {heigthProgress(value.value, classes)}
-        <spam>{value.name}</spam>
-      </Grid>
-    );
-  });
-  return render;
 };
 
 const testProgress = (testPro, classes) => {
@@ -309,7 +277,6 @@ TestData.propTypes = {
 const mapDispatchToProps = dispatch => ({
   sendMessage: payload => dispatch(messageSistem(payload))
 });
-
 
 const mapStateToProps = state => {
   return {
