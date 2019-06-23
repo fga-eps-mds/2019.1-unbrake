@@ -73,7 +73,7 @@ secrets:
   postgres_password:
     file: secrets/DB_PASSWORD
   mqtt-reading-key:
-    file: ./unbrake-api/secrets/MQTT_READING_KEY
+    file: secrets/MQTT_READING_KEY
   emitter-license:
     file: secrets/EMITTER_LICENSE
 
