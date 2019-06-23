@@ -48,7 +48,25 @@ const generalComponent = mqttKey => {
   return <Grid xs>{mqttKey !== "" && <General mqttKey={mqttKey} />}</Grid>;
 };
 
-const calculeSeed = (states, vector) => {
+const calculePressure = (states, vector) => {
+  const { dispatch, msg } = states;
+
+  const analogMesg = convertDigitalToAnalog(parseInt(msg.asString(), base10));
+  vector.push(analogMesg);
+
+  dispatch(change("testAquisition", "Pc", analogMesg));
+};
+
+const calculeSpeed = (states, vector) => {
+  const { dispatch, msg } = states;
+
+  const analogMesg = convertDigitalToAnalog(parseInt(msg.asString(), base10));
+  vector.push(analogMesg);
+
+  dispatch(change("testAquisition", "Vc", analogMesg));
+};
+
+const calculeFrequency = (states, vector) => {
   const { RAP } = states.calibration.values;
   const { dispatch, msg } = states;
 
@@ -90,7 +108,8 @@ const calculeTemperature = (states, vector, sensorNumber) => {
     sensorNumber === 1 ? FCT1 : FCT2,
     sensorNumber === 1 ? OFT1 : OFT2
   );
-  console.log(linear, analogMesg, FCT1, OFT1, sensorNumber, states)
+  // console.log(linear, analogMesg, FCT1, OFT1, sensorNumber, states)
+
   dispatch(change("testAquisition", `Tc${sensorNumber}`, linear));
 };
 
@@ -128,11 +147,11 @@ class TabMenuComponent extends React.Component {
     });
     this.client.subscribe({
       key: props.mqttKey,
-      channel: "unbrake/galpao/speed"
+      channel: "unbrake/galpao/speed/"
     });
     this.client.subscribe({
       key: props.mqttKey,
-      channel: "unbrake/galpao/pressure"
+      channel: "unbrake/galpao/pressure/"
     });
 
     this.sensorTemperature1 = [];
@@ -140,36 +159,35 @@ class TabMenuComponent extends React.Component {
     this.sensorForce1 = [];
     this.sensorForce2 = [];
     this.sensorSpeed = [];
+    this.sensorSpeedCommand = [];
+    this.sensorPressureComand = [];
 
     this.handleChange = this.handleChange.bind(this);
     this.handleChangeSelect = this.handleChangeSelect.bind(this);
   }
 
   componentDidMount() {
-    const { dispatch } = this.props;
+    const { dispatch, calibration } = this.props;
 
     this.client.on("message", msg => {
-      const { calibration, testAquisition } = this.props;
+      const { testAquisition } = this.props;
       const states = { calibration, dispatch, msg, testAquisition };
 
       if (msg.channel === "unbrake/galpao/temperature/sensor1/") {
         calculeTemperature(states, this.sensorTemperature1, 1);
-      }
-      else if (msg.channel === "unbrake/galpao/temperature/sensor2/") {
+      } else if (msg.channel === "unbrake/galpao/temperature/sensor2/") {
         calculeTemperature(states, this.sensorTemperature2, 2);
-      }
-    
-      else if (msg.channel === "unbrake/galpao/brakingForce/sensor1/"){
+      } else if (msg.channel === "unbrake/galpao/brakingForce/sensor1/") {
         calculeForce(states, this.sensorForce1, 1);
-      }
-      else if (msg.channel === "unbrake/galpao/brakingForce/sensor2/"){
+      } else if (msg.channel === "unbrake/galpao/brakingForce/sensor2/") {
         calculeForce(states, this.sensorForce2, 2);
+      } else if (msg.channel === "unbrake/galpao/frequency/") {
+        calculeFrequency(states, this.sensorSpeed);
+      } else if (msg.channel === "unbrake/galpao/speed/") {
+        calculeSpeed(states, this.sensorSpeedCommand);
+      } else if (msg.channel === "unbrake/galpao/pressure/") {
+        calculePressure(states, this.sensorPressureComand);
       }
-
-      else if (msg.channel = "unbrake/galpao/frequency") {
-        calculeSeed(states, this.sensorSpeed);
-      }
-      
     });
   }
 
