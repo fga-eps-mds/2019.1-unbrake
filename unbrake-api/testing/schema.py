@@ -213,11 +213,52 @@ class SubmitTesting(graphene.Mutation):
         testing = SubmitTesting._get_testing_info(testing_id)
         client.publish(
             get_secret('mqtt-writing-key'),
-            "unbrake/galpao/testing",
+            "unbrake/galpao/experiment",
             testing
         )
 
         return SubmitTesting(succes=testing)
+
+
+class QuitExperiment(graphene.Mutation):
+    '''
+      Class to quit test
+    '''
+    error = graphene.String()
+    response = graphene.String()
+
+    class Arguments:
+        '''
+          Arguments necessaries to use the mutation
+        '''
+        username = graphene.String()
+        testing_id = graphene.Int()
+        mqtt_host = graphene.String()
+        mqtt_port = graphene.Int()
+
+    def mutate(self, info, username, testing_id, mqtt_host):
+        '''
+          Mutation to execute quiting
+        '''
+        client = Client()
+
+        client.connect(
+            host=mqtt_host,
+            port=8080,
+            secure=False
+        )
+
+        testing = Testing.objects.get(pk=testing_id)
+        user = testing.create_by
+        if user == username:
+            client.publish(
+                get_secret('mqtt-writing-key'),
+                "unbrake/galpao/quitExperiment",
+                "VINTE MIL"
+            )
+
+            return QuitExperiment(response="Success")
+        return QuitExperiment(error="Permission denied")
 
 
 class Mutation(graphene.ObjectType):
@@ -226,3 +267,4 @@ class Mutation(graphene.ObjectType):
     '''
     create_testing = CreateTesting.Field()
     submit_testing = SubmitTesting.Field()
+    quit_testing = QuitExperiment.Field()
