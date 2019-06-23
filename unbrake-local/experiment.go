@@ -119,32 +119,35 @@ func (experiment *Experiment) Run() {
 // HandleExperimentsReceiving will wait for experiments to be published at a specific MQTT channel
 // currently the prefix + /experiment
 func HandleExperimentsReceiving() {
-	key := getMqttKey()
-	if key == "" {
-		log.Println("MQTT key not set!!! Not waiting for tests to arrive...")
-		return
-	}
+	for {
+		wgHandleExperimentReceiving.Add(1)
 
-	// Wait for tests
-	var channel = getMqttChannelPrefix() + "/experiment"
-	clientReading.Subscribe(key, channel, func(_ *emitter.Client, msg emitter.Message) {
-		experiment := ExperimentFromJSON(msg.Payload())
-		if isAvailable {
-
-			log.Printf("Experiment received: %s", experiment)
-
-			if port.IsOpen() {
-				experiment.Run()
-			} else {
-				log.Println("Tried to begin an experiment without select a serial port")
-			}
-
-		} else {
-			log.Printf("Alredy running an experiment but one was submitted(id: %v)", experiment.id)
+		key := getMqttKey()
+		if key == "" {
+			log.Println("MQTT key not set!!! Not waiting for tests to arrive...")
+			return
 		}
-	})
 
-	wgGeneral.Wait()
+		// Wait for tests
+		var channel = getMqttChannelPrefix() + "/experiment"
+		clientReading.Subscribe(key, channel, func(_ *emitter.Client, msg emitter.Message) {
+			experiment := ExperimentFromJSON(msg.Payload())
+			if isAvailable {
+
+				log.Printf("Experiment received: %s", experiment)
+
+				if port.IsOpen() {
+					experiment.Run()
+				} else {
+					log.Println("Tried to begin an experiment without select a serial port")
+				}
+
+			} else {
+				log.Printf("Alredy running an experiment but one was submitted(id: %v)", experiment.id)
+			}
+		})
+		wgHandleExperimentReceiving.Wait()
+	}
 }
 
 // ExperimentFromJSON takes a json as an array of bytes and returns an experiment
@@ -242,6 +245,7 @@ func (experiment *Experiment) watchEnd() {
 			experiment.continueRunning = false
 			isAvailable = true
 			quitExperimentEnableCh <- true
+			wgHandleExperimentReceiving.Done()
 			aplicationStatusCh <- "Coletando dados"
 
 		} else {
@@ -286,7 +290,9 @@ func (experiment *Experiment) watchTemperature() {
 		if (temperature1 > experiment.temperatureLimit || temperature2 > experiment.temperatureLimit) && experiment.doEnableWater {
 			if experiment.snub.state == acelerating || experiment.snub.state == braking || experiment.snub.state == cooldown {
 				experiment.changeStateWater()
-				experiment.changeStateWater()
+				if experiment.continueRunning {
+					experiment.changeStateWater()
+				}
 			}
 		}
 	})

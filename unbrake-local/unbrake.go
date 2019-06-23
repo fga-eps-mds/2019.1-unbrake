@@ -27,10 +27,11 @@ import (
 
 // Channels general for controlling execution
 var (
-	wgQuit               sync.WaitGroup
-	wgGeneral            sync.WaitGroup
-	stopCollectingDataCh chan bool
-	sigsCh               chan os.Signal
+	wgQuit                      sync.WaitGroup
+	wgGeneral                   sync.WaitGroup
+	wgHandleExperimentReceiving sync.WaitGroup
+	stopCollectingDataCh        chan bool
+	sigsCh                      chan os.Signal
 )
 
 var (
@@ -62,22 +63,48 @@ func main() {
 		serialAttrs[i].handleCh = make(chan float64)
 	}
 
-	clientWriting, _ = emitter.Connect(getMqttHost(), func(_ *emitter.Client, msg emitter.Message) {}, emitter.WithConnectTimeout(time.Second*2))
+	clientWriting, _ = emitter.Connect(
+		getMqttHost(),
+		func(_ *emitter.Client, msg emitter.Message) {},
+		emitter.WithConnectTimeout(time.Second*2),
+		emitter.WithAutoReconnect(true),
+		emitter.WithPingTimeout(time.Second*2),
+	)
 
-	clientReading, _ = emitter.Connect(getMqttHost(), func(_ *emitter.Client, msg emitter.Message) {
-		log.Printf("Sent message: '%s' topic: '%s'\n", msg.Payload(), msg.Topic())
-	}, emitter.WithConnectTimeout(time.Second*2))
+	clientReading, _ = emitter.Connect(
+		getMqttHost(),
+		func(_ *emitter.Client, msg emitter.Message) {},
+		emitter.WithConnectTimeout(time.Second*2),
+		emitter.WithAutoReconnect(true),
+		emitter.WithPingTimeout(time.Second*2),
+	)
 
-	go func() {
-		for {
-			if clientWriting.IsConnected() {
-				connectStatusCh <- "Conectado"
-			} else {
-				connectStatusCh <- "Desconectado"
-			}
-			time.Sleep(time.Second * 10)
-		}
-	}()
+	clientWriting.OnConnect(func(_ *emitter.Client) {
+		wgHandleExperimentReceiving.Done()
+		wgQuit.Done()
+		connectStatusCh <- "Conectado"
+		log.Println("Connected with writing broker successfully")
+	})
+
+	clientReading.OnConnect(func(_ *emitter.Client) {
+		log.Println("Connected with reading broker successfully")
+	})
+
+	clientWriting.OnDisconnect(func(_ *emitter.Client, err error) {
+		connectStatusCh <- "Desconectado"
+		log.Println("Disconnected from writing from broker: ", err)
+	})
+
+	clientReading.OnDisconnect(func(_ *emitter.Client, err error) {
+		connectStatusCh <- "Desconectado"
+		log.Println("Disconnected from reading from broker: ", err)
+	})
+
+	if clientWriting.IsConnected() {
+		connectStatusCh <- "Conectado"
+	} else {
+		connectStatusCh <- "Desconectado"
+	}
 
 	onExit := func() {
 		log.Println("Exiting...")
@@ -149,8 +176,10 @@ func onReady() {
 					quitExperiment.Disable()
 					isAvailable = true
 					wgQuit.Done()
+					wgHandleExperimentReceiving.Done()
 				}
 			})
+
 			wgQuit.Wait()
 		}
 	}()
@@ -191,6 +220,7 @@ func onReady() {
 			}
 		}
 	}()
+
 	wgGeneral.Add(1)
 	go CollectData()
 	go HandleExperimentsReceiving()
