@@ -19,9 +19,9 @@ import {
   convertDigitalToAnalog,
   frequencyEquation,
   rotationsPerMinuteEquation,
-  rotationToSpeed,
-  travelledDistanceEquation
+  rotationToSpeed
 } from "../utils/Equations";
+import { labelTemperature } from "../calibration/Temperature";
 
 const margin = 1.5;
 const zeroTab = 0;
@@ -46,6 +46,29 @@ const styles = theme => ({
 
 const generalComponent = mqttKey => {
   return <Grid xs>{mqttKey !== "" && <General mqttKey={mqttKey} />}</Grid>;
+};
+
+const doubleGraph = (sensorOne, sensorTwo, label) => {
+  return (
+    <RealTimeChart
+      sensor1={sensorOne}
+      sensor2={sensorTwo}
+      labelSensor1={label.one}
+      colorSensor1="#133e79"
+      labelSensor2={label.two}
+      colorSensor2="#348941"
+    />
+  );
+};
+
+const oneGraph = (sensorOne, label) => {
+  return (
+    <RealTimeChart
+      sensor1={sensorOne}
+      labelSensor1={label}
+      colorSensor1="#133e79"
+    />
+  );
 };
 
 const calculePressure = (states, vector) => {
@@ -108,7 +131,7 @@ const calculeTemperature = (states, vector, sensorNumber) => {
     sensorNumber === 1 ? FCT1 : FCT2,
     sensorNumber === 1 ? OFT1 : OFT2
   );
-  // console.log(linear, analogMesg, FCT1, OFT1, sensorNumber, states)
+  console.log(linear, analogMesg, FCT1, OFT1, sensorNumber, states);
 
   dispatch(change("testAquisition", `Tc${sensorNumber}`, linear));
 };
@@ -158,7 +181,7 @@ class TabMenuComponent extends React.Component {
     this.sensorTemperature2 = [];
     this.sensorForce1 = [];
     this.sensorForce2 = [];
-    this.sensorSpeed = [];
+    this.sensorRpm = [];
     this.sensorSpeedCommand = [];
     this.sensorPressureComand = [];
 
@@ -173,20 +196,22 @@ class TabMenuComponent extends React.Component {
       const { testAquisition } = this.props;
       const states = { calibration, dispatch, msg, testAquisition };
 
-      if (msg.channel === "unbrake/galpao/temperature/sensor1/") {
-        calculeTemperature(states, this.sensorTemperature1, 1);
-      } else if (msg.channel === "unbrake/galpao/temperature/sensor2/") {
-        calculeTemperature(states, this.sensorTemperature2, 2);
-      } else if (msg.channel === "unbrake/galpao/brakingForce/sensor1/") {
-        calculeForce(states, this.sensorForce1, 1);
-      } else if (msg.channel === "unbrake/galpao/brakingForce/sensor2/") {
-        calculeForce(states, this.sensorForce2, 2);
-      } else if (msg.channel === "unbrake/galpao/frequency/") {
-        calculeFrequency(states, this.sensorSpeed);
-      } else if (msg.channel === "unbrake/galpao/speed/") {
-        calculeSpeed(states, this.sensorSpeedCommand);
-      } else if (msg.channel === "unbrake/galpao/pressure/") {
-        calculePressure(states, this.sensorPressureComand);
+      if (Object.keys(calibration.values).length > 0) {
+        if (msg.channel === "unbrake/galpao/temperature/sensor1/") {
+          calculeTemperature(states, this.sensorTemperature1, 1);
+        } else if (msg.channel === "unbrake/galpao/temperature/sensor2/") {
+          calculeTemperature(states, this.sensorTemperature2, 2);
+        } else if (msg.channel === "unbrake/galpao/brakingForce/sensor1/") {
+          calculeForce(states, this.sensorForce1, 1);
+        } else if (msg.channel === "unbrake/galpao/brakingForce/sensor2/") {
+          calculeForce(states, this.sensorForce2, 2);
+        } else if (msg.channel === "unbrake/galpao/frequency/") {
+          calculeFrequency(states, this.sensorRpm);
+        } else if (msg.channel === "unbrake/galpao/speed/") {
+          calculeSpeed(states, this.sensorSpeedCommand);
+        } else if (msg.channel === "unbrake/galpao/pressure/") {
+          calculePressure(states, this.sensorPressureComand);
+        }
       }
     });
   }
@@ -208,6 +233,10 @@ class TabMenuComponent extends React.Component {
   render() {
     const { classes, mqttKey } = this.props;
     const { value } = this.state;
+
+    const labelTemperature = { one: "Temperatura 1", two: "Temperatura 2" };
+    const labelForce = { one: "Força 1", two: "Força 2" };
+
     return (
       <Grid
         item
@@ -242,10 +271,17 @@ class TabMenuComponent extends React.Component {
           style={{ paddingTop: "15px" }}
         >
           {value === zeroTab && generalComponent(mqttKey)}
-          {value === firstTab && <RealTimeChart />}
-          {value === secondTab && <RealTimeChart />}
-          {value === thirdTab && <RealTimeChart />}
-          {value === fourthTab && <RealTimeChart />}
+          {value === firstTab &&
+            doubleGraph(
+              this.sensorTemperature1,
+              this.sensorTemperature2,
+              labelTemperature
+            )}
+          {value === secondTab &&
+            doubleGraph(this.sensorForce1, this.sensorForce2, labelForce)}
+          {value === thirdTab && oneGraph(this.sensorRpm, "Frequência")}
+          {value === fourthTab &&
+            oneGraph(this.sensorSpeedCommand, "Velocidade (comando)")}
           {value === fifthTab && <RealTimeChart />}
         </Grid>
       </Grid>
