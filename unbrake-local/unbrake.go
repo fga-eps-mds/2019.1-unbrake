@@ -155,6 +155,7 @@ func onReady() {
 				quitExperimentCh <- true
 				quitExperiment.Disable()
 				isAvailable = true
+				systray.SetIcon(IconDisabled)
 				log.Println("Experiment finished by user")
 			}
 		}

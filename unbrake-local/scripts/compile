@@ -5,7 +5,7 @@ SELF_PATH="$(dirname $(readlink -f "$0"))"
 PACKAGE_PATH="/go/src/github.com/fga-eps-mds/2019.1-unbrake/unbrake-local"
 
 BINARY_FOLDER="$SELF_PATH/../bin"
-BIN_LINUX_AMD64_NAME="unbrake-linux-amd64.exe"
+BIN_LINUX_AMD64_NAME="unbrake-linux-amd64"
 BIN_WIN_AMD64_NAME="unbrake-windows-amd64.exe"
 
 echo $BINARY_FOLDER

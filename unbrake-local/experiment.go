@@ -111,6 +111,7 @@ func (experiment *Experiment) Run() {
 
 	isAvailable = false
 	quitExperimentEnableCh <- false
+	systray.SetIcon(IconRotating[0])
 	aplicationStatusCh <- "Colentando dados e executando ensaio"
 	experiment.snub.SetState(acelerating)
 	experiment.duration = time.Now()
@@ -213,7 +214,6 @@ func (experiment *Experiment) watchSnubState() {
 	go experiment.watchTemperature()
 	go experiment.watchIsAvailable()
 	go experiment.watchDuration()
-	go experiment.watchIcon()
 }
 
 func (experiment *Experiment) watch(watchFunction func()) {
@@ -269,31 +269,12 @@ func (experiment *Experiment) watchEnd() {
 			quitExperimentEnableCh <- true
 			wgHandleExperimentReceiving.Done()
 			aplicationStatusCh <- "Coletando dados"
+			systray.SetIcon(IconDisabled)
 
 		} else {
 			experiment.snub.counterCh <- counter
 		}
 	})
-}
-
-func (experiment *Experiment) watchIcon() {
-
-	experiment.watch(func() {
-
-		for !isAvailable {
-			for i := 0; i < 24; i++ {
-				if experiment.snub.state == "*" || experiment.snub.state == "&" {
-					systray.SetIcon(IconRotatingBraking[i])
-				} else {
-					systray.SetIcon(IconRotating[i])
-				}
-				time.Sleep(time.Millisecond * (1000) / 20)
-			}
-		}
-		systray.SetIcon(IconDisabled)
-
-	})
-
 }
 
 func (experiment *Experiment) speedToDutyCycle(speed float64) float64 {
