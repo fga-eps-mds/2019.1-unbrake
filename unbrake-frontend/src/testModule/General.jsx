@@ -40,6 +40,7 @@ const renderSubmitTest = (states, dispatchs, functions) => {
   const { available, power } = states;
   const color = available ? "#2e7d32" : "#d32f2f";
   const fun = available ? submit : quitExperiment;
+  console.log("FUNCAO DISPONIVEL", fun);
   return (
     <Grid container xs={4} justify="center" alignItems="center">
       <Button
@@ -144,8 +145,9 @@ class General extends React.Component {
     });
   }
 
-  handleChange(event) {
-    this.setState({ testeId: event.value });
+  handleChange(value) {
+    this.setState({ testeId: value });
+    console.log("TESTE ID", value);
   }
 
   handleChangeSelect(event) {

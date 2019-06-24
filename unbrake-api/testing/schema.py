@@ -236,7 +236,7 @@ class QuitExperiment(graphene.Mutation):
         mqtt_host = graphene.String()
         mqtt_port = graphene.Int()
 
-    def mutate(self, info, username, testing_id, mqtt_host):
+    def mutate(self, info, username, testing_id, mqtt_host, mqtt_port):
         '''
           Mutation to execute quiting
         '''

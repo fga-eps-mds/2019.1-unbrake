@@ -2,6 +2,7 @@ import { validateFields, saveCalibration } from "../calibration/Calibration";
 import { createCalibration } from "../calibration/CalibrationVariables";
 import { saveConfiguration } from "../configuration/ConfigFunctions";
 import { API_URL_GRAPHQL } from "../utils/Constants";
+import Request from "../utils/Request";
 
 const empty = 0;
 const sizeMessageDefault = 14;
@@ -43,20 +44,26 @@ const validateConfig = (configuration, sendMessage) => {
 };
 
 export const quitExperiment = (states, functions) => {
+  console.log("ENTROU QUIT");
   const urlUser = `${API_URL_GRAPHQL}?query=query{currentUser{username}}`;
   Request(urlUser, "GET").then(username => {
-    const urlTesting = `${API_URL_GRAPHQL}?query=query{createTesting(username:"${username}",
-        testingId:${
-          states.testeId
-        }, mqttHost:"unbrake.ml",mqttPort: 8000){response,error}}`;
+    const { currentUser } = username.data;
+    console.log(username, currentUser);
+    const urlTesting = `${API_URL_GRAPHQL}?query=mutation{quitTesting(username:"${
+      currentUser.username
+    }",testingId:${
+      states.testeId
+    }, mqttHost:"unbrake.ml",mqttPort: 8000){response,error}}`;
 
-    Request(urlTesting, "POST").then(() => {
+    Request(urlTesting, "POST").then(response => {
+      console.log("RESPOSTA QUIT", response);
       functions.handleChange(empty);
     });
   });
 };
 
 export const submit = (states, functions, dispatchs) => {
+  console.log("SUBMIT");
   const values = {
     calibration: states.calibration.values,
     name: "",
@@ -78,7 +85,11 @@ export const submit = (states, functions, dispatchs) => {
   const urlUser = `${API_URL_GRAPHQL}?query=query{currentUser{username}}`;
   if (states.configId !== "" && states.calibId !== "") {
     Request(urlUser, "GET").then(username => {
-      const urlTesting = `${API_URL_GRAPHQL}?query=mutation{createTesting(createBy:"${username}",
+      const { currentUser } = username.data;
+      console.log(username, currentUser);
+      const urlTesting = `${API_URL_GRAPHQL}?query=mutation{createTesting(createBy:"${
+        currentUser.username
+      }",
           idCalibration:${states.calibId},idConfiguration:${
         states.configId
       }){testing{id},error}}`;

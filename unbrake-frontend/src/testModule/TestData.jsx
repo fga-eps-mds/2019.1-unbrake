@@ -151,37 +151,33 @@ const testInformations = (informations, classes) => {
 
 const calculeTES = (states, functions) => {
   const { handleChange } = functions;
-  const {
-    configuration,
-    testAquisition,
-    snubState,
-    dutyCycle,
-    waiting,
-    waitingStartTime
-  } = states;
+  const { dutyCycle, waiting, waitingStartTime, configuration, state } = states;
+
+  if (state.TEI !== 0) handleChange("TEI", 0);
+
+  if (state.TEC !== 0) handleChange("TEC", 0);
 
   if (!waiting) {
+    if (waitingStartTime !== 0) handleChange("waitingStartTime", 0);
+
     handleChange("TES", dutyCycle);
 
-    // console.log("ENTROU", states)
-    if (dutyCycle >= 99) handleChange("waiting", true);
-  } else if (waitingStartTime === "")
-    handleChange("waitingStartTime", Date.now());
-  else {
+    // console.log("TES", states);
+    if (dutyCycle >= 99) {
+      handleChange("waiting", true);
+    }
+  } else {
+    if (waitingStartTime === 0) {
+      handleChange("waitingStartTime", Date.now());
+      return;
+    }
+
+    // console.log("TES tempo", states);
+
     const time = Date.now() - waitingStartTime;
     const centiseconds = Math.floor(time / 10);
 
-    const UWT = 5000; // configuration.UWT * 100;
-
-    console.log(
-      "TEMPOOO",
-      Date.now(),
-      waitingStartTime,
-      time,
-      centiseconds,
-      centiseconds / UWT,
-      1 - centiseconds / UWT
-    );
+    const UWT = 1000; // configuration.UWT * 100;
 
     if (centiseconds < UWT) {
       handleChange("TES", (1 - centiseconds / UWT) * 100);
@@ -189,8 +185,78 @@ const calculeTES = (states, functions) => {
       handleChange("TES", 0);
       handleChange("waiting", false);
     }
+  }
+};
 
-    // if (seconds)
+const calculeTEI = (states, functions) => {
+  const { handleChange } = functions;
+  const { dutyCycle, waiting, waitingStartTime, configuration, state } = states;
+
+  if (state.TES !== 0) handleChange("TES", 0);
+
+  if (state.TEC !== 0) handleChange("TEC", 0);
+
+  if (!waiting) {
+    if (waitingStartTime !== 0) handleChange("waitingStartTime", 0);
+
+    const convertionDuty = 100 - dutyCycle;
+    const minVelocity = 100 - 30; // configuration.LSL;
+    const valueProgress = (convertionDuty / minVelocity) * 100;
+
+    handleChange("TEI", valueProgress);
+
+    // console.log("TEI", states);
+    if (valueProgress >= 99) {
+      handleChange("waiting", true);
+      // console.log("ETNROU AQUI");
+    }
+  } else {
+    if (waitingStartTime === 0) {
+      handleChange("waitingStartTime", Date.now());
+      return;
+    }
+    // console.log("TEI tempo", states);
+
+    const time = Date.now() - waitingStartTime;
+    const centiseconds = Math.floor(time / 10);
+
+    const LSL = 1000; // configuration.LSL * 100;
+
+    if (centiseconds < LSL) {
+      handleChange("TES", (1 - centiseconds / LSL) * 100);
+    } else {
+      handleChange("TES", 0);
+      handleChange("waiting", false);
+    }
+  }
+};
+
+const calculeTEC = (states, functions) => {
+  const { handleChange } = functions;
+  const { waitingStartTime, configuration, state } = states;
+
+  if (state.TES !== 0) handleChange("TES", 0);
+
+  if (state.TEI !== 0) handleChange("TEI", 0);
+
+  // console.log("TEC tempo", states);
+
+  if (waitingStartTime === 0) {
+    handleChange("waitingStartTime", Date.now());
+    handleChange("TEC", 100);
+    return;
+  }
+
+  const time = Date.now() - waitingStartTime;
+  const centiseconds = Math.floor(time / 10);
+
+  const TBS = 1000; // configuration.TBS * 100;
+
+  if (centiseconds < TBS) {
+    handleChange("TEC", (1 - centiseconds / TBS) * 100);
+  } else {
+    handleChange("TEC", 0);
+    handleChange("waiting", false);
   }
 };
 
@@ -206,9 +272,9 @@ class TestData extends React.Component {
       DTE: "", // Duração total do ensaio
       snubState: "",
       dutyCycle: "",
-      waitingStartTime: "",
+      waitingStartTime: 0,
       experimentDuration: "",
-      waiting: true
+      waiting: false
     };
 
     this.client = emitter.connect({
@@ -252,7 +318,7 @@ class TestData extends React.Component {
     } = this.props;
 
     this.client.on("message", msg => {
-      console.log(msg.channel, msg.asString());
+      // console.log(msg.channel, msg.asString());
       if (msg.channel === "unbrake/galpao/currentSnub/") {
         this.setState({ SA: msg.asString() });
       } else if (msg.channel === "unbrake/galpao/snubState/") {
@@ -281,8 +347,12 @@ class TestData extends React.Component {
 
       const functions = { handleChange: this.handleChange };
 
-      console.log(this.state);
-      calculeTES(states, functions);
+      if (snubState === "acelerating" || snubState === "aceleratingWater")
+        calculeTES(states, functions);
+      if (snubState === "braking" || snubState === "brakingWater")
+        calculeTEI(states, functions);
+      if (snubState === "cooldown" || snubState === "cooldownWater")
+        calculeTEC(states, functions);
     });
   }
 
