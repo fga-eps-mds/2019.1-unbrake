@@ -237,6 +237,24 @@ func publishData(data string, subChannel string) {
 	}
 }
 
+func writeDutyCycle(duty float64) {
+
+	asciiBase := 75.0
+	perCentByAcii := 4.0
+
+	var command []byte
+
+	command = append(command, byte(int(duty/perCentByAcii+asciiBase)))
+
+	n := port.Write(command)
+	if n == -1 {
+
+		log.Println("Error writing to serial. Is this the right port?")
+		aplicationStatusCh <- "Selecione a porta correta"
+	}
+
+}
+
 func testSerialConnection() {
 
 	firmware := "Braketestbench"

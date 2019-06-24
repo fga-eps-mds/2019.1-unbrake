@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"log"
+	"strconv"
 	"strings"
 	"sync"
 	"time"
@@ -255,6 +256,19 @@ func (experiment *Experiment) watchEnd() {
 	})
 }
 
+func (experiment *Experiment) speedToDutyCycle(speed float64) float64 {
+
+	var duty = 0.0
+
+	if speed/experiment.snub.upperSpeedLimit > 1 {
+		duty = 100
+	} else {
+		duty = (speed / experiment.snub.upperSpeedLimit) * 100
+	}
+
+	return duty
+}
+
 // Watchs speed, changing state when necessary
 func (experiment *Experiment) watchSpeed() {
 
@@ -262,6 +276,12 @@ func (experiment *Experiment) watchSpeed() {
 
 		speed := <-serialAttrs[speedIdx].handleCh
 		speed = convertSpeed(speed, experiment.tireRadius)
+
+		duty := experiment.speedToDutyCycle(speed)
+
+		publishData(strconv.FormatFloat(duty, 'E', -1, 64), "/dutyCycle")
+
+		writeDutyCycle(duty)
 
 		if (experiment.snub.state == acelerating || experiment.snub.state == aceleratingWater) && !experiment.snub.isStabilizing {
 			if speed >= experiment.snub.upperSpeedLimit {
