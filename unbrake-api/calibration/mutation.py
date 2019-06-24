@@ -43,7 +43,7 @@ class CreateVibration(graphene.Mutation):
         conversion_factor = graphene.Float()
         vibration_offset = graphene.Float()
 
-    # @login_required
+    @login_required
     def mutate(self, info, acquisition_chanel,
                conversion_factor, vibration_offset):
         '''
@@ -110,7 +110,7 @@ class CreateSpeed(graphene.Mutation):
         acquisition_chanel = graphene.Int()
         tire_radius = graphene.Float()
 
-    # @login_required
+    @login_required
     def mutate(self, info, acquisition_chanel, tire_radius):
         '''
             Recive the parameters end save the object on database
@@ -264,7 +264,7 @@ class CreateCalibration(graphene.Mutation):
         id_second_temperature = graphene.Int()
         id_command = graphene.Int()
 
-    # @login_required
+    @login_required
     def mutate(
             self,
             info,
