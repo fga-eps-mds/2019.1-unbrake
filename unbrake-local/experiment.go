@@ -24,6 +24,8 @@ type Experiment struct {
 	mux                               sync.Mutex
 	waterMux                          sync.Mutex
 	snub                              Snub
+	snubDuration                      time.Time
+	duration                          time.Time
 	id                                int
 	continueRunning                   bool
 	timeSleepWater                    float64
@@ -110,6 +112,8 @@ func (experiment *Experiment) Run() {
 	quitExperimentEnableCh <- false
 	aplicationStatusCh <- "Colentando dados e executando ensaio"
 	experiment.snub.SetState(acelerating)
+	experiment.duration = time.Now()
+	experiment.snubDuration = time.Now()
 	experiment.continueRunning = true
 	go experiment.watchSnubState()
 	experiment.snub.counterCh = make(chan int)
@@ -207,6 +211,7 @@ func (experiment *Experiment) watchSnubState() {
 	go experiment.watchSpeed()
 	go experiment.watchTemperature()
 	go experiment.watchIsAvailable()
+	go experiment.watchDuration()
 }
 
 func (experiment *Experiment) watch(watchFunction func()) {
@@ -229,6 +234,19 @@ func (experiment *Experiment) watchIsAvailable() {
 	experiment.watch(func() {
 		idRunningExperiment <- experiment.id
 		time.Sleep(time.Millisecond * 500)
+	})
+}
+
+func (experiment *Experiment) watchDuration() {
+	experiment.watch(func() {
+		end := time.Now()
+		duration := end.Sub(experiment.duration)
+
+		floatDuration := duration.Seconds()
+
+		publishData(strconv.FormatFloat(floatDuration, 'f', 3, 64), "/experimentDuration")
+
+		time.Sleep(time.Second * 1)
 	})
 }
 
@@ -279,7 +297,7 @@ func (experiment *Experiment) watchSpeed() {
 
 		duty := experiment.speedToDutyCycle(speed)
 
-		publishData(strconv.FormatFloat(duty, 'E', -1, 64), "/dutyCycle")
+		publishData(strconv.FormatFloat(duty, 'f', 3, 64), "/dutyCycle")
 
 		writeDutyCycle(duty)
 
@@ -291,7 +309,17 @@ func (experiment *Experiment) watchSpeed() {
 			if speed < experiment.snub.lowerSpeedLimit {
 				experiment.snub.NextState() // Braking to Cooldown
 				if experiment.continueRunning {
-					experiment.snub.NextState() // Braking to
+					experiment.snub.NextState() // Cooldown to Acelerate
+
+					end := time.Now()
+					snubDuration := end.Sub(experiment.snubDuration)
+					experiment.snubDuration = time.Now()
+
+					floatSnubDuration := snubDuration.Seconds()
+
+					publishData(strconv.FormatFloat(floatSnubDuration, 'f', 3, 64), "/snubDuration")
+
+					log.Println("Duration of the snub: ", snubDuration)
 				}
 			}
 		}
