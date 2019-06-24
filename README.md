@@ -38,7 +38,21 @@
     <img src="https://pullreminders.com/badge.svg" />
   </a>
 </p>
+<p align="center">
+    <img src= "https://i.imgur.com/2JxPd4S.png"/>
+</p>
 
+## Sobre o projeto
+Unbrake é um software que controla de forma remota a configuração, calibração e visualização de ensaios de aceleração e frenagem de um simulador de freio, utilizado por alunos e professores do curso de Engenharia Automotiva da UnB - Campus Gama.
+
+O software é dividido em três partes, parte local, backend e frontend. 
+
+A parte local foi realizada utilizando Golang. E é responsável por receber as configurações do ensaio, coletar os dados produzidos pelos sensores do simulador e por fornecê-los em stream para o frontend. 
+
+O backend foi feito utilizando Django, ele recebe os arquivos de configuração, relaciona ele com os ensaios, armazena e realiza a autenticação dos usuários. 
+
+O frontend que foi gerado utilizando React JS, o qual permite que o usuário configure e calibre o ensaio.
+    
 ## Utilizando a aplicação
 
 Execute o binário
