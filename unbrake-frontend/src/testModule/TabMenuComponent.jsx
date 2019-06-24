@@ -131,7 +131,6 @@ const calculeTemperature = (states, vector, sensorNumber) => {
     sensorNumber === 1 ? FCT1 : FCT2,
     sensorNumber === 1 ? OFT1 : OFT2
   );
-  console.log(linear, analogMesg, FCT1, OFT1, sensorNumber, states);
 
   dispatch(change("testAquisition", `Tc${sensorNumber}`, linear));
 };

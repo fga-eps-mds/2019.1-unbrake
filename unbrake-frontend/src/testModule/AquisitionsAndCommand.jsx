@@ -196,16 +196,18 @@ class AquisitionsAndCommand extends React.Component {
     this.handlePrevious = this.handlePrevious.bind(this);
   }
 
-  shouldComponentUpdate(nextProps) {
-    const { newAquisition, dispatch } = this.props;
-    if (newAquisition !== nextProps.newAquisition) {
-      const rightConfig = Object.assign({}, nextProps.newAquisition);
-      dispatch(initialize("testAquisition", rightConfig));
-      this.setState({ aquisition: rightConfig });
-      return true;
-    }
-    return false;
-  }
+  /*
+   * shouldComponentUpdate(nextProps) {
+   *   const { newAquisition, dispatch } = this.props;
+   *   if (newAquisition !== nextProps.newAquisition) {
+   *     const rightConfig = Object.assign({}, nextProps.newAquisition);
+   *     dispatch(initialize("testAquisition", rightConfig));
+   *     this.setState({ aquisition: rightConfig });
+   *     return true;
+   *   }
+   *   return false;
+   * }
+   */
 
   handlePrevious() {
     const { redirect } = this.props;
@@ -222,7 +224,6 @@ class AquisitionsAndCommand extends React.Component {
   }
 
   render() {
-    console.log(this.props);
     const { aquisition } = this.state;
     const { classes } = this.props;
     const states = renderDictionary(aquisition);
