@@ -41,7 +41,12 @@
 <p align="center">
     <img src= "https://i.imgur.com/2JxPd4S.png"/>
 </p>
+<h1 align="center"> Aix - Bot de Aprendizado integrado a plataforma Jupyter</h1>
 
+<p align="center">
+    <a href="https://fga-eps-mds.github.io/2019.1-unbrake/"><strong>Visite nossa página &raquo;</strong></a>
+    <br>
+    
 ## Sobre o projeto
 Unbrake é um software que controla de forma remota a configuração, calibração e visualização de ensaios de aceleração e frenagem de um simulador de freio, utilizado por alunos e professores do curso de Engenharia Automotiva da UnB - Campus Gama.
 
@@ -82,8 +87,7 @@ Se desejar utilizar uma porta não listada, você pode fazer isso via
 As configurações podem ser feitas via arquivo de configuração e/ou variáveis
 de ambiente.
 
-O arquivo de configuração deve ser criado com o nome `config.json` em
-`~/UnBrake/logs` no Linux e em `%APPDATA%/UnBrake/logs` no Windows.
+O arquivo de configuração deve ser criado com o nome `config.json` em `~/UnBrake` no Linux e em `%APPDATA%/UnBrake` no Windows.
 
 Exemplo de arquivo de configuração:
 ``` json
