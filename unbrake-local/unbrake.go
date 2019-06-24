@@ -41,6 +41,7 @@ var (
 	quitExperimentEnableCh = make(chan bool)
 	quitExperimentCh       = make(chan bool)
 	idRunningExperiment    = make(chan int)
+	changeIcon             = make(chan bool)
 	clientWriting          *emitter.Client
 	clientReading          *emitter.Client
 )
@@ -117,7 +118,7 @@ func main() {
 
 // Required by systray (GUI)
 func onReady() {
-	systray.SetIcon(Icon)
+	go setIcon()
 	systray.SetTitle("UnBrake")
 	systray.SetTooltip("UnBrake")
 
@@ -232,4 +233,19 @@ func onReady() {
 	}
 
 	wgGeneral.Wait()
+}
+
+var ever = true
+
+func setIcon() {
+	for ever {
+		systray.SetIcon(IconDisabled)
+		<-changeIcon
+		for !isAvailable {
+			for i := 0; i < 24; i++ {
+				systray.SetIcon(IconRotating[i])
+				time.Sleep(time.Millisecond * (1000 / 24))
+			}
+		}
+	}
 }

@@ -110,6 +110,7 @@ func (experiment *Experiment) Run() {
 
 	isAvailable = false
 	quitExperimentEnableCh <- false
+	changeIcon <- true
 	aplicationStatusCh <- "Colentando dados e executando ensaio"
 	experiment.snub.SetState(acelerating)
 	experiment.duration = time.Now()
@@ -179,11 +180,11 @@ func ExperimentFromJSON(data []byte) *Experiment {
 		decoded.Fields.Calibration.Relations.RimDiameter,
 	)
 
-	experiment.snub.delayAcelerateToBrake = decoded.Fields.Configuration.UpperTime
-	experiment.snub.delayBrakeToCooldown = decoded.Fields.Configuration.LowerTime
-	experiment.snub.upperSpeedLimit = 175 //decoded.Fields.Configuration.UpperLimit
-	experiment.snub.lowerSpeedLimit = 100 //decoded.Fields.Configuration.InferiorLimit
-	experiment.snub.timeCooldown = decoded.Fields.Configuration.TimeBetweenCycles
+	experiment.snub.delayAcelerateToBrake = 10 //decoded.Fields.Configuration.UpperTime
+	experiment.snub.delayBrakeToCooldown = 10  //decoded.Fields.Configuration.LowerTime
+	experiment.snub.upperSpeedLimit = 150      //decoded.Fields.Configuration.UpperLimit
+	experiment.snub.lowerSpeedLimit = 300      //decoded.Fields.Configuration.InferiorLimit
+	experiment.snub.timeCooldown = 10          //decoded.Fields.Configuration.TimeBetweenCycles
 
 	return &experiment
 }
