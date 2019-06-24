@@ -203,3 +203,9 @@ Antes de analisar as seguintes opções cheque o log para ter mais informações
 
 Contribuições ao nosso projeto são muito bem vindas! Cheque nosso
 [guia de contribuição](CONTRIBUTING.md) para mais informações.
+
+### Licença
+<p align="justify"> &emsp;&emsp; O UnBrake é distribuído sob a licença MIT disponível <a href="https://github.com/fga-eps-mds/2019.1-unbrake/blob/master/LICENSE">aqui</a>.</p>
+
+<p align="justify"> &emsp;&emsp; Logo criada por <a href="https://www.flaticon.com/free-icon/brake-disc_1672606">Freepik</a>.</p>
+
