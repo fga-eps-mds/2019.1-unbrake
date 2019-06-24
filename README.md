@@ -44,7 +44,7 @@
 <h1 align="center"> UnBrake </h1>
 
 <p align="center">
-    <a href="https://fga-eps-mds.github.io/2019.1-unbrake/"><strong>Mais informações &raquo;</strong></a>
+    <a href="https://fga-eps-mds.github.io/2019.1-unbrake/"><strong>Mais informações </strong></a>
     <br>
     
 ## Sobre o projeto
