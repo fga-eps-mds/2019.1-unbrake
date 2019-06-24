@@ -98,6 +98,14 @@ As variáveis de ambiente tem precedência sobre o arquivo de configuração.
 Caso a variável de ambiente não seja setada e nem haja arquivo de configuração,
 serão usadas valores default onde possível.
 
+Todos esses parâmetros também podem ser configurados através de variáveis
+de ambiente apenas fazendo a alteração do nome do parâmetro de camelcase
+para snake case e em caixa alta. Ex: `serialPort` se torna `SERIAL_PORT`.
+
+As variáveis de ambiente tem precedência sobre o arquivo de configuração.
+Caso a variável de ambiente não seja setada e nem haja arquivo de configuração,
+serão usadas valores default onde possível.
+
 ### Logs
 
 Todo o funcionamento da aplicação é registrado em arquivos de log.
