@@ -41,7 +41,7 @@
 <p align="center">
     <img src= "https://i.imgur.com/2JxPd4S.png"/>
 </p>
-<h1 align="center"> Aix - Bot de Aprendizado integrado a plataforma Jupyter</h1>
+<h1 align="center"> UnBrake </h1>
 
 <p align="center">
     <a href="https://fga-eps-mds.github.io/2019.1-unbrake/"><strong>Visite nossa página &raquo;</strong></a>
