@@ -174,14 +174,14 @@ class Query:
         id=graphene.ID()
     )
 
-    # @login_required
+    @login_required
     def resolve_all_calibration_vibration(self, info, **kwargs):
         '''
             Returning all CalibrationVibration on db
         '''
         return CalibrationVibration.objects.all()
 
-    # @login_required
+    @login_required
     def resolve_calibration_vibration(self, info, **kwargs):
         '''
             Returning only CalibrationVibration one by id
@@ -271,7 +271,7 @@ class Query:
 
         return CalibrationCommand.objects.get(pk=pk)
 
-    # @login_required
+    @login_required
     def resolve_all_calibration(self, info, **kwargs):
         '''
             Return all calibration objects on db
