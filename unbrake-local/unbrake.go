@@ -118,7 +118,7 @@ func main() {
 
 // Required by systray (GUI)
 func onReady() {
-	go setIcon()
+	systray.SetIcon(IconDisabled)
 	systray.SetTitle("UnBrake")
 	systray.SetTooltip("UnBrake")
 
@@ -236,16 +236,3 @@ func onReady() {
 }
 
 var ever = true
-
-func setIcon() {
-	for ever {
-		systray.SetIcon(IconDisabled)
-		<-changeIcon
-		for !isAvailable {
-			for i := 0; i < 24; i++ {
-				systray.SetIcon(IconRotating[i])
-				time.Sleep(time.Millisecond * (1000 / 24))
-			}
-		}
-	}
-}
