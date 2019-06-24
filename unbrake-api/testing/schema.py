@@ -217,7 +217,7 @@ class SubmitTesting(graphene.Mutation):
         testing = SubmitTesting._get_testing_info(testing_id)
         client.publish(
             get_secret('mqtt-writing-key'),
-            "unbrake/galpao/testing",
+            "unbrake/galpao/experiment",
             testing
         )
 

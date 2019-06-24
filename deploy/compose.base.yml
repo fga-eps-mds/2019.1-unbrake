@@ -23,6 +23,7 @@ services:
     secrets:
       - api-django-secret-key
       - postgres_password
+      - mqtt-reading-key
       - mqtt-writing-key
 
   frontend:
@@ -71,6 +72,10 @@ secrets:
     file: secrets/MQTT_WRITING_KEY
   postgres_password:
     file: secrets/DB_PASSWORD
+  mqtt-reading-key:
+    file: secrets/MQTT_READING_KEY
+  emitter-license:
+    file: secrets/EMITTER_LICENSE
 
 volumes:
   postgres_data:

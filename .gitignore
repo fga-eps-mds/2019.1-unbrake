@@ -20,6 +20,7 @@ unbrake-local/bin/*
 unbrake-local/unbrake
 unbrake-local/unbrake.exe
 unbrake-local/coverage.*
+unbrake-local/unbrake-local
 
 ### Node ###
 # Logs

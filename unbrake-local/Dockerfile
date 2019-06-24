@@ -1,7 +1,6 @@
 # Couldn't use alpine, I've had trouble because of appindicator lib
 # Tried to compile manually but needed others missing libraries
 FROM golang:1.12.5
-
 LABEL description="Environment with needed libraries for unbrake local application"
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
@@ -13,7 +12,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
         github.com/getlantern/systray \
         \
         golang.org/x/lint/golint \
-        github.com/emitter-io/go/v2
+        github.com/icaropires/go/v2
 
 WORKDIR /go/src/github.com/fga-eps-mds/2019.1-unbrake/unbrake-local
 

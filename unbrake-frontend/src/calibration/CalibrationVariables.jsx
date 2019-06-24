@@ -51,14 +51,6 @@ export const styles = theme => ({
   }
 });
 
-export const sendMessageFunction = (sendMessage, message, variante) => {
-  sendMessage({
-    message,
-    variante,
-    condition: true
-  });
-};
-
 export const calibrationJSON = [
   "calibrationtemperatureSet",
   "calibrationtemperatureSet",
@@ -235,6 +227,17 @@ export const labels = name => {
   return "";
 };
 
+export const fieldsDisabledes = {
+  CHT1: 1,
+  CHT2: 2,
+  CHF1: 3,
+  CHF2: 4,
+  CHR1: 5,
+  CHVB: 6,
+  CHVC: 7,
+  CHPC: 8
+};
+
 export const dialogName = (functions, states) => {
   let isDisabled = true;
   if (localStorage.getItem("isSuperuser") === "true") isDisabled = false;
@@ -281,5 +284,21 @@ export const dialogName = (functions, states) => {
         </Button>
       </DialogActions>
     </Dialog>
+  );
+};
+
+export const previousButton = handlePrevious => {
+  return (
+    <Button onClick={handlePrevious} color="secondary" variant="contained">
+      Etapa anterior
+    </Button>
+  );
+};
+
+export const nextButton = handleNext => {
+  return (
+    <Button onClick={handleNext} color="secondary" variant="contained">
+      Próxima etapa
+    </Button>
   );
 };
