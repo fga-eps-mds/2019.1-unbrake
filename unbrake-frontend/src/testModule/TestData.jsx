@@ -326,6 +326,7 @@ class TestData extends React.Component {
     else this.handleChange("TS", configuration.values.NOS);
 
     this.client.on("message", msg => {
+      // console.log(msg.channel, msg.asString())
       if (msg.channel === "unbrake/galpao/currentSnub/") {
         this.setState({ SA: msg.asString() });
       } else if (msg.channel === "unbrake/galpao/snubState/") {

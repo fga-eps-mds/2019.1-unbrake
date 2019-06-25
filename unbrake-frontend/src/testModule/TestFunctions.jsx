@@ -117,7 +117,6 @@ export const quitExperiment = (states, functions, dispatchs) => {
 const verifyErrorsSubmitTest = (newResponse, dispatchs) => {
   const { data, errors } = newResponse;
 
-  console.log(newResponse)
   if (errors !== undefined) {
     errorSubmit(dispatchs);
     return false;
@@ -153,10 +152,8 @@ const requestTest = (states, functions, dispatchs) => {
         const dataTest = newResponse.data;
 
         if (!verifyErrorsSubmitTest(newResponse, dispatchs)){
-          console.log(!verifyErrorsSubmitTest(newResponse, dispatchs))
           return;
         } 
-        console.log("aqui")
         const { createTesting } = dataTest;
 
         const { testing } = createTesting;
@@ -165,11 +162,9 @@ const requestTest = (states, functions, dispatchs) => {
         url = `${API_URL_GRAPHQL}?query=mutation{submitTesting(mqttHost:"unbrake.ml",mqttPort:8080,testingId:${
           testing.id
         }){succes}}`;
-        console.log("12341234")
         Request(url, "POST").then(json => {
           const dataLocal = json.data;
           const errosLocal = json.data;
-          console.log("aquiasdfasf")
           if (errosLocal !== undefined) {
             errorSubmit(dispatchs);
             return;
