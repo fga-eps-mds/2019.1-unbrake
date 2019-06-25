@@ -7,8 +7,14 @@ import TextField from "@material-ui/core/TextField";
 import { connect } from "react-redux";
 import { reduxForm } from "redux-form";
 import * as emitter from "emitter-io";
-import { itensSelectionConfig } from "../configuration/ConfigFunctions";
-import { itensSelection, getSelectCalibration } from "../calibration/CalibrationUpload";
+import {
+  itensSelectionConfig,
+  selectConfigurationDataBase
+} from "../configuration/ConfigFunctions";
+import {
+  itensSelection,
+  getSelectCalibration
+} from "../calibration/CalibrationUpload";
 import { API_URL_GRAPHQL, MQTT_HOST, MQTT_PORT } from "../utils/Constants";
 import Request from "../utils/Request";
 import {
@@ -170,10 +176,10 @@ class General extends React.Component {
 
     if (name === "configId") {
       changeConfig({ configId: id });
+      selectConfigurationDataBase(id, sendMessage, dispatch);
     } else if (name === "calibId") {
       changeCalib({ calibId: id });
-      getSelectCalibration(id, dispatch, sendMessage)
-      console.log(this.props.calibration)
+      getSelectCalibration(id, dispatch, sendMessage);
     }
   }
 
@@ -238,7 +244,8 @@ General.propTypes = {
   power: PropTypes.bool,
   available: PropTypes.bool,
   changeAvailable: PropTypes.func.isRequired,
-  changePower: PropTypes.func.isRequired
+  changePower: PropTypes.func.isRequired,
+  dispatch: PropTypes.func.isRequired
 };
 
 const mapDispatchToProps = dispatch => ({
@@ -263,7 +270,7 @@ const mapStateToProps = state => {
 
 const GeneralForm = reduxForm({
   form: "calibration",
-  destroyOnUnmount: false,
+  destroyOnUnmount: false
 })(General);
 
 export default connect(

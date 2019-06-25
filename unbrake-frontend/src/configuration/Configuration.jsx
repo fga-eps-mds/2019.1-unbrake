@@ -4,6 +4,7 @@ import { withStyles } from "@material-ui/core/styles";
 import { Grid, Button } from "@material-ui/core";
 import PropTypes from "prop-types";
 import { connect } from "react-redux";
+import { reduxForm } from "redux-form";
 import Request from "../utils/Request";
 import { API_URL_GRAPHQL } from "../utils/Constants";
 import ConfigurationForm from "./ConfigurationForm";
@@ -17,7 +18,7 @@ import {
   saveConfiguration,
   dialogName,
   renderUploadField,
-  emptyConfig
+  selectConfigurationDataBase
 } from "./ConfigFunctions";
 import { redirectPage } from "../actions/RedirectActions";
 import NotificationContainer from "../components/Notification";
@@ -180,7 +181,7 @@ class Configuration extends React.Component {
 
   handleChange(event) {
     this.resetState();
-    const { changeConfig } = this.props;
+    const { changeConfig, sendMessage, dispatch } = this.props;
     const { target } = event;
 
     if (target.name === "name") {
@@ -190,38 +191,7 @@ class Configuration extends React.Component {
     const idSelect = target.value === invalidId ? "" : target.value;
 
     changeConfig({ configId: idSelect });
-    this.handleSelectConfig(event.target.value);
-  }
-
-  handleSelectConfig(id) {
-    const { sendMessage } = this.props;
-    if (id > invalidId) {
-      const url = `${API_URL_GRAPHQL}?query=query{configAt(id:${id}){${query}}}`;
-
-      const method = "GET";
-
-      Request(url, method).then(response => {
-        const data = response.data.configAt;
-        if (response.error !== null) {
-          sendMessage({
-            message: "Configuração não existe",
-            variante: "error",
-            condition: true
-          });
-        }
-
-        const configuration = createConfig(data);
-        this.setState({ configuration });
-        sendMessage({
-          message: "Configuração escolhida com sucesso",
-          variante: "success",
-          condition: true
-        });
-      });
-    } else {
-      const configuration = emptyConfig;
-      this.setState({ configuration });
-    }
+    selectConfigurationDataBase(event.target.value, sendMessage, dispatch);
   }
 
   fileUpload(file, name) {
@@ -318,7 +288,8 @@ Configuration.propTypes = {
   sendMessage: PropTypes.func.isRequired,
   redirect: PropTypes.func.isRequired,
   changeConfig: PropTypes.func.isRequired,
-  configId: PropTypes.number
+  configId: PropTypes.number,
+  dispatch: PropTypes.func.isRequired
 };
 
 const mapDispatchToProps = dispatch => ({
@@ -333,7 +304,12 @@ function mapStateToProps(state) {
   };
 }
 
+const ConfigurationForms = reduxForm({
+  form: "configuration",
+  destroyOnUnmount: false
+})(Configuration);
+
 export default connect(
   mapStateToProps,
   mapDispatchToProps
-)(withStyles(styles)(Configuration));
+)(withStyles(styles)(ConfigurationForms));

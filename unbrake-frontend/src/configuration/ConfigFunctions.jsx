@@ -15,9 +15,11 @@ import TextField from "@material-ui/core/TextField";
 import FormControlLabel from "@material-ui/core/FormControlLabel";
 import Checkbox from "@material-ui/core/Checkbox";
 import CloudUploadIcon from "@material-ui/icons/CloudUpload";
+import { initialize } from "redux-form";
 import Request from "../utils/Request";
 import { API_URL_GRAPHQL } from "../utils/Constants";
 
+const invalidId = 0;
 export const query =
   "id, name, number, time, temperature, timeBetweenCycles, upperLimit, inferiorLimit, upperTime, inferiorTime, disableShutdown, enableOutput";
 
@@ -258,4 +260,36 @@ export const defaultButton = handleUpDefault => {
     </Grid>
   );
 };
+
+export const selectConfigurationDataBase = (id, sendMessage, dispatch) => {
+  if (id > invalidId) {
+    const url = `${API_URL_GRAPHQL}?query=query{configAt(id:${id}){${query}}}`;
+
+    const method = "GET";
+
+    Request(url, method).then(response => {
+      const data = response.data.configAt;
+      if (response.error !== null) {
+        sendMessage({
+          message: "Configuração não existe",
+          variante: "error",
+          condition: true
+        });
+      }
+
+      const configuration = createConfig(data);
+      dispatch(initialize("configuration", configuration.CONFIG_ENSAIO));
+      // this.setState({ configuration });
+      sendMessage({
+        message: "Configuração escolhida com sucesso",
+        variante: "success",
+        condition: true
+      });
+    });
+  } else {
+    const configuration = emptyConfig;
+    dispatch(initialize("configuration", configuration.CONFIG_ENSAIO));
+  }
+};
+
 export default createConfig;

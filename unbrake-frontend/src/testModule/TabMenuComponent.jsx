@@ -17,6 +17,7 @@ import {
   calculeFrequency,
   calculeForce,
   calculeTemperature,
+  setCheckboxes,
   styles
 } from "./TestFunctions";
 
@@ -57,12 +58,6 @@ const oneGraph = (sensorOne, label) => {
       colorSensor1="#133e79"
     />
   );
-};
-
-const setCheckboxes = (states, dispatch) => {
-  dispatch(change("testAquisition", "acelerate", states[0]));
-  dispatch(change("testAquisition", "brake", states[1]));
-  dispatch(change("testAquisition", "cooldown", states[2]));
 };
 
 const verifyCheckbox = (functions, state) => {
@@ -180,60 +175,37 @@ class TabMenuComponent extends React.Component {
     this.handleChangeSelect = this.handleChangeSelect.bind(this);
   }
 
-  componentDidMount() {
-    const { dispatch, calibration } = this.props;
-    // this.client.on("message", msg => {
-    //   const { testAquisition } = this.props;
-    //   const states = {
-    //     calibration,
-    //     dispatch,
-    //     msg,
-    //     testAquisition,
-    //     sensorTemperature1: this.sensorTemperature1,
-    //     sensorTemperature2: this.sensorTemperature2,
-    //     sensorForce1: this.sensorForce1,
-    //     sensorForce2: this.sensorForce2,
-    //     sensorRpm: this.sensorRpm,
-    //     sensorSpeedCommand: this.sensorSpeedCommand,
-    //     sensorPressureComand: this.sensorPressureComand
-    //   };
-    //   const functions = { dispatch, change };
+  componentDidUpdate(prevProps) {
+    const { dispatch, calibration, configuration } = this.props;
 
-    //   if (Object.keys(calibration.values).length > zero) {
-    //     resolveMsg(msg, states, functions);
-    //   }
-    // });
-  }
+    if (
+      calibration !== prevProps.calibration ||
+      configuration !== prevProps.configuration
+    ) {
+      this.client.on("message", msg => {
+        const { testAquisition } = this.props;
+        const states = {
+          calibration,
+          dispatch,
+          msg,
+          testAquisition,
+          sensorTemperature1: this.sensorTemperature1,
+          sensorTemperature2: this.sensorTemperature2,
+          sensorForce1: this.sensorForce1,
+          sensorForce2: this.sensorForce2,
+          sensorRpm: this.sensorRpm,
+          sensorSpeedCommand: this.sensorSpeedCommand,
+          sensorPressureComand: this.sensorPressureComand
+        };
+        const functions = { dispatch, change };
 
-  componentDidUpdate(prevProps, prevState, snapshot){
-    console.log(prevProps, prevState, snapshot)
-    const { dispatch, calibration } = this.props;
-
-    if (calibration !== prevProps.calibration){
-    this.client.on("message", msg => {
-      const { testAquisition } = this.props;
-      const states = {
-        calibration,
-        dispatch,
-        msg,
-        testAquisition,
-        sensorTemperature1: this.sensorTemperature1,
-        sensorTemperature2: this.sensorTemperature2,
-        sensorForce1: this.sensorForce1,
-        sensorForce2: this.sensorForce2,
-        sensorRpm: this.sensorRpm,
-        sensorSpeedCommand: this.sensorSpeedCommand,
-        sensorPressureComand: this.sensorPressureComand
-      };
-      const functions = { dispatch, change };
-
-      if (Object.keys(calibration.values).length > zero) {
-        resolveMsg(msg, states, functions);
-      }
-    });
-    return true;
-  }
-  return false;
+        if (Object.keys(calibration.values).length > zero) {
+          resolveMsg(msg, states, functions);
+        }
+      });
+      return true;
+    }
+    return false;
   }
 
   handleChange(event, newValue) {
@@ -311,6 +283,7 @@ class TabMenuComponent extends React.Component {
 
 TabMenuComponent.defaultProps = {
   calibration: { values: {} },
+  configuration: { values: {} },
   testAquisition: { values: {} },
   mqttKey: ""
 };
@@ -322,7 +295,8 @@ TabMenuComponent.propTypes = {
   calibration: PropTypes.string,
   testAquisition: PropTypes.string,
   mqttKey: PropTypes.string,
-  dispatch: PropTypes.func.isRequired
+  dispatch: PropTypes.func.isRequired,
+  configuration: PropTypes.string
 };
 
 const mapStateToProps = state => {
@@ -330,7 +304,8 @@ const mapStateToProps = state => {
     configId: state.testReducer.configId,
     calibId: state.testReducer.calibId,
     calibration: state.form.calibration,
-    testAquisition: state.form.testAquisition
+    testAquisition: state.form.testAquisition,
+    configuration: state.form.configuration
   };
 };
 

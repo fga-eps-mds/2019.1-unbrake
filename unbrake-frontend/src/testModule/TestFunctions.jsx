@@ -2,7 +2,7 @@ import { change } from "redux-form";
 import { validateFields, saveCalibration } from "../calibration/Calibration";
 import { createCalibration } from "../calibration/CalibrationVariables";
 import { saveConfiguration } from "../configuration/ConfigFunctions";
-import { API_URL_GRAPHQL } from "../utils/Constants";
+import { API_URL_GRAPHQL, MQTT_HOST } from "../utils/Constants";
 import Request from "../utils/Request";
 import {
   base10,
@@ -113,7 +113,7 @@ export const quitExperiment = (states, functions, dispatchs) => {
     const { username } = data.currentUser;
     const urlTesting = `${API_URL_GRAPHQL}?query=mutation{quitTesting(username:"${username}",testingId:${
       states.testeId
-    }, mqttHost:"unbrake.ml",mqttPort: 8000){response,error}}`;
+    }, mqttHost:"${MQTT_HOST}",mqttPort: 8000){response,error}}`;
 
     Request(urlTesting, "POST").then(json => {
       const newData = json.data;
@@ -182,7 +182,7 @@ const requestTest = (states, functions, dispatchs) => {
         const { testing } = createTesting;
 
         functions.handleChange(testing.id);
-        url = `${API_URL_GRAPHQL}?query=mutation{submitTesting(mqttHost:"unbrake.ml",mqttPort:8080,testingId:${
+        url = `${API_URL_GRAPHQL}?query=mutation{submitTesting(mqttHost:"${MQTT_HOST}",mqttPort:8080,testingId:${
           testing.id
         }){succes}}`;
         Request(url, "POST").then(json => {
@@ -288,4 +288,10 @@ export const calculeTemperature = (states, vector, sensorNumber) => {
   );
 
   dispatch(change("testAquisition", `Tc${sensorNumber}`, linear));
+};
+
+export const setCheckboxes = (states, dispatch) => {
+  dispatch(change("testAquisition", "acelerate", states[0]));
+  dispatch(change("testAquisition", "brake", states[1]));
+  dispatch(change("testAquisition", "cooldown", states[2]));
 };
