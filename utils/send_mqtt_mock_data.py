@@ -43,7 +43,6 @@ params = (
     ('vibration', 'vibration', 300, 400),
     ('speed', 'speed', 200, 300),
     ('pressure', 'pressure', 200, 300),
-    ('isAvailable', 'isAvailable', 500, 500)
 )
 
 for param in params:
