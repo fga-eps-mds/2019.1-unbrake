@@ -186,9 +186,11 @@ class Query:
         '''
             Returning only CalibrationVibration one by id
         '''
-        pk = kwargs.get('id')
 
-        return CalibrationVibration.objects.get(pk=pk)
+        pk = kwargs.get('id')
+        vibration = CalibrationVibration.objects.get(pk=pk)
+
+        return vibration
 
     @login_required
     def resolve_all_calibration_force(self, info, **kwargs):
