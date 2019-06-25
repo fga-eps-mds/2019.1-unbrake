@@ -4,7 +4,7 @@ import { withStyles } from "@material-ui/core/styles";
 import { Grid, Button } from "@material-ui/core";
 import PropTypes from "prop-types";
 import { connect } from "react-redux";
-import { reduxForm, initialize } from "redux-form";
+import { reduxForm } from "redux-form";
 import Request from "../utils/Request";
 import { API_URL_GRAPHQL } from "../utils/Constants";
 import ConfigurationForm from "./ConfigurationForm";
@@ -140,7 +140,7 @@ class Configuration extends React.Component {
   }
 
   handleUpDefault() {
-    const { sendMessage, changeConfig, dispatch } = this.props;
+    const { sendMessage, changeConfig } = this.props;
     const url = `${API_URL_GRAPHQL}?query=query{configDefault{${query}}}`;
 
     const method = "GET";
@@ -166,7 +166,7 @@ class Configuration extends React.Component {
       changeConfig({ configId: data.id });
       const configurationDefault = createConfig(data);
 
-      dispatch(initialize("configuration", configurationDefault.CONFIG_ENSAIO));
+      // dispatch(initialize("configuration", configurationDefault.CONFIG_ENSAIO));
       this.setState({ configuration: configurationDefault });
     });
   }
