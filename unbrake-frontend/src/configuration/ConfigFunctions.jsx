@@ -3,7 +3,14 @@ import DialogActions from "@material-ui/core/DialogActions";
 import DialogContent from "@material-ui/core/DialogContent";
 import DialogContentText from "@material-ui/core/DialogContentText";
 import DialogTitle from "@material-ui/core/DialogTitle";
-import { Button, Dialog, Grid, Paper, IconButton } from "@material-ui/core";
+import {
+  Button,
+  Dialog,
+  Grid,
+  Paper,
+  IconButton,
+  MenuItem
+} from "@material-ui/core";
 import TextField from "@material-ui/core/TextField";
 import FormControlLabel from "@material-ui/core/FormControlLabel";
 import Checkbox from "@material-ui/core/Checkbox";
@@ -204,4 +211,51 @@ export const emptyConfig = {
   }
 };
 
+export const itensSelectionConfig = allConfiguration => {
+  let allConfig = [{ id: 0, name: "" }];
+
+  let notDefaultConfig;
+  if (allConfiguration !== "")
+    notDefaultConfig = allConfiguration.filter(configuration => {
+      return configuration.name !== "";
+    });
+
+  if (allConfiguration !== "") allConfig = allConfig.concat(notDefaultConfig);
+  const itens = allConfig.map(value => {
+    return (
+      <MenuItem key={value.name + value.id} value={value.id}>
+        {value.name}
+      </MenuItem>
+    );
+  });
+  return itens;
+};
+export const selectConfiguration = (handleChange, configStates, classes) => {
+  return (
+    <Grid item xs={3} justify="center" container className={classes.title}>
+      <TextField
+        id="outlined-select-currency"
+        select
+        label="Configurações"
+        value={configStates[0]}
+        onChange={handleChange}
+        name="configId"
+        className={classes.formControl}
+        margin="normal"
+        variant="outlined"
+      >
+        {itensSelectionConfig(configStates[1])}
+      </TextField>
+    </Grid>
+  );
+};
+export const defaultButton = handleUpDefault => {
+  return (
+    <Grid container justify="center" item alignItems="center" xs={3}>
+      <Button onClick={handleUpDefault} color="secondary" variant="contained">
+        Configuração Padrão
+      </Button>
+    </Grid>
+  );
+};
 export default createConfig;

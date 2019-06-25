@@ -1,7 +1,7 @@
 import React from "react";
 import iniparser from "iniparser";
 import { withStyles } from "@material-ui/core/styles";
-import { Grid, Button, MenuItem, TextField } from "@material-ui/core";
+import { Grid, Button } from "@material-ui/core";
 import PropTypes from "prop-types";
 import { connect } from "react-redux";
 import Request from "../utils/Request";
@@ -9,6 +9,8 @@ import { API_URL_GRAPHQL } from "../utils/Constants";
 import ConfigurationForm from "./ConfigurationForm";
 import styles from "./Styles";
 import {
+  defaultButton,
+  selectConfiguration,
   createConfig,
   submitDefault,
   query,
@@ -24,56 +26,6 @@ import { changeConfigTest } from "../actions/TestActions";
 
 const positionVector = 1;
 const invalidId = 0;
-
-export const itensSelectionConfig = allConfiguration => {
-  let allConfig = [{ id: 0, name: "" }];
-
-  let notDefaultConfig;
-  if (allConfiguration !== "")
-    notDefaultConfig = allConfiguration.filter(configuration => {
-      return configuration.name !== "";
-    });
-
-  if (allConfiguration !== "") allConfig = allConfig.concat(notDefaultConfig);
-  const itens = allConfig.map(value => {
-    return (
-      <MenuItem key={value.name + value.id} value={value.id}>
-        {value.name}
-      </MenuItem>
-    );
-  });
-  return itens;
-};
-
-const selectConfiguration = (handleChange, configStates, classes) => {
-  return (
-    <Grid item xs={3} justify="center" container className={classes.title}>
-      <TextField
-        id="outlined-select-currency"
-        select
-        label="Configurações"
-        value={configStates[0]}
-        onChange={handleChange}
-        name="configId"
-        className={classes.formControl}
-        margin="normal"
-        variant="outlined"
-      >
-        {itensSelectionConfig(configStates[1])}
-      </TextField>
-    </Grid>
-  );
-};
-
-const defaultButton = handleUpDefault => {
-  return (
-    <Grid container justify="center" item alignItems="center" xs={3}>
-      <Button onClick={handleUpDefault} color="secondary" variant="contained">
-        Configuração Padrão
-      </Button>
-    </Grid>
-  );
-};
 
 const nextButton = handleNext => {
   return (
@@ -177,7 +129,28 @@ class Configuration extends React.Component {
     }
   }
 
+  resetState() {
+    this.setState({
+      configuration: {
+        CONFIG_ENSAIO: {
+          LSL: "",
+          LWT: "",
+          NOS: "",
+          TAO: false,
+          TAS: "",
+          TAT: "",
+          TBS: "",
+          TMO: false,
+          USL: "",
+          UWT: ""
+        }
+      }
+    });
+  }
+
   handleUpDefault() {
+    this.resetState();
+    const { sendMessage } = this.props;
     const url = `${API_URL_GRAPHQL}?query=query{configDefault{${query}}}`;
 
     const method = "GET";
@@ -186,8 +159,18 @@ class Configuration extends React.Component {
 
     Request(url, method).then(response => {
       if (response.data.configDefault.length === empty) {
+        sendMessage({
+          message: "Configuração padrão não existe",
+          variante: "error",
+          condition: true
+        });
         return;
       }
+      sendMessage({
+        message: "Configuração padrão escolhida com sucesso",
+        variante: "success",
+        condition: true
+      });
       const position = response.data.configDefault.length - positionVector;
       const data = response.data.configDefault[position];
       const configurationDefault = createConfig(data);
@@ -196,6 +179,7 @@ class Configuration extends React.Component {
   }
 
   handleChange(event) {
+    this.resetState();
     const { changeConfig } = this.props;
     const { target } = event;
 
@@ -210,6 +194,7 @@ class Configuration extends React.Component {
   }
 
   handleSelectConfig(id) {
+    const { sendMessage } = this.props;
     if (id > invalidId) {
       const url = `${API_URL_GRAPHQL}?query=query{configAt(id:${id}){${query}}}`;
 
@@ -217,9 +202,21 @@ class Configuration extends React.Component {
 
       Request(url, method).then(response => {
         const data = response.data.configAt;
+        if (response.error !== null) {
+          sendMessage({
+            message: "Configuração não existe",
+            variante: "error",
+            condition: true
+          });
+        }
 
         const configuration = createConfig(data);
         this.setState({ configuration });
+        sendMessage({
+          message: "Configuração escolhida com sucesso",
+          variante: "success",
+          condition: true
+        });
       });
     } else {
       const configuration = emptyConfig;
@@ -286,6 +283,7 @@ class Configuration extends React.Component {
       isDefault
     };
     // changeReduxConfig(allConfiguration, dataBaseConfiguration);
+
     return (
       <Grid alignItems="center" container className={classes.configuration}>
         <div>
