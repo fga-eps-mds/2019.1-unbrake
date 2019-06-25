@@ -3,10 +3,14 @@ import PropTypes from "prop-types";
 import { reduxForm } from "redux-form";
 import { withStyles, Grid } from "@material-ui/core";
 import LinearProgress from "@material-ui/core/LinearProgress";
+import Button from "@material-ui/core/Button";
 import * as emitter from "emitter-io";
 import { connect } from "react-redux";
+import { API_URL_GRAPHQL, MQTT_HOST, MQTT_PORT } from "../utils/Constants";
+import Request from "../utils/Request";
+import { messageSistem } from "../actions/NotificationActions";
 import styles from "./Styles";
-import { MQTT_HOST, MQTT_PORT } from "../utils/Constants";
+import allPower from "./ProgressBar";
 
 const percentageTransformer = 100;
 
@@ -44,38 +48,6 @@ const progress = (value, classes) => {
       </div>
     </div>
   );
-};
-
-const heigthProgress = (value, classes) => {
-  return (
-    <div>
-      <div>
-        <LinearProgress
-          className={classes.progressHeight}
-          variant="determinate"
-          value={value}
-        />
-      </div>
-    </div>
-  );
-};
-
-const allPower = (powerStates, classes) => {
-  const render = powerStates.map(value => {
-    return (
-      <Grid
-        container
-        item
-        justify="center"
-        xs={4}
-        className={classes.gridAllPower}
-      >
-        {heigthProgress(value.value, classes)}
-        <spam>{value.name}</spam>
-      </Grid>
-    );
-  });
-  return render;
 };
 
 const testProgress = (testPro, classes) => {
@@ -119,6 +91,36 @@ const infoSnub = (informations, classes) => {
   return render;
 };
 
+const submit = (configId, calibId, sendMessage) => {
+  const urlUser = `${API_URL_GRAPHQL}?query=query{currentUser{username}}`;
+  const method = "GET";
+  if (configId !== "" && calibId !== "") {
+    Request(urlUser, method).then(username => {
+      const urlTesting = `${API_URL_GRAPHQL}?query=mutation{createTesting(createBy:"${username}",
+      idCalibration:${calibId},idConfiguration:${configId}){testing{id},error}}`;
+      const methodTest = "POST";
+      Request(urlTesting, methodTest).then(response => {
+        const { data } = response.data;
+        const { createTesting } = data.createTesting;
+        const { testing } = createTesting.testing;
+        const { id } = testing.id;
+
+        if (data.error !== null)
+          sendMessage({
+            message: data.error,
+            variante: "success",
+            condition: true
+          });
+
+        const urlSubmit = `${API_URL_GRAPHQL}?query=mutation{submitTesting(mqttHost:"unbrake.ml",mqttPort:8080,testingId:${id}){succes}}`;
+        Request(urlSubmit, methodTest).then(() => {
+          // Alertar usuario TODO
+        });
+      });
+    });
+  }
+};
+
 const testInformations = (informations, classes) => {
   return (
     <Grid
@@ -146,6 +148,29 @@ const testInformations = (informations, classes) => {
         </Grid>
       </Grid>
     </Grid>
+  );
+};
+
+const renderSubmitTest = (configId, calibId, sendMessage) => {
+  const primalIndexStyle = 1;
+  const firstDenominatorStyle = 2;
+  const secondDenominatorStyle = 24;
+  const thirdDenominatorStyle = 32;
+  return (
+    <Button
+      onClick={submit(configId, calibId, sendMessage)}
+      color="secondary"
+      variant="contained"
+      style={{
+        flex:
+          primalIndexStyle / firstDenominatorStyle +
+          primalIndexStyle / secondDenominatorStyle +
+          primalIndexStyle / thirdDenominatorStyle,
+        backgroundColor: "#0cb85c"
+      }}
+    >
+      Iniciar Ensaio
+    </Button>
   );
 };
 
@@ -190,7 +215,8 @@ class TestData extends React.Component {
   }
 
   render() {
-    const { classes } = this.props;
+    const { sendMessage } = this.props;
+    const { classes, configId, calibId } = this.props;
     const { data } = this.state;
     const { TES, TEI, TEC, SA, TS, DTE } = data;
 
@@ -230,6 +256,9 @@ class TestData extends React.Component {
           <Grid container item alignItems="center" justify="center" xs={12}>
             {testProgress(testPro, classes)}
           </Grid>
+          <Grid container item justify="center" style={{ flex: 1 }}>
+            {renderSubmitTest(configId, calibId, sendMessage)}
+          </Grid>
         </Grid>
       </Grid>
     );
@@ -237,10 +266,18 @@ class TestData extends React.Component {
 }
 
 TestData.propTypes = {
+  sendMessage: PropTypes.func.isRequired,
   classes: PropTypes.objectOf(PropTypes.string).isRequired,
   newData: PropTypes.oneOfType([PropTypes.object]).isRequired,
+  calibId: PropTypes.string.isRequired,
+  configId: PropTypes.string.isRequired,
   mqttKey: PropTypes.string.isRequired
 };
+
+const mapDispatchToProps = dispatch => ({
+  sendMessage: payload => dispatch(messageSistem(payload))
+});
+
 const mapStateToProps = state => {
   return {
     configName: state.testReducer.configName,
@@ -256,5 +293,5 @@ const TestDataForm = reduxForm({
 
 export default connect(
   mapStateToProps,
-  null
+  mapDispatchToProps
 )(withStyles(styles)(TestDataForm));
