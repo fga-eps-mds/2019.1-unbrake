@@ -185,6 +185,7 @@ const requestTest = (states, functions, dispatchs) => {
         url = `${API_URL_GRAPHQL}?query=mutation{submitTesting(mqttHost:"${MQTT_HOST}",mqttPort:8080,testingId:${
           testing.id
         }){succes}}`;
+
         Request(url, "POST").then(json => {
           const dataLocal = json.data;
           const errosLocal = json.errors;

@@ -66,11 +66,11 @@ ALLOWED_HOSTS = ['*']  # Check later
 CORS_ORIGIN_ALLOW_ALL = False
 
 CORS_ORIGIN_WHITELIST = (
-    'unbrake-hom.ml', 'unbrake.ml'
+    'unbrake-hom.ml', 'unbrake.ml', 'api.unbrake-hom.ml'
 )
 
 CSRF_TRUSTED_ORIGINS = (
-    'unbrake-hom.ml', 'unbrake.ml'
+    'unbrake-hom.ml', 'unbrake.ml', 'api.unbrake-hom.ml'
 )
 
 LANGUAGE_CODE = 'en-us'
