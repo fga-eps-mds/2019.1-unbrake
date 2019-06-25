@@ -5,7 +5,10 @@ import Button from "@material-ui/core/Button";
 import PropTypes from "prop-types";
 import TextField from "@material-ui/core/TextField";
 import { connect } from "react-redux";
-import { itensSelectionConfig } from "../configuration/Configuration";
+import {
+  itensSelectionConfig,
+  saveConfiguration
+} from "../configuration/ConfigFunctions";
 import { itensSelection } from "../calibration/CalibrationUpload";
 import { API_URL_GRAPHQL } from "../utils/Constants";
 import Request from "../utils/Request";
@@ -14,7 +17,6 @@ import { validateFields, saveCalibration } from "../calibration/Calibration";
 import { createCalibration } from "../calibration/CalibrationVariables";
 import { messageSistem } from "../actions/NotificationActions";
 import { redirectPage } from "../actions/RedirectActions";
-import { saveConfiguration } from "../configuration/ConfigFunctions";
 
 const margin = 1.5;
 const invalidId = 0;

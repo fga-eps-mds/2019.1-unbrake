@@ -1,7 +1,7 @@
 import React from "react";
 import iniparser from "iniparser";
 import { withStyles } from "@material-ui/core/styles";
-import { Grid, Button, MenuItem, TextField } from "@material-ui/core";
+import { Grid, Button, TextField } from "@material-ui/core";
 import PropTypes from "prop-types";
 import { connect } from "react-redux";
 import Request from "../utils/Request";
@@ -9,6 +9,7 @@ import { API_URL_GRAPHQL } from "../utils/Constants";
 import ConfigurationForm from "./ConfigurationForm";
 import styles from "./Styles";
 import {
+  itensSelectionConfig,
   createConfig,
   submitDefault,
   query,
@@ -24,26 +25,6 @@ import { changeConfigTest } from "../actions/TestActions";
 
 const positionVector = 1;
 const invalidId = 0;
-
-export const itensSelectionConfig = allConfiguration => {
-  let allConfig = [{ id: 0, name: "" }];
-
-  let notDefaultConfig;
-  if (allConfiguration !== "")
-    notDefaultConfig = allConfiguration.filter(configuration => {
-      return configuration.name !== "";
-    });
-
-  if (allConfiguration !== "") allConfig = allConfig.concat(notDefaultConfig);
-  const itens = allConfig.map(value => {
-    return (
-      <MenuItem key={value.name + value.id} value={value.id}>
-        {value.name}
-      </MenuItem>
-    );
-  });
-  return itens;
-};
 
 const selectConfiguration = (handleChange, configStates, classes) => {
   return (
@@ -178,6 +159,7 @@ class Configuration extends React.Component {
   }
 
   handleUpDefault() {
+    const { sendMessage } = this.props;
     const url = `${API_URL_GRAPHQL}?query=query{configDefault{${query}}}`;
 
     const method = "GET";
@@ -188,6 +170,11 @@ class Configuration extends React.Component {
       if (response.data.configDefault.length === empty) {
         return;
       }
+      sendMessage({
+        message: "Configuração padrão escolhida com sucesso",
+        variante: "success",
+        condition: true
+      });
       const position = response.data.configDefault.length - positionVector;
       const data = response.data.configDefault[position];
       const configurationDefault = createConfig(data);
@@ -210,6 +197,7 @@ class Configuration extends React.Component {
   }
 
   handleSelectConfig(id) {
+    const { sendMessage } = this.props;
     if (id > invalidId) {
       const url = `${API_URL_GRAPHQL}?query=query{configAt(id:${id}){${query}}}`;
 
@@ -220,6 +208,11 @@ class Configuration extends React.Component {
 
         const configuration = createConfig(data);
         this.setState({ configuration });
+        sendMessage({
+          message: "Configuração escolhida com sucesso",
+          variante: "success",
+          condition: true
+        });
       });
     } else {
       const configuration = emptyConfig;
@@ -286,6 +279,7 @@ class Configuration extends React.Component {
       isDefault
     };
     // changeReduxConfig(allConfiguration, dataBaseConfiguration);
+
     return (
       <Grid alignItems="center" container className={classes.configuration}>
         <div>

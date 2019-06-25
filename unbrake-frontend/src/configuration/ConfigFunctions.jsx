@@ -3,7 +3,14 @@ import DialogActions from "@material-ui/core/DialogActions";
 import DialogContent from "@material-ui/core/DialogContent";
 import DialogContentText from "@material-ui/core/DialogContentText";
 import DialogTitle from "@material-ui/core/DialogTitle";
-import { Button, Dialog, Grid, Paper, IconButton } from "@material-ui/core";
+import {
+  Button,
+  Dialog,
+  Grid,
+  Paper,
+  IconButton,
+  MenuItem
+} from "@material-ui/core";
 import TextField from "@material-ui/core/TextField";
 import FormControlLabel from "@material-ui/core/FormControlLabel";
 import Checkbox from "@material-ui/core/Checkbox";
@@ -204,4 +211,23 @@ export const emptyConfig = {
   }
 };
 
+export const itensSelectionConfig = allConfiguration => {
+  let allConfig = [{ id: 0, name: "" }];
+
+  let notDefaultConfig;
+  if (allConfiguration !== "")
+    notDefaultConfig = allConfiguration.filter(configuration => {
+      return configuration.name !== "";
+    });
+
+  if (allConfiguration !== "") allConfig = allConfig.concat(notDefaultConfig);
+  const itens = allConfig.map(value => {
+    return (
+      <MenuItem key={value.name + value.id} value={value.id}>
+        {value.name}
+      </MenuItem>
+    );
+  });
+  return itens;
+};
 export default createConfig;
