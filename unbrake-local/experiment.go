@@ -112,7 +112,7 @@ func (experiment *Experiment) Run() {
 
 	isAvailable = false
 	quitExperimentEnableCh <- false
-	systray.SetIcon(IconRotating[0])
+	systray.SetIcon(Icon)
 	aplicationStatusCh <- "Colentando dados e executando ensaio"
 	experiment.distance = 0
 

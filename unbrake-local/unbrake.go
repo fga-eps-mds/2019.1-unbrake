@@ -118,7 +118,7 @@ func main() {
 
 // Required by systray (GUI)
 func onReady() {
-	setIcon()
+	systray.SetIcon(IconDisabled)
 	systray.SetTitle("UnBrake")
 	systray.SetTooltip("UnBrake")
 
