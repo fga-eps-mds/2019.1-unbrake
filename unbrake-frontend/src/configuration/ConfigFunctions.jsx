@@ -230,4 +230,23 @@ export const itensSelectionConfig = allConfiguration => {
   });
   return itens;
 };
+export const selectConfiguration = (handleChange, configStates, classes) => {
+  return (
+    <Grid item xs={3} justify="center" container className={classes.title}>
+      <TextField
+        id="outlined-select-currency"
+        select
+        label="Configurações"
+        value={configStates[0]}
+        onChange={handleChange}
+        name="configId"
+        className={classes.formControl}
+        margin="normal"
+        variant="outlined"
+      >
+        {itensSelectionConfig(configStates[1])}
+      </TextField>
+    </Grid>
+  );
+};
 export default createConfig;

@@ -1,7 +1,7 @@
 import React from "react";
 import iniparser from "iniparser";
 import { withStyles } from "@material-ui/core/styles";
-import { Grid, Button, TextField } from "@material-ui/core";
+import { Grid, Button } from "@material-ui/core";
 import PropTypes from "prop-types";
 import { connect } from "react-redux";
 import Request from "../utils/Request";
@@ -9,7 +9,7 @@ import { API_URL_GRAPHQL } from "../utils/Constants";
 import ConfigurationForm from "./ConfigurationForm";
 import styles from "./Styles";
 import {
-  itensSelectionConfig,
+  selectConfiguration,
   createConfig,
   submitDefault,
   query,
@@ -25,26 +25,6 @@ import { changeConfigTest } from "../actions/TestActions";
 
 const positionVector = 1;
 const invalidId = 0;
-
-const selectConfiguration = (handleChange, configStates, classes) => {
-  return (
-    <Grid item xs={3} justify="center" container className={classes.title}>
-      <TextField
-        id="outlined-select-currency"
-        select
-        label="Configurações"
-        value={configStates[0]}
-        onChange={handleChange}
-        name="configId"
-        className={classes.formControl}
-        margin="normal"
-        variant="outlined"
-      >
-        {itensSelectionConfig(configStates[1])}
-      </TextField>
-    </Grid>
-  );
-};
 
 const defaultButton = handleUpDefault => {
   return (
@@ -158,7 +138,27 @@ class Configuration extends React.Component {
     }
   }
 
+  resetState() {
+    this.setState({
+      configuration: {
+        CONFIG_ENSAIO: {
+          LSL: "",
+          LWT: "",
+          NOS: "",
+          TAO: false,
+          TAS: "",
+          TAT: "",
+          TBS: "",
+          TMO: false,
+          USL: "",
+          UWT: ""
+        }
+      }
+    });
+  }
+
   handleUpDefault() {
+    this.resetState();
     const { sendMessage } = this.props;
     const url = `${API_URL_GRAPHQL}?query=query{configDefault{${query}}}`;
 
@@ -183,6 +183,7 @@ class Configuration extends React.Component {
   }
 
   handleChange(event) {
+    this.resetState();
     const { changeConfig } = this.props;
     const { target } = event;
 
