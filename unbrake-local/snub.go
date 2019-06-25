@@ -68,6 +68,7 @@ type Snub struct {
 	counterCh             chan int
 	state                 string
 	delayAcelerateToBrake int
+	delayBrakeToCooldown  int
 	upperSpeedLimit       float64
 	lowerSpeedLimit       float64
 	isWaterOn             bool
@@ -93,8 +94,12 @@ func (snub *Snub) NextState() {
 		snub.isStabilizing = false
 
 	case braking, brakingWater: // Next is Cooldown
+		snub.isStabilizing = true
+		log.Println("Stabilizing...")
+		time.Sleep(time.Second * time.Duration(snub.delayBrakeToCooldown))
 
 		snub.changeState() // Brake ---> Cooldown
+		snub.isStabilizing = false
 		time.Sleep(time.Second * time.Duration(snub.timeCooldown))
 
 	case cooldown, cooldownWater: // Next is acelerate, end of a cycle

@@ -4,10 +4,12 @@ import (
 	"encoding/json"
 	"fmt"
 	"log"
+	"strconv"
 	"strings"
 	"sync"
 	"time"
 
+	"github.com/getlantern/systray"
 	emitter "github.com/icaropires/go/v2"
 )
 
@@ -23,6 +25,9 @@ type Experiment struct {
 	mux                               sync.Mutex
 	waterMux                          sync.Mutex
 	snub                              Snub
+	snubDuration                      time.Time
+	duration                          time.Time
+	distance                          float64
 	id                                int
 	continueRunning                   bool
 	timeSleepWater                    float64
@@ -33,6 +38,9 @@ type Experiment struct {
 	firstOffsetTemperature            float64
 	secondOffsetTemperature           float64
 	tireRadius                        float64
+	sheaveMoveDiameter                int
+	sheaveMotorDiameter               int
+	maxSpeed                          float64
 	doEnableWater                     bool
 }
 
@@ -107,12 +115,62 @@ func (experiment *Experiment) Run() {
 
 	isAvailable = false
 	quitExperimentEnableCh <- false
+	systray.SetIcon(Icon)
 	aplicationStatusCh <- "Colentando dados e executando ensaio"
-	experiment.snub.SetState(acelerating)
-	experiment.continueRunning = true
-	go experiment.watchSnubState()
-	experiment.snub.counterCh = make(chan int)
-	experiment.snub.counterCh <- 1
+	experiment.distance = 0
+
+	if experiment.validateExperiment() {
+
+		publishData("true: "+strconv.Itoa(experiment.id), "/validExperiment")
+
+		experiment.snub.SetState(acelerating)
+		experiment.duration = time.Now()
+		experiment.snubDuration = time.Now()
+		experiment.continueRunning = true
+		go experiment.watchSnubState()
+		experiment.snub.counterCh = make(chan int)
+		experiment.snub.counterCh <- 1
+
+	} else {
+
+		publishData("false: "+strconv.Itoa(experiment.id), "/validExperiment")
+
+	}
+
+}
+
+func (experiment *Experiment) validateExperiment() bool {
+
+	var valid = true
+	motorMaxRpm := 1700.0
+
+	experiment.maxSpeed = float64(experiment.sheaveMoveDiameter/experiment.sheaveMotorDiameter) * motorMaxRpm
+
+	if experiment.snub.upperSpeedLimit <= experiment.snub.lowerSpeedLimit {
+		valid = false
+	}
+
+	if experiment.snub.upperSpeedLimit > experiment.maxSpeed {
+		valid = false
+	}
+
+	if experiment.totalOfSnubs <= 0 || experiment.timeSleepWater <= 0 || experiment.temperatureLimit <= 0 {
+		valid = false
+	}
+
+	if experiment.sheaveMoveDiameter <= 0 || experiment.sheaveMotorDiameter <= 0 {
+		valid = false
+	}
+
+	if experiment.snub.delayAcelerateToBrake < 0 || experiment.snub.delayBrakeToCooldown < 0 || experiment.snub.timeCooldown < 0 {
+		valid = false
+	}
+
+	if experiment.snub.lowerSpeedLimit < 0 {
+		valid = false
+	}
+
+	return valid
 
 }
 
@@ -160,23 +218,26 @@ func ExperimentFromJSON(data []byte) *Experiment {
 	}
 
 	experiment.id = decoded.Pk
-	experiment.totalOfSnubs = 2     //decoded.Fields.Configuration.Number
-	experiment.timeSleepWater = 3   //decoded.Fields.Configuration.Time
-	experiment.doEnableWater = true //decoded.Fields.Configuration.EnableOutput
+	experiment.totalOfSnubs = decoded.Fields.Configuration.Number
+	experiment.timeSleepWater = decoded.Fields.Configuration.Time
+	experiment.doEnableWater = decoded.Fields.Configuration.EnableOutput
 	experiment.firstConversionFactorTemperature = decoded.Fields.Calibration.Temperature[0].ConversionFactor
 	experiment.secondConversionFactorTemperature = decoded.Fields.Calibration.Temperature[1].ConversionFactor
 	experiment.firstOffsetTemperature = decoded.Fields.Calibration.Temperature[0].TemperatureOffset
 	experiment.secondOffsetTemperature = decoded.Fields.Calibration.Temperature[1].TemperatureOffset
-	experiment.temperatureLimit = 85 //decoded.Fields.Configuration.Temperature
+	experiment.temperatureLimit = decoded.Fields.Configuration.Temperature
 	experiment.tireRadius = tireRadius(
 		decoded.Fields.Calibration.Relations.TransversalSelectionWidth,
 		decoded.Fields.Calibration.Relations.HeigthWidthRelation,
 		decoded.Fields.Calibration.Relations.RimDiameter,
 	)
+	experiment.sheaveMoveDiameter = decoded.Fields.Calibration.Relations.SheaveMoveDiameter
+	experiment.sheaveMotorDiameter = decoded.Fields.Calibration.Relations.SheaveMotorDiameter
 
 	experiment.snub.delayAcelerateToBrake = decoded.Fields.Configuration.UpperTime
-	experiment.snub.upperSpeedLimit = 150 //decoded.Fields.Configuration.UpperLimit
-	experiment.snub.lowerSpeedLimit = 150 //decoded.Fields.Configuration.InferiorLimit
+	experiment.snub.delayBrakeToCooldown = decoded.Fields.Configuration.LowerTime
+	experiment.snub.upperSpeedLimit = float64(decoded.Fields.Configuration.UpperLimit)
+	experiment.snub.lowerSpeedLimit = float64(decoded.Fields.Configuration.InferiorLimit)
 	experiment.snub.timeCooldown = decoded.Fields.Configuration.TimeBetweenCycles
 
 	return &experiment
@@ -205,6 +266,8 @@ func (experiment *Experiment) watchSnubState() {
 	go experiment.watchSpeed()
 	go experiment.watchTemperature()
 	go experiment.watchIsAvailable()
+	go experiment.watchDuration()
+	go experiment.watchDutyCycleAndDistance()
 }
 
 func (experiment *Experiment) watch(watchFunction func()) {
@@ -215,11 +278,27 @@ func (experiment *Experiment) watch(watchFunction func()) {
 			experiment.continueRunning = false
 			aplicationStatusCh <- "Coletando dados"
 		default:
-
 			watchFunction()
 		}
 	}
 	experiment.snub.SetState(cooldown)
+}
+
+func (experiment *Experiment) watchDutyCycleAndDistance() {
+
+	experiment.watch(func() {
+
+		frequency := <-dutyCycleAndDistanceCh
+		speed := convertSpeed(frequency, experiment.tireRadius) // Frequency is the angular speed
+
+		duty := experiment.speedToDutyCycle(speed)
+		experiment.distance += travelledDistance(speed)
+
+		writeDutyCycle(duty)
+		publishData(strconv.FormatFloat(experiment.distance, 'f', 3, 64), "/distance")
+		publishData(strconv.FormatFloat(duty, 'f', 3, 64), "/dutyCycle")
+
+	})
 }
 
 func (experiment *Experiment) watchIsAvailable() {
@@ -227,6 +306,19 @@ func (experiment *Experiment) watchIsAvailable() {
 	experiment.watch(func() {
 		idRunningExperiment <- experiment.id
 		time.Sleep(time.Millisecond * 500)
+	})
+}
+
+func (experiment *Experiment) watchDuration() {
+	experiment.watch(func() {
+		end := time.Now()
+		duration := end.Sub(experiment.duration)
+
+		floatDuration := duration.Seconds()
+
+		publishData(strconv.FormatFloat(floatDuration, 'f', 3, 64), "/experimentDuration")
+
+		time.Sleep(time.Second * 1)
 	})
 }
 
@@ -247,6 +339,7 @@ func (experiment *Experiment) watchEnd() {
 			quitExperimentEnableCh <- true
 			wgHandleExperimentReceiving.Done()
 			aplicationStatusCh <- "Coletando dados"
+			systray.SetIcon(IconDisabled)
 
 		} else {
 			experiment.snub.counterCh <- counter
@@ -254,26 +347,53 @@ func (experiment *Experiment) watchEnd() {
 	})
 }
 
+func (experiment *Experiment) speedToDutyCycle(speed float64) float64 {
+
+	var duty = 0.0
+
+	if speed/experiment.snub.upperSpeedLimit > 1 {
+		duty = 100
+	} else {
+		duty = (speed / experiment.snub.upperSpeedLimit) * 100
+	}
+
+	return duty
+}
+
 // Watchs speed, changing state when necessary
 func (experiment *Experiment) watchSpeed() {
 
 	experiment.watch(func() {
 
-		speed := <-serialAttrs[speedIdx].handleCh
-		speed = convertSpeed(speed, experiment.tireRadius)
+		frequency := <-serialAttrs[frequencyIdx].handleCh
 
-		if (experiment.snub.state == acelerating || experiment.snub.state == aceleratingWater) && !experiment.snub.isStabilizing {
-			if speed >= experiment.snub.upperSpeedLimit {
-				experiment.snub.NextState() // Acelerating to Braking
-			}
-		} else if experiment.snub.state == braking || experiment.snub.state == brakingWater {
-			if speed < experiment.snub.lowerSpeedLimit {
-				experiment.snub.NextState() // Braking to Cooldown
-				if experiment.continueRunning {
-					experiment.snub.NextState() // Braking to
+		speed := convertSpeed(frequency, experiment.tireRadius) // Frequency is the angular speed
+
+		go func() {
+
+			if (experiment.snub.state == acelerating || experiment.snub.state == aceleratingWater) && !experiment.snub.isStabilizing {
+				if speed >= experiment.snub.upperSpeedLimit {
+					experiment.snub.NextState() // Acelerating to Braking
+				}
+			} else if (experiment.snub.state == braking || experiment.snub.state == brakingWater) && !experiment.snub.isStabilizing {
+				if speed < experiment.snub.lowerSpeedLimit {
+					experiment.snub.NextState() // Braking to Cooldown
+					if experiment.continueRunning {
+						experiment.snub.NextState() // Cooldown to Acelerate
+
+						end := time.Now()
+						snubDuration := end.Sub(experiment.snubDuration)
+						experiment.snubDuration = time.Now()
+
+						floatSnubDuration := snubDuration.Seconds()
+
+						publishData(strconv.FormatFloat(floatSnubDuration, 'f', 3, 64), "/snubDuration")
+
+						log.Println("Duration of the snub: ", snubDuration)
+					}
 				}
 			}
-		}
+		}()
 	})
 }
 

@@ -49,6 +49,11 @@ const (
 	mqttSubchannelIsAvailable = "/isAvailable"
 )
 
+var (
+	numberOfDataToFilter   = 50
+	dutyCycleAndDistanceCh = make(chan float64)
+)
+
 // SerialAttribute represent one attributes of the many that are returned as values
 // from the physical device on serial communication
 type SerialAttribute struct {
@@ -73,6 +78,15 @@ func CollectData() {
 
 		if err != nil {
 			log.Println(err)
+			if port.IsOpen() {
+				port.Close()
+			}
+			continue
+		}
+
+		if !isCorrectDevice() {
+			aplicationStatusCh <- "Selecione a porta correta"
+			port.Close()
 			continue
 		}
 
@@ -109,22 +123,12 @@ func CollectData() {
 // array of bytes
 func getData(command string) []byte {
 
-	numberOfDataToFilter := 50
-
 	n := port.Write([]byte(command))
-	if n == -1 {
-		log.Println("Error writing to serial. Is this the right port?")
-		aplicationStatusCh <- "Selecione a porta correta"
-	}
 
 	buf := make([]byte, bufferSize)
 	n, err := port.Read(buf)
 	if err != nil {
 		log.Println("Error reading from serial ", err, ". Is this the right port?")
-		aplicationStatusCh <- "Selecione a porta correta"
-	} else if n == 0 {
-		log.Println("Error reading from serial: timeout waiting for bytes. Is this the right port?")
-		aplicationStatusCh <- "Selecione a porta correta"
 	}
 
 	split := strings.Split(string(buf[:n]), ",")
@@ -140,6 +144,12 @@ func getData(command string) []byte {
 			out := strings.Join(split, ", ")
 
 			log.Println(out)
+
+			frequency, _ := strconv.ParseFloat(split[frequencyIdx], 64)
+			select {
+			case dutyCycleAndDistanceCh <- frequency:
+			default:
+			}
 
 			for i, attr := range split {
 				attrValue, _ := strconv.ParseFloat(attr, 64)
@@ -205,6 +215,10 @@ func tireRadius(transversalSelectionWidth int, heightWidthRelation int, rimDiame
 	return float64((transversalSelectionWidth*heightWidthRelation)/100000) + (0.0254*float64(rimDiameter))/2
 }
 
+func travelledDistance(speed float64) float64 {
+	return (speed / 3600000.0) * (1000 / frequencyReading) * float64(numberOfDataToFilter)
+}
+
 // Publish to MQTT broker the whole current state of local application
 func publishSerialAttrs() {
 	for i := 0; i < numSerialAttrs; i++ {
@@ -233,6 +247,18 @@ func publishData(data string, subChannel string) {
 		mqttKeyStatusCh <- "Chave do MQTT: Ausente"
 		return
 	}
+}
+
+func writeDutyCycle(duty float64) {
+
+	asciiBase := 75.0
+	perCentByAcii := 4.0
+
+	var command []byte
+
+	command = append(command, byte(int(duty/perCentByAcii+asciiBase)))
+
+	port.Write(command)
 }
 
 func testKeys() {

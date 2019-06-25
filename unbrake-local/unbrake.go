@@ -41,6 +41,7 @@ var (
 	quitExperimentEnableCh = make(chan bool)
 	quitExperimentCh       = make(chan bool)
 	idRunningExperiment    = make(chan int)
+	changeIcon             = make(chan bool)
 	clientWriting          *emitter.Client
 	clientReading          *emitter.Client
 )
@@ -117,7 +118,7 @@ func main() {
 
 // Required by systray (GUI)
 func onReady() {
-	systray.SetIcon(Icon)
+	systray.SetIcon(IconDisabled)
 	systray.SetTitle("UnBrake")
 	systray.SetTooltip("UnBrake")
 
@@ -154,6 +155,7 @@ func onReady() {
 				quitExperimentCh <- true
 				quitExperiment.Disable()
 				isAvailable = true
+				systray.SetIcon(IconDisabled)
 				log.Println("Experiment finished by user")
 			}
 		}
@@ -175,6 +177,7 @@ func onReady() {
 					quitExperimentCh <- true
 					quitExperiment.Disable()
 					isAvailable = true
+					systray.SetIcon(IconDisabled)
 					wgQuit.Done()
 					wgHandleExperimentReceiving.Done()
 				}
@@ -192,9 +195,13 @@ func onReady() {
 		case <-mQuitOrig.ClickedCh:
 			log.Println("Quitting request by interface")
 			port.Write([]byte(cooldown))
+			log.Println("Application finished by user")
+			log.Println("Change state: _ ---> cooldown")
 		case <-sigsCh:
 			log.Println("Quitting request by signal")
 			port.Write([]byte(cooldown))
+			log.Println("Application finished by user")
+			log.Println("Change state: _ ---> cooldown")
 		}
 
 		stopCollectingDataCh <- true
@@ -233,3 +240,5 @@ func onReady() {
 
 	wgGeneral.Wait()
 }
+
+var ever = true
