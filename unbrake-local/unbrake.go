@@ -118,6 +118,7 @@ func main() {
 
 // Required by systray (GUI)
 func onReady() {
+	systray.SetIcon(IconRotating[0])
 	systray.SetIcon(IconDisabled)
 	systray.SetTitle("UnBrake")
 	systray.SetTooltip("UnBrake")
@@ -177,6 +178,7 @@ func onReady() {
 					quitExperimentCh <- true
 					quitExperiment.Disable()
 					isAvailable = true
+					systray.SetIcon(IconDisabled)
 					wgQuit.Done()
 					wgHandleExperimentReceiving.Done()
 				}
@@ -194,9 +196,13 @@ func onReady() {
 		case <-mQuitOrig.ClickedCh:
 			log.Println("Quitting request by interface")
 			port.Write([]byte(cooldown))
+			log.Println("Application finished by user")
+			log.Println("Change state: _ ---> cooldown")
 		case <-sigsCh:
 			log.Println("Quitting request by signal")
 			port.Write([]byte(cooldown))
+			log.Println("Application finished by user")
+			log.Println("Change state: _ ---> cooldown")
 		}
 
 		stopCollectingDataCh <- true

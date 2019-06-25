@@ -27,6 +27,7 @@ type Experiment struct {
 	snub                              Snub
 	snubDuration                      time.Time
 	duration                          time.Time
+	distance                          float64
 	id                                int
 	continueRunning                   bool
 	timeSleepWater                    float64
@@ -113,6 +114,8 @@ func (experiment *Experiment) Run() {
 	quitExperimentEnableCh <- false
 	systray.SetIcon(IconRotating[0])
 	aplicationStatusCh <- "Colentando dados e executando ensaio"
+	experiment.distance = 0
+
 	experiment.snub.SetState(acelerating)
 	experiment.duration = time.Now()
 	experiment.snubDuration = time.Now()
@@ -183,7 +186,7 @@ func ExperimentFromJSON(data []byte) *Experiment {
 
 	experiment.snub.delayAcelerateToBrake = 10 //decoded.Fields.Configuration.UpperTime
 	experiment.snub.delayBrakeToCooldown = 10  //decoded.Fields.Configuration.LowerTime
-	experiment.snub.upperSpeedLimit = 150      //decoded.Fields.Configuration.UpperLimit
+	experiment.snub.upperSpeedLimit = 400      //decoded.Fields.Configuration.UpperLimit
 	experiment.snub.lowerSpeedLimit = 300      //decoded.Fields.Configuration.InferiorLimit
 	experiment.snub.timeCooldown = 10          //decoded.Fields.Configuration.TimeBetweenCycles
 
@@ -214,6 +217,7 @@ func (experiment *Experiment) watchSnubState() {
 	go experiment.watchTemperature()
 	go experiment.watchIsAvailable()
 	go experiment.watchDuration()
+	go experiment.watchDutyCycleAndDistance()
 }
 
 func (experiment *Experiment) watch(watchFunction func()) {
@@ -224,11 +228,27 @@ func (experiment *Experiment) watch(watchFunction func()) {
 			experiment.continueRunning = false
 			aplicationStatusCh <- "Coletando dados"
 		default:
-
 			watchFunction()
 		}
 	}
 	experiment.snub.SetState(cooldown)
+}
+
+func (experiment *Experiment) watchDutyCycleAndDistance() {
+
+	experiment.watch(func() {
+
+		frequency := <-dutyCycleAndDistanceCh
+		speed := convertSpeed(frequency, experiment.tireRadius) // Frequency is the angular speed
+
+		duty := experiment.speedToDutyCycle(speed)
+		experiment.distance += travelledDistance(speed)
+
+		writeDutyCycle(duty)
+		publishData(strconv.FormatFloat(experiment.distance, 'f', 3, 64), "/distance")
+		publishData(strconv.FormatFloat(duty, 'f', 3, 64), "/dutyCycle")
+
+	})
 }
 
 func (experiment *Experiment) watchIsAvailable() {
@@ -295,37 +315,35 @@ func (experiment *Experiment) watchSpeed() {
 
 	experiment.watch(func() {
 
-		speed := <-serialAttrs[speedIdx].handleCh
-		speed = convertSpeed(speed, experiment.tireRadius)
+		frequency := <-serialAttrs[frequencyIdx].handleCh
 
-		duty := experiment.speedToDutyCycle(speed)
+		speed := convertSpeed(frequency, experiment.tireRadius) // Frequency is the angular speed
 
-		publishData(strconv.FormatFloat(duty, 'f', 3, 64), "/dutyCycle")
+		go func() {
 
-		writeDutyCycle(duty)
+			if (experiment.snub.state == acelerating || experiment.snub.state == aceleratingWater) && !experiment.snub.isStabilizing {
+				if speed >= experiment.snub.upperSpeedLimit {
+					experiment.snub.NextState() // Acelerating to Braking
+				}
+			} else if (experiment.snub.state == braking || experiment.snub.state == brakingWater) && !experiment.snub.isStabilizing {
+				if speed < experiment.snub.lowerSpeedLimit {
+					experiment.snub.NextState() // Braking to Cooldown
+					if experiment.continueRunning {
+						experiment.snub.NextState() // Cooldown to Acelerate
 
-		if (experiment.snub.state == acelerating || experiment.snub.state == aceleratingWater) && !experiment.snub.isStabilizing {
-			if speed >= experiment.snub.upperSpeedLimit {
-				experiment.snub.NextState() // Acelerating to Braking
-			}
-		} else if (experiment.snub.state == braking || experiment.snub.state == brakingWater) && !experiment.snub.isStabilizing {
-			if speed < experiment.snub.lowerSpeedLimit {
-				experiment.snub.NextState() // Braking to Cooldown
-				if experiment.continueRunning {
-					experiment.snub.NextState() // Cooldown to Acelerate
+						end := time.Now()
+						snubDuration := end.Sub(experiment.snubDuration)
+						experiment.snubDuration = time.Now()
 
-					end := time.Now()
-					snubDuration := end.Sub(experiment.snubDuration)
-					experiment.snubDuration = time.Now()
+						floatSnubDuration := snubDuration.Seconds()
 
-					floatSnubDuration := snubDuration.Seconds()
+						publishData(strconv.FormatFloat(floatSnubDuration, 'f', 3, 64), "/snubDuration")
 
-					publishData(strconv.FormatFloat(floatSnubDuration, 'f', 3, 64), "/snubDuration")
-
-					log.Println("Duration of the snub: ", snubDuration)
+						log.Println("Duration of the snub: ", snubDuration)
+					}
 				}
 			}
-		}
+		}()
 	})
 }
 
