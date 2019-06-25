@@ -243,7 +243,6 @@ class ConfigurationForm extends React.Component {
 
   shouldComponentUpdate(nextProps) {
     const { configuration, dispatch } = this.props;
-
     if (configuration !== nextProps.configuration) {
       const rightConfig = Object.assign({}, nextProps.configuration);
       const next = nextProps.configuration.CONFIG_ENSAIO;
@@ -260,13 +259,13 @@ class ConfigurationForm extends React.Component {
     const { configId, changeConfig } = this.props;
     const { target } = event;
     const value = target.type === "checkbox" ? target.checked : target.value;
-    const configurations = { [event.target.name]: value };
 
-    this.setState(prevState => ({
-      configuration: { ...prevState.configuration, ...configurations }
-    }));
+    const { configuration } = this.state;
+    configuration[event.target.name] = value;
 
     if (configId > invalidId) changeConfig({ configId: "" });
+
+    this.setState({ configuration });
   }
 
   render() {
