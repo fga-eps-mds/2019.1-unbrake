@@ -187,14 +187,13 @@ const requestTest = (states, functions, dispatchs) => {
         }){succes}}`;
         Request(url, "POST").then(json => {
           const dataLocal = json.data;
-          const errosLocal = json.data;
+          const errosLocal = json.errors;
           if (errosLocal !== undefined) {
             errorSubmit(dispatchs);
             return;
           }
 
           const { submitTesting } = dataLocal;
-
           const responseLocal = submitTesting.response;
           if (responseLocal !== null) {
             successSubmit(dispatchs);
