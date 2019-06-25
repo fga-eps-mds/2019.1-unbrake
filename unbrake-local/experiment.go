@@ -38,6 +38,9 @@ type Experiment struct {
 	firstOffsetTemperature            float64
 	secondOffsetTemperature           float64
 	tireRadius                        float64
+	sheaveMoveDiameter                int
+	sheaveMotorDiameter               int
+	maxSpeed                          float64
 	doEnableWater                     bool
 }
 
@@ -116,13 +119,58 @@ func (experiment *Experiment) Run() {
 	aplicationStatusCh <- "Colentando dados e executando ensaio"
 	experiment.distance = 0
 
-	experiment.snub.SetState(acelerating)
-	experiment.duration = time.Now()
-	experiment.snubDuration = time.Now()
-	experiment.continueRunning = true
-	go experiment.watchSnubState()
-	experiment.snub.counterCh = make(chan int)
-	experiment.snub.counterCh <- 1
+	if experiment.validateExperiment() {
+
+		publishData("true: "+strconv.Itoa(experiment.id), "/validExperiment")
+
+		experiment.snub.SetState(acelerating)
+		experiment.duration = time.Now()
+		experiment.snubDuration = time.Now()
+		experiment.continueRunning = true
+		go experiment.watchSnubState()
+		experiment.snub.counterCh = make(chan int)
+		experiment.snub.counterCh <- 1
+
+	} else {
+
+		publishData("false: "+strconv.Itoa(experiment.id), "/validExperiment")
+
+	}
+
+}
+
+func (experiment *Experiment) validateExperiment() bool {
+
+	var valid = true
+	motorMaxRpm := 1700.0
+
+	experiment.maxSpeed = float64(experiment.sheaveMoveDiameter/experiment.sheaveMotorDiameter) * motorMaxRpm
+
+	if experiment.snub.upperSpeedLimit <= experiment.snub.lowerSpeedLimit {
+		valid = false
+	}
+
+	if experiment.snub.upperSpeedLimit > experiment.maxSpeed {
+		valid = false
+	}
+
+	if experiment.totalOfSnubs <= 0 || experiment.timeSleepWater <= 0 || experiment.temperatureLimit <= 0 {
+		valid = false
+	}
+
+	if experiment.sheaveMoveDiameter <= 0 || experiment.sheaveMotorDiameter <= 0 {
+		valid = false
+	}
+
+	if experiment.snub.delayAcelerateToBrake < 0 || experiment.snub.delayBrakeToCooldown < 0 || experiment.snub.timeCooldown < 0 {
+		valid = false
+	}
+
+	if experiment.snub.lowerSpeedLimit < 0 {
+		valid = false
+	}
+
+	return valid
 
 }
 
@@ -183,6 +231,8 @@ func ExperimentFromJSON(data []byte) *Experiment {
 		decoded.Fields.Calibration.Relations.HeigthWidthRelation,
 		decoded.Fields.Calibration.Relations.RimDiameter,
 	)
+	experiment.sheaveMoveDiameter = decoded.Fields.Calibration.Relations.SheaveMoveDiameter
+	experiment.sheaveMotorDiameter = decoded.Fields.Calibration.Relations.SheaveMotorDiameter
 
 	experiment.snub.delayAcelerateToBrake = 10 //decoded.Fields.Configuration.UpperTime
 	experiment.snub.delayBrakeToCooldown = 10  //decoded.Fields.Configuration.LowerTime
