@@ -13,6 +13,7 @@ import NotificationContainer from "./Notification";
 import FieldComponent from "./FieldComponent";
 import { renderSubmit, propTypes, authStyles } from "./AuthForm";
 import paperAuth from "../styles/AuthStyle";
+import Request from "../utils/Request";
 
 const minCaracters = 8;
 
@@ -40,39 +41,32 @@ export const validateEmail = value =>
     : undefined;
 
 export const submit = async (sendMessage, values) => {
-  return fetch(
-    `${API_URL_GRAPHQL}?query=mutation{createUser(password: "${
-      values.password
-    }", email: "${values.email}"
-     username: "${values.username}",
-     isSuperuser: false){user{id}}}`,
-    {
-      method: "POST"
-    }
-  )
-    .then(response => {
-      return response.json();
-    })
-    .then(parsedData => {
-      if (parsedData.errors !== undefined) {
-        if (
-          parsedData.errors[0].message ===
-          "UNIQUE constraint failed: auth_user.username"
-        ) {
-          throw new SubmissionError({
-            username: "O usuário já está em uso",
-            _error: "Login failed!"
-          });
-        }
-      } else if (parsedData.data.createUser.user !== null) {
-        sendMessage({
-          message: "Usuário cadastrado com sucesso",
-          variante: "success",
-          condition: true
+  const url = `${API_URL_GRAPHQL}?query=mutation{createUser(password: "${
+    values.password
+  }", email: "${values.email}"
+   username: "${values.username}",
+   isSuperuser: false){user{id}}}`;
+
+  Request(url, "POST").then(parsedData => {
+    if (parsedData.errors !== undefined) {
+      if (
+        parsedData.errors[0].message ===
+        "UNIQUE constraint failed: auth_user.username"
+      ) {
+        throw new SubmissionError({
+          username: "O usuário já está em uso",
+          _error: "Login failed!"
         });
-        history.push("/");
       }
-    });
+    } else if (parsedData.data.createUser.user !== null) {
+      sendMessage({
+        message: "Usuário cadastrado com sucesso",
+        variante: "success",
+        condition: true
+      });
+      history.push("/");
+    }
+  });
 };
 const signUpPaper = params => {
   return (
