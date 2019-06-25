@@ -5,10 +5,12 @@ import { withStyles, Grid } from "@material-ui/core";
 import LinearProgress from "@material-ui/core/LinearProgress";
 import * as emitter from "emitter-io";
 import { connect } from "react-redux";
+import { messageSistem } from "../actions/NotificationActions";
 import styles from "./Styles";
 import { MQTT_HOST, MQTT_PORT } from "../utils/Constants";
 import { changeConfigTest } from "../actions/TestActions";
 import { resolveMsg, calculeTEC, calculeTEI, calculeTES } from "./TestDataAux";
+import allPower from "./ProgressBar";
 
 const percentageTransformer = 100;
 const diffFactor = 0.1;
@@ -48,38 +50,6 @@ const progress = (value, classes) => {
       </div>
     </div>
   );
-};
-
-const heigthProgress = (value, classes) => {
-  return (
-    <div>
-      <div>
-        <LinearProgress
-          className={classes.progressHeight}
-          variant="determinate"
-          value={value}
-        />
-      </div>
-    </div>
-  );
-};
-
-const allPower = (powerStates, classes) => {
-  const render = powerStates.map(value => {
-    return (
-      <Grid
-        container
-        item
-        justify="center"
-        xs={4}
-        className={classes.gridAllPower}
-      >
-        {heigthProgress(value.value, classes)}
-        <spam>{value.name}</spam>
-      </Grid>
-    );
-  });
-  return render;
 };
 
 const testProgress = (testPro, classes) => {
@@ -244,8 +214,9 @@ class TestData extends React.Component {
   }
 
   render() {
-    const { classes } = this.props;
     const { TES, TEI, TEC, SA, TS, DTE } = this.state;
+    const { sendMessage } = this.props;
+    const { classes, configId, calibId } = this.props;
 
     const powerStates = [
       { name: "TES", value: TES },
@@ -294,10 +265,20 @@ TestData.defaultProps = {
 };
 
 TestData.propTypes = {
+  sendMessage: PropTypes.func.isRequired,
   classes: PropTypes.objectOf(PropTypes.string).isRequired,
   mqttKey: PropTypes.string.isRequired,
-  configuration: PropTypes.string
+  configuration: PropTypes.string,
+  newData: PropTypes.oneOfType([PropTypes.object]).isRequired,
+  calibId: PropTypes.string.isRequired,
+  configId: PropTypes.string.isRequired,
+  mqttKey: PropTypes.string.isRequired
 };
+
+const mapDispatchToProps = dispatch => ({
+  sendMessage: payload => dispatch(messageSistem(payload)),
+  changeConfig: payload => dispatch(changeConfigTest(payload))
+});
 
 const mapStateToProps = state => {
   return {
@@ -308,10 +289,6 @@ const mapStateToProps = state => {
     configuration: state.form.configuration
   };
 };
-
-const mapDispatchToProps = dispatch => ({
-  changeConfig: payload => dispatch(changeConfigTest(payload))
-});
 
 const TestDataForm = reduxForm({
   form: "testData"

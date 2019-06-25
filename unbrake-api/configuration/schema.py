@@ -89,7 +89,6 @@ class CreateDefaultConfig(graphene.Mutation):
     Class to create a new default Config object on db
     '''
     config = graphene.Field(ConfigType)
-    error = graphene.String()
 
     class Arguments:
         '''

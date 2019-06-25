@@ -38,7 +38,26 @@
     <img src="https://pullreminders.com/badge.svg" />
   </a>
 </p>
+<p align="center">
+    <img src= "https://i.imgur.com/2JxPd4S.png"/>
+</p>
+<h1 align="center"> UnBrake </h1>
 
+<p align="center">
+    <a href="https://fga-eps-mds.github.io/2019.1-unbrake/"><strong>&raquo; Mais informações </strong></a>
+    <br>
+    
+## Sobre o projeto
+UnBrake é um software que controla de forma remota a configuração, calibração e visualização de ensaios de aceleração e frenagem. O controle do hardware é realizado através de um [firmware](https://github.com/braketestbench/firmware), desenvolvido pelo ex-aluno João Guimarães, que foi gravado em um arduíno Leornardo para controlar o simulador de frenagem. O UnBrake será utilizado por alunos e professores do curso de Engenharia Automotiva da UnB - Campus Gama.
+
+O software é dividido em três partes, parte local, API e frontend. 
+
+A parte local foi realizada utilizando Golang. E é responsável por receber as configurações do ensaio, coletar os dados produzidos pelos sensores do simulador e por fornecê-los em stream para o frontend. 
+
+A API foi feita utilizando Django, ela recebe os arquivos de configuração, os relaciona com os ensaios, armazena e realiza a autenticação dos usuários. 
+
+O frontend, que foi gerado utilizando React JS, permite que o usuário configure e calibre o ensaio.
+    
 ## Utilizando a aplicação
 
 Execute o binário
@@ -68,8 +87,7 @@ Se desejar utilizar uma porta não listada, você pode fazer isso via
 As configurações podem ser feitas via arquivo de configuração e/ou variáveis
 de ambiente.
 
-O arquivo de configuração deve ser criado com o nome `config.json` em
-`~/UnBrake/logs` no Linux e em `%APPDATA%/UnBrake/logs` no Windows.
+O arquivo de configuração deve ser criado com o nome `config.json` em `~/UnBrake` no Linux e em `%APPDATA%/UnBrake` no Windows.
 
 Exemplo de arquivo de configuração:
 ``` json
@@ -89,6 +107,14 @@ Ex: `/dev/ttyACM0`, `COM1`.
 * **mqttKey**: chave do MQTT broker (emitter-io utilizado)
 * **mqttChannelPrefix**: todos os canais do MQTT terão esse prefixo.
     Útil para lidar com vários dispositivos em paralelo.
+
+Todos esses parâmetros também podem ser configurados através de variáveis
+de ambiente apenas fazendo a alteração do nome do parâmetro de camelcase
+para snake case e em caixa alta. Ex: `serialPort` se torna `SERIAL_PORT`.
+
+As variáveis de ambiente tem precedência sobre o arquivo de configuração.
+Caso a variável de ambiente não seja setada e nem haja arquivo de configuração,
+serão usadas valores default onde possível.
 
 Todos esses parâmetros também podem ser configurados através de variáveis
 de ambiente apenas fazendo a alteração do nome do parâmetro de camelcase
@@ -177,3 +203,9 @@ Antes de analisar as seguintes opções cheque o log para ter mais informações
 
 Contribuições ao nosso projeto são muito bem vindas! Cheque nosso
 [guia de contribuição](CONTRIBUTING.md) para mais informações.
+
+### Licença
+<p align="justify"> &emsp;&emsp; O UnBrake é distribuído sob a licença MIT disponível <a href="https://github.com/fga-eps-mds/2019.1-unbrake/blob/master/LICENSE">aqui</a>.</p>
+
+<p align="justify"> &emsp;&emsp; Logo criada por <a href="https://www.flaticon.com/free-icon/brake-disc_1672606">Freepik</a>.</p>
+
