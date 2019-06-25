@@ -3,16 +3,18 @@ import PropTypes from "prop-types";
 import { reduxForm } from "redux-form";
 import { withStyles, Grid } from "@material-ui/core";
 import LinearProgress from "@material-ui/core/LinearProgress";
-import Button from "@material-ui/core/Button";
 import * as emitter from "emitter-io";
 import { connect } from "react-redux";
-import { API_URL_GRAPHQL, MQTT_HOST, MQTT_PORT } from "../utils/Constants";
-import Request from "../utils/Request";
 import { messageSistem } from "../actions/NotificationActions";
 import styles from "./Styles";
+import { MQTT_HOST, MQTT_PORT } from "../utils/Constants";
+import { changeConfigTest } from "../actions/TestActions";
+import { resolveMsg, calculeTEC, calculeTEI, calculeTES } from "./TestDataAux";
 import allPower from "./ProgressBar";
 
 const percentageTransformer = 100;
+const diffFactor = 0.1;
+const one = 1;
 
 const label = name => {
   let labelName;
@@ -91,36 +93,6 @@ const infoSnub = (informations, classes) => {
   return render;
 };
 
-const submit = (configId, calibId, sendMessage) => {
-  const urlUser = `${API_URL_GRAPHQL}?query=query{currentUser{username}}`;
-  const method = "GET";
-  if (configId !== "" && calibId !== "") {
-    Request(urlUser, method).then(username => {
-      const urlTesting = `${API_URL_GRAPHQL}?query=mutation{createTesting(createBy:"${username}",
-      idCalibration:${calibId},idConfiguration:${configId}){testing{id},error}}`;
-      const methodTest = "POST";
-      Request(urlTesting, methodTest).then(response => {
-        const { data } = response.data;
-        const { createTesting } = data.createTesting;
-        const { testing } = createTesting.testing;
-        const { id } = testing.id;
-
-        if (data.error !== null)
-          sendMessage({
-            message: data.error,
-            variante: "success",
-            condition: true
-          });
-
-        const urlSubmit = `${API_URL_GRAPHQL}?query=mutation{submitTesting(mqttHost:"unbrake.ml",mqttPort:8080,testingId:${id}){succes}}`;
-        Request(urlSubmit, methodTest).then(() => {
-          // Alertar usuario TODO
-        });
-      });
-    });
-  }
-};
-
 const testInformations = (informations, classes) => {
   return (
     <Grid
@@ -151,42 +123,22 @@ const testInformations = (informations, classes) => {
   );
 };
 
-const renderSubmitTest = (configId, calibId, sendMessage) => {
-  const primalIndexStyle = 1;
-  const firstDenominatorStyle = 2;
-  const secondDenominatorStyle = 24;
-  const thirdDenominatorStyle = 32;
-  return (
-    <Button
-      onClick={submit(configId, calibId, sendMessage)}
-      color="secondary"
-      variant="contained"
-      style={{
-        flex:
-          primalIndexStyle / firstDenominatorStyle +
-          primalIndexStyle / secondDenominatorStyle +
-          primalIndexStyle / thirdDenominatorStyle,
-        backgroundColor: "#0cb85c"
-      }}
-    >
-      Iniciar Ensaio
-    </Button>
-  );
-};
-
 class TestData extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
-      data: {
-        TES: "", // TES
-        TEI: "", // TEI
-        TEC: "", // TEC
-        SA: "", // Snub atual
-        TS: "", // Total de Snubs
-        DTE: "" // Duração total do ensaio
-      }
+      TES: "", // TES
+      TEI: "", // TEI
+      TEC: "", // TEC
+      SA: "1", // Snub atual
+      TS: "", // Total de Snubs
+      DTE: "", // Duração total do ensaio
+      snubState: "",
+      dutyCycle: "",
+      waitingStartTime: 0,
+      waiting: false
     };
+
     this.client = emitter.connect({
       host: MQTT_HOST,
       port: MQTT_PORT,
@@ -196,29 +148,74 @@ class TestData extends React.Component {
       key: props.mqttKey,
       channel: "unbrake/galpao/currentSnub"
     });
-    this.currentSnubSensor = 0;
+    this.client.subscribe({
+      key: props.mqttKey,
+      channel: "unbrake/galpao/snubState"
+    });
+    this.client.subscribe({
+      key: props.mqttKey,
+      channel: "unbrake/galpao/dutyCycle"
+    });
+    this.client.subscribe({
+      key: props.mqttKey,
+      channel: "unbrake/galpao/experimentDuration"
+    });
+    this.client.subscribe({
+      key: props.mqttKey,
+      channel: "unbrake/galpao/isAvailable/"
+    });
+
+    this.handleChange = this.handleChange.bind(this);
   }
 
   componentDidMount() {
-    const { data } = this.state;
+    const { configuration } = this.props;
+
+    if (
+      configuration.values === undefined ||
+      configuration.values.NOS === undefined
+    );
+    else this.handleChange("TS", configuration.values.NOS);
+
     this.client.on("message", msg => {
-      data.SA = msg.asString();
-      this.setState({ data });
+      resolveMsg(msg, this.handleChange);
+
+      const { snubState, dutyCycle, waiting, waitingStartTime } = this.state;
+      const states = {
+        snubState,
+        dutyCycle,
+        waiting,
+        waitingStartTime,
+        state: this.state,
+        configuration: configuration.values
+      };
+
+      if (snubState === "acelerating" || snubState === "aceleratingWater")
+        calculeTES(states, this.handleChange);
+      if (snubState === "braking" || snubState === "brakingWater")
+        calculeTEI(states, this.handleChange);
+      if (snubState === "cooldown" || snubState === "cooldownWater")
+        calculeTEC(states, this.handleChange);
     });
   }
 
-  static getDerivedStateFromProps(props, state) {
-    if (props.newData !== state.data) {
-      return { data: props.newData };
-    }
-    return null;
+  handleChange(name, value) {
+    const { waiting } = this.state;
+
+    let differenceFactor = diffFactor;
+    if (waiting) differenceFactor = one;
+
+    const states = this.state;
+
+    const difference = Math.abs(states[name] - value);
+    if (difference < differenceFactor) return;
+
+    this.setState({ [name]: value });
   }
 
   render() {
-    const { sendMessage } = this.props;
-    const { classes, configId, calibId } = this.props;
-    const { data } = this.state;
-    const { TES, TEI, TEC, SA, TS, DTE } = data;
+    const { TES, TEI, TEC, SA, TS, DTE } = this.state;
+    const { classes } = this.props;
 
     const powerStates = [
       { name: "TES", value: TES },
@@ -256,26 +253,25 @@ class TestData extends React.Component {
           <Grid container item alignItems="center" justify="center" xs={12}>
             {testProgress(testPro, classes)}
           </Grid>
-          <Grid container item justify="center" style={{ flex: 1 }}>
-            {renderSubmitTest(configId, calibId, sendMessage)}
-          </Grid>
         </Grid>
       </Grid>
     );
   }
 }
 
+TestData.defaultProps = {
+  configuration: { values: {} }
+};
+
 TestData.propTypes = {
-  sendMessage: PropTypes.func.isRequired,
   classes: PropTypes.objectOf(PropTypes.string).isRequired,
-  newData: PropTypes.oneOfType([PropTypes.object]).isRequired,
-  calibId: PropTypes.string.isRequired,
-  configId: PropTypes.string.isRequired,
+  configuration: PropTypes.string,
   mqttKey: PropTypes.string.isRequired
 };
 
 const mapDispatchToProps = dispatch => ({
-  sendMessage: payload => dispatch(messageSistem(payload))
+  sendMessage: payload => dispatch(messageSistem(payload)),
+  changeConfig: payload => dispatch(changeConfigTest(payload))
 });
 
 const mapStateToProps = state => {
@@ -283,7 +279,8 @@ const mapStateToProps = state => {
     configName: state.testReducer.configName,
     configId: state.testReducer.configId,
     calibName: state.testReducer.calibName,
-    calibId: state.testReducer.calibId
+    calibId: state.testReducer.calibId,
+    configuration: state.form.configuration
   };
 };
 

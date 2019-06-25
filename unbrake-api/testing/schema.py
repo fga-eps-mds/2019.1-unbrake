@@ -224,9 +224,54 @@ class SubmitTesting(graphene.Mutation):
         return SubmitTesting(succes=testing)
 
 
+class QuitExperiment(graphene.Mutation):
+    '''
+      Class to quit test
+    '''
+    # pylint: disable = unused-argument, no-self-use, trailing-whitespace,
+    # pylint: disable = too-many-arguments
+
+    error = graphene.String()
+    response = graphene.String()
+
+    class Arguments:
+        '''
+          Arguments necessaries to use the mutation
+        '''
+        username = graphene.String()
+        testing_id = graphene.Int()
+        mqtt_host = graphene.String()
+        mqtt_port = graphene.Int()
+
+    def mutate(self, info, username, testing_id, mqtt_host, mqtt_port):
+        '''
+          Mutation to execute quiting
+        '''
+        client = Client()
+
+        client.connect(
+            host=mqtt_host,
+            port=8080,
+            secure=False
+        )
+
+        testing = Testing.objects.get(pk=testing_id)
+        user = testing.create_by
+        if user == username:
+            client.publish(
+                get_secret('mqtt-writing-key'),
+                "unbrake/galpao/quitExperiment",
+                "VINTE MIL"
+            )
+
+            return QuitExperiment(response="Success")
+        return QuitExperiment(error="Permission denied")
+
+
 class Mutation(graphene.ObjectType):
     '''
         Graphene class concat all mutations
     '''
     create_testing = CreateTesting.Field()
     submit_testing = SubmitTesting.Field()
+    quit_testing = QuitExperiment.Field()

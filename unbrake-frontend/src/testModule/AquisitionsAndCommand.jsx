@@ -1,15 +1,18 @@
 import React from "react";
 import { connect } from "react-redux";
 import PropTypes from "prop-types";
-import { reduxForm, Field, initialize } from "redux-form";
-import { withStyles, Grid, FormControlLabel } from "@material-ui/core";
-import { Checkbox } from "redux-form-material-ui";
+import { reduxForm } from "redux-form";
+import { withStyles, Grid } from "@material-ui/core";
 import Button from "@material-ui/core/Button";
-import SettingsInputComponent from "@material-ui/icons/SettingsInputComponent";
-import SettingsInputComponentOutlined from "@material-ui/icons/SettingsInputComponentOutlined";
-import { redirectPage } from "../actions/RedirectActions";
-import styles from "./Styles";
+import {
+  accelerateCheckbox,
+  brakeCheckbox,
+  cooldownCheckbox,
+  waterCheckbox
+} from "./CheckboxIcons";
 import { field } from "../components/ComponentsForm";
+import styles from "./Styles";
+import { redirectPage } from "../actions/RedirectActions";
 
 const labelFields = name => {
   let nameLabel = "";
@@ -57,37 +60,22 @@ const previousButton = handlePrevious => {
 };
 
 const allCheckbox = (selectsControl, classes, handleChange) => {
-  const checks = selectsControl.map(value => {
-    return (
-      <Grid
-        key={`checkbox ${value.name}`}
-        alignItems="center"
-        justify="center"
-        container
-        item
-        xs={3}
-      >
-        <FormControlLabel
-          className={classes.checbox_control}
-          labelPlacement="top"
-          control={
-            <Field
-              component={Checkbox}
-              icon={<SettingsInputComponentOutlined />}
-              checkedIcon={<SettingsInputComponent />}
-              className={classes.checbox_field}
-              disabled={value.disable}
-              onClick={handleChange}
-              name={value.name}
-              value={value.value}
-            />
-          }
-          label={value.name}
-        />
+  return (
+    <Grid container item={12}>
+      <Grid alignItems="center" justify="center" container item xs={3}>
+        {accelerateCheckbox(selectsControl[0], classes, handleChange)}
       </Grid>
-    );
-  });
-  return checks;
+      <Grid alignItems="center" justify="center" container item xs={3}>
+        {brakeCheckbox(selectsControl[1], classes, handleChange)}
+      </Grid>
+      <Grid alignItems="center" justify="center" container item xs={3}>
+        {cooldownCheckbox(selectsControl[2], classes, handleChange)}
+      </Grid>
+      <Grid alignItems="center" justify="center" container item xs={3}>
+        {waterCheckbox(selectsControl[3], classes, handleChange)}
+      </Grid>
+    </Grid>
+  );
 };
 
 const renderField = (states, classes, handleChange) => {
@@ -161,10 +149,25 @@ const renderDictionary = aquisition => {
     [
       { name: "Pc", value: aquisition.Pc, disable: true },
       [
-        { name: "Out1", value: aquisition.Out1, disable: true },
-        { name: "In1", value: aquisition.In1, disable: true },
-        { name: "In2", value: aquisition.In2, disable: true },
-        { name: "In3", value: aquisition.In3, disable: true }
+        {
+          label: "Acelerador",
+          name: "acelerate",
+          value: aquisition.acelerate,
+          disable: true
+        },
+        {
+          label: "Freio",
+          name: "brake",
+          value: aquisition.brake,
+          disable: true
+        },
+        {
+          label: "Cooldown",
+          name: "cooldown",
+          value: aquisition.cooldown,
+          disable: true
+        },
+        { label: "Água", name: "water", value: aquisition.water, disable: true }
       ]
     ]
   ];
@@ -185,25 +188,15 @@ class AquisitionsAndCommand extends React.Component {
         DPm: "", // Distância percorrida (m)
         Vc: "", // Velocidade (comando)
         Pc: "", // Pressão (comando)
-        Out1: false,
-        In1: false,
-        In2: false,
-        In3: false
+        acelerate: true,
+        brake: false,
+        cooldown: false,
+        water: false
       }
     };
+
     this.handleChange = this.handleChange.bind(this);
     this.handlePrevious = this.handlePrevious.bind(this);
-  }
-
-  shouldComponentUpdate(nextProps) {
-    const { newAquisition, dispatch } = this.props;
-    if (newAquisition !== nextProps.newAquisition) {
-      const rightConfig = Object.assign({}, nextProps.newAquisition);
-      dispatch(initialize("testAquisition", rightConfig));
-      this.setState({ aquisition: rightConfig });
-      return true;
-    }
-    return false;
   }
 
   handlePrevious() {
@@ -244,8 +237,6 @@ class AquisitionsAndCommand extends React.Component {
 
 AquisitionsAndCommand.propTypes = {
   classes: PropTypes.objectOf(PropTypes.string).isRequired,
-  dispatch: PropTypes.func.isRequired,
-  newAquisition: PropTypes.oneOfType([PropTypes.object]).isRequired,
   redirect: PropTypes.func.isRequired
 };
 

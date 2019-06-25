@@ -8,7 +8,6 @@
     "chart.js": "^2.8.0",
     "chartjs-plugin-streaming": "^1.8.0",
     "classnames": "^2.2.6",
-    "emitter-io": "^1.38.0",
     "env-cmd": "^8.0.2",
     "enzyme": "^3.9.0",
     "enzyme-adapter-react-16": "^1.11.2",
@@ -32,7 +31,7 @@
     "redux-form": "^8.1.0",
     "redux-form-material-ui": "^5.0.0-beta.3",
     "redux-thunk": "^2.3.0",
-    "socket.io-client": "^2.2.0",
+    "emitter-io": "^1.38.0",
     "universal-cookie": "3.1.0"
   },
   "proxy": "http://localhost:8080/",
