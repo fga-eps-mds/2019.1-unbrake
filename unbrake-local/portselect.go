@@ -43,6 +43,9 @@ func handlePortsSectionGUI() {
 	systray.AddSeparator()
 
 	handleSelect := func(selected int, ports []serialPortGUI) {
+		if port.IsOpen() {
+			port.Close()
+		}
 		for i := range ports {
 			if i != selected {
 				ports[i].uncheck()

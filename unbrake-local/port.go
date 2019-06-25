@@ -86,3 +86,13 @@ func (port *Port) Open(portName string) error {
 func (port *Port) IsOpen() bool {
 	return port.port != nil
 }
+
+// Flush to clean the buffer
+func (port *Port) Flush() {
+	port.port.Flush()
+}
+
+// Close the serial port
+func (port *Port) Close() {
+	port.port.Close()
+}

@@ -78,12 +78,19 @@ func CollectData() {
 
 		if err != nil {
 			log.Println(err)
+			if port.IsOpen() {
+				port.Close()
+			}
+			continue
+		}
+
+		if !isCorrectDevice() {
+			aplicationStatusCh <- "Selecione a porta correta"
+			port.Close()
 			continue
 		}
 
 		aplicationStatusCh <- "Coletando dados"
-
-		testSerialConnection()
 
 		log.Println("Initializing collectData routine...")
 		log.Printf("Simulator Port = %s", serialPortName)
@@ -117,19 +124,11 @@ func CollectData() {
 func getData(command string) []byte {
 
 	n := port.Write([]byte(command))
-	if n == -1 {
-		log.Println("Error writing to serial. Is this the right port?")
-		aplicationStatusCh <- "Selecione a porta correta"
-	}
 
 	buf := make([]byte, bufferSize)
 	n, err := port.Read(buf)
 	if err != nil {
 		log.Println("Error reading from serial ", err, ". Is this the right port?")
-		aplicationStatusCh <- "Selecione a porta correta"
-	} else if n == 0 {
-		log.Println("Error reading from serial: timeout waiting for bytes. Is this the right port?")
-		aplicationStatusCh <- "Selecione a porta correta"
 	}
 
 	split := strings.Split(string(buf[:n]), ",")
@@ -259,42 +258,7 @@ func writeDutyCycle(duty float64) {
 
 	command = append(command, byte(int(duty/perCentByAcii+asciiBase)))
 
-	n := port.Write(command)
-	if n == -1 {
-
-		log.Println("Error writing to serial. Is this the right port?")
-		aplicationStatusCh <- "Selecione a porta correta"
-	}
-
-}
-
-func testSerialConnection() {
-
-	firmware := "Braketestbench"
-
-	n := port.Write([]byte(" "))
-	if n == -1 {
-		log.Println("Error writing to serial. Is this the rigth port?")
-		aplicationStatusCh <- "Selecione a porta correta"
-	}
-
-	buf := make([]byte, bufferSize)
-	n, err := port.Read(buf)
-	if err != nil {
-		log.Println("Error reading from serial ", err, ". Is this the right port?")
-		aplicationStatusCh <- "Selecione a porta correta"
-	} else if n == 0 {
-		log.Println("Error reading from serial: timeout waiting for bytes. Is this the right port?")
-		aplicationStatusCh <- "Selecione a porta correta"
-	}
-
-	buf = buf[2:16]
-
-	if string(buf) != firmware {
-		log.Println("Wrong serial port selected")
-		aplicationStatusCh <- "Selecione a porta correta"
-	}
-
+	port.Write(command)
 }
 
 func testKeys() {
