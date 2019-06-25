@@ -6,10 +6,7 @@ import PropTypes from "prop-types";
 import TextField from "@material-ui/core/TextField";
 import { connect } from "react-redux";
 import * as emitter from "emitter-io";
-import {
-  itensSelectionConfig,
-  saveConfiguration
-} from "../configuration/ConfigFunctions";
+import { itensSelectionConfig } from "../configuration/ConfigFunctions";
 import { itensSelection } from "../calibration/CalibrationUpload";
 import { API_URL_GRAPHQL, MQTT_HOST, MQTT_PORT } from "../utils/Constants";
 import Request from "../utils/Request";

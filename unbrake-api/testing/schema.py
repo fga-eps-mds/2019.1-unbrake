@@ -228,6 +228,9 @@ class QuitExperiment(graphene.Mutation):
     '''
       Class to quit test
     '''
+    # pylint: disable = unused-argument, no-self-use, trailing-whitespace,
+    # pylint: disable = too-many-arguments
+
     error = graphene.String()
     response = graphene.String()
 

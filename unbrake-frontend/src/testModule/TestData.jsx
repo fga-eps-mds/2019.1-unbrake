@@ -215,8 +215,7 @@ class TestData extends React.Component {
 
   render() {
     const { TES, TEI, TEC, SA, TS, DTE } = this.state;
-    const { sendMessage } = this.props;
-    const { classes, configId, calibId } = this.props;
+    const { classes } = this.props;
 
     const powerStates = [
       { name: "TES", value: TES },
@@ -265,13 +264,8 @@ TestData.defaultProps = {
 };
 
 TestData.propTypes = {
-  sendMessage: PropTypes.func.isRequired,
   classes: PropTypes.objectOf(PropTypes.string).isRequired,
-  mqttKey: PropTypes.string.isRequired,
   configuration: PropTypes.string,
-  newData: PropTypes.oneOfType([PropTypes.object]).isRequired,
-  calibId: PropTypes.string.isRequired,
-  configId: PropTypes.string.isRequired,
   mqttKey: PropTypes.string.isRequired
 };
 
