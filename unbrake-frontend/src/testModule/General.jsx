@@ -5,9 +5,10 @@ import Button from "@material-ui/core/Button";
 import PropTypes from "prop-types";
 import TextField from "@material-ui/core/TextField";
 import { connect } from "react-redux";
+import { reduxForm } from "redux-form";
 import * as emitter from "emitter-io";
 import { itensSelectionConfig } from "../configuration/ConfigFunctions";
-import { itensSelection } from "../calibration/CalibrationUpload";
+import { itensSelection, getSelectCalibration } from "../calibration/CalibrationUpload";
 import { API_URL_GRAPHQL, MQTT_HOST, MQTT_PORT } from "../utils/Constants";
 import Request from "../utils/Request";
 import {
@@ -162,7 +163,7 @@ class General extends React.Component {
   }
 
   handleChangeSelect(event) {
-    const { changeCalib, changeConfig } = this.props;
+    const { changeCalib, changeConfig, dispatch, sendMessage } = this.props;
     const { name, value } = event.target;
 
     const id = value === invalidId ? "" : value;
@@ -171,6 +172,8 @@ class General extends React.Component {
       changeConfig({ configId: id });
     } else if (name === "calibId") {
       changeCalib({ calibId: id });
+      getSelectCalibration(id, dispatch, sendMessage)
+      console.log(this.props.calibration)
     }
   }
 
@@ -258,7 +261,12 @@ const mapStateToProps = state => {
   };
 };
 
+const GeneralForm = reduxForm({
+  form: "calibration",
+  destroyOnUnmount: false,
+})(General);
+
 export default connect(
   mapStateToProps,
   mapDispatchToProps
-)(withStyles(styles)(General));
+)(withStyles(styles)(GeneralForm));

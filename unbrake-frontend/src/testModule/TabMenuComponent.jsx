@@ -182,6 +182,34 @@ class TabMenuComponent extends React.Component {
 
   componentDidMount() {
     const { dispatch, calibration } = this.props;
+    // this.client.on("message", msg => {
+    //   const { testAquisition } = this.props;
+    //   const states = {
+    //     calibration,
+    //     dispatch,
+    //     msg,
+    //     testAquisition,
+    //     sensorTemperature1: this.sensorTemperature1,
+    //     sensorTemperature2: this.sensorTemperature2,
+    //     sensorForce1: this.sensorForce1,
+    //     sensorForce2: this.sensorForce2,
+    //     sensorRpm: this.sensorRpm,
+    //     sensorSpeedCommand: this.sensorSpeedCommand,
+    //     sensorPressureComand: this.sensorPressureComand
+    //   };
+    //   const functions = { dispatch, change };
+
+    //   if (Object.keys(calibration.values).length > zero) {
+    //     resolveMsg(msg, states, functions);
+    //   }
+    // });
+  }
+
+  componentDidUpdate(prevProps, prevState, snapshot){
+    console.log(prevProps, prevState, snapshot)
+    const { dispatch, calibration } = this.props;
+
+    if (calibration !== prevProps.calibration){
     this.client.on("message", msg => {
       const { testAquisition } = this.props;
       const states = {
@@ -203,6 +231,9 @@ class TabMenuComponent extends React.Component {
         resolveMsg(msg, states, functions);
       }
     });
+    return true;
+  }
+  return false;
   }
 
   handleChange(event, newValue) {

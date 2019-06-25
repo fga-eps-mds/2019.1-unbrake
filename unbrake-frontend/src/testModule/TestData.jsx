@@ -199,6 +199,18 @@ class TestData extends React.Component {
     });
   }
 
+  // shouldComponentUpdate(nextProps) {
+  //   console.log("NOVA PROPS",nextProps)
+  //   return false;
+  //   // const { configuration, dispatch } = this.props;
+
+  //   // if (configuration !== nextProps.configuration) {
+  //   //   return true;
+  //   // }
+  //   // return false;
+  // }
+
+
   handleChange(name, value) {
     const { waiting } = this.state;
 
