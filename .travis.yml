@@ -91,7 +91,7 @@ build_staging: &build_staging
   stage: "build staging/development environments"
   before_script: skip
   script:
-    - docker build "$BUILD_FOLDER/" -t "$DOCKER_IMAGE:${DOCKER_STAGING_TMP_TAG}" -f "$BUILD_FOLDER/production/Dockerfile"
+    - docker build "$BUILD_FOLDER/" -t "$DOCKER_IMAGE:${DOCKER_STAGING_TMP_TAG}" -f "$BUILD_FOLDER/production/Dockerfile" --build-arg STAGING="1"
     - echo "$DOCKER_PASSWORD" | docker login -u "${DOCKER_USERNAME}" --password-stdin
     - docker push "$DOCKER_IMAGE:${DOCKER_STAGING_TMP_TAG}"
     - docker logout

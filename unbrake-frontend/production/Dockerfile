@@ -3,10 +3,11 @@ FROM node:11-alpine as builder
 WORKDIR /app/frontend
 
 COPY . .
+# ARG STAGING
 
 RUN set -x \
   && npm install --no-optional --production \
-  && npm run build:staging
+  && STAGING="$STAGING" npm run build
 
 # Frontend has his server on Dockerfile because
 # the node service will only compile, won't start

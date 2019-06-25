@@ -1,0 +1,7 @@
+#!/bin/sh
+
+if [ "$STAGING" = "1" ]; then
+    env-cmd .env.staging react-scripts build
+else 
+    react-scripts build
+fi
