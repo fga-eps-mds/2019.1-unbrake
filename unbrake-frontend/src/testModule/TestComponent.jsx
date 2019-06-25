@@ -3,7 +3,6 @@ import { Grid } from "@material-ui/core";
 import { connect } from "react-redux";
 import { API_URL_GRAPHQL } from "../utils/Constants";
 import Request from "../utils/Request";
-// import Button from "@material-ui/core/Button"
 import AquisitionsAndCommand from "./AquisitionsAndCommand";
 import TestData from "./TestData";
 import TabMenuComponent from "./TabMenuComponent";

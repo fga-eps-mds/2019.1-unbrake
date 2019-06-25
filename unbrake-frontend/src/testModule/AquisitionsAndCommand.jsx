@@ -1,19 +1,15 @@
 import React from "react";
 import { connect } from "react-redux";
 import PropTypes from "prop-types";
-import { reduxForm, Field, initialize } from "redux-form";
-import { withStyles, Grid, FormControlLabel } from "@material-ui/core";
-import { Checkbox } from "redux-form-material-ui";
+import { reduxForm } from "redux-form";
+import { withStyles, Grid } from "@material-ui/core";
 import Button from "@material-ui/core/Button";
-
-import OfflineBolt from "@material-ui/icons/OfflineBolt";
-import OfflineBoltOutlined from "@material-ui/icons/OfflineBoltOutlined";
-import ReportProblem from "@material-ui/icons/ReportProblem";
-import ReportProblemOutlined from "@material-ui/icons/ReportProblemOutlined";
-import WatchLaterOutlined from "@material-ui/icons/WatchLaterOutlined";
-import WatchLater from "@material-ui/icons/WatchLater";
-import BeachAccessOutlined from "@material-ui/icons/BeachAccessOutlined";
-import BeachAccess from "@material-ui/icons/BeachAccess";
+import {
+  accelerateCheckbox,
+  brakeCheckbox,
+  cooldownCheckbox,
+  waterCheckbox
+} from "./CheckboxIcons";
 import { field } from "../components/ComponentsForm";
 import styles from "./Styles";
 import { redirectPage } from "../actions/RedirectActions";
@@ -60,94 +56,6 @@ const previousButton = handlePrevious => {
     <Button onClick={handlePrevious} color="secondary" variant="contained">
       Etapa anterior
     </Button>
-  );
-};
-
-const accelerateCheckbox = (value, classes, handleChange) => {
-  return (
-    <FormControlLabel
-      className={classes.checbox_control}
-      labelPlacement="top"
-      control={
-        <Field
-          component={Checkbox}
-          icon={<OfflineBoltOutlined color="secondary" />}
-          checkedIcon={<OfflineBolt style={{ color: "green" }} />}
-          className={classes.checbox_field}
-          disabled={value.disable}
-          onClick={handleChange}
-          name={value.name}
-          value={value.value}
-        />
-      }
-      label={value.label}
-    />
-  );
-};
-
-const brakeCheckbox = (value, classes, handleChange) => {
-  return (
-    <FormControlLabel
-      className={classes.checbox_control}
-      labelPlacement="top"
-      control={
-        <Field
-          component={Checkbox}
-          icon={<ReportProblemOutlined color="secondary" />}
-          checkedIcon={<ReportProblem style={{ color: "red" }} />}
-          className={classes.checbox_field}
-          disabled={value.disable}
-          onClick={handleChange}
-          name={value.name}
-          value={value.value}
-        />
-      }
-      label={value.label}
-    />
-  );
-};
-
-const cooldownCheckbox = (value, classes, handleChange) => {
-  return (
-    <FormControlLabel
-      className={classes.checbox_control}
-      labelPlacement="top"
-      control={
-        <Field
-          component={Checkbox}
-          icon={<WatchLaterOutlined color="secondary" />}
-          checkedIcon={<WatchLater style={{ color: "#ffd600" }} />}
-          className={classes.checbox_field}
-          disabled={value.disable}
-          onClick={handleChange}
-          name={value.name}
-          value={value.value}
-        />
-      }
-      label={value.label}
-    />
-  );
-};
-
-const waterCheckbox = (value, classes, handleChange) => {
-  return (
-    <FormControlLabel
-      className={classes.checbox_control}
-      labelPlacement="top"
-      control={
-        <Field
-          component={Checkbox}
-          icon={<BeachAccessOutlined color="secondary" />}
-          checkedIcon={<BeachAccess style={{ color: "blue" }} />}
-          className={classes.checbox_field}
-          disabled={value.disable}
-          onClick={handleChange}
-          name={value.name}
-          value={value.value}
-        />
-      }
-      label={value.label}
-    />
   );
 };
 
@@ -291,19 +199,6 @@ class AquisitionsAndCommand extends React.Component {
     this.handlePrevious = this.handlePrevious.bind(this);
   }
 
-  /*
-   * shouldComponentUpdate(nextProps) {
-   *   const { newAquisition, dispatch } = this.props;
-   *   if (newAquisition !== nextProps.newAquisition) {
-   *     const rightConfig = Object.assign({}, nextProps.newAquisition);
-   *     dispatch(initialize("testAquisition", rightConfig));
-   *     this.setState({ aquisition: rightConfig });
-   *     return true;
-   *   }
-   *   return false;
-   * }
-   */
-
   handlePrevious() {
     const { redirect } = this.props;
     redirect({ url: "/calibration" });
@@ -341,23 +236,9 @@ class AquisitionsAndCommand extends React.Component {
 }
 
 AquisitionsAndCommand.propTypes = {
-  testAquisition: { values: {} },
-  calibration: { values: {} }
-};
-
-AquisitionsAndCommand.propTypes = {
   classes: PropTypes.objectOf(PropTypes.string).isRequired,
-  dispatch: PropTypes.func.isRequired,
-  newAquisition: PropTypes.oneOfType([PropTypes.object]).isRequired,
-  redirect: PropTypes.func.isRequired,
-  testAquisition: PropTypes.string,
-  calibration: PropTypes.string
+  redirect: PropTypes.func.isRequired
 };
-
-const mapStateToProps = state => ({
-  testAquisition: state.form.testAquisition,
-  calibration: state.form.calibration
-});
 
 const mapDispatchToProps = dispatch => ({
   redirect: payload => dispatch(redirectPage(payload))
@@ -368,6 +249,6 @@ const AquisitionsAndCommandForm = reduxForm({
 })(AquisitionsAndCommand);
 
 export default connect(
-  mapStateToProps,
+  null,
   mapDispatchToProps
 )(withStyles(styles)(AquisitionsAndCommandForm));

@@ -1,6 +1,6 @@
 import React from "react";
 import PropTypes from "prop-types";
-import { reduxForm, change } from "redux-form";
+import { reduxForm } from "redux-form";
 import { withStyles, Grid } from "@material-ui/core";
 import LinearProgress from "@material-ui/core/LinearProgress";
 import * as emitter from "emitter-io";
@@ -8,8 +8,11 @@ import { connect } from "react-redux";
 import styles from "./Styles";
 import { MQTT_HOST, MQTT_PORT } from "../utils/Constants";
 import { changeConfigTest } from "../actions/TestActions";
+import { resolveMsg, calculeTEC, calculeTEI, calculeTES } from "./TestDataAux";
 
 const percentageTransformer = 100;
+const diffFactor = 0.1;
+const one = 1;
 
 const label = name => {
   let labelName;
@@ -150,109 +153,6 @@ const testInformations = (informations, classes) => {
   );
 };
 
-const calculeTES = (states, functions) => {
-  const { handleChange } = functions;
-  const { dutyCycle, waiting, waitingStartTime, configuration, state } = states;
-
-  if (state.TEI !== 0) handleChange("TEI", 0);
-
-  if (state.TEC !== 0) handleChange("TEC", 0);
-
-  if (!waiting) {
-    if (waitingStartTime !== 0) handleChange("waitingStartTime", 0);
-
-    handleChange("TES", dutyCycle);
-
-    if (dutyCycle >= 99) {
-      handleChange("waiting", true);
-    }
-  } else {
-    if (waitingStartTime === 0) {
-      handleChange("waitingStartTime", Date.now());
-      return;
-    }
-
-    const time = Date.now() - waitingStartTime;
-    const centiseconds = Math.floor(time / 10);
-
-    const UWT = configuration.UWT * 100;
-
-    if (centiseconds < UWT) {
-      handleChange("TES", (1 - centiseconds / UWT) * 100);
-    } else {
-      handleChange("TES", 0);
-      handleChange("waiting", false);
-    }
-  }
-};
-
-const calculeTEI = (states, functions) => {
-  const { handleChange } = functions;
-  const { dutyCycle, waiting, waitingStartTime, configuration, state } = states;
-
-  if (state.TES !== 0) handleChange("TES", 0);
-
-  if (state.TEC !== 0) handleChange("TEC", 0);
-
-  if (!waiting) {
-    if (waitingStartTime !== 0) handleChange("waitingStartTime", 0);
-
-    const convertionDuty = 100 - dutyCycle;
-    const minVelocity = 100 - 30; // configuration.LSL;
-    const valueProgress = (convertionDuty / minVelocity) * 100;
-
-    handleChange("TEI", valueProgress);
-
-    if (valueProgress >= 99) {
-      handleChange("waiting", true);
-    }
-  } else {
-    if (waitingStartTime === 0) {
-      handleChange("waitingStartTime", Date.now());
-      return;
-    }
-
-    const time = Date.now() - waitingStartTime;
-    const centiseconds = Math.floor(time / 10);
-
-    const LSL = configuration.LSL * 100;
-
-    if (centiseconds < LSL) {
-      handleChange("TES", (1 - centiseconds / LSL) * 100);
-    } else {
-      handleChange("TES", 0);
-      handleChange("waiting", false);
-    }
-  }
-};
-
-const calculeTEC = (states, functions) => {
-  const { handleChange } = functions;
-  const { waitingStartTime, configuration, state } = states;
-
-  if (state.TES !== 0) handleChange("TES", 0);
-
-  if (state.TEI !== 0) handleChange("TEI", 0);
-
-  if (waitingStartTime === 0) {
-    handleChange("waitingStartTime", Date.now());
-    handleChange("TEC", 100);
-    return;
-  }
-
-  const time = Date.now() - waitingStartTime;
-  const centiseconds = Math.floor(time / 10);
-
-  const TBS = configuration.TBS * 100;
-
-  if (centiseconds < TBS) {
-    handleChange("TEC", (1 - centiseconds / TBS) * 100);
-  } else {
-    handleChange("TEC", 0);
-    handleChange("waiting", false);
-  }
-};
-
 class TestData extends React.Component {
   constructor(props) {
     super(props);
@@ -288,10 +188,6 @@ class TestData extends React.Component {
     });
     this.client.subscribe({
       key: props.mqttKey,
-      channel: "unbrake/galpao/snubDuration"
-    });
-    this.client.subscribe({
-      key: props.mqttKey,
       channel: "unbrake/galpao/experimentDuration"
     });
     this.client.subscribe({
@@ -303,21 +199,7 @@ class TestData extends React.Component {
   }
 
   componentDidMount() {
-    const {
-      classes,
-      testAquisition,
-      configuration,
-      dispatch,
-      change,
-      testData
-    } = this.props;
-
-    const functions = {
-      handleChange: this.handleChange,
-      dispatch,
-      change,
-      testAquisition
-    };
+    const { configuration } = this.props;
 
     if (
       configuration.values === undefined ||
@@ -326,84 +208,44 @@ class TestData extends React.Component {
     else this.handleChange("TS", configuration.values.NOS);
 
     this.client.on("message", msg => {
-      // console.log(msg.channel, msg.asString())
-      if (msg.channel === "unbrake/galpao/currentSnub/") {
-        this.setState({ SA: msg.asString() });
-      } else if (msg.channel === "unbrake/galpao/snubState/") {
-        this.setState({ snubState: msg.asString() });
-      } else if (msg.channel === "unbrake/galpao/dutyCycle/") {
-        this.setState({ dutyCycle: msg.asString() });
-      } else if (msg.channel === "unbrake/galpao/snubDuration/") {
-      } else if (msg.channel === "unbrake/galpao/experimentDuration/") {
-        const seconds = `0${Math.floor(msg.asString() % 60)}`.slice(-2);
-        const minutes = `0${Math.floor((msg.asString() / 60) % 60)}`.slice(-2);
-        const hours = `0${Math.floor((msg.asString() / 3600) % 60)}`.slice(-2);
-        this.setState({ DTE: `${hours} : ${minutes} : ${seconds}` });
-      } else if (msg.channel === "unbrake/galpao/isAvailable/") {
-        if (msg.asString() === true) {
-          this.setState({ experimentDuration: msg.asString() });
-          if (msg.asString() === true) {
-            this.handleChange("TES", 0);
-            this.handleChange("TEI", 0);
-            this.handleChange("TEC", 0);
-          }
-        }
-      }
+      resolveMsg(msg, this.handleChange);
 
       const { snubState, dutyCycle, waiting, waitingStartTime } = this.state;
       const states = {
-        configuration,
-        testAquisition,
         snubState,
         dutyCycle,
         waiting,
         waitingStartTime,
-        testData,
         state: this.state,
-        testAquisition: testAquisition.values,
         configuration: configuration.values
       };
 
       if (snubState === "acelerating" || snubState === "aceleratingWater")
-        calculeTES(states, functions);
+        calculeTES(states, this.handleChange);
       if (snubState === "braking" || snubState === "brakingWater")
-        calculeTEI(states, functions);
+        calculeTEI(states, this.handleChange);
       if (snubState === "cooldown" || snubState === "cooldownWater")
-        calculeTEC(states, functions);
+        calculeTEC(states, this.handleChange);
     });
   }
 
   handleChange(name, value) {
-    let differenceFactor = 0.1;
-    if (this.state.waiting) differenceFactor = 1;
+    const { waiting } = this.state;
 
-    const difference = Math.abs(this.state[name] - value);
+    let differenceFactor = diffFactor;
+    if (waiting) differenceFactor = one;
+
+    const states = this.state;
+
+    const difference = Math.abs(states[name] - value);
     if (difference < differenceFactor) return;
 
     this.setState({ [name]: value });
   }
 
   render() {
-    const {
-      classes,
-      testAquisition,
-      configuration,
-      dispatch,
-      change,
-      testData
-    } = this.props;
-    const {
-      snubState,
-      TES,
-      TEI,
-      TEC,
-      SA,
-      TS,
-      DTE,
-      dutyCycle,
-      waiting,
-      waitingStartTime
-    } = this.state;
+    const { classes } = this.props;
+    const { TES, TEI, TEC, SA, TS, DTE } = this.state;
 
     const powerStates = [
       { name: "TES", value: TES },
@@ -448,16 +290,13 @@ class TestData extends React.Component {
 }
 
 TestData.defaultProps = {
-  configuration: { values: {} },
-  testAquisition: { values: {} }
+  configuration: { values: {} }
 };
 
 TestData.propTypes = {
   classes: PropTypes.objectOf(PropTypes.string).isRequired,
   mqttKey: PropTypes.string.isRequired,
-  dispatch: PropTypes.func.isRequired,
-  configuration: PropTypes.string,
-  testAquisition: PropTypes.string
+  configuration: PropTypes.string
 };
 
 const mapStateToProps = state => {
@@ -466,9 +305,7 @@ const mapStateToProps = state => {
     configId: state.testReducer.configId,
     calibName: state.testReducer.calibName,
     calibId: state.testReducer.calibId,
-    testAquisition: state.form.testAquisition,
-    configuration: state.form.configuration,
-    testData: state.form.testData
+    configuration: state.form.configuration
   };
 };
 

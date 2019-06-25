@@ -5,25 +5,21 @@ import Tabs from "@material-ui/core/Tabs";
 import Tab from "@material-ui/core/Tab";
 import PropTypes from "prop-types";
 import { connect } from "react-redux";
-import { initialize, reduxForm, change } from "redux-form";
+import { reduxForm, change } from "redux-form";
 import * as emitter from "emitter-io";
 import RealTimeChart from "../components/RealTimeChart";
 import { changeConfigTest, changeCalibTest } from "../actions/TestActions";
 import General from "./General";
-import { API_URL_GRAPHQL, MQTT_HOST, MQTT_PORT } from "../utils/Constants";
-import Request from "../utils/Request";
-
+import { MQTT_HOST, MQTT_PORT } from "../utils/Constants";
 import {
-  base10,
-  linearEquation,
-  convertDigitalToAnalog,
-  frequencyEquation,
-  rotationsPerMinuteEquation,
-  rotationToSpeed
-} from "../utils/Equations";
-import { labelTemperature } from "../calibration/Temperature";
+  calculePressure,
+  calculeSpeed,
+  calculeFrequency,
+  calculeForce,
+  calculeTemperature,
+  styles
+} from "./TestFunctions";
 
-const margin = 1.5;
 const zeroTab = 0;
 const firstTab = 1;
 const secondTab = 2;
@@ -31,18 +27,10 @@ const thirdTab = 3;
 const fourthTab = 4;
 const fifthTab = 5;
 const invalidId = 0;
-
-const styles = theme => ({
-  root: {
-    flexGrow: 1
-  },
-  appBar: {
-    borderRadius: theme.spacing.unit * margin,
-    alignItems: "center",
-    justifyContent: "center",
-    marginTop: "20px"
-  }
-});
+const zero = 0;
+const one = 1;
+const two = 2;
+const convertMeters = 1000;
 
 const generalComponent = mqttKey => {
   return <Grid xs>{mqttKey !== "" && <General mqttKey={mqttKey} />}</Grid>;
@@ -71,88 +59,22 @@ const oneGraph = (sensorOne, label) => {
   );
 };
 
-const calculePressure = (states, vector) => {
-  const { dispatch, msg } = states;
-
-  const analogMesg = convertDigitalToAnalog(parseInt(msg.asString(), base10));
-  vector.push(analogMesg);
-
-  dispatch(change("testAquisition", "Pc", analogMesg));
-};
-
-const calculeSpeed = (states, vector) => {
-  const { dispatch, msg } = states;
-
-  const analogMesg = convertDigitalToAnalog(parseInt(msg.asString(), base10));
-  vector.push(analogMesg);
-
-  dispatch(change("testAquisition", "Vc", analogMesg));
-};
-
-const calculeFrequency = (states, vector) => {
-  const { RAP } = states.calibration.values;
-  const { dispatch, msg } = states;
-
-  const analogMesg = convertDigitalToAnalog(parseInt(msg.asString(), base10));
-  vector.push(analogMesg);
-
-  const frequency = frequencyEquation(analogMesg);
-  const rotationsPerMinute = rotationsPerMinuteEquation(frequency);
-  const speedKmh = rotationToSpeed(rotationsPerMinute, RAP, "km/h");
-
-  dispatch(change("testAquisition", "Rrpm", frequency));
-  dispatch(change("testAquisition", "Vkmg", speedKmh));
-};
-
-const calculeForce = (states, vector, sensorNumber) => {
-  const { FCF1, OFF1, FCF2, OFF2 } = states.calibration.values;
-  const { dispatch, msg } = states;
-
-  const analogMesg = convertDigitalToAnalog(parseInt(msg.asString(), base10));
-  vector.push(analogMesg);
-
-  const linear = linearEquation(
-    analogMesg,
-    sensorNumber === 1 ? FCF1 : FCF2,
-    sensorNumber === 1 ? OFF1 : OFF2
-  );
-  dispatch(change("testAquisition", `Fkgf${sensorNumber}`, linear));
-};
-
-const calculeTemperature = (states, vector, sensorNumber) => {
-  const { FCT1, OFT1, FCT2, OFT2 } = states.calibration.values;
-  const { dispatch, msg } = states;
-
-  const analogMesg = convertDigitalToAnalog(parseInt(msg.asString(), base10));
-  vector.push(analogMesg);
-
-  const linear = linearEquation(
-    analogMesg,
-    sensorNumber === 1 ? FCT1 : FCT2,
-    sensorNumber === 1 ? OFT1 : OFT2
-  );
-
-  dispatch(change("testAquisition", `Tc${sensorNumber}`, linear));
+const setCheckboxes = (states, dispatch) => {
+  dispatch(change("testAquisition", "acelerate", states[0]));
+  dispatch(change("testAquisition", "brake", states[1]));
+  dispatch(change("testAquisition", "cooldown", states[2]));
 };
 
 const verifyCheckbox = (functions, state) => {
-  const { dispatch, change } = functions;
+  const { dispatch } = functions;
   if (state === "acelerating" || state === "aceleratingWater") {
-    dispatch(change("testAquisition", "acelerate", true));
-    dispatch(change("testAquisition", "brake", false));
-    dispatch(change("testAquisition", "cooldown", false));
+    setCheckboxes([true, false, false], dispatch);
   } else if (state === "braking" || state === "brakingWater") {
-    dispatch(change("testAquisition", "acelerate", false));
-    dispatch(change("testAquisition", "brake", true));
-    dispatch(change("testAquisition", "cooldown", false));
+    setCheckboxes([false, true, false], dispatch);
   } else if (state === "cooldown" || state === "cooldownWater") {
-    dispatch(change("testAquisition", "acelerate", false));
-    dispatch(change("testAquisition", "brake", false));
-    dispatch(change("testAquisition", "cooldown", true));
+    setCheckboxes([false, false, true], dispatch);
   } else {
-    dispatch(change("testAquisition", "acelerate", false));
-    dispatch(change("testAquisition", "brake", false));
-    dispatch(change("testAquisition", "cooldown", false));
+    setCheckboxes([false, false, false], dispatch);
   }
   if (
     state === "aceleratingWater" ||
@@ -163,12 +85,42 @@ const verifyCheckbox = (functions, state) => {
   } else dispatch(change("testAquisition", "water", false));
 };
 
+const continueResolves = (msg, functions) => {
+  if (msg.channel === "unbrake/galpao/distance/") {
+    functions.dispatch(
+      change("testAquisition", "DPm", msg.asString() * convertMeters)
+    );
+  } else if (msg.channel === "unbrake/galpao/snubState/") {
+    verifyCheckbox(functions, msg.asString());
+  } else if (msg.channel === "unbrake/galpao/isAvailable/") {
+    if (msg.asString() === "true") verifyCheckbox(functions, "");
+  }
+};
+
+const resolveMsg = (msg, states, functions) => {
+  if (msg.channel === "unbrake/galpao/temperature/sensor1/") {
+    calculeTemperature(states, states.sensorTemperature1, one);
+  } else if (msg.channel === "unbrake/galpao/temperature/sensor2/") {
+    calculeTemperature(states, states.sensorTemperature2, two);
+  } else if (msg.channel === "unbrake/galpao/brakingForce/sensor1/") {
+    calculeForce(states, states.sensorForce1, one);
+  } else if (msg.channel === "unbrake/galpao/brakingForce/sensor2/") {
+    calculeForce(states, states.sensorForce2, two);
+  } else if (msg.channel === "unbrake/galpao/frequency/") {
+    calculeFrequency(states, states.sensorRpm);
+  } else if (msg.channel === "unbrake/galpao/speed/") {
+    calculeSpeed(states, states.sensorSpeedCommand);
+  } else if (msg.channel === "unbrake/galpao/pressure/") {
+    calculePressure(states, states.sensorPressureComand);
+  } else continueResolves(msg, functions);
+};
+
 class TabMenuComponent extends React.Component {
+  /* eslint-disable max-lines-per-function, max-statements */
   constructor(props) {
     super(props);
     this.state = {
-      value: 0,
-      mqttKey: ""
+      value: 0
     };
     this.client = emitter.connect({
       host: MQTT_HOST,
@@ -232,31 +184,23 @@ class TabMenuComponent extends React.Component {
     const { dispatch, calibration } = this.props;
     this.client.on("message", msg => {
       const { testAquisition } = this.props;
-      const states = { calibration, dispatch, msg, testAquisition };
+      const states = {
+        calibration,
+        dispatch,
+        msg,
+        testAquisition,
+        sensorTemperature1: this.sensorTemperature1,
+        sensorTemperature2: this.sensorTemperature2,
+        sensorForce1: this.sensorForce1,
+        sensorForce2: this.sensorForce2,
+        sensorRpm: this.sensorRpm,
+        sensorSpeedCommand: this.sensorSpeedCommand,
+        sensorPressureComand: this.sensorPressureComand
+      };
       const functions = { dispatch, change };
 
-      if (Object.keys(calibration.values).length > 0) {
-        if (msg.channel === "unbrake/galpao/temperature/sensor1/") {
-          calculeTemperature(states, this.sensorTemperature1, 1);
-        } else if (msg.channel === "unbrake/galpao/temperature/sensor2/") {
-          calculeTemperature(states, this.sensorTemperature2, 2);
-        } else if (msg.channel === "unbrake/galpao/brakingForce/sensor1/") {
-          calculeForce(states, this.sensorForce1, 1);
-        } else if (msg.channel === "unbrake/galpao/brakingForce/sensor2/") {
-          calculeForce(states, this.sensorForce2, 2);
-        } else if (msg.channel === "unbrake/galpao/frequency/") {
-          calculeFrequency(states, this.sensorRpm);
-        } else if (msg.channel === "unbrake/galpao/speed/") {
-          calculeSpeed(states, this.sensorSpeedCommand);
-        } else if (msg.channel === "unbrake/galpao/pressure/") {
-          calculePressure(states, this.sensorPressureComand);
-        } else if (msg.channel === "unbrake/galpao/distance/") {
-          dispatch(change("testAquisition", "DPm", msg.asString() * 1000));
-        } else if (msg.channel === "unbrake/galpao/snubState/") {
-          verifyCheckbox(functions, msg.asString());
-        } else if (msg.channel === "unbrake/galpao/isAvailable/") {
-          if (msg.asString() === "true") verifyCheckbox(functions, "");
-        }
+      if (Object.keys(calibration.values).length > zero) {
+        resolveMsg(msg, states, functions);
       }
     });
   }
@@ -279,7 +223,7 @@ class TabMenuComponent extends React.Component {
     const { classes, mqttKey } = this.props;
     const { value } = this.state;
 
-    const labelTemperature = { one: "Temperatura 1", two: "Temperatura 2" };
+    const labelTemp = { one: "Temperatura 1", two: "Temperatura 2" };
     const labelForce = { one: "Força 1", two: "Força 2" };
 
     return (
@@ -320,7 +264,7 @@ class TabMenuComponent extends React.Component {
             doubleGraph(
               this.sensorTemperature1,
               this.sensorTemperature2,
-              labelTemperature
+              labelTemp
             )}
           {value === secondTab &&
             doubleGraph(this.sensorForce1, this.sensorForce2, labelForce)}
@@ -336,7 +280,8 @@ class TabMenuComponent extends React.Component {
 
 TabMenuComponent.defaultProps = {
   calibration: { values: {} },
-  testAquisition: { values: {} }
+  testAquisition: { values: {} },
+  mqttKey: ""
 };
 
 TabMenuComponent.propTypes = {
@@ -344,7 +289,9 @@ TabMenuComponent.propTypes = {
   changeCalib: PropTypes.func.isRequired,
   changeConfig: PropTypes.func.isRequired,
   calibration: PropTypes.string,
-  testAquisition: PropTypes.string
+  testAquisition: PropTypes.string,
+  mqttKey: PropTypes.string,
+  dispatch: PropTypes.func.isRequired
 };
 
 const mapStateToProps = state => {

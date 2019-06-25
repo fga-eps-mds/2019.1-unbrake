@@ -23,6 +23,9 @@ import { quitExperiment, submit } from "./TestFunctions";
 
 const margin = 1.5;
 const invalidId = 0;
+const trueLength = 4;
+const one = 1;
+const seven = 7;
 
 const styles = theme => ({
   root: {
@@ -141,13 +144,13 @@ class General extends React.Component {
       const message = msg.asString();
       let state = true;
 
-      if (message.length > 4) {
-        let number = "";
-        for (let i = 7; i < message.length; i++) number += message[i];
-        number = parseInt(number);
+      if (message.length > trueLength) {
+        let numberString = "";
+        for (let i = seven; i < message.length; i += one)
+          numberString += message[i];
 
         state = false;
-        this.setState({ testeId: number });
+        this.setState({ testeId: parseInt(numberString, 10) });
       }
 
       changeAvailable({ available: state });

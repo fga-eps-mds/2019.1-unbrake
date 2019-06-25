@@ -1,13 +1,36 @@
+import { change } from "redux-form";
 import { validateFields, saveCalibration } from "../calibration/Calibration";
 import { createCalibration } from "../calibration/CalibrationVariables";
 import { saveConfiguration } from "../configuration/ConfigFunctions";
 import { API_URL_GRAPHQL } from "../utils/Constants";
 import Request from "../utils/Request";
+import {
+  base10,
+  linearEquation,
+  convertDigitalToAnalog,
+  frequencyEquation,
+  rotationsPerMinuteEquation,
+  rotationToSpeed
+} from "../utils/Equations";
 
 const empty = 0;
+const one = 1;
 const sizeMessageDefault = 14;
+const margin = 1.5;
 
 let url = "";
+
+export const styles = theme => ({
+  root: {
+    flexGrow: 1
+  },
+  appBar: {
+    borderRadius: theme.spacing.unit * margin,
+    alignItems: "center",
+    justifyContent: "center",
+    marginTop: "20px"
+  }
+});
 
 const configFields = [
   { front: "NOS", label: "Numero de Snubs" },
@@ -151,9 +174,9 @@ const requestTest = (states, functions, dispatchs) => {
       Request(url, "POST").then(newResponse => {
         const dataTest = newResponse.data;
 
-        if (!verifyErrorsSubmitTest(newResponse, dispatchs)){
+        if (!verifyErrorsSubmitTest(newResponse, dispatchs)) {
           return;
-        } 
+        }
         const { createTesting } = dataTest;
 
         const { testing } = createTesting;
@@ -202,4 +225,68 @@ export const submit = (states, functions, dispatchs) => {
   }
 
   requestTest(states, functions, dispatchs);
+};
+
+export const calculePressure = (states, vector) => {
+  const { dispatch, msg } = states;
+
+  const analogMesg = convertDigitalToAnalog(parseInt(msg.asString(), base10));
+  vector.push(analogMesg);
+
+  dispatch(change("testAquisition", "Pc", analogMesg));
+};
+
+export const calculeSpeed = (states, vector) => {
+  const { dispatch, msg } = states;
+
+  const analogMesg = convertDigitalToAnalog(parseInt(msg.asString(), base10));
+  vector.push(analogMesg);
+
+  dispatch(change("testAquisition", "Vc", analogMesg));
+};
+
+export const calculeFrequency = (states, vector) => {
+  const { RAP } = states.calibration.values;
+  const { dispatch, msg } = states;
+
+  const analogMesg = convertDigitalToAnalog(parseInt(msg.asString(), base10));
+  vector.push(analogMesg);
+
+  const frequency = frequencyEquation(analogMesg);
+  const rotationsPerMinute = rotationsPerMinuteEquation(frequency);
+  const speedKmh = rotationToSpeed(rotationsPerMinute, RAP, "km/h");
+
+  dispatch(change("testAquisition", "Rrpm", frequency));
+  dispatch(change("testAquisition", "Vkmg", speedKmh));
+};
+
+export const calculeForce = (states, vector, sensorNumber) => {
+  const { FCF1, OFF1, FCF2, OFF2 } = states.calibration.values;
+  const { dispatch, msg } = states;
+
+  const analogMesg = convertDigitalToAnalog(parseInt(msg.asString(), base10));
+  vector.push(analogMesg);
+
+  const linear = linearEquation(
+    analogMesg,
+    sensorNumber === one ? FCF1 : FCF2,
+    sensorNumber === one ? OFF1 : OFF2
+  );
+  dispatch(change("testAquisition", `Fkgf${sensorNumber}`, linear));
+};
+
+export const calculeTemperature = (states, vector, sensorNumber) => {
+  const { FCT1, OFT1, FCT2, OFT2 } = states.calibration.values;
+  const { dispatch, msg } = states;
+
+  const analogMesg = convertDigitalToAnalog(parseInt(msg.asString(), base10));
+  vector.push(analogMesg);
+
+  const linear = linearEquation(
+    analogMesg,
+    sensorNumber === one ? FCT1 : FCT2,
+    sensorNumber === one ? OFT1 : OFT2
+  );
+
+  dispatch(change("testAquisition", `Tc${sensorNumber}`, linear));
 };
