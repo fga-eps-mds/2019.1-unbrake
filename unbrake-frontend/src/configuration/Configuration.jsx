@@ -9,6 +9,7 @@ import { API_URL_GRAPHQL } from "../utils/Constants";
 import ConfigurationForm from "./ConfigurationForm";
 import styles from "./Styles";
 import {
+  defaultButton,
   selectConfiguration,
   createConfig,
   submitDefault,
@@ -25,16 +26,6 @@ import { changeConfigTest } from "../actions/TestActions";
 
 const positionVector = 1;
 const invalidId = 0;
-
-const defaultButton = handleUpDefault => {
-  return (
-    <Grid container justify="center" item alignItems="center" xs={3}>
-      <Button onClick={handleUpDefault} color="secondary" variant="contained">
-        Configuração Padrão
-      </Button>
-    </Grid>
-  );
-};
 
 const nextButton = handleNext => {
   return (
@@ -168,6 +159,11 @@ class Configuration extends React.Component {
 
     Request(url, method).then(response => {
       if (response.data.configDefault.length === empty) {
+        sendMessage({
+          message: "Configuração padrão não existe",
+          variante: "error",
+          condition: true
+        });
         return;
       }
       sendMessage({
@@ -206,6 +202,13 @@ class Configuration extends React.Component {
 
       Request(url, method).then(response => {
         const data = response.data.configAt;
+        if (response.error !== null) {
+          sendMessage({
+            message: "Configuração não existe",
+            variante: "error",
+            condition: true
+          });
+        }
 
         const configuration = createConfig(data);
         this.setState({ configuration });

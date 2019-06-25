@@ -249,4 +249,13 @@ export const selectConfiguration = (handleChange, configStates, classes) => {
     </Grid>
   );
 };
+export const defaultButton = handleUpDefault => {
+  return (
+    <Grid container justify="center" item alignItems="center" xs={3}>
+      <Button onClick={handleUpDefault} color="secondary" variant="contained">
+        Configuração Padrão
+      </Button>
+    </Grid>
+  );
+};
 export default createConfig;
