@@ -138,8 +138,8 @@ class General extends React.Component {
 
     this.client.on("message", msg => {
       changePower({ power: true });
-      const message = "false: 10";
-      let state = "false: 10";
+      const message = msg.asString();
+      let state = true;
 
       if (message.length > 4) {
         let number = "";

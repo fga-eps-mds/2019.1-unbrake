@@ -149,11 +149,15 @@ const verifyCheckbox = (functions, state) => {
     dispatch(change("testAquisition", "acelerate", false));
     dispatch(change("testAquisition", "brake", false));
     dispatch(change("testAquisition", "cooldown", true));
+  } else {
+    dispatch(change("testAquisition", "acelerate", false));
+    dispatch(change("testAquisition", "brake", false));
+    dispatch(change("testAquisition", "cooldown", false));
   }
   if (
     state === "aceleratingWater" ||
     state === "brakingWater" ||
-    state === "brakingWater"
+    state === "cooldownWater"
   ) {
     dispatch(change("testAquisition", "water", true));
   } else dispatch(change("testAquisition", "water", false));
@@ -207,6 +211,10 @@ class TabMenuComponent extends React.Component {
       key: props.mqttKey,
       channel: "unbrake/galpao/snubState"
     });
+    this.client.subscribe({
+      key: props.mqttKey,
+      channel: "unbrake/galpao/isAvailable/" // isAvailable
+    });
 
     this.sensorTemperature1 = [];
     this.sensorTemperature2 = [];
@@ -246,6 +254,8 @@ class TabMenuComponent extends React.Component {
           dispatch(change("testAquisition", "DPm", msg.asString() * 1000));
         } else if (msg.channel === "unbrake/galpao/snubState/") {
           verifyCheckbox(functions, msg.asString());
+        } else if (msg.channel === "unbrake/galpao/isAvailable/") {
+          if (msg.asString() === "true") verifyCheckbox(functions, "");
         }
       }
     });

@@ -334,13 +334,9 @@ class TestData extends React.Component {
         this.setState({ dutyCycle: msg.asString() });
       } else if (msg.channel === "unbrake/galpao/snubDuration/") {
       } else if (msg.channel === "unbrake/galpao/experimentDuration/") {
-        const seconds = ("0" + Math.floor(msg.asString() % 60)).slice(-2);
-        const minutes = ("0" + Math.floor((msg.asString() / 60) % 60)).slice(
-          -2
-        );
-        const hours = ("0" + Math.floor((msg.asString() / 3600) % 60)).slice(
-          -2
-        );
+        const seconds = `0${Math.floor(msg.asString() % 60)}`.slice(-2);
+        const minutes = `0${Math.floor((msg.asString() / 60) % 60)}`.slice(-2);
+        const hours = `0${Math.floor((msg.asString() / 3600) % 60)}`.slice(-2);
         this.setState({ DTE: `${hours} : ${minutes} : ${seconds}` });
       } else if (msg.channel === "unbrake/galpao/isAvailable/") {
         if (msg.asString() === true) {

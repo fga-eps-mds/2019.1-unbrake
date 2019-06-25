@@ -5,9 +5,6 @@ import { reduxForm, Field, initialize } from "redux-form";
 import { withStyles, Grid, FormControlLabel } from "@material-ui/core";
 import { Checkbox } from "redux-form-material-ui";
 import Button from "@material-ui/core/Button";
-import { redirectPage } from "../actions/RedirectActions";
-import styles from "./Styles";
-import { field } from "../components/ComponentsForm";
 
 import OfflineBolt from "@material-ui/icons/OfflineBolt";
 import OfflineBoltOutlined from "@material-ui/icons/OfflineBoltOutlined";
@@ -17,6 +14,9 @@ import WatchLaterOutlined from "@material-ui/icons/WatchLaterOutlined";
 import WatchLater from "@material-ui/icons/WatchLater";
 import BeachAccessOutlined from "@material-ui/icons/BeachAccessOutlined";
 import BeachAccess from "@material-ui/icons/BeachAccess";
+import { field } from "../components/ComponentsForm";
+import styles from "./Styles";
+import { redirectPage } from "../actions/RedirectActions";
 
 const labelFields = name => {
   let nameLabel = "";

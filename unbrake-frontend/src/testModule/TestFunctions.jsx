@@ -43,19 +43,59 @@ const validateConfig = (configuration, sendMessage) => {
   return true;
 };
 
-export const quitExperiment = (states, functions) => {
+const errorSubmit = dispatchs => {
+  const { sendMessage } = dispatchs;
+
+  const message = "Falha ao iniciar o ensaio";
+  sendMessage({
+    message,
+    variante: "error",
+    condition: true
+  });
+};
+
+const errorQuitTest = dispatchs => {
+  const { sendMessage } = dispatchs;
+
+  const message = "Falha ao calcelar o ensaio";
+  sendMessage({
+    message,
+    variante: "error",
+    condition: true
+  });
+};
+export const quitExperiment = (states, functions, dispatchs) => {
   const urlUser = `${API_URL_GRAPHQL}?query=query{currentUser{username}}`;
-  Request(urlUser, "GET").then(username => {
-    const { currentUser } = username.data;
-    console.log(username, currentUser);
-    const urlTesting = `${API_URL_GRAPHQL}?query=mutation{quitTesting(username:"${
-      currentUser.username
-    }",testingId:${
+  Request(urlUser, "GET").then(response => {
+    const { data, errors } = response;
+
+    if (errors !== undefined) {
+      errorQuitTest(dispatchs);
+      return;
+    }
+
+    const { username } = data.currentUser;
+    const urlTesting = `${API_URL_GRAPHQL}?query=mutation{quitTesting(username:"${username}",testingId:${
       states.testeId
     }, mqttHost:"unbrake.ml",mqttPort: 8000){response,error}}`;
 
-    Request(urlTesting, "POST").then(response => {
-      functions.handleChange(empty);
+    Request(urlTesting, "POST").then(json => {
+      const { data, errors } = json;
+      if (errors !== undefined) {
+        errorQuitTest(dispatchs);
+        return;
+      }
+
+      const { response } = data.quitTesting;
+      if (response === "Success") {
+        functions.handleChange(empty);
+        const message = "Ensaio cancelado com sucesso";
+        dispatchs.sendMessage({
+          message,
+          variante: "success",
+          condition: true
+        });
+      } else errorQuitTest(dispatchs);
     });
   });
 };
@@ -81,23 +121,54 @@ export const submit = (states, functions, dispatchs) => {
 
   const urlUser = `${API_URL_GRAPHQL}?query=query{currentUser{username}}`;
   if (states.configId !== "" && states.calibId !== "") {
-    Request(urlUser, "GET").then(username => {
-      const { currentUser } = username.data;
-      const urlTesting = `${API_URL_GRAPHQL}?query=mutation{createTesting(createBy:"${
-        currentUser.username
-      }",
+    Request(urlUser, "GET").then(response => {
+      const { data, errors } = response;
+
+      if (errors !== undefined) {
+        errorSubmit(dispatchs);
+        return;
+      }
+
+      const { username } = data.currentUser;
+      const urlTesting = `${API_URL_GRAPHQL}?query=mutation{createTesting(createBy:"${username}",
           idCalibration:${states.calibId},idConfiguration:${
         states.configId
       }){testing{id},error}}`;
 
       Request(urlTesting, "POST").then(response => {
-        const { createTesting } = response.data;
-        const { id } = createTesting.testing;
+        const { data, errors } = response;
 
-        functions.handleChange(id);
-        const urlSubmit = `${API_URL_GRAPHQL}?query=mutation{submitTesting(mqttHost:"unbrake.ml",mqttPort:8080,testingId:${id}){succes}}`;
-        Request(urlSubmit, "POST").then(() => {
-          //fazer trem aqui
+        if (errors !== undefined) {
+          errorSubmit(dispatchs);
+          return;
+        }
+
+        const { testing, error } = data.createTesting;
+        if (error !== null) {
+          errorSubmit(dispatchs);
+          return;
+        }
+
+        functions.handleChange(testing.id);
+        const urlSubmit = `${API_URL_GRAPHQL}?query=mutation{submitTesting(mqttHost:"unbrake.ml",mqttPort:8080,testingId:${
+          testing.id
+        }){succes}}`;
+        Request(urlSubmit, "POST").then(json => {
+          const { data, errors } = json;
+          if (errors !== undefined) {
+            errorSubmit(dispatchs);
+            return;
+          }
+
+          const { response } = data.submitTesting;
+          if (response !== null) {
+            const message = "Ensaio iniciado com sucesso";
+            dispatchs.sendMessage({
+              message,
+              variante: "success",
+              condition: true
+            });
+          } else errorSubmit(dispatchs);
         });
       });
     });
