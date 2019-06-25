@@ -7,6 +7,7 @@ import * as emitter from "emitter-io";
 import { connect } from "react-redux";
 import styles from "./Styles";
 import { MQTT_HOST, MQTT_PORT } from "../utils/Constants";
+import { changeConfigTest } from "../actions/TestActions";
 
 const percentageTransformer = 100;
 
@@ -260,6 +261,36 @@ const calculeTEC = (states, functions) => {
   }
 };
 
+const verifyCheckbox = (functions, state) => {
+  const { dispatch, change, testAquisition } = functions;
+  // console.log(testAquisition)
+  // console.log("ETNROU NO TUDDO ")
+  if (state === "acelerating" || state === "aceleratingWater"){
+    dispatch(change("configuration", "NOS", 100));
+    dispatch(change("testAquisition", "brake", false));
+    dispatch(change("testAquisition", "cooldown", false));
+    // console.log("entrou")
+  }
+  else if (state === "braking" || state === "brakingWater"){
+    dispatch(change("testAquisition", "acelerate", false));
+    dispatch(change("testAquisition", "brake", true));
+    dispatch(change("testAquisition", "cooldown", false));
+  }
+  else if (state === "cooldown" || state === "cooldownWater"){
+    dispatch(change("testAquisition", "acelerate", false));
+    dispatch(change("testAquisition", "brake", false));
+    dispatch(change("testAquisition", "cooldown", true));
+  }
+  if (state === "cooldown" || state === "cooldownWater"){
+    dispatch(change("testAquisition", "acelerate", false));
+    dispatch(change("testAquisition", "brake", false));
+    dispatch(change("testAquisition", "cooldown", true));
+  }
+  if (state === "aceleratingWater" || state === "brakingWater" || state === "brakingWater") {
+    dispatch(change("testAquisition", "water", true));
+  } else  dispatch(change("testAquisition", "water", false));
+}
+
 class TestData extends React.Component {
   constructor(props) {
     super(props);
@@ -267,13 +298,12 @@ class TestData extends React.Component {
       TES: "", // TES
       TEI: "", // TEI
       TEC: "", // TEC
-      SA: "", // Snub atual
+      SA: "1", // Snub atual
       TS: "", // Total de Snubs
       DTE: "", // Duração total do ensaio
       snubState: "",
       dutyCycle: "",
       waitingStartTime: 0,
-      experimentDuration: "",
       waiting: false
     };
 
@@ -302,8 +332,11 @@ class TestData extends React.Component {
       key: props.mqttKey,
       channel: "unbrake/galpao/experimentDuration"
     });
-    this.currentSnubSensor = 0;
-
+    this.client.subscribe({
+      key: props.mqttKey,
+      channel: "unbrake/galpao/isAvailable/"
+    });
+    
     this.handleChange = this.handleChange.bind(this);
   }
 
@@ -317,18 +350,38 @@ class TestData extends React.Component {
       testData
     } = this.props;
 
+    const functions = { handleChange: this.handleChange, dispatch, change, testAquisition };
+
+    if (configuration.values === undefined || configuration.values.NOS === undefined);
+    else this.handleChange("TS", configuration.values.NOS);
+
     this.client.on("message", msg => {
-      // console.log(msg.channel, msg.asString());
+      console.log(msg.channel, msg.asString());
       if (msg.channel === "unbrake/galpao/currentSnub/") {
         this.setState({ SA: msg.asString() });
       } else if (msg.channel === "unbrake/galpao/snubState/") {
         this.setState({ snubState: msg.asString() });
+
+        verifyCheckbox(functions, msg.asString());
       } else if (msg.channel === "unbrake/galpao/dutyCycle/") {
         this.setState({ dutyCycle: msg.asString() });
       } else if (msg.channel === "unbrake/galpao/snubDuration/") {
-        // console.log(msg.channel, msg.asString())
       } else if (msg.channel === "unbrake/galpao/experimentDuration/") {
-        this.setState({ experimentDuration: msg.asString() });
+        const seconds = ("0" + Math.floor(msg.asString() % 60)).slice(-2);
+        const minutes = ("0" + Math.floor((msg.asString() / 60) % 60)).slice(-2);
+        const hours = ("0" + Math.floor((msg.asString() / 3600) % 60)).slice(-2);
+        if (hours !== "00") console.log(hours, msg.asString())
+        this.setState({ DTE: `${hours} : ${minutes} : ${seconds}` });
+      } else if (msg.channel === "unbrake/galpao/isAvailable/") {
+        // console.log(msg.channel, msg.asString(), this.state);
+        if (msg.asString() === true) {
+          this.setState({ experimentDuration: msg.asString() });
+          if (msg.asString() === true){
+            this.handleChange("TES", 0);
+            this.handleChange("TEI", 0);
+            this.handleChange("TEC", 0);
+          }
+        }
       }
 
       const { snubState, dutyCycle, waiting, waitingStartTime } = this.state;
@@ -345,8 +398,6 @@ class TestData extends React.Component {
         configuration: configuration.values
       };
 
-      const functions = { handleChange: this.handleChange };
-
       if (snubState === "acelerating" || snubState === "aceleratingWater")
         calculeTES(states, functions);
       if (snubState === "braking" || snubState === "brakingWater")
@@ -355,15 +406,6 @@ class TestData extends React.Component {
         calculeTEC(states, functions);
     });
   }
-
-  /*
-   * static getDerivedStateFromProps(props, state) {
-   *   if (props.newData !== state.data) {
-   *     return { data: props.newData };
-   *   }
-   *   return null;
-   * }
-   */
 
   handleChange(name, value) {
     let differenceFactor = 0.1;
@@ -471,6 +513,7 @@ TestData.propTypes = {
   classes: PropTypes.objectOf(PropTypes.string).isRequired,
   newData: PropTypes.oneOfType([PropTypes.object]).isRequired,
   mqttKey: PropTypes.string.isRequired,
+  dispatch: PropTypes.func.isRequired,
   configuration: PropTypes.object,
   testAquisition: PropTypes.object
 };
@@ -487,11 +530,15 @@ const mapStateToProps = state => {
   };
 };
 
+const mapDispatchToProps = dispatch => ({
+  changeConfig: payload => dispatch(changeConfigTest(payload))
+});
+
 const TestDataForm = reduxForm({
   form: "testData"
 })(TestData);
 
 export default connect(
   mapStateToProps,
-  null
+  mapDispatchToProps
 )(withStyles(styles)(TestDataForm));

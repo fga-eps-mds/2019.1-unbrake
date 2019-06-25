@@ -175,6 +175,10 @@ class TabMenuComponent extends React.Component {
       key: props.mqttKey,
       channel: "unbrake/galpao/pressure/"
     });
+    this.client.subscribe({
+      key: props.mqttKey,
+      channel: "unbrake/galpao/distance/"
+    });
 
     this.sensorTemperature1 = [];
     this.sensorTemperature2 = [];
@@ -207,9 +211,15 @@ class TabMenuComponent extends React.Component {
         } else if (msg.channel === "unbrake/galpao/frequency/") {
           calculeFrequency(states, this.sensorRpm);
         } else if (msg.channel === "unbrake/galpao/speed/") {
+          dispatch(change("configuration", "water", true));
           calculeSpeed(states, this.sensorSpeedCommand);
         } else if (msg.channel === "unbrake/galpao/pressure/") {
           calculePressure(states, this.sensorPressureComand);
+        } else if (msg.channel === "unbrake/galpao/distance/") {
+          console.log(msg.channel, msg.asString())
+          dispatch(change("testAquisition", "DPm", msg.asString()*1000));
+          dispatch(change("testAquisition", "water", true));
+          // this.setState({ dutyCycle: msg.asString() });
         }
       }
     });

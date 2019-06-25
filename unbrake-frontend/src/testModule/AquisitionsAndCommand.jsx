@@ -5,11 +5,18 @@ import { reduxForm, Field, initialize } from "redux-form";
 import { withStyles, Grid, FormControlLabel } from "@material-ui/core";
 import { Checkbox } from "redux-form-material-ui";
 import Button from "@material-ui/core/Button";
-import SettingsInputComponent from "@material-ui/icons/SettingsInputComponent";
-import SettingsInputComponentOutlined from "@material-ui/icons/SettingsInputComponentOutlined";
 import { redirectPage } from "../actions/RedirectActions";
 import styles from "./Styles";
 import { field } from "../components/ComponentsForm";
+
+import OfflineBolt from "@material-ui/icons/OfflineBolt";
+import OfflineBoltOutlined from "@material-ui/icons/OfflineBoltOutlined";
+import ReportProblem  from "@material-ui/icons/ReportProblem";
+import ReportProblemOutlined from "@material-ui/icons/ReportProblemOutlined";
+import WatchLaterOutlined from "@material-ui/icons/WatchLaterOutlined";
+import WatchLater from "@material-ui/icons/WatchLater";
+import BeachAccessOutlined from "@material-ui/icons/BeachAccessOutlined";
+import BeachAccess from "@material-ui/icons/BeachAccess";
 
 const labelFields = name => {
   let nameLabel = "";
@@ -56,38 +63,135 @@ const previousButton = handlePrevious => {
   );
 };
 
+const accelerateCheckbox = (value, classes, handleChange) => {
+  return (
+    <FormControlLabel
+      className={classes.checbox_control}
+      labelPlacement="top"
+      control={
+        <Field
+          component={Checkbox}
+          icon={<OfflineBoltOutlined color="secondary"/>}
+          checkedIcon={<OfflineBolt style={{ color: "green" }}/>}
+          className={classes.checbox_field}
+          disabled={value.disable}
+          onClick={handleChange}
+          name={value.name}
+          value={value.value}
+        />
+      }
+      label={value.label}
+    />
+  )
+}
+
+const brakeCheckbox = (value, classes, handleChange) => {
+  return (
+    <FormControlLabel
+      className={classes.checbox_control}
+      labelPlacement="top"
+      control={
+        <Field
+          component={Checkbox}
+          icon={<ReportProblemOutlined color="secondary"/>}
+          checkedIcon={<ReportProblem style={{ color: "red" }}/>}
+          className={classes.checbox_field}
+          disabled={value.disable}
+          onClick={handleChange}
+          name={value.name}
+          value={value.value}
+        />
+      }
+      label={value.label}
+    />
+  )
+}
+
+const cooldownCheckbox = (value, classes, handleChange) => {
+  return (
+    <FormControlLabel
+      className={classes.checbox_control}
+      labelPlacement="top"
+      control={
+        <Field
+          component={Checkbox}
+          icon={<WatchLaterOutlined color="secondary"/>}
+          checkedIcon={<WatchLater style={{ color: "#ffd600" }}/>}
+          className={classes.checbox_field}
+          disabled={value.disable}
+          onClick={handleChange}
+          name={value.name}
+          value={value.value}
+        />
+      }
+      label={value.label}
+    />
+  )
+}
+
+const waterCheckbox = (value, classes, handleChange) => {
+  return (
+    <FormControlLabel
+      className={classes.checbox_control}
+      labelPlacement="top"
+      control={
+        <Field
+          component={Checkbox}
+          icon={<BeachAccessOutlined color="secondary"/>}
+          checkedIcon={<BeachAccess style={{ color: "blue" }}/>}
+          className={classes.checbox_field}
+          disabled={value.disable}
+          onClick={handleChange}
+          name={value.name}
+          value={value.value}
+        />
+      }
+      label={value.label}
+    />
+  )
+}
+
 const allCheckbox = (selectsControl, classes, handleChange) => {
-  const checks = selectsControl.map(value => {
     return (
+      <Grid container item={12}>
       <Grid
-        key={`checkbox ${value.name}`}
         alignItems="center"
         justify="center"
         container
         item
         xs={3}
       >
-        <FormControlLabel
-          className={classes.checbox_control}
-          labelPlacement="top"
-          control={
-            <Field
-              component={Checkbox}
-              icon={<SettingsInputComponentOutlined />}
-              checkedIcon={<SettingsInputComponent />}
-              className={classes.checbox_field}
-              disabled={value.disable}
-              onClick={handleChange}
-              name={value.name}
-              value={value.value}
-            />
-          }
-          label={value.name}
-        />
+        {accelerateCheckbox(selectsControl[0],classes, handleChange)}
       </Grid>
-    );
-  });
-  return checks;
+      <Grid
+        alignItems="center"
+        justify="center"
+        container
+        item
+        xs={3}
+      >
+        {brakeCheckbox(selectsControl[1],classes, handleChange)}
+      </Grid>
+      <Grid
+        alignItems="center"
+        justify="center"
+        container
+        item
+        xs={3}
+      >
+        {cooldownCheckbox(selectsControl[2],classes, handleChange)}
+      </Grid>
+      <Grid
+        alignItems="center"
+        justify="center"
+        container
+        item
+        xs={3}
+      >
+        {waterCheckbox(selectsControl[3],classes, handleChange)}
+      </Grid>
+      </Grid>
+    )
 };
 
 const renderField = (states, classes, handleChange) => {
@@ -161,10 +265,10 @@ const renderDictionary = aquisition => {
     [
       { name: "Pc", value: aquisition.Pc, disable: true },
       [
-        { name: "Out1", value: aquisition.Out1, disable: true },
-        { name: "In1", value: aquisition.In1, disable: true },
-        { name: "In2", value: aquisition.In2, disable: true },
-        { name: "In3", value: aquisition.In3, disable: true }
+        { label: "Acelerador", name: "acelerate" ,value: aquisition.acelerate, disable: false},
+        { label: "Freio", name: "brake", value: aquisition.brake, disable: false},
+        { label: "Cooldown", name: "cooldown", value: aquisition.cooldown, disable: false },
+        { label: "Água", name: "water", value: aquisition.water, disable: false }
       ]
     ]
   ];
@@ -185,10 +289,10 @@ class AquisitionsAndCommand extends React.Component {
         DPm: "", // Distância percorrida (m)
         Vc: "", // Velocidade (comando)
         Pc: "", // Pressão (comando)
-        Out1: false,
-        In1: false,
-        In2: false,
-        In3: false
+        acelerate: true,
+        brake: false,
+        cooldown: false,
+        water: false
       }
     };
 
