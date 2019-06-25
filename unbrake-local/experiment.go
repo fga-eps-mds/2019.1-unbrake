@@ -218,14 +218,14 @@ func ExperimentFromJSON(data []byte) *Experiment {
 	}
 
 	experiment.id = decoded.Pk
-	experiment.totalOfSnubs = 2     //decoded.Fields.Configuration.Number
-	experiment.timeSleepWater = 3   //decoded.Fields.Configuration.Time
-	experiment.doEnableWater = true //decoded.Fields.Configuration.EnableOutput
+	experiment.totalOfSnubs = decoded.Fields.Configuration.Number
+	experiment.timeSleepWater = decoded.Fields.Configuration.Time
+	experiment.doEnableWater = decoded.Fields.Configuration.EnableOutput
 	experiment.firstConversionFactorTemperature = decoded.Fields.Calibration.Temperature[0].ConversionFactor
 	experiment.secondConversionFactorTemperature = decoded.Fields.Calibration.Temperature[1].ConversionFactor
 	experiment.firstOffsetTemperature = decoded.Fields.Calibration.Temperature[0].TemperatureOffset
 	experiment.secondOffsetTemperature = decoded.Fields.Calibration.Temperature[1].TemperatureOffset
-	experiment.temperatureLimit = 85 //decoded.Fields.Configuration.Temperature
+	experiment.temperatureLimit = decoded.Fields.Configuration.Temperature
 	experiment.tireRadius = tireRadius(
 		decoded.Fields.Calibration.Relations.TransversalSelectionWidth,
 		decoded.Fields.Calibration.Relations.HeigthWidthRelation,
@@ -234,11 +234,11 @@ func ExperimentFromJSON(data []byte) *Experiment {
 	experiment.sheaveMoveDiameter = decoded.Fields.Calibration.Relations.SheaveMoveDiameter
 	experiment.sheaveMotorDiameter = decoded.Fields.Calibration.Relations.SheaveMotorDiameter
 
-	experiment.snub.delayAcelerateToBrake = 10 //decoded.Fields.Configuration.UpperTime
-	experiment.snub.delayBrakeToCooldown = 10  //decoded.Fields.Configuration.LowerTime
-	experiment.snub.upperSpeedLimit = 400      //decoded.Fields.Configuration.UpperLimit
-	experiment.snub.lowerSpeedLimit = 400      //decoded.Fields.Configuration.InferiorLimit
-	experiment.snub.timeCooldown = 10          //decoded.Fields.Configuration.TimeBetweenCycles
+	experiment.snub.delayAcelerateToBrake = decoded.Fields.Configuration.UpperTime
+	experiment.snub.delayBrakeToCooldown = decoded.Fields.Configuration.LowerTime
+	experiment.snub.upperSpeedLimit = float64(decoded.Fields.Configuration.UpperLimit)
+	experiment.snub.lowerSpeedLimit = float64(decoded.Fields.Configuration.InferiorLimit)
+	experiment.snub.timeCooldown = decoded.Fields.Configuration.TimeBetweenCycles
 
 	return &experiment
 }

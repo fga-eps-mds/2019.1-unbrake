@@ -108,7 +108,7 @@ func (snub *Snub) NextState() {
 		counter, isOpen := <-snub.counterCh
 
 		if isOpen {
-			snub.counterCh <- counter
+			snub.counterCh <- counter + 1
 			publishData(strconv.Itoa(counter), mqttSubchannelCurrentSnub)
 		}
 
