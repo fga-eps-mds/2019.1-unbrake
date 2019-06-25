@@ -199,6 +199,36 @@ class TestData extends React.Component {
     });
   }
 
+  componentDidUpdate(prevProps) {
+    const { configuration } = this.props;
+
+    if (configuration !== prevProps.configuration) {
+      this.handleChange("TS", configuration.values.NOS);
+      this.client.on("message", msg => {
+        resolveMsg(msg, this.handleChange);
+
+        const { snubState, dutyCycle, waiting, waitingStartTime } = this.state;
+        const states = {
+          snubState,
+          dutyCycle,
+          waiting,
+          waitingStartTime,
+          state: this.state,
+          configuration: configuration.values
+        };
+
+        if (snubState === "acelerating" || snubState === "aceleratingWater")
+          calculeTES(states, this.handleChange);
+        if (snubState === "braking" || snubState === "brakingWater")
+          calculeTEI(states, this.handleChange);
+        if (snubState === "cooldown" || snubState === "cooldownWater")
+          calculeTEC(states, this.handleChange);
+      });
+      return true;
+    }
+    return false;
+  }
+
   handleChange(name, value) {
     const { waiting } = this.state;
 
