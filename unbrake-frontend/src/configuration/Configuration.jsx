@@ -4,7 +4,7 @@ import { withStyles } from "@material-ui/core/styles";
 import { Grid, Button } from "@material-ui/core";
 import PropTypes from "prop-types";
 import { connect } from "react-redux";
-import { reduxForm } from "redux-form";
+import { reduxForm, initialize } from "redux-form";
 import Request from "../utils/Request";
 import { API_URL_GRAPHQL } from "../utils/Constants";
 import ConfigurationForm from "./ConfigurationForm";
@@ -74,7 +74,7 @@ class Configuration extends React.Component {
   }
 
   componentDidMount() {
-    const { configId } = this.props;
+    const { configId, sendMessage, dispatch } = this.props;
 
     const url = `${API_URL_GRAPHQL}?query=query{configNotDefault{id, name}}`;
     const method = "GET";
@@ -83,7 +83,16 @@ class Configuration extends React.Component {
       if (data !== null) this.setState({ allConfiguration: data });
     });
 
-    if (configId > invalidId) this.handleSelectConfig(configId);
+    if (configId > invalidId)
+      selectConfigurationDataBase(configId, sendMessage, dispatch);
+  }
+
+  componentDidUpdate(prevProps) {
+    const { configId } = this.props;
+    if (configId !== prevProps.configId) {
+      return true;
+    }
+    return false;
   }
 
   handleNext() {
@@ -130,28 +139,8 @@ class Configuration extends React.Component {
     }
   }
 
-  resetState() {
-    this.setState({
-      configuration: {
-        CONFIG_ENSAIO: {
-          LSL: "",
-          LWT: "",
-          NOS: "",
-          TAO: false,
-          TAS: "",
-          TAT: "",
-          TBS: "",
-          TMO: false,
-          USL: "",
-          UWT: ""
-        }
-      }
-    });
-  }
-
   handleUpDefault() {
-    this.resetState();
-    const { sendMessage } = this.props;
+    const { sendMessage, changeConfig, dispatch } = this.props;
     const url = `${API_URL_GRAPHQL}?query=query{configDefault{${query}}}`;
 
     const method = "GET";
@@ -174,13 +163,15 @@ class Configuration extends React.Component {
       });
       const position = response.data.configDefault.length - positionVector;
       const data = response.data.configDefault[position];
+      changeConfig({ configId: data.id });
       const configurationDefault = createConfig(data);
+
+      dispatch(initialize("configuration", configurationDefault.CONFIG_ENSAIO));
       this.setState({ configuration: configurationDefault });
     });
   }
 
   handleChange(event) {
-    this.resetState();
     const { changeConfig, sendMessage, dispatch } = this.props;
     const { target } = event;
 
@@ -188,6 +179,7 @@ class Configuration extends React.Component {
       this.setState({ [event.target.name]: event.target.value });
       return;
     }
+
     const idSelect = target.value === invalidId ? "" : target.value;
 
     changeConfig({ configId: idSelect });
