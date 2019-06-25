@@ -7,6 +7,8 @@ import Request from "../utils/Request";
 const empty = 0;
 const sizeMessageDefault = 14;
 
+let url = "";
+
 const configFields = [
   { front: "NOS", label: "Numero de Snubs" },
   { front: "USL", label: "Limite Superior (km/h)" },
@@ -41,6 +43,17 @@ const validateConfig = (configuration, sendMessage) => {
     return false;
   }
   return true;
+};
+
+const successSubmit = dispatchs => {
+  const { sendMessage } = dispatchs;
+  const message = "Ensaio iniciado com sucesso";
+
+  sendMessage({
+    message,
+    variante: "success",
+    condition: true
+  });
 };
 
 const errorSubmit = dispatchs => {
@@ -80,14 +93,15 @@ export const quitExperiment = (states, functions, dispatchs) => {
     }, mqttHost:"unbrake.ml",mqttPort: 8000){response,error}}`;
 
     Request(urlTesting, "POST").then(json => {
-      const { data, errors } = json;
-      if (errors !== undefined) {
+      const newData = json.data;
+      const newErrors = json.errors;
+      if (newErrors !== undefined) {
         errorQuitTest(dispatchs);
         return;
       }
 
-      const { response } = data.quitTesting;
-      if (response === "Success") {
+      const { quitTesting } = newData;
+      if (quitTesting.response === "Success") {
         functions.handleChange(empty);
         const message = "Ensaio cancelado com sucesso";
         dispatchs.sendMessage({
@@ -98,6 +112,79 @@ export const quitExperiment = (states, functions, dispatchs) => {
       } else errorQuitTest(dispatchs);
     });
   });
+};
+
+const verifyErrorsSubmitTest = (newResponse, dispatchs) => {
+  const { data, errors } = newResponse;
+
+  console.log(newResponse)
+  if (errors !== undefined) {
+    errorSubmit(dispatchs);
+    return false;
+  }
+
+  const { error } = data.createTesting;
+
+  if (error !== null) {
+    errorSubmit(dispatchs);
+    return false;
+  }
+  return true;
+};
+
+const requestTest = (states, functions, dispatchs) => {
+  url = `${API_URL_GRAPHQL}?query=query{currentUser{username}}`;
+  if (states.configId !== "" && states.calibId !== "") {
+    Request(url, "GET").then(response => {
+      const { data, errors } = response;
+
+      if (errors !== undefined) {
+        errorSubmit(dispatchs);
+        return;
+      }
+
+      const { username } = data.currentUser;
+      url = `${API_URL_GRAPHQL}?query=mutation{createTesting(createBy:"${username}",
+          idCalibration:${states.calibId},idConfiguration:${
+        states.configId
+      }){testing{id},error}}`;
+
+      Request(url, "POST").then(newResponse => {
+        const dataTest = newResponse.data;
+
+        if (!verifyErrorsSubmitTest(newResponse, dispatchs)){
+          console.log(!verifyErrorsSubmitTest(newResponse, dispatchs))
+          return;
+        } 
+        console.log("aqui")
+        const { createTesting } = dataTest;
+
+        const { testing } = createTesting;
+
+        functions.handleChange(testing.id);
+        url = `${API_URL_GRAPHQL}?query=mutation{submitTesting(mqttHost:"unbrake.ml",mqttPort:8080,testingId:${
+          testing.id
+        }){succes}}`;
+        console.log("12341234")
+        Request(url, "POST").then(json => {
+          const dataLocal = json.data;
+          const errosLocal = json.data;
+          console.log("aquiasdfasf")
+          if (errosLocal !== undefined) {
+            errorSubmit(dispatchs);
+            return;
+          }
+
+          const { submitTesting } = dataLocal;
+
+          const responseLocal = submitTesting.response;
+          if (responseLocal !== null) {
+            successSubmit(dispatchs);
+          } else errorSubmit(dispatchs);
+        });
+      });
+    });
+  }
 };
 
 export const submit = (states, functions, dispatchs) => {
@@ -119,58 +206,5 @@ export const submit = (states, functions, dispatchs) => {
     saveConfiguration(states.configuration.values, "", dispatchs);
   }
 
-  const urlUser = `${API_URL_GRAPHQL}?query=query{currentUser{username}}`;
-  if (states.configId !== "" && states.calibId !== "") {
-    Request(urlUser, "GET").then(response => {
-      const { data, errors } = response;
-
-      if (errors !== undefined) {
-        errorSubmit(dispatchs);
-        return;
-      }
-
-      const { username } = data.currentUser;
-      const urlTesting = `${API_URL_GRAPHQL}?query=mutation{createTesting(createBy:"${username}",
-          idCalibration:${states.calibId},idConfiguration:${
-        states.configId
-      }){testing{id},error}}`;
-
-      Request(urlTesting, "POST").then(response => {
-        const { data, errors } = response;
-
-        if (errors !== undefined) {
-          errorSubmit(dispatchs);
-          return;
-        }
-
-        const { testing, error } = data.createTesting;
-        if (error !== null) {
-          errorSubmit(dispatchs);
-          return;
-        }
-
-        functions.handleChange(testing.id);
-        const urlSubmit = `${API_URL_GRAPHQL}?query=mutation{submitTesting(mqttHost:"unbrake.ml",mqttPort:8080,testingId:${
-          testing.id
-        }){succes}}`;
-        Request(urlSubmit, "POST").then(json => {
-          const { data, errors } = json;
-          if (errors !== undefined) {
-            errorSubmit(dispatchs);
-            return;
-          }
-
-          const { response } = data.submitTesting;
-          if (response !== null) {
-            const message = "Ensaio iniciado com sucesso";
-            dispatchs.sendMessage({
-              message,
-              variante: "success",
-              condition: true
-            });
-          } else errorSubmit(dispatchs);
-        });
-      });
-    });
-  }
+  requestTest(states, functions, dispatchs);
 };

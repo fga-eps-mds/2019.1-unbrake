@@ -404,29 +404,6 @@ class TestData extends React.Component {
       waitingStartTime
     } = this.state;
 
-    const states = {
-      configuration,
-      testAquisition,
-      snubState,
-      dutyCycle,
-      waiting,
-      waitingStartTime,
-      testData,
-      state: this.state,
-      testAquisition: testAquisition.values,
-      configuration: configuration.values
-    };
-    const functions = { handleChange: this.handleChange };
-
-    /*
-     * if (snubState === "acelerating" || snubState === "aceleratingWater")
-     * calculeTES(states, functions);
-     */
-    /*
-     * calculeTEI();
-     * calculeTEC();
-     */
-
     const powerStates = [
       { name: "TES", value: TES },
       { name: "TEI", value: TEI },
@@ -476,11 +453,10 @@ TestData.defaultProps = {
 
 TestData.propTypes = {
   classes: PropTypes.objectOf(PropTypes.string).isRequired,
-  newData: PropTypes.oneOfType([PropTypes.object]).isRequired,
   mqttKey: PropTypes.string.isRequired,
   dispatch: PropTypes.func.isRequired,
-  configuration: PropTypes.object,
-  testAquisition: PropTypes.object
+  configuration: PropTypes.string,
+  testAquisition: PropTypes.string
 };
 
 const mapStateToProps = state => {
