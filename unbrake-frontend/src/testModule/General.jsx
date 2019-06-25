@@ -138,7 +138,17 @@ class General extends React.Component {
 
     this.client.on("message", msg => {
       changePower({ power: true });
-      const state = msg.asString() === "true";
+      const message = "false: 10";
+      let state = "false: 10";
+
+      if (message.length > 4) {
+        let number = "";
+        for (let i = 7; i < message.length; i++) number += message[i];
+        number = parseInt(number);
+
+        state = false;
+        this.setState({ testeId: number });
+      }
 
       changeAvailable({ available: state });
     });

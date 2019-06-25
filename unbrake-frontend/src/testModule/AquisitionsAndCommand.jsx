@@ -11,7 +11,7 @@ import { field } from "../components/ComponentsForm";
 
 import OfflineBolt from "@material-ui/icons/OfflineBolt";
 import OfflineBoltOutlined from "@material-ui/icons/OfflineBoltOutlined";
-import ReportProblem  from "@material-ui/icons/ReportProblem";
+import ReportProblem from "@material-ui/icons/ReportProblem";
 import ReportProblemOutlined from "@material-ui/icons/ReportProblemOutlined";
 import WatchLaterOutlined from "@material-ui/icons/WatchLaterOutlined";
 import WatchLater from "@material-ui/icons/WatchLater";
@@ -71,8 +71,8 @@ const accelerateCheckbox = (value, classes, handleChange) => {
       control={
         <Field
           component={Checkbox}
-          icon={<OfflineBoltOutlined color="secondary"/>}
-          checkedIcon={<OfflineBolt style={{ color: "green" }}/>}
+          icon={<OfflineBoltOutlined color="secondary" />}
+          checkedIcon={<OfflineBolt style={{ color: "green" }} />}
           className={classes.checbox_field}
           disabled={value.disable}
           onClick={handleChange}
@@ -82,8 +82,8 @@ const accelerateCheckbox = (value, classes, handleChange) => {
       }
       label={value.label}
     />
-  )
-}
+  );
+};
 
 const brakeCheckbox = (value, classes, handleChange) => {
   return (
@@ -93,8 +93,8 @@ const brakeCheckbox = (value, classes, handleChange) => {
       control={
         <Field
           component={Checkbox}
-          icon={<ReportProblemOutlined color="secondary"/>}
-          checkedIcon={<ReportProblem style={{ color: "red" }}/>}
+          icon={<ReportProblemOutlined color="secondary" />}
+          checkedIcon={<ReportProblem style={{ color: "red" }} />}
           className={classes.checbox_field}
           disabled={value.disable}
           onClick={handleChange}
@@ -104,8 +104,8 @@ const brakeCheckbox = (value, classes, handleChange) => {
       }
       label={value.label}
     />
-  )
-}
+  );
+};
 
 const cooldownCheckbox = (value, classes, handleChange) => {
   return (
@@ -115,8 +115,8 @@ const cooldownCheckbox = (value, classes, handleChange) => {
       control={
         <Field
           component={Checkbox}
-          icon={<WatchLaterOutlined color="secondary"/>}
-          checkedIcon={<WatchLater style={{ color: "#ffd600" }}/>}
+          icon={<WatchLaterOutlined color="secondary" />}
+          checkedIcon={<WatchLater style={{ color: "#ffd600" }} />}
           className={classes.checbox_field}
           disabled={value.disable}
           onClick={handleChange}
@@ -126,8 +126,8 @@ const cooldownCheckbox = (value, classes, handleChange) => {
       }
       label={value.label}
     />
-  )
-}
+  );
+};
 
 const waterCheckbox = (value, classes, handleChange) => {
   return (
@@ -137,8 +137,8 @@ const waterCheckbox = (value, classes, handleChange) => {
       control={
         <Field
           component={Checkbox}
-          icon={<BeachAccessOutlined color="secondary"/>}
-          checkedIcon={<BeachAccess style={{ color: "blue" }}/>}
+          icon={<BeachAccessOutlined color="secondary" />}
+          checkedIcon={<BeachAccess style={{ color: "blue" }} />}
           className={classes.checbox_field}
           disabled={value.disable}
           onClick={handleChange}
@@ -148,50 +148,26 @@ const waterCheckbox = (value, classes, handleChange) => {
       }
       label={value.label}
     />
-  )
-}
+  );
+};
 
 const allCheckbox = (selectsControl, classes, handleChange) => {
-    return (
-      <Grid container item={12}>
-      <Grid
-        alignItems="center"
-        justify="center"
-        container
-        item
-        xs={3}
-      >
-        {accelerateCheckbox(selectsControl[0],classes, handleChange)}
+  return (
+    <Grid container item={12}>
+      <Grid alignItems="center" justify="center" container item xs={3}>
+        {accelerateCheckbox(selectsControl[0], classes, handleChange)}
       </Grid>
-      <Grid
-        alignItems="center"
-        justify="center"
-        container
-        item
-        xs={3}
-      >
-        {brakeCheckbox(selectsControl[1],classes, handleChange)}
+      <Grid alignItems="center" justify="center" container item xs={3}>
+        {brakeCheckbox(selectsControl[1], classes, handleChange)}
       </Grid>
-      <Grid
-        alignItems="center"
-        justify="center"
-        container
-        item
-        xs={3}
-      >
-        {cooldownCheckbox(selectsControl[2],classes, handleChange)}
+      <Grid alignItems="center" justify="center" container item xs={3}>
+        {cooldownCheckbox(selectsControl[2], classes, handleChange)}
       </Grid>
-      <Grid
-        alignItems="center"
-        justify="center"
-        container
-        item
-        xs={3}
-      >
-        {waterCheckbox(selectsControl[3],classes, handleChange)}
+      <Grid alignItems="center" justify="center" container item xs={3}>
+        {waterCheckbox(selectsControl[3], classes, handleChange)}
       </Grid>
-      </Grid>
-    )
+    </Grid>
+  );
 };
 
 const renderField = (states, classes, handleChange) => {
@@ -265,10 +241,25 @@ const renderDictionary = aquisition => {
     [
       { name: "Pc", value: aquisition.Pc, disable: true },
       [
-        { label: "Acelerador", name: "acelerate" ,value: aquisition.acelerate, disable: false},
-        { label: "Freio", name: "brake", value: aquisition.brake, disable: false},
-        { label: "Cooldown", name: "cooldown", value: aquisition.cooldown, disable: false },
-        { label: "Água", name: "water", value: aquisition.water, disable: false }
+        {
+          label: "Acelerador",
+          name: "acelerate",
+          value: aquisition.acelerate,
+          disable: true
+        },
+        {
+          label: "Freio",
+          name: "brake",
+          value: aquisition.brake,
+          disable: true
+        },
+        {
+          label: "Cooldown",
+          name: "cooldown",
+          value: aquisition.cooldown,
+          disable: true
+        },
+        { label: "Água", name: "water", value: aquisition.water, disable: true }
       ]
     ]
   ];

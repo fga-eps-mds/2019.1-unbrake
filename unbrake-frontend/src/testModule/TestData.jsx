@@ -163,7 +163,6 @@ const calculeTES = (states, functions) => {
 
     handleChange("TES", dutyCycle);
 
-    // console.log("TES", states);
     if (dutyCycle >= 99) {
       handleChange("waiting", true);
     }
@@ -173,12 +172,10 @@ const calculeTES = (states, functions) => {
       return;
     }
 
-    // console.log("TES tempo", states);
-
     const time = Date.now() - waitingStartTime;
     const centiseconds = Math.floor(time / 10);
 
-    const UWT = 1000; // configuration.UWT * 100;
+    const UWT = configuration.UWT * 100;
 
     if (centiseconds < UWT) {
       handleChange("TES", (1 - centiseconds / UWT) * 100);
@@ -206,22 +203,19 @@ const calculeTEI = (states, functions) => {
 
     handleChange("TEI", valueProgress);
 
-    // console.log("TEI", states);
     if (valueProgress >= 99) {
       handleChange("waiting", true);
-      // console.log("ETNROU AQUI");
     }
   } else {
     if (waitingStartTime === 0) {
       handleChange("waitingStartTime", Date.now());
       return;
     }
-    // console.log("TEI tempo", states);
 
     const time = Date.now() - waitingStartTime;
     const centiseconds = Math.floor(time / 10);
 
-    const LSL = 1000; // configuration.LSL * 100;
+    const LSL = configuration.LSL * 100;
 
     if (centiseconds < LSL) {
       handleChange("TES", (1 - centiseconds / LSL) * 100);
@@ -240,8 +234,6 @@ const calculeTEC = (states, functions) => {
 
   if (state.TEI !== 0) handleChange("TEI", 0);
 
-  // console.log("TEC tempo", states);
-
   if (waitingStartTime === 0) {
     handleChange("waitingStartTime", Date.now());
     handleChange("TEC", 100);
@@ -251,7 +243,7 @@ const calculeTEC = (states, functions) => {
   const time = Date.now() - waitingStartTime;
   const centiseconds = Math.floor(time / 10);
 
-  const TBS = 1000; // configuration.TBS * 100;
+  const TBS = configuration.TBS * 100;
 
   if (centiseconds < TBS) {
     handleChange("TEC", (1 - centiseconds / TBS) * 100);
@@ -260,36 +252,6 @@ const calculeTEC = (states, functions) => {
     handleChange("waiting", false);
   }
 };
-
-const verifyCheckbox = (functions, state) => {
-  const { dispatch, change, testAquisition } = functions;
-  // console.log(testAquisition)
-  // console.log("ETNROU NO TUDDO ")
-  if (state === "acelerating" || state === "aceleratingWater"){
-    dispatch(change("configuration", "NOS", 100));
-    dispatch(change("testAquisition", "brake", false));
-    dispatch(change("testAquisition", "cooldown", false));
-    // console.log("entrou")
-  }
-  else if (state === "braking" || state === "brakingWater"){
-    dispatch(change("testAquisition", "acelerate", false));
-    dispatch(change("testAquisition", "brake", true));
-    dispatch(change("testAquisition", "cooldown", false));
-  }
-  else if (state === "cooldown" || state === "cooldownWater"){
-    dispatch(change("testAquisition", "acelerate", false));
-    dispatch(change("testAquisition", "brake", false));
-    dispatch(change("testAquisition", "cooldown", true));
-  }
-  if (state === "cooldown" || state === "cooldownWater"){
-    dispatch(change("testAquisition", "acelerate", false));
-    dispatch(change("testAquisition", "brake", false));
-    dispatch(change("testAquisition", "cooldown", true));
-  }
-  if (state === "aceleratingWater" || state === "brakingWater" || state === "brakingWater") {
-    dispatch(change("testAquisition", "water", true));
-  } else  dispatch(change("testAquisition", "water", false));
-}
 
 class TestData extends React.Component {
   constructor(props) {
@@ -336,7 +298,7 @@ class TestData extends React.Component {
       key: props.mqttKey,
       channel: "unbrake/galpao/isAvailable/"
     });
-    
+
     this.handleChange = this.handleChange.bind(this);
   }
 
@@ -350,33 +312,40 @@ class TestData extends React.Component {
       testData
     } = this.props;
 
-    const functions = { handleChange: this.handleChange, dispatch, change, testAquisition };
+    const functions = {
+      handleChange: this.handleChange,
+      dispatch,
+      change,
+      testAquisition
+    };
 
-    if (configuration.values === undefined || configuration.values.NOS === undefined);
+    if (
+      configuration.values === undefined ||
+      configuration.values.NOS === undefined
+    );
     else this.handleChange("TS", configuration.values.NOS);
 
     this.client.on("message", msg => {
-      console.log(msg.channel, msg.asString());
       if (msg.channel === "unbrake/galpao/currentSnub/") {
         this.setState({ SA: msg.asString() });
       } else if (msg.channel === "unbrake/galpao/snubState/") {
         this.setState({ snubState: msg.asString() });
-
-        verifyCheckbox(functions, msg.asString());
       } else if (msg.channel === "unbrake/galpao/dutyCycle/") {
         this.setState({ dutyCycle: msg.asString() });
       } else if (msg.channel === "unbrake/galpao/snubDuration/") {
       } else if (msg.channel === "unbrake/galpao/experimentDuration/") {
         const seconds = ("0" + Math.floor(msg.asString() % 60)).slice(-2);
-        const minutes = ("0" + Math.floor((msg.asString() / 60) % 60)).slice(-2);
-        const hours = ("0" + Math.floor((msg.asString() / 3600) % 60)).slice(-2);
-        if (hours !== "00") console.log(hours, msg.asString())
+        const minutes = ("0" + Math.floor((msg.asString() / 60) % 60)).slice(
+          -2
+        );
+        const hours = ("0" + Math.floor((msg.asString() / 3600) % 60)).slice(
+          -2
+        );
         this.setState({ DTE: `${hours} : ${minutes} : ${seconds}` });
       } else if (msg.channel === "unbrake/galpao/isAvailable/") {
-        // console.log(msg.channel, msg.asString(), this.state);
         if (msg.asString() === true) {
           this.setState({ experimentDuration: msg.asString() });
-          if (msg.asString() === true){
+          if (msg.asString() === true) {
             this.handleChange("TES", 0);
             this.handleChange("TEI", 0);
             this.handleChange("TEC", 0);

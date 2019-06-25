@@ -44,7 +44,6 @@ const validateConfig = (configuration, sendMessage) => {
 };
 
 export const quitExperiment = (states, functions) => {
-  console.log("ENTROU QUIT");
   const urlUser = `${API_URL_GRAPHQL}?query=query{currentUser{username}}`;
   Request(urlUser, "GET").then(username => {
     const { currentUser } = username.data;
@@ -56,14 +55,12 @@ export const quitExperiment = (states, functions) => {
     }, mqttHost:"unbrake.ml",mqttPort: 8000){response,error}}`;
 
     Request(urlTesting, "POST").then(response => {
-      console.log("RESPOSTA QUIT", response);
       functions.handleChange(empty);
     });
   });
 };
 
 export const submit = (states, functions, dispatchs) => {
-  console.log("SUBMIT");
   const values = {
     calibration: states.calibration.values,
     name: "",
@@ -86,7 +83,6 @@ export const submit = (states, functions, dispatchs) => {
   if (states.configId !== "" && states.calibId !== "") {
     Request(urlUser, "GET").then(username => {
       const { currentUser } = username.data;
-      console.log(username, currentUser);
       const urlTesting = `${API_URL_GRAPHQL}?query=mutation{createTesting(createBy:"${
         currentUser.username
       }",
@@ -101,10 +97,7 @@ export const submit = (states, functions, dispatchs) => {
         functions.handleChange(id);
         const urlSubmit = `${API_URL_GRAPHQL}?query=mutation{submitTesting(mqttHost:"unbrake.ml",mqttPort:8080,testingId:${id}){succes}}`;
         Request(urlSubmit, "POST").then(() => {
-          /*
-           * console.log(response, response.errors)
-           * console.log(Object.keys(response.errors).length)
-           */
+          //fazer trem aqui
         });
       });
     });

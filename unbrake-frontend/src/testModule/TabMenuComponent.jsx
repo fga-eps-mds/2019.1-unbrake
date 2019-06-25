@@ -135,6 +135,30 @@ const calculeTemperature = (states, vector, sensorNumber) => {
   dispatch(change("testAquisition", `Tc${sensorNumber}`, linear));
 };
 
+const verifyCheckbox = (functions, state) => {
+  const { dispatch, change } = functions;
+  if (state === "acelerating" || state === "aceleratingWater") {
+    dispatch(change("testAquisition", "acelerate", true));
+    dispatch(change("testAquisition", "brake", false));
+    dispatch(change("testAquisition", "cooldown", false));
+  } else if (state === "braking" || state === "brakingWater") {
+    dispatch(change("testAquisition", "acelerate", false));
+    dispatch(change("testAquisition", "brake", true));
+    dispatch(change("testAquisition", "cooldown", false));
+  } else if (state === "cooldown" || state === "cooldownWater") {
+    dispatch(change("testAquisition", "acelerate", false));
+    dispatch(change("testAquisition", "brake", false));
+    dispatch(change("testAquisition", "cooldown", true));
+  }
+  if (
+    state === "aceleratingWater" ||
+    state === "brakingWater" ||
+    state === "brakingWater"
+  ) {
+    dispatch(change("testAquisition", "water", true));
+  } else dispatch(change("testAquisition", "water", false));
+};
+
 class TabMenuComponent extends React.Component {
   constructor(props) {
     super(props);
@@ -179,6 +203,10 @@ class TabMenuComponent extends React.Component {
       key: props.mqttKey,
       channel: "unbrake/galpao/distance/"
     });
+    this.client.subscribe({
+      key: props.mqttKey,
+      channel: "unbrake/galpao/snubState"
+    });
 
     this.sensorTemperature1 = [];
     this.sensorTemperature2 = [];
@@ -194,10 +222,10 @@ class TabMenuComponent extends React.Component {
 
   componentDidMount() {
     const { dispatch, calibration } = this.props;
-
     this.client.on("message", msg => {
       const { testAquisition } = this.props;
       const states = { calibration, dispatch, msg, testAquisition };
+      const functions = { dispatch, change };
 
       if (Object.keys(calibration.values).length > 0) {
         if (msg.channel === "unbrake/galpao/temperature/sensor1/") {
@@ -211,15 +239,13 @@ class TabMenuComponent extends React.Component {
         } else if (msg.channel === "unbrake/galpao/frequency/") {
           calculeFrequency(states, this.sensorRpm);
         } else if (msg.channel === "unbrake/galpao/speed/") {
-          dispatch(change("configuration", "water", true));
           calculeSpeed(states, this.sensorSpeedCommand);
         } else if (msg.channel === "unbrake/galpao/pressure/") {
           calculePressure(states, this.sensorPressureComand);
         } else if (msg.channel === "unbrake/galpao/distance/") {
-          console.log(msg.channel, msg.asString())
-          dispatch(change("testAquisition", "DPm", msg.asString()*1000));
-          dispatch(change("testAquisition", "water", true));
-          // this.setState({ dutyCycle: msg.asString() });
+          dispatch(change("testAquisition", "DPm", msg.asString() * 1000));
+        } else if (msg.channel === "unbrake/galpao/snubState/") {
+          verifyCheckbox(functions, msg.asString());
         }
       }
     });
