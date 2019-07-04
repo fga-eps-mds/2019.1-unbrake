@@ -32,7 +32,8 @@
     "redux-form-material-ui": "^5.0.0-beta.3",
     "redux-thunk": "^2.3.0",
     "emitter-io": "^1.38.0",
-    "universal-cookie": "3.1.0"
+    "universal-cookie": "3.1.0",
+    "snyk": "^1.189.0"
   },
   "proxy": "http://localhost:8080/",
   "scripts": {
@@ -49,7 +50,9 @@
     "check_tests": "./scripts/check_tests",
     "check_tests:coverage": "npm test -- -u --ci --coverage --coveragePathIgnorePatterns src/serviceWorker.js index.js src/tests --coverageReporters lcov text --coverageDirectory src/tests/coverage",
     "check_tests:coverage:html": "npm test -- -u --ci --coverage --coveragePathIgnorePatterns src/serviceWorker.js index.js src/tests --coverageReporters html text --coverageDirectory src/tests/coverage",
-    "check_all": "npm run check_lint && npm run check_format && npm run check_tests:coverage"
+    "check_all": "npm run check_lint && npm run check_format && npm run check_tests:coverage",
+    "snyk-protect": "snyk protect",
+    "prepare": "npm run snyk-protect"
   },
   "browserslist": [
     ">0.2%",
@@ -83,5 +86,6 @@
       "eslint --fix",
       "git add"
     ]
-  }
+  },
+  "snyk": true
 }
