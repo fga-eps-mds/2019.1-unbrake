@@ -46,7 +46,7 @@
 <p align="center">
     <a href="https://fga-eps-mds.github.io/2019.1-unbrake/"><strong>&raquo; Mais informações </strong></a>
     <br>
-    
+
 ## Sobre o projeto
 UnBrake é um software que controla de forma remota a configuração, calibração e visualização de ensaios de aceleração e frenagem. O controle do hardware é realizado através de um [firmware](https://github.com/braketestbench/firmware), desenvolvido pelo ex-aluno João Guimarães, que foi gravado em um arduíno Leornardo para controlar o simulador de frenagem. O UnBrake será utilizado por alunos e professores do curso de Engenharia Automotiva da UnB - Campus Gama.
 
@@ -57,7 +57,23 @@ A parte local foi realizada utilizando Golang. E é responsável por receber as 
 A API foi feita utilizando Django, ela recebe os arquivos de configuração, os relaciona com os ensaios, armazena e realiza a autenticação dos usuários. 
 
 O frontend, que foi gerado utilizando React JS, permite que o usuário configure e calibre o ensaio.
-    
+
+## Equipe inicial
+
+Abaixo estão informações sobre as pessoas que criaram e desenvolveram esse
+projeto em seu início. Mas qualquer um pode [contribuir](https://github.com/fga-eps-mds/2019.1-unbrake#como-contribuir) com o UnBrake :smiley:
+
+| Nome | Github | E-mail | Matricula UnB |
+| :--------------------: | :-------------: | :-----------------------: | :--------: |
+|Gabriel Marques Tiveron | [@GabrielTiveron](https://github.com/GabrielTiveron) | gabrielmtiveron@gmail.com | 17/0103471 |
+|Ícaro Pires de Souza Aragão | [@icaropires](https://github.com/icaropires) | icaropsa@gmail.com | 15/0129815 |
+|João Robson Santos Martins | [@joaorobson](https://github.com/joaorobson) | joaorobsonmartins@gmail.com | 15/0154003 |
+|Letícia Karla Soares Rodrigues de Araújo | [@leticiaarj](https://github.com/leticiaarj) | leticiards.04@gmail.com | 15/0135039 |
+|Lucas Medeiros Rosa | [@medeiroslucas](https://github.com/medeiroslucas) | medeirosrosalucas@gmail.com | 17/0039803 |
+|Tiago Miguel Caetano Da Silva | [@tmcstiago](https://github.com/tmcstiago) | Tmcstiago@gmail.com | 17/0046176 |
+|Victor Levi Peixoto | [@VictorLeviPeixoto](https://github.com/VictorLeviPeixoto) | victorlevipeixoto@gmail.com | 17/0115208 |
+|Vinicius Ferreira Bernardo de Lima | [@ViniciusBernardo](https://github.com/ViniciusBernardo) | vfbdelima@gmail.com | 15/0151331 |
+
 ## Utilizando a aplicação
 
 Execute o binário
@@ -107,14 +123,6 @@ Ex: `/dev/ttyACM0`, `COM1`.
 * **mqttKey**: chave do MQTT broker (emitter-io utilizado)
 * **mqttChannelPrefix**: todos os canais do MQTT terão esse prefixo.
     Útil para lidar com vários dispositivos em paralelo.
-
-Todos esses parâmetros também podem ser configurados através de variáveis
-de ambiente apenas fazendo a alteração do nome do parâmetro de camelcase
-para snake case e em caixa alta. Ex: `serialPort` se torna `SERIAL_PORT`.
-
-As variáveis de ambiente tem precedência sobre o arquivo de configuração.
-Caso a variável de ambiente não seja setada e nem haja arquivo de configuração,
-serão usadas valores default onde possível.
 
 Todos esses parâmetros também podem ser configurados através de variáveis
 de ambiente apenas fazendo a alteração do nome do parâmetro de camelcase
