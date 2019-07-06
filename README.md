@@ -138,6 +138,19 @@ Todo o funcionamento da aplicação é registrado em arquivos de log.
 No Linux eles são atualmente gravados em `~/UnBrake/logs`,
 já no Windows em `%APPDATA%/UnBrake/logs`
 
+### Personalizando a aplicação
+
+Se você quiser personalizar o UnBrake para ser executado do seu jeito,
+nosso [guia de contribuição](CONTRIBUTING.md) tem instruções de como subir/compilar
+cada um dos módulos. Cheque as seções
+[Subindo parte Web localmente](https://github.com/fga-eps-mds/2019.1-unbrake/blob/master/CONTRIBUTING.md#subindo-parte-web-localmente)
+para a parte Web da aplicação e o script
+[compile](https://github.com/fga-eps-mds/2019.1-unbrake/blob/master/CONTRIBUTING.md#scripts-dispon%C3%ADveis-local)
+para o módulo local.
+
+Se ainda restarem dúvidas, [abra uma issue](https://github.com/fga-eps-mds/2019.1-unbrake/issues/new/choose).
+Responderemos o quanto antes!
+
 ### Troubleshooting
 
 #### Problemas com a parte local
