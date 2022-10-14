@@ -1,9 +1,9 @@
-Django==2.2.2
+Django==3.2.15
 autopep8==1.4.3
 coverage==4.5.3
 django-cors-headers==2.5.2
 django-graphql-jwt==0.2.1
-emitter-io==2.0.2
+emitter-io==2.704
 flake8==3.7.7
 graphene==2.1.3
 graphene_django>=2.2.0
